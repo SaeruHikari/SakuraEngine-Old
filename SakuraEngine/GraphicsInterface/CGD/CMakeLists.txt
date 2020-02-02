@@ -4,4 +4,4 @@ include_directories( ${PROJECT_SOURCE_DIR}/GraphicsInterface/GraphicsCommon)
 
 add_library(CGD CGD.cpp)
 
-target_link_libraries(CGD CGD_Vulkan)
+target_link_libraries(CGD CGD_Vulkan CGD_Direct3D12)

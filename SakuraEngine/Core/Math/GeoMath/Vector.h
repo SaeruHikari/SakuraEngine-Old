@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 02:12:39
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 12:45:29
+ * @LastEditTime : 2020-02-02 19:47:32
  */
 #pragma once
 #include <Eigen/Core> 
@@ -12,16 +12,11 @@
 
 namespace Sakura::Math
 {
-    struct half;
-}
-
-namespace Sakura::Math
-{
     using Vector1h = Eigen::Matrix<half, 1, 1>;
     using Vector2h = Eigen::Matrix<half, 2, 1>;
     using Vector3h = Eigen::Matrix<half, 3, 1>;
     using Vector4h = Eigen::Matrix<half, 4, 1>;
-    
+
     using Vector1f = Eigen::Matrix<float, 1, 1>;
     using Vector2f = Eigen::Matrix<float, 2, 1>;
     using Vector3f = Eigen::Matrix<float, 3, 1>;
@@ -47,7 +42,7 @@ namespace Sakura::Math
     using Vector3dr = Eigen::Matrix<double, 3, 1, Eigen::RowMajor>;
     using Vector4dr = Eigen::Matrix<double, 4, 1, Eigen::RowMajor>;
 
-    // Alias
+    // HLSL Alias
     using double4 = Vector4d;
     using double3 = Vector3d;
     using double2 = Vector2d;

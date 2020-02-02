@@ -4,11 +4,20 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 09:36:54
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 11:29:43
+ * @LastEditTime : 2020-02-02 17:01:22
  */
 #pragma once
 #include "SDefination.h"
 #include "SInterface.h"
+
+#define DEBUG_GAME 1
+#ifdef DEBUG_GAME
+#include "SCommand.h"
+#endif
+
+#if defined(DEBUG) || defined(_DEBUG)
+#include "SDebug.h"
+#endif
 
 #ifndef SAKURA_TARGET_PLATFORM
 #define SAKURA_TARGET_PLATFORM_WIN32 1

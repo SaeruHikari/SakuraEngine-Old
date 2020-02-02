@@ -17,7 +17,7 @@ namespace Sakura::Graphics
     extern std::unique_ptr<CGD> g_CGD;
 }
 
-void CGD_Vk::Initialize()
+void CGD_Vk::Initialize(void)
 {
     g_CGD = std::move(std::make_unique<CGD_Vk>());
 }

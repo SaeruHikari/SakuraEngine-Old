@@ -8,3 +8,5 @@ include_directories(
 include_directories(
     ${PROJECT_SOURCE_DIR}/Extern/googletest/googlemock/include
 )
+
+link_libraries(Core)

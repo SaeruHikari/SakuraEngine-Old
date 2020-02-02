@@ -4,19 +4,19 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 18:20:07
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 11:06:16
+ * @LastEditTime : 2020-02-02 17:52:42
  */
 #include <iostream>
 #include "gtest/gtest.h"
-#include "Core/CoreMinimal/CoreMinimal.h"
-#include "Core/Math/GeoMath/Vector.h"
+#include "Core/Core.h"
 
 TEST(UnitTestCore, TCoreMinimal)
 {
-    Sakura::sstring OutString = "UnitTestCore CoreMinimal!";
-    size_t i = 0;
+    Sakura::sstring OutString = "UnitTestCore CoreMinimal! DEBUG MSG: ";
+    size_t i = 120;
     Sakura::atom u = i;
-    std::cout << OutString << u << std::endl;
+    auto msg = OutString + std::to_string(force_cast<int>(u));
+    Utility::Print(msg.c_str());
 }
 
 TEST(UnitTestCore, TMathTest)

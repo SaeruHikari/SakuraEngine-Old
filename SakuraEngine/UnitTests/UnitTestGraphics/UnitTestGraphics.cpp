@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 22:07:52
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 14:05:49
+ * @LastEditTime : 2020-02-02 16:31:18
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -28,6 +28,12 @@ TEST(UnitTestGraphics, CGDInterface)
 {
     Sakura::Graphics::CGD::Initialize(
         Sakura::Graphics::CGD::TargetGraphicsInterface::CGD_TARGET_VULKAN
+    );
+    Sakura::Graphics::g_CGD->Render();
+    Sakura::Graphics::g_CGD->Destroy();
+
+    Sakura::Graphics::CGD::Initialize(
+        Sakura::Graphics::CGD::TargetGraphicsInterface::CGD_TARGET_DIRECT3D12
     );
     Sakura::Graphics::g_CGD->Render();
     Sakura::Graphics::g_CGD->Destroy();
