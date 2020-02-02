@@ -12,7 +12,7 @@ A Cross-Platform Mordern Game Engine.
     * Efficient Streaming
     * Quik String 🚧
   * MemoryManagement
-    * PmrAllocator 🚧
+    * Allocator 🚧
     * STL Container Wrappers
   * Script
     * Mono?
