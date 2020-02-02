@@ -1,10 +1,10 @@
 /*
  * @Descripttion: Common Defination of Engine Types and typedefs
- * @Version: Do not edit
+ * @Version: 0.1.0
  * @Author: SaeruHikari
  * @Date: 2020-02-02 00:13:54
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 03:00:56
+ * @LastEditTime : 2020-02-02 10:20:08
  */
 #pragma once
 #include <string>
@@ -33,7 +33,8 @@ using int8 = std::int8_t;
 using int16 = std::int16_t;
 using int32 = std::int32_t;
 using int64 = std::int64_t;
-
+using size_t = std::size_t;
+using atom = std::size_t;
 
 #ifndef TARGET_PLATFORM
 #define TARGET_PLATFORM_WIN32 1
@@ -42,8 +43,9 @@ using int64 = std::int64_t;
 
 #ifdef TARGET_PLATFORM_WIN32
 #include "SWinDefination.h"
-#else
+ #else
 #endif
+
 
 
 

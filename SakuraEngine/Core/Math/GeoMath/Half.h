@@ -4,13 +4,13 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 02:52:23
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 03:13:22
+ * @LastEditTime : 2020-02-02 10:22:44
  */
 #pragma once
 #include <Eigen/Core>
 #include <Eigen/src/Core/arch/CUDA/Half.h>
 
-namespace Math
+namespace Sakura::Math
 {
     /**
      * @description: half is a 16bit float, could have better performance on GPU.

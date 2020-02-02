@@ -40,6 +40,7 @@ if(MSVC)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _CRT_SECURE_NO_WARNINGS /MP") #Multi Thread Build Enable
 else(MSVC)
     message(STATUS "Use GCC Compiler gcc.exe")
+    add_definitions(-msse4.2)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -O3 -pthread" )
 endif(MSVC)
 
