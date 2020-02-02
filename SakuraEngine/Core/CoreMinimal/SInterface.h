@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 09:37:28
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 10:06:39
+ * @LastEditTime : 2020-02-02 11:12:16
  */
 #pragma once
 
@@ -16,9 +16,12 @@
 #define SImplements public
 #endif
 
-struct NonCopyble
+namespace Sakura
 {
-    NonCopyble() = default;
-    NonCopyble(const NonCopyble& rhs) = delete;
-    NonCopyble& operator=(const NonCopyble& rhs) = delete;
-};
+    struct NonCopyble
+    {
+        NonCopyble() = default;
+        NonCopyble(const NonCopyble& rhs) = delete;
+        NonCopyble& operator=(const NonCopyble& rhs) = delete;
+    };
+}

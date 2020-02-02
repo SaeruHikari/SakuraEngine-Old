@@ -4,12 +4,11 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 02:12:39
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 10:38:20
+ * @LastEditTime : 2020-02-02 12:45:29
  */
 #pragma once
-#include <Eigen/Core>
+#include <Eigen/Core> 
 #include <Eigen/Geometry>
-#include "Core/CoreMinimal/SDefination.h"
 
 namespace Sakura::Math
 {
@@ -22,7 +21,7 @@ namespace Sakura::Math
     using Vector2h = Eigen::Matrix<half, 2, 1>;
     using Vector3h = Eigen::Matrix<half, 3, 1>;
     using Vector4h = Eigen::Matrix<half, 4, 1>;
-
+    
     using Vector1f = Eigen::Matrix<float, 1, 1>;
     using Vector2f = Eigen::Matrix<float, 2, 1>;
     using Vector3f = Eigen::Matrix<float, 3, 1>;
@@ -33,15 +32,15 @@ namespace Sakura::Math
     using Vector3d = Eigen::Matrix<double, 3, 1>;
     using Vector4d = Eigen::Matrix<double, 4, 1>;
 
-    using Vector1u = Eigen::Matrix<uint32, 1, 1>;
-    using Vector2u = Eigen::Matrix<uint32, 2, 1>;
-    using Vector3u = Eigen::Matrix<uint32, 3, 1>;
+    using Vector1u = Eigen::Matrix<std::uint32_t, 1, 1>;
+    using Vector2u = Eigen::Matrix<std::uint32_t, 2, 1>;
+    using Vector3u = Eigen::Matrix<std::uint32_t, 3, 1>;
     using Vector4u = Eigen::Matrix<uint32, 4, 1>;
 
-    using Vector1i = Eigen::Matrix<int32, 1, 1>;
-    using Vector2i = Eigen::Matrix<int32, 2, 1>;
-    using Vector3i = Eigen::Matrix<int32, 3, 1>;
-    using Vector4i = Eigen::Matrix<int32, 4, 1>;
+    using Vector1i = Eigen::Matrix<std::int32_t, 1, 1>;
+    using Vector2i = Eigen::Matrix<std::int32_t, 2, 1>;
+    using Vector3i = Eigen::Matrix<std::int32_t, 3, 1>;
+    using Vector4i = Eigen::Matrix<std::int32_t, 4, 1>;
 
     using Vector1dr = Eigen::Matrix<double, 1, 1, Eigen::RowMajor>;
     using Vector2dr = Eigen::Matrix<double, 2, 1, Eigen::RowMajor>;

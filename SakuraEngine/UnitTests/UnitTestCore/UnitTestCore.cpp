@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 18:20:07
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 10:36:54
+ * @LastEditTime : 2020-02-02 11:06:16
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -13,9 +13,9 @@
 
 TEST(UnitTestCore, TCoreMinimal)
 {
-    sstring OutString = "UnitTestCore CoreMinimal!";
+    Sakura::sstring OutString = "UnitTestCore CoreMinimal!";
     size_t i = 0;
-    atom u = i;
+    Sakura::atom u = i;
     std::cout << OutString << u << std::endl;
 }
 

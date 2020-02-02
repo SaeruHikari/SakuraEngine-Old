@@ -1,12 +1,4 @@
 message(STATUS "Generating UnitTestCore.exe")
 add_executable(UnitTestCore UnitTestCore.cpp)
 
-#Eigen3 Include
-set( EIGEN3_INCLUDE_DIR "$ENV{EIGEN_INCLUDE}" )
-if( NOT EIGEN3_INCLUDE_DIR )
-    message( FATAL_ERROR "Please point the environment variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
-endif()
-include_directories("${EIGEN3_INCLUDE_DIR}")
-message( STATUS "Add Eigen3 Root: ${EIGEN3_INCLUDE_DIR}")
-
 target_link_libraries(UnitTestCore gtest gtest_main)
