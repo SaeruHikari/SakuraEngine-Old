@@ -2,7 +2,7 @@
 A Cross-Platform Mordern Game Engine.
 
 >TODO:
-  * Make
+  * Construct
     * CMake √
   * UnitTest
     * GTest √
