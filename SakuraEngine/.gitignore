@@ -4,4 +4,6 @@
 
 /SakuraEngine/.vscode
 /SakuraEngine/build
+/SakuraEngine/build_linux
+/SakuraEngine/build_mac
 /out

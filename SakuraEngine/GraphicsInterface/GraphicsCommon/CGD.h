@@ -5,10 +5,11 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 12:58:52
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 14:04:03
+ * @LastEditTime : 2020-02-06 01:42:43
  */
 #pragma once
 #include <memory>
+#include <stdint.h>
 
 namespace Sakura::Graphics
 {

@@ -7,8 +7,9 @@ set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_BUILD_TYPE "Release")
 endif (NOT CMAKE_BUILD_TYPE)
 
+#features
 set(VAR_CONFIG_FLAGS " -D DEBUG")
-
+set(USE_CONAN true)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 
@@ -16,15 +17,15 @@ if(UNIX)
     if(APPLE)
         set(SAKURA_TARGET_PLATFORM "Darwin")
         set(OS_MACOS 1)
-    elseif(${CMAKE_SYSTEM_NAME} matches ANDROID)
+    elseif(${CMAKE_SYSTEM_NAME}  MATCHES  ANDROID)
         set(SAKURA_TARGET_PLATFORM "Android")
         set(OS_ANDROID 1)
-    elseif(${CMAKE_SYSTEM_NAME} matches "FreeBSD")
+    elseif(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
         set(SAKURA_TARGET_PLATFORM "FreeBSD")
         set(OS_FREEBSD 1)
         set(BSD 1)
         set(OS_BSD 1)
-    elseif(${CMAKE_SYSTEM_NAME} matches Emscripten)
+    elseif(${CMAKE_SYSTEM_NAME} MATCHES Emscripten)
         set(SAKURA_TARGET_PLATFORM "Emscripten")
         set(WA 1)   #Web
         set(OS_WEBASSEMBLY 1)
@@ -42,6 +43,11 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Psp2)
     set(OS_PSP2 1)
 endif(UNIX)
 
+#Setup Conan
+include(${CMAKE_BINARY_DIR}/../Conan/conanbuildinfo.cmake)
+conan_basic_setup()
+
+
 if(MSVC)     
     foreach(var 
         CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
@@ -57,7 +63,7 @@ endif(MSVC)
 
 if(MSVC)
     message(STATUS "MSVC Compiler cl.exe")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _CRT_SECURE_NO_WARNINGS /MP") #Multi Thread Build Enable
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _CRT_SECURE_NO_WARNINGS") #Multi Thread Build Enable
 else(MSVC)
     message(STATUS "Use GCC Compiler gcc.exe")
     add_definitions(-msse4.2)
@@ -76,13 +82,18 @@ else()
         set(ARCH_BIT 32)
 endif()
 
+
 #Eigen3 Include
-set( EIGEN3_INCLUDE_DIR "$ENV{EIGEN_INCLUDE}" )
-if( NOT EIGEN3_INCLUDE_DIR )
-    message( FATAL_ERROR "Please point the environment variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
+if(USE_CONAN)
+else()
+    set( EIGEN3_INCLUDE_DIR "$ENV{EIGEN_INCLUDE}" )
+    if( NOT EIGEN3_INCLUDE_DIR )
+        message( STATUS "Please point the environment variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
+    else()
+    include_directories("${EIGEN3_INCLUDE_DIR}")
+    endif()
+    message( STATUS "Add Eigen3 Root: ${EIGEN3_INCLUDE_DIR}")
 endif()
-include_directories("${EIGEN3_INCLUDE_DIR}")
-message( STATUS "Add Eigen3 Root: ${EIGEN3_INCLUDE_DIR}")
 
 #GTest
 enable_testing()
