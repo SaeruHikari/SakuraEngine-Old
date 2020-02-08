@@ -5,14 +5,13 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 13:58:16
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-08 19:05:30
+ * @LastEditTime : 2020-02-08 19:10:58
  */
 // Prototype from Star Engine :
 // https://github.com/star-e/StarEngine/blob/master/Star/SMap.h
 // Thanks for the great idea and work !
-#include <map>
-#include <unordered_map>
 #include "Core/CoreMinimal/SKeyWords.h"
+#include <map>
 #include <memory_resource>
 
 namespace Sakura
@@ -21,13 +20,7 @@ namespace Sakura
     using SMap = std::map<Key, Val, std::less<>>;
 
     template<class Key, class Val>
-    using SUnorderedMap = std::unordered_map<Key, Val, std::less<>>;
-
-    template<class Key, class Val>
     using SPmrMap = std::pmr::map<Key, Val, std::less<>>;
-
-    template<class Key, class Val>
-    using SPmrUnorderedMap = std::pmr::unordered_map<Key, Val, std::less<>>;
 
     // Prototype from Star Engine :
     // https://github.com/star-e/StarEngine/blob/master/Star/SMap.h
@@ -77,6 +70,5 @@ namespace Sakura
         }
         return iter->second;
     }
-
 
 }
