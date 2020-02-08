@@ -4,11 +4,11 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 02:52:23
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 16:12:33
+ * @LastEditTime : 2020-02-08 21:49:03
  */
 #pragma once
-#include <Eigen/Core>
-#include <Eigen/src/Core/arch/CUDA/Half.h>
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/src/Core/arch/CUDA/Half.h>
 
 namespace Sakura::Math
 {

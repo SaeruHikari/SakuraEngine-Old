@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 
 project(Sakura VERSION 0.1.0)
+set(USE_CONAN true)
 
 if (NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE "Debug")
@@ -9,7 +10,6 @@ endif (NOT CMAKE_BUILD_TYPE)
 
 #features
 set(VAR_CONFIG_FLAGS " -D DEBUG")
-set(USE_CONAN true)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 
@@ -43,9 +43,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Psp2)
     set(OS_PSP2 1)
 endif(UNIX)
 
-#Setup Conan
-include(${CMAKE_BINARY_DIR}/../Conan/conanbuildinfo.cmake)
-conan_basic_setup()
+
 
 
 if(MSVC)     

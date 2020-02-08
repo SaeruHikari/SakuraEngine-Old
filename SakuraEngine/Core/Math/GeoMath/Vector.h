@@ -4,11 +4,11 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 02:12:39
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 19:47:32
+ * @LastEditTime : 2020-02-08 21:49:14
  */
 #pragma once
-#include <Eigen/Core> 
-#include <Eigen/Geometry>
+#include <eigen3/Eigen/Core> 
+#include <eigen3/Eigen/Geometry>
 
 namespace Sakura::Math
 {

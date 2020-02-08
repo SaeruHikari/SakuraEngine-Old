@@ -7,3 +7,7 @@
 /SakuraEngine/build_linux
 /SakuraEngine/build_mac
 /out
+/Extern/include
+/Extern/include
+/Extern/libs
+/Extern/bin
