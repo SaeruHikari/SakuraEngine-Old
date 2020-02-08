@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by SaeruHikari.
+################################################################################
+
+conan_imports_manifest.txt
+conan.lock
+conanbuildinfo.cmake
+conanbuildinfo.txt
+conaninfo.txt
+graph_info.json

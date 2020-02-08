@@ -44,8 +44,6 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Psp2)
 endif(UNIX)
 
 
-
-
 if(MSVC)     
     foreach(var 
         CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
@@ -98,6 +96,9 @@ enable_testing()
 
 include_directories(
     ${PROJECT_SOURCE_DIR}
+)
+include_directories(
+    Extern/include
 )
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
