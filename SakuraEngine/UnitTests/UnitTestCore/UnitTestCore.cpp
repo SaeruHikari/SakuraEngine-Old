@@ -4,11 +4,41 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 18:20:07
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 17:52:42
+ * @LastEditTime : 2020-02-08 18:56:31
  */
 #include <iostream>
 #include "gtest/gtest.h"
 #include "Core/Core.h"
+
+struct A
+{
+    A(float val)
+        :b(val)
+    {
+        
+    }
+    A(size_t x, float y)
+        :i(x), b(y)
+    {
+        
+    }
+    void Print()
+    {
+        std::cout << i << "  " << b << std::endl;
+    }
+    size_t i = 0;
+    float b;
+    auto index()
+    {
+        return i;
+    }
+};
+
+struct B
+{
+   size_t x = 0;
+   float y = 15; 
+};
 
 TEST(UnitTestCore, TCoreMinimal)
 {
@@ -17,6 +47,25 @@ TEST(UnitTestCore, TCoreMinimal)
     Sakura::atom u = i;
     auto msg = OutString + std::to_string(force_cast<int>(u));
     Utility::Print(msg.c_str());
+
+    std::map<std::string, int, std::less<>> testM;
+    std::string key = "5";
+    testM[key] = 12;
+    auto val = Sakura::at(testM, key);
+    std::cout << std::endl << val << std::endl;    
+
+    std::variant<float> var{5.f};   
+    A a = Sakura::convert<A>(var);
+    std::variant<A, B, std::tuple<size_t, float>> varr = a;
+    a.Print();
+
+    Sakura::VariantIndexMap<std::variant<A, B, std::tuple<size_t, float>>,
+     std::string> magicMap;
+    B b = {0, 5.f};
+    std::string res = "Variant index magic";
+    magicMap[b] = res;
+    std::tuple<size_t, float> tup{0, 5.f};
+    std::cout << std::endl << magicMap[tup];
 }
 
 TEST(UnitTestCore, TMathTest)

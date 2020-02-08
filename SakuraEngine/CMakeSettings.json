@@ -5,7 +5,7 @@
 			"generator": "Ninja",
 			"configurationType": "Debug",
 			"inheritEnvironments": [ "clang_cl_x64" ],
-			"buildRoot": "${projectDir}\\out\\build\\${name}",
+			"buildRoot": "${projectDir}\\build",
 			"installRoot": "${projectDir}\\out\\install\\${name}",
 			"cmakeCommandArgs": "",
 			"buildCommandArgs": "-v",

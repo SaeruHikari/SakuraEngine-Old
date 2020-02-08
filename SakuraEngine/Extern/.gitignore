@@ -2,7 +2,3 @@
 # This .gitignore file was automatically created by SaeruHikari.
 ################################################################################
 
-/SakuraEngine/.vscode
-/SakuraEngine/build
-/SakuraEngine/build_linux
-/.vs

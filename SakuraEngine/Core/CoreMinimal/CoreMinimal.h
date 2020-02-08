@@ -4,9 +4,10 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 09:36:54
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 17:01:22
+ * @LastEditTime : 2020-02-08 14:38:40
  */
 #pragma once
+#include "SConcepts.h"
 #include "SDefination.h"
 #include "SInterface.h"
 
