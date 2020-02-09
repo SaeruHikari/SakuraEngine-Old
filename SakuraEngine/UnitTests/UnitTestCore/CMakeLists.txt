@@ -1,6 +1,13 @@
 message(STATUS "Generating UnitTestCore.exe")
 message(STATUS "Generating UnitTestCoreUtils.exe")
 
+include_directories(
+    ${PROJECT_SOURCE_DIR}/Extern/googletest/googletest/include
+)
+include_directories(
+    ${PROJECT_SOURCE_DIR}/Extern/googletest/googlemock/include
+)
+
 add_executable(UnitTestCore UnitTestCore.cpp)
 add_executable(UnitTestCoreUtils UnitTestCoreUtils.cpp)
 

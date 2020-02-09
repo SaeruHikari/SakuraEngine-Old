@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 18:20:07
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 16:52:35
+ * @LastEditTime : 2020-02-09 21:32:47
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -86,6 +86,12 @@ TEST(UnitTestCore, TContainerTest)
     magicMap[b] = res;
     std::tuple<size_t, float> tup{0, 5.f};
     std::cout << std::endl << magicMap[tup];
+
+    std::map<std::string, std::string, std::less<>> testMap;
+    std::pmr::string p_str = "TEMPLATE";
+    testMap["TEMPLATE"] = " MAGIC";
+    std::string_view view = std::string_view(p_str);
+    std::cout << Sakura::at(testMap, p_str) << std::endl;
 
     float valf = 15.f;
     Sakura::SPmrVector<float> pmrVec;

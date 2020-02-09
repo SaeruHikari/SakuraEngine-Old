@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 17:51:06
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 18:20:47
+ * @LastEditTime : 2020-02-09 18:38:22
  */
 #include "../T2String.h"
 #include <cstring>
@@ -177,4 +177,32 @@ u32toa_end:
         memcpy(buf, ((char*)b) + 20 - len, (size_t)len);
         return len;
     }
+
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
+
+    size_t ftoa(float v, char* buf) 
+    {
+    #ifdef _WIN32
+        return _snprintf_s(buf, 24, 24, "%.7g", v);
+    #else
+        return snprintf(buf, 24, "%.7g", v);
+    #endif
+    }
+
+    size_t dtoa(double v, char* buf) 
+    {
+  #ifdef _WIN32
+        return _snprintf_s(buf, 24, 24, "%.7g", v);
+  #else
+        return snprintf(buf, 24, "%.7g", v);
+  #endif
+    }
+
+
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
 }

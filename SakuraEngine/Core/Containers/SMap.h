@@ -5,9 +5,9 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 13:58:16
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-08 19:05:30
+ * @LastEditTime : 2020-02-09 21:33:07
  */
-// Prototype from Star Engine :
+// Excellent Prototype from Star Engine :
 // https://github.com/star-e/StarEngine/blob/master/Star/SMap.h
 // Thanks for the great idea and work !
 #include <map>
@@ -39,10 +39,9 @@ namespace Sakura
 
     template<class Key, class Value, class Allocator, class... Keys,
     typename std::enable_if<
-        std::is_trivially_constructible<std::string_view, Keys...>::value
+        std::is_constructible<std::string_view, Keys...>::value
     >::type * = nullptr>
-    sinline typename std::map<Key, Value, std::less<>, Allocator>::mapped_type&
-    at(std::map<Key, Value, std::less<>, Allocator>& m, Keys... keys)
+    auto at(std::map<Key, Value, std::less<>, Allocator>& m, Keys... keys)
     {
         auto iter = m.find(std::string_view(keys...));
         if (iter == m.end())
@@ -54,12 +53,12 @@ namespace Sakura
 
     template<class Key, class Value, class Allocator, class... Keys,
     typename std::enable_if<
-        std::is_trivially_constructible<std::string_view, Keys...>::value
+        !std::is_constructible<std::string_view, Keys...>::value
     >::type * = nullptr>
-    sinline typename std::map<Key, Value, std::less<>, Allocator>::mapped_type const&
-    at(std::map<Key, Value, std::less<>, Allocator>& m, Keys... keys)
+    sinline auto at(std::map<Key, Value, std::less<>, Allocator>& m,
+     Keys... key)
     {
-        auto iter = m.find(std::string_view(keys...));
+        auto iter = m.find(key...);
         if (iter == m.end())
         {
             throw std::out_of_range("at(std::map) out of range");
@@ -67,8 +66,12 @@ namespace Sakura
         return iter->second;
     }
 
-    template<class Key, class Value, class Allocator, class KeyLike>
-    sinline auto at(std::map<Key, Value, std::less<>, Allocator>& m, const KeyLike& key)
+    template<class Key, class Value, class Allocator, class KeyLike,
+    typename std::enable_if<
+        !std::is_constructible<std::string_view, KeyLike>::value
+    >::type * = nullptr>
+    sinline auto at(std::map<Key, Value, std::less<>, Allocator>& m,
+     const KeyLike& key)
     {
         auto iter = m.find(key);
         if (iter == m.end())
@@ -77,6 +80,4 @@ namespace Sakura
         }
         return iter->second;
     }
-
-
 }
