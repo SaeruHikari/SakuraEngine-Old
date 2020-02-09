@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 18:20:07
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 09:54:19
+ * @LastEditTime : 2020-02-09 16:52:35
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -82,7 +82,7 @@ TEST(UnitTestCore, TContainerTest)
     Sakura::VariantIndexMap<std::variant<A, B, std::tuple<size_t, float>>,
      std::string> magicMap;
     B b = {0, 5.f};
-    std::string res = "Variant index magic";
+    Sakura::sstring res = "Variant index magic";
     magicMap[b] = res;
     std::tuple<size_t, float> tup{0, 5.f};
     std::cout << std::endl << magicMap[tup];
@@ -91,3 +91,4 @@ TEST(UnitTestCore, TContainerTest)
     Sakura::SPmrVector<float> pmrVec;
     pmrVec.push_back(valf);
 }
+
