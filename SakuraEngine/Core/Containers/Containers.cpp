@@ -5,6 +5,9 @@
  * @Autor: SaeruHikari
  * @Date: 1970-01-01 08:00:00
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-08 16:57:54
+ * @LastEditTime : 2020-02-09 09:54:36
  */
 #include "Containers.h"
+
+using namespace Sakura;
+

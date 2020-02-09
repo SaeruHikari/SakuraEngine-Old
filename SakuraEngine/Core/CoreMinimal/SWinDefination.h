@@ -5,9 +5,13 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 00:41:22
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 09:56:24
+ * @LastEditTime : 2020-02-09 09:55:44
  */
 
 #pragma once
 #include <windows.h>
 #include <minwindef.h>
+
+
+// TO DO: Win RT
+// ...

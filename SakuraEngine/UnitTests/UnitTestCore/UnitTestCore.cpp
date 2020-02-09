@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 18:20:07
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-08 18:56:31
+ * @LastEditTime : 2020-02-09 09:54:19
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -47,7 +47,27 @@ TEST(UnitTestCore, TCoreMinimal)
     Sakura::atom u = i;
     auto msg = OutString + std::to_string(force_cast<int>(u));
     Utility::Print(msg.c_str());
+}
 
+TEST(UnitTestCore, TMathTest)
+{
+    Sakura::Math::Vector3f vec3A(1, 2, 3);
+    Sakura::Math::Vector3f vec3B(1, 0, 0);
+    Sakura::Math::Vector3f vec3C(0, 2, 0);
+    auto var = vec3A.dot(vec3A);
+    // 1 + 4 + 9 = 14
+    std::cout << "Start VectorMath UnitTest: " << std::endl;
+    std::cout.setf(std::ios::boolalpha);
+    std::cout << "(1, 2, 3) ^ 2: " << var << 
+        " Correct: " << (var == 14) << std::endl;
+    auto cross = vec3B.cross(vec3C);
+    std::cout << "(1, 0, 0) cross (0, 2, 0): x: " << cross[0] 
+        << " y: " << cross[1]
+        << " z: " << cross[2];
+}
+
+TEST(UnitTestCore, TContainerTest)
+{
     std::map<std::string, int, std::less<>> testM;
     std::string key = "5";
     testM[key] = 12;
@@ -66,21 +86,8 @@ TEST(UnitTestCore, TCoreMinimal)
     magicMap[b] = res;
     std::tuple<size_t, float> tup{0, 5.f};
     std::cout << std::endl << magicMap[tup];
-}
 
-TEST(UnitTestCore, TMathTest)
-{
-    Sakura::Math::Vector3f vec3A(1, 2, 3);
-    Sakura::Math::Vector3f vec3B(1, 0, 0);
-    Sakura::Math::Vector3f vec3C(0, 2, 0);
-    auto var = vec3A.dot(vec3A);
-    // 1 + 4 + 9 = 14
-    std::cout << "Start VectorMath UnitTest: " << std::endl;
-    std::cout.setf(std::ios::boolalpha);
-    std::cout << "(1, 2, 3) ^ 2: " << var << 
-        " Correct: " << (var == 14) << std::endl;
-    auto cross = vec3B.cross(vec3C);
-    std::cout << "(1, 0, 0) cross (0, 2, 0): x: " << cross[0] 
-        << " y: " << cross[1]
-        << " z: " << cross[2];
+    float valf = 15.f;
+    Sakura::SPmrVector<float> pmrVec;
+    pmrVec.push_back(valf);
 }
