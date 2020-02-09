@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 16:52:45
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 00:04:19
+ * @LastEditTime : 2020-02-10 01:13:24
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -33,21 +33,24 @@ TEST(UnitTestCoreUtils, PathUtil)
     std::cout << std::endl << path << std::endl;
     // clean test
     Sakura::sstring fixpath = "home/env/../home";
-    Sakura::sstring_view view = Sakura::sstring_view(fixpath);
+    Sakura::sstring_view fixpathview = "home/env/../home";
 
+    auto joined = Sakura::path::join("/Joined", fixpath, fixpathview);
+    std::cout << std::endl << Sakura::path::clean(joined) << std::endl;
 
-    
     double curr = Sakura::now::ms();
     for(auto i = 0u; i < 10000000; i++)
         Sakura::path::clean(fixpath);
     double end1kw = Sakura::now::ms();
     
+    Sakura::sstring_view fixCast 
+        = Sakura::String::CastStringTo<Sakura::sstring_view>(fixpath);
+    std::cout << fixpath;
     double total1 = end1kw - curr;
-    //std::cout << pmrPath.as<std::string>();
     curr = Sakura::now::ms();
     for(auto i = 0u; i < 10000000; i++)
     {
-        
+        Sakura::path::clean(fixCast);
     }
     end1kw = Sakura::now::ms();
 
