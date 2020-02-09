@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 00:13:54
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-08 17:41:45
+ * @LastEditTime : 2020-02-09 10:59:00
  */
 #pragma once
 #include <string>
@@ -73,6 +73,18 @@
 #define MIN_INT64  ((int64) ~MAX_INT64)
 #endif
 
+
+namespace Sakura
+{
+    enum class ETargetPlatForm : std::uint32_t
+    {
+        WIN32,
+        LINUX,
+        OSX,
+        COUNT
+    };
+}
+
 /**
  * @description: put this into a class-body to 
  * delete copy and assign constructors.
@@ -88,7 +100,17 @@
  * @return: {To}Casted Val
  */
 template<typename To, typename From>
-sinline To force_cast(From f) {
+sinline To force_cast(From f) 
+{
     return (To)f;
 }
 
+#if defined(DEBUG) || defined(_DEBUG)
+#else
+    #ifdef SAKURA_DEBUG_EDITOR
+    #undef SAKURA_DEBUG_EDITOR
+    #endif
+    #ifdef SAKURA_DEBUG_GAME
+    #undef SAKURA_DEBUG_GAME
+    #endif
+#endif

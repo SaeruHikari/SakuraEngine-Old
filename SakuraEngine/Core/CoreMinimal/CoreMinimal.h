@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 09:36:54
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-08 22:50:41
+ * @LastEditTime : 2020-02-09 10:02:44
  */
 #pragma once
 // Concepts
@@ -25,14 +25,9 @@
 #include "SDebug.h"
 #endif
 
-#ifndef SAKURA_TARGET_PLATFORM
-//#define SAKURA_TARGET_PLATFORM_WIN32 1
-#define SAKURA_TARGET_PLATFORM
-#endif
-
 #ifdef SAKURA_TARGET_PLATFORM_WIN32
 #include "SWinDefination.h"
-#elif defined(SAKURA_TARGET_PLATFFORM_MAC)
+#elif defined(SAKURA_TARGET_PLATFFORM_OSX)
 #include "SMacDefination.h"
 #elif defined(SAKURA_TARGET_PLATFORM_LINUX)
 #include "SLinuxDefination.h"

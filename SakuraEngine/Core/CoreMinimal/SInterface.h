@@ -4,16 +4,15 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 09:37:28
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 17:46:21
+ * @LastEditTime : 2020-02-09 10:29:32
  */
 #pragma once
 
-#ifndef SInterface
-#define SInterface struct
+#ifndef Interface
+#define Interface struct
 #endif
-
-#ifndef SImplements
-#define SImplements public
+#ifndef Implements
+#define Implements public
 #endif
 
 namespace Sakura
@@ -26,4 +25,5 @@ namespace Sakura
     //    NonCopyble(const NonCopyble& rhs) = delete;
     //   NonCopyble& operator=(const NonCopyble& rhs) = delete;
     //};
+
 }
