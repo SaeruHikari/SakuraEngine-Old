@@ -5,11 +5,12 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 10:43:36
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 11:01:26
+ * @LastEditTime : 2020-02-10 01:40:27
  */
 #pragma once
 #include "Core/CoreMinimal/CoreMinimal.h"
-#include <string>
+#include "Core/Containers/SString.h"
+#include <memory>
 
 namespace Sakura
 {
@@ -17,24 +18,43 @@ namespace Sakura
     {
         float width;
         float height;
-        std::string title = "SakuraEngine Window";
+        Sakura::spmr_wstring title = L"SakuraEngine Window";
     };
 
     Interface SWindow
     {
-    public:
-        template<typename T>
-        static T constexpr GetWindow(SWindow wind)
-        {
-            return force_cast<T>(wind.ptr);
-        }
+        // Operate on window entity with EXTERN VAR
+        // with different types on different platforms.
+        // Like this:
+        // extern hwnd win32Window;
+        // ....
 
-        template<typename T>
-        T constexpr GetWindow()
-        {
-            return force_cast<T>(ptr);
-        }
+        // Interfaces
+        
+        /**
+         * @description: Force Get Window 
+         * @param void 
+         * @return: void* wind ptr
+         * @author: SaeruHikari
+         */
+        virtual void* ForceGetWindow(void) = 0;
+        
+        virtual void OnResize(float width, float height) = 0;
+
+        virtual void OnDestroy(void) = 0;
+
+        virtual int OnCreate(void) = 0;
+
+        // properties get;set;
+
+        virtual void SetTile(const Sakura::spmr_wstring& str) { desc.title = str;}
+        virtual void SetHeight(float height) { desc.height = height;}
+        virtual void SetWidth(float width) { desc.width = width;}
+
+        sinline Sakura::spmr_wstring GetTitle(void) {return desc.title;}
+        sinline float GetHeight(void){return desc.height;}
+        sinline float GetWidth(void) {return desc.width;}
     private:
-        void* ptr = nullptr;
+        WindowDesc desc;
     };
 }

@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 10:27:08
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 11:11:49
+ * @LastEditTime : 2020-02-10 01:35:39
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -18,6 +18,6 @@ namespace Sakura
         virtual bool Initialize(void) = 0;
         virtual int Run(void) = 0;
         virtual bool Destroy(void) = 0;
-        virtual void CreateWindow(const WindowDesc& desc) = 0;
+        virtual std::unique_ptr<SWindow> CreateWindow(const WindowDesc& desc) = 0;
     };
 }
