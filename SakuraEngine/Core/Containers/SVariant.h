@@ -5,8 +5,9 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 14:21:56
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-08 19:02:42
+ * @LastEditTime : 2020-02-09 23:55:35
  */
+#pragma once
 #include "Core/CoreMinimal/SKeyWords.h"
 #include <variant>
 
@@ -20,7 +21,7 @@ namespace Sakura
     };
 
     template<class T, class... Args>
-    sinline void convert(const std::variant<Args...>& var, T& res) 
+    sinline void convert(const std::variant<Args...>& var, T& res) snoexcpet
     {
         res = visit(([](const auto& v) {
             return T(v);
@@ -28,7 +29,7 @@ namespace Sakura
     }
 
     template<class T, class...Args>
-    sinline auto convert(const std::variant<Args...>& var)
+    sinline auto convert(const std::variant<Args...>& var) snoexcpet
     {
         return visit(([](const auto& v) {
             return T(v);

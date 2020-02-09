@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 20:03:51
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 20:45:49
+ * @LastEditTime : 2020-02-09 23:56:14
  */
 #pragma once
 #include "Core/Containers/SString.h"
@@ -16,11 +16,22 @@ namespace Sakura::path
 {
     /**
      * @description: Return the shortest path name quivalent to path
+     * @param {sstring_view} s
+     * @return: 
+     * @author: SaeruHikari
+     */    
+    spmr_string clean(sstring_view s);
+
+    /**
+     * @description: Return the shortest path name quivalent to path
      * @param {const spmr_string&} s
      * @return: 
      * @author: SaeruHikari
      */    
-    spmr_string clean(const spmr_string& s);
+    sinline spmr_string clean(const spmr_string& s)
+    {
+        return clean(sstring_view(s));
+    };   
 
     /**
      * @description: Return the shortest path name quivalent to path
@@ -28,22 +39,16 @@ namespace Sakura::path
      * @return: 
      * @author: SaeruHikari
      */    
-    spmr_string clean(const sstring& s);
-    
-    /**
-     * @description: Return the shortest path name quivalent to path
-     * @param {sstring_view} s
-     * @return: 
-     * @author: SaeruHikari
-     */    
-    spmr_string clean(sstring_view s);   
-
-    template<typename T, typename... Ts, 
-    typename std::enable_if<
-        std::is_trivially_constructible<std::string_view, Ts...>::value
-    >::type * = nullptr>
-    T Sstr(const char* data)
+    sinline spmr_string clean(const sstring& s)
     {
-        return T(data);
+        return clean(sstring_view(s));
     }
+
+    sinline SAutoString clean(const SAutoString& s)
+    {
+        std::string_view view = std::move(s.as<std::string_view>());
+        SAutoString ss = clean(std::move(view)); 
+        return std::move(ss);
+    }
+
 }

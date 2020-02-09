@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 20:06:42
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 20:33:31
+ * @LastEditTime : 2020-02-09 22:14:36
  */
 #include "../path.h"
 
@@ -60,13 +60,4 @@ namespace Sakura::path
         return r.substr(0, p);
     }    
 
-    spmr_string clean(const spmr_string& s)
-    {
-        return clean(sstring_view(s));
-    }
-
-    spmr_string clean(const sstring& s)
-    {
-        return clean(sstring_view(s));
-    }
 }

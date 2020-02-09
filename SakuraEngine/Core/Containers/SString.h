@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 17:21:30
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 16:45:38
+ * @LastEditTime : 2020-02-09 23:56:29
  */
 // Prototype from Star Engine :
 // https://github.com/star-e/StarEngine/blob/master/Star/SMap.h
@@ -13,6 +13,7 @@
 #pragma once
 #include "../CoreMinimal/SKeyWords.h"
 #include <string>
+#include "SVariant.h"
 #include <memory_resource>
 
 namespace Sakura
@@ -36,4 +37,52 @@ namespace Sakura
         std::pmr::string wtf;
         return std::string_view(str);
     }
+
+    /**
+     * @description: SAutoString -> string, pmr::string, string_view
+     * @author: SaeruHikari
+     */
+    struct SAutoString 
+    {
+    public:
+        sinline SAutoString(sstring str)
+        {
+            val = std::forward<sstring>(str);
+        }    
+        sinline SAutoString(spmr_string pmrStr)
+        {
+            val = std::forward<spmr_string>(pmrStr);
+        }
+        sinline SAutoString(const char* cstr)
+        {
+            val = std::forward<spmr_string>(spmr_string(cstr));
+        }
+    public:
+        template<typename T, 
+        typename std::enable_if<
+            std::is_constructible<std::string_view, T>::value
+        >::type * = nullptr>
+        sinline constexpr T as() const
+        {
+            return Sakura::convert<T>(val);
+        }
+    public:
+        sinline SAutoString& operator=(sstring str)
+        {
+            this->val = std::forward<sstring>(str);
+            return *this;
+        }
+        sinline SAutoString& operator=(spmr_string pmrStr)
+        {
+            this->val = std::forward<spmr_string>(pmrStr);
+            return *this;
+        }
+        sinline SAutoString& operator=(const char* cstr)
+        {
+            this->val = std::forward<spmr_string>(spmr_string(cstr));
+            return *this;
+        }
+    private:
+        std::variant<sstring, spmr_string, sstring_view> val; 
+    };
 }
