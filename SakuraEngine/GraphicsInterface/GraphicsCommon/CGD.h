@@ -5,15 +5,30 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 12:58:52
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-06 01:42:43
+ * @LastEditTime : 2020-02-10 20:49:30
  */
 #pragma once
+#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/SDefination.h"
 #include <memory>
 #include <stdint.h>
 
 namespace Sakura::Graphics
 {
-    struct CGD
+    Interface CGD;
+}
+
+namespace Sakura
+{
+    namespace ____
+    {
+        extern Sakura::Graphics::CGD* eCGD;
+    }
+}
+
+namespace Sakura::Graphics
+{
+    Interface CGD
     {
         enum class TargetGraphicsInterface : std::uint32_t
         {
@@ -24,6 +39,9 @@ namespace Sakura::Graphics
         static void Initialize(TargetGraphicsInterface targetGI);
         virtual void Render(void) = 0;
         virtual void Destroy(void) = 0;
+        sinline const static CGD* GetCGD(void)
+        {
+            return Sakura::____::eCGD;
+        }
     };
-    extern std::unique_ptr<CGD> g_CGD;
 }

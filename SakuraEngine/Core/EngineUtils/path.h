@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 20:03:51
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 13:43:04
+ * @LastEditTime : 2020-02-10 13:50:09
  */
 #pragma once
 #include "Core/Containers/SString.h"
@@ -25,7 +25,6 @@ namespace Sakura::path
             return _T(1, '.');
         _T r(s.data(), s.size());
         size_t n = s.size();
-
         bool rooted = s[0] == '/';
         size_t p = rooted ? 1 : 0;
         size_t dotdot = rooted ? 1 : 0;
@@ -55,14 +54,12 @@ namespace Sakura::path
                 if ((rooted && p != 1) || (!rooted && p != 0)) {
                     r[p++] = '/';
                 }
-
                 // copy element until the next /
                 for (; i < n && s[i] != '/'; i++) {
                     r[p++] = s[i];
                 }
             }
         }
-
         if (p == 0) 
             return _T(1, '.');
         return r.substr(0, p);

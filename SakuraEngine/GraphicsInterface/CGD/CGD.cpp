@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 13:24:35
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 16:33:42
+ * @LastEditTime : 2020-02-10 20:56:06
  */
 #include "CGD.h"
 #include <iostream>
@@ -14,8 +14,7 @@
 
 using namespace Sakura::Graphics;
 
-std::unique_ptr<CGD> Sakura::Graphics::g_CGD;
-
+Sakura::Graphics::CGD* Sakura::____::eCGD;
 void CGD::Initialize(TargetGraphicsInterface targetGI)
 {
     //assert()

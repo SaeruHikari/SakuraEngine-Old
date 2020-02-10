@@ -5,17 +5,15 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 11:07:17
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 11:10:45
+ * @LastEditTime : 2020-02-10 19:39:42
  */
 #include "Applications/Linux/LinuxEngine.h"
 #include "gtest/gtest.h"
 
 TEST(UnitTestApplication, LinuxApplication)
 {
-    auto engine = new Sakura::LinuxEngine();
-    engine->Initialize();
-    Sakura::WindowDesc desc;
-    engine->CreateWindow(desc);
-    engine->Run();
-    engine->Destroy();
+    Sakura::EngineDesc desc;
+    Sakura::SEngine::CreateEngine(desc);
+    Sakura::WindowDesc windDesc;
+    Sakura::SEngine::CreateWindow(windDesc);
 }

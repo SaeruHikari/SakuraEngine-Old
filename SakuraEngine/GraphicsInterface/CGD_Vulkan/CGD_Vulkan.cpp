@@ -5,21 +5,16 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 13:16:38
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 14:04:40
+ * @LastEditTime : 2020-02-10 20:55:59
  */
 #include "CGD_Vulkan.h"
 #include <iostream>
 
 using namespace Sakura::Graphics::Vk;
 
-namespace Sakura::Graphics
-{
-    extern std::unique_ptr<CGD> g_CGD;
-}
-
 void CGD_Vk::Initialize(void)
 {
-    g_CGD = std::move(std::make_unique<CGD_Vk>());
+    Sakura::____::eCGD = new CGD_Vk();    
 }
 
 void CGD_Vk::Render(void)
@@ -30,5 +25,5 @@ void CGD_Vk::Render(void)
 void CGD_Vk::Destroy(void)
 {
     std::cout << "CGD_Vk: Destroy" << std::endl;
-    g_CGD.reset();
+    delete Sakura::____::eCGD;
 }
