@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 09:36:54
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 10:02:44
+ * @LastEditTime : 2020-02-10 21:29:13
  */
 #pragma once
 // Concepts
@@ -21,9 +21,8 @@
 #include "SCommand.h"
 #endif
 
-#if defined(DEBUG) || defined(_DEBUG)
-#include "SDebug.h"
-#endif
+#include "SAssert.h"
+
 
 #ifdef SAKURA_TARGET_PLATFORM_WIN32
 #include "SWinDefination.h"

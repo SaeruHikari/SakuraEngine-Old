@@ -5,13 +5,12 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 12:58:52
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 20:49:30
+ * @LastEditTime : 2020-02-10 21:50:12
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
-#include <memory>
-#include <stdint.h>
+#include "CommandObjects/CommandContext.h"
 
 namespace Sakura::Graphics
 {
@@ -41,7 +40,15 @@ namespace Sakura::Graphics
         virtual void Destroy(void) = 0;
         sinline const static CGD* GetCGD(void)
         {
+            ASSERT_RUNTIME(Sakura::____::eCGD != nullptr);
             return Sakura::____::eCGD;
         }
+        sinline const static ContextManager* GetContextManager(void)
+        {
+            ASSERT_RUNTIME(GetCGD()->m_ContextManager.get() != nullptr);
+            return GetCGD()->m_ContextManager.get();
+        }
+    private:
+        std::unique_ptr<ContextManager> m_ContextManager;
     };
 }
