@@ -1,1 +1,1 @@
-add_library(CGD_Direct3D12 CGD_Direct3D12.cpp)
+add_library(CGD_Direct3D12 CGD_Direct3D12.cpp CommandContext_Dx12.cpp)

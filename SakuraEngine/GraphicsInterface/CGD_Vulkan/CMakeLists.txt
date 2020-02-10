@@ -8,6 +8,7 @@ endif(SpecificTimerImpl)
 
 add_library(CGD_Vulkan 
     CGD_Vulkan.cpp  
+    CommandContext_Vk.cpp 
     ../CGD/CommandContext.cpp  
     ../CGD/Profiling.cpp
     ${SpecificTimerImpl}

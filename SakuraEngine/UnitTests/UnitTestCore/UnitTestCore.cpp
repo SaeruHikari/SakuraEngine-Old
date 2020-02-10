@@ -4,11 +4,12 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 18:20:07
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 22:02:20
+ * @LastEditTime : 2020-02-11 01:22:31
  */
 #include <iostream>
 #include "gtest/gtest.h"
 #include "Core/Core.h"
+#include "Core/EngineUtils/ConsoleDesk.h"
 
 struct A
 {
@@ -46,7 +47,7 @@ TEST(UnitTestCore, TCoreMinimal)
     size_t i = 120;
     Sakura::atom u = i;
     auto msg = OutString + std::to_string(force_cast<int>(u));
-    Utility::Print(msg.c_str());
+    Print(msg.c_str());
 }
 
 TEST(UnitTestCore, TMathTest)

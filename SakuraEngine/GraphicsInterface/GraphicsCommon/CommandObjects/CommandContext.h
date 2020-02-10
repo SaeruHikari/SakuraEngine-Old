@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 23:41:55
+ * @LastEditTime : 2020-02-11 01:43:21
  */
 #pragma once
 #include <mutex>
@@ -45,10 +45,11 @@ namespace Sakura::Graphics
          * @return: Allocated Command Context
          * @author: SaeruHikari
          */
-        CommandContext* AllocateContext(ECommandType type, bool bTransiant = true);
+        virtual CommandContext* 
+            AllocateContext(ECommandType type, bool bTransiant = true) = 0;
         void FreeContext(CommandContext* context);
         void DestoryAllContexts();
-    private:
+    protected:
         std::vector<std::unique_ptr<CommandContext>> sm_ContextPools[4];
         std::queue<CommandContext*> sm_AvailableContexts[ECommandType::CommandContext_Count];
         std::mutex sm_ContextAllocationMutex;
@@ -68,7 +69,7 @@ namespace Sakura::Graphics
         {
             return this->m_Type;
         }
-    private:
+    protected:
         spmr_string m_ID;
         ECommandType m_Type = ECommandType::CommandContext_Graphics;    
     };

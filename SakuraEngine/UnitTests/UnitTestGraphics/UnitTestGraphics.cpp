@@ -4,13 +4,14 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 22:07:52
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-11 01:13:14
+ * @LastEditTime : 2020-02-11 01:48:23
  */
 #include <iostream>
 #include "gtest/gtest.h"
 #include "GraphicsInterface/GraphicsCommon/Format/PixelFormat.h"
 #include "GraphicsInterface/CGD_Vulkan/Vulkan_FormatTransfer.h"
 #include "GraphicsInterface/GraphicsCommon/CGD.h"
+#include "GraphicsInterface/CGD_Vulkan/CommandContext_Vk.h"
 
 TEST(UnitTestGraphics, FirstPrint)
 {
@@ -37,4 +38,13 @@ TEST(UnitTestGraphics, CGDInterface)
     );
     Sakura::____::eCGD->Render();
     Sakura::____::eCGD->Destroy();
+}
+
+TEST(UnitTestGraphics, CommandObjects)
+{
+    Sakura::Graphics::ContextManager* mng
+        = new Sakura::Graphics::Vk::ContextManager_Vk();
+    mng->AllocateContext(
+        Sakura::Graphics::ECommandType::CommandContext_Graphics,
+        true);
 }

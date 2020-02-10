@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 09:36:54
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 21:29:13
+ * @LastEditTime : 2020-02-11 01:21:11
  */
 #pragma once
 // Concepts
@@ -15,14 +15,8 @@
 #include "SUUID.h"
 // Interfaces
 #include "SInterface.h"
-
-#define DEBUG_GAME 1
-#ifdef DEBUG_GAME
-#include "SCommand.h"
-#endif
-
+// Assert
 #include "SAssert.h"
-
 
 #ifdef SAKURA_TARGET_PLATFORM_WIN32
 #include "SWinDefination.h"

@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 00:12:37
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-11 00:28:02
+ * @LastEditTime : 2020-02-11 01:21:46
  */
 #pragma once
 #ifdef SAKURA_CONSOLE_INOUT
@@ -26,6 +26,10 @@
 #ifndef wsin
 #define wsin std::wcin
 #endif
+
+inline void Print( const char* msg ) { printf("%s", msg); }
+inline void Print( const wchar_t* msg ) { wprintf(L"%ws", msg); }
+
 #else
 // Console inout closed.
 
