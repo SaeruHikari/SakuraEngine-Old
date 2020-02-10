@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 22:18:42
+ * @LastEditTime : 2020-02-10 23:41:55
  */
 #pragma once
 #include <mutex>
@@ -46,8 +46,8 @@ namespace Sakura::Graphics
          * @author: SaeruHikari
          */
         CommandContext* AllocateContext(ECommandType type, bool bTransiant = true);
-        sinline void FreeContext(CommandContext* context);
-        sinline void DestoryAllContexts();
+        void FreeContext(CommandContext* context);
+        void DestoryAllContexts();
     private:
         std::vector<std::unique_ptr<CommandContext>> sm_ContextPools[4];
         std::queue<CommandContext*> sm_AvailableContexts[ECommandType::CommandContext_Count];
@@ -63,11 +63,8 @@ namespace Sakura::Graphics
          * @return: 
          * @author: SaeruHikari
          */
-        sinline static CommandContext& Begin(const spmr_string ID = "ID")
-        {
-            
-        }
-        sinline auto GetCommandContextType(void)
+        static CommandContext& Begin(const spmr_string& ID = "");
+        sinline ECommandType GetCommandContextType(void)
         {
             return this->m_Type;
         }
@@ -76,16 +73,5 @@ namespace Sakura::Graphics
         ECommandType m_Type = ECommandType::CommandContext_Graphics;    
     };
 
-    sinline void ContextManager::FreeContext(CommandContext* context)
-    {
-        ASSERT_RUNTIME(context != nullptr);
-        std::lock_guard<std::mutex> LockGurad(sm_ContextAllocationMutex);
-        sm_AvailableContexts[context->m_Type].push(context);
-    }
 
-    sinline void ContextManager::DestoryAllContexts(void)
-    {
-        for(auto i = 0u; i < 4; i++)
-            sm_ContextPools[i].clear();
-    }
 }
