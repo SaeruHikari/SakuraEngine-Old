@@ -5,10 +5,10 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 13:16:38
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 20:55:59
+ * @LastEditTime : 2020-02-11 00:19:31
  */
 #include "CGD_Vulkan.h"
-#include <iostream>
+#include "Core/EngineUtils/ConsoleDesk.h"
 
 using namespace Sakura::Graphics::Vk;
 
@@ -19,11 +19,11 @@ void CGD_Vk::Initialize(void)
 
 void CGD_Vk::Render(void)
 {
-    std::cout << "CGD_Vk: Render" << std::endl;
+    sout << "CGD_Vk: Render" << std::endl;
 }
 
 void CGD_Vk::Destroy(void)
 {
-    std::cout << "CGD_Vk: Destroy" << std::endl;
+    sout << "CGD_Vk: Destroy" << std::endl;
     delete Sakura::____::eCGD;
 }

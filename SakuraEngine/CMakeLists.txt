@@ -3,8 +3,10 @@ cmake_minimum_required(VERSION 3.11)
 project(Sakura VERSION 0.1.0)
 set(USE_CONAN true)
 
+add_definitions(-D "SAKURA_CONSOLE_INOUT")
 add_definitions(-D "SAKURA_DEBUG_EDITOR")
 add_definitions(-D "SAKURA_DEBUG_GAME")
+add_definitions(-D "SAKURA_GRAPHICS_PROFILING")
 
 if (NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE "Debug")
