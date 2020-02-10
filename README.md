@@ -2,18 +2,21 @@
 A Cross-Platform Mordern Game Engine.
 
 >TODO:
+  * Package Management
+    * Conan √
   * Construct
     * CMake √
   * UnitTest
     * GTest √
   * Core
-    * Platform Defination 🚧
-    * Math 🚧
+    * Platform Defination √(Win32/Linux)
+    * EngineUtils(EnvQuery√, Timer√, T2StringCaster√, Thread...)
+    * Math √(Eigen3)
     * Efficient Streaming
-    * Quik String 🚧
+    * Quik String √(pmr::string and caster)
   * MemoryManagement
     * Allocator 🚧
-    * STL Container Wrappers
+    * STL Container Wrappers √
   * Script
     * Mono?
     * Auto-Binding / Binding Machine
