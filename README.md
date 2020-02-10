@@ -10,7 +10,7 @@ A Cross-Platform Mordern Game Engine.
     * GTest √
   * Core
     * Platform Defination √(Win32/Linux)
-    * EngineUtils(EnvQuery√, Timer√, T2StringCaster√, Thread...)
+    * EngineUtils(EnvQuery√, Timer√, T2StringCaster√, Path Operation√, Thread...)
     * Math √(Eigen3)
     * Efficient Streaming
     * Quik String √(pmr::string and caster)
