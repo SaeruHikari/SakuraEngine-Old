@@ -5,7 +5,7 @@ add_subdirectory(Common)
 file(GLOB_RECURSE COMMON_IMPL_FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/Common/*.cc 
     ${CMAKE_CURRENT_SOURCE_DIR}/Common/*.cpp
-    )
+)
 
 if(UNIX)
 file(GLOB_RECURSE IMPL_FILES ${CMAKE_CURRENT_SOURCE_DIR}/Unix/*.cc)

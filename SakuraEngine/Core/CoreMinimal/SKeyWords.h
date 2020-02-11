@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 14:17:20
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-08 18:00:46
+ * @LastEditTime : 2020-02-11 13:26:46
  */
 #pragma once
 #include <string>
@@ -43,6 +43,5 @@ namespace Sakura
         #define snoexcpt
     #endif
 #endif
-
 
 }
