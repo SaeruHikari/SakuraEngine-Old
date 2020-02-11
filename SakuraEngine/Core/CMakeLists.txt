@@ -4,5 +4,5 @@ add_subdirectory(Containers)
 add_subdirectory(EngineUtils)
 
 
-add_library(Core Containers/Containers.cpp)
+add_library(Core Core.cpp)
 target_link_libraries(Core EngineUtils)
