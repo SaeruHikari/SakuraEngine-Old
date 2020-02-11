@@ -4,5 +4,7 @@
 
 /SakuraEngine/.vscode
 /SakuraEngine/build
-/SakuraEngine/build_linux
 /.vs
+/build
+/Extern/include
+/Extern/googletest

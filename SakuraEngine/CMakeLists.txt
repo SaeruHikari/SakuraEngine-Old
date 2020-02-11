@@ -107,7 +107,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}
 )
 include_directories(
-    Extern/include
+    ../Extern/include
 )
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
@@ -115,7 +115,6 @@ set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 add_subdirectory(Core)
 add_subdirectory(Modules)
 add_subdirectory(UnitTests)
-add_subdirectory(Extern)
 add_subdirectory(Framework)
 add_subdirectory(Applications)
 

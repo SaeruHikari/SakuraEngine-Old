@@ -1,1 +1,4 @@
- 
+add_subdirectory(SakuraEngine)
+add_subdirectory(ModuleDriver)
+add_subdirectory(DependencyGraph)
+add_subdirectory(Extern)
