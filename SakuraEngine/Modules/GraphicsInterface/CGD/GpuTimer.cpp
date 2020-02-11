@@ -5,10 +5,10 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 00:51:00
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-11 01:10:19
+ * @LastEditTime : 2020-02-11 10:20:17
  */
-#include "GraphicsInterface/GraphicsCommon/GpuTimer.h"
-#include "GraphicsInterface/GraphicsCommon/CommandObjects/CommandContext.h"
+#include "../GraphicsCommon/GpuTimer.h"
+#include "../GraphicsCommon/CommandObjects/CommandContext.h"
 
 using namespace Sakura;
 

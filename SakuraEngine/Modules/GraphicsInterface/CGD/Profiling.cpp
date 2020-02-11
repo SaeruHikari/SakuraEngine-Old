@@ -5,10 +5,10 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 00:02:45
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-11 00:35:20
+ * @LastEditTime : 2020-02-11 10:20:25
  */
-#include "GraphicsInterface/GraphicsCommon/CommandObjects/Profiling.h"
-#include "GraphicsInterface/GraphicsCommon/CommandObjects/CommandContext.h"
+#include "../GraphicsCommon/CommandObjects/Profiling.h"
+#include "../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "Core/EngineUtils/ConsoleDesk.h"
 
 namespace Sakura::Graphics

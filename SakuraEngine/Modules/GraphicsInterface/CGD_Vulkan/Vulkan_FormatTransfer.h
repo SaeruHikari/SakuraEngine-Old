@@ -5,10 +5,10 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 12:36:02
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 12:42:42
+ * @LastEditTime : 2020-02-11 10:21:22
  */
 #pragma once
-#include "GraphicsInterface/GraphicsCommon/Format/PixelFormat.h"
+#include "../GraphicsCommon/Format/PixelFormat.h"
 
 namespace Sakura
 {

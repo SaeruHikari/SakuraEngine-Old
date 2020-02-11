@@ -5,11 +5,11 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-10 23:35:55
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-11 00:02:55
+ * @LastEditTime : 2020-02-11 10:20:01
  */
-#include "GraphicsInterface/GraphicsCommon/CommandObjects/CommandContext.h"
-#include "GraphicsInterface/GraphicsCommon/CGD.h"
-#include "GraphicsInterface/GraphicsCommon/CommandObjects/Profiling.h"
+#include "../GraphicsCommon/CommandObjects/CommandContext.h"
+#include "../GraphicsCommon/CGD.h"
+#include "../GraphicsCommon/CommandObjects/Profiling.h"
 
 namespace Sakura::Graphics
 {

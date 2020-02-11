@@ -5,10 +5,10 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 13:16:31
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-02 16:25:03
+ * @LastEditTime : 2020-02-11 10:18:58
  */
 #pragma once
-#include "GraphicsInterface/GraphicsCommon/CGD.h"
+#include "../GraphicsCommon/CGD.h"
 #include <iostream>
 namespace Sakura::Graphics::Vk
 {

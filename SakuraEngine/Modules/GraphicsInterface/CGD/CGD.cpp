@@ -5,12 +5,12 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 13:24:35
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 23:51:16
+ * @LastEditTime : 2020-02-11 10:21:08
  */
-#include "CGD.h"
+#include "../GraphicsCommon/CGD.h"
 #include <iostream>
-#include "GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
-#include "GraphicsInterface/CGD_Direct3D12/CGD_Direct3D12.h"
+#include "../CGD_Vulkan/CGD_Vulkan.h"
+#include "../CGD_Direct3D12/CGD_Direct3D12.h"
 
 
 using namespace Sakura::Graphics;

@@ -113,7 +113,7 @@ set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 
 add_subdirectory(Core)
-add_subdirectory(GraphicsInterface)
+add_subdirectory(Modules)
 add_subdirectory(UnitTests)
 add_subdirectory(Extern)
 add_subdirectory(Framework)
