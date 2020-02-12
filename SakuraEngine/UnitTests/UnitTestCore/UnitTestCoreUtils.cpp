@@ -19,6 +19,10 @@ TEST(UnitTestCoreUtils, TTimeUtil)
     char arr[15];
     Sakura::int32 i32val = 12; 
     Sakura::i32toa(i32val, arr);
+
+    sstream strea;
+    strea << "\nSStream Test\n";
+    std::cout << strea.c_str();
 }   
 
 TEST(UnitTestCoreUtils, PathUtil)
@@ -39,4 +43,20 @@ TEST(UnitTestCoreUtils, PathUtil)
     std::cout << std::endl << "sstring: " << typeid(Sakura::path::split(fixpath).first).name();
     std::cout << std::endl << "sstring_view: " << typeid(Sakura::path::split(fixpathview).first).name();
     std::cout << std::endl << "spmr_string: " << typeid(Sakura::path::split(path).first).name();
+}
+
+TEST(UnitTestCoreUtils, FileSystem)
+{
+    std::cout << fs::exists("D:/Coding") << fs::exists("D:/Coding/testtxt.txt") << std::endl;
+    fs::fstream fst(8192);
+    sstream strea;
+    strea << "\nSStream Test\n";
+    strea << fs::fsize("D:/Coding/testtxt.txt");
+
+    std::cout << strea.c_str();
+
+    fs::file testtxt;
+    testtxt.open("D:/Coding/testtxt.txt", 'r');
+    auto str = testtxt.read(fs::fsize("D:/Coding/testtxt.txt"));
+    std::cout << str;
 }

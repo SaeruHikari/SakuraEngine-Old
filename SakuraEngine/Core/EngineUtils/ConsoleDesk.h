@@ -8,9 +8,13 @@
  * @LastEditTime : 2020-02-11 01:21:46
  */
 #pragma once
-#ifdef SAKURA_CONSOLE_INOUT
+#include <stdio.h>
 #include <iostream>
 
+inline void Print(const char* msg) { printf("%s", msg); }
+inline void Print(const wchar_t* msg) { wprintf(L"%ws", msg); }
+
+#ifdef SAKURA_CONSOLE_INOUT
 #ifndef sout 
 #define sout std::cout
 #endif
@@ -26,9 +30,6 @@
 #ifndef wsin
 #define wsin std::wcin
 #endif
-
-inline void Print( const char* msg ) { printf("%s", msg); }
-inline void Print( const wchar_t* msg ) { wprintf(L"%ws", msg); }
 
 #else
 // Console inout closed.

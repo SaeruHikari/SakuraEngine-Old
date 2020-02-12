@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.11)
 
+add_definitions(-D "SAKURA_CONSOLE_INOUT")
+add_definitions(-D "SAKURA_DEBUG_EDITOR")
+add_definitions(-D "SAKURA_DEBUG_GAME")
+add_definitions(-D "SAKURA_GRAPHICS_PROFILING")
+
 if(MSVC)     
     foreach(var 
         CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE

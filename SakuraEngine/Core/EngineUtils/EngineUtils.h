@@ -12,3 +12,6 @@
 #include "time.h"
 #include "path.h"
 #include "T2String.h"
+#include "sstream.h"
+#include "ConsoleDesk.h"
+#include "filesystem.h"
