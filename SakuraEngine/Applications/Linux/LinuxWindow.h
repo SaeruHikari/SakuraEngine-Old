@@ -26,7 +26,7 @@ namespace Sakura
         uint8                   isQuit = 0;
     };
     
-    class SLinuxWindow : Implements SWindow
+    class SLinuxWindow : SImplements SWindow
     {
         friend class SLinuxEngine;
     private:

@@ -12,7 +12,7 @@
 
 namespace Sakura
 {
-    Interface SEngine;
+    SInterface SEngine;
 }
 
 namespace Sakura
@@ -25,7 +25,7 @@ namespace Sakura
     {
         
     };
-    Interface SEngine : Implements SApplication
+    SInterface SEngine : SImplements SApplication
     {
         SEngine(const EngineDesc& _desc)
             :desc(_desc){}

@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 00:13:54
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 18:09:26
+ * @LastEditTime : 2020-02-12 12:22:49
  */
 #pragma once
 #include "SKeyWords.h"
@@ -75,10 +75,10 @@ namespace Sakura
 {
     enum class ETargetPlatForm : std::uint32_t
     {
-        WIN32,
-        LINUX,
-        OSX,
-        COUNT
+        E_WIN32,
+        E_LINUX,
+        E_OSX,
+        E_COUNT
     };
 }
 

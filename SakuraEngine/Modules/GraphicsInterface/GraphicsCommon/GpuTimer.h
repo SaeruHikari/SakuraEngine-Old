@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 00:41:20
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-11 01:10:04
+ * @LastEditTime : 2020-02-12 12:31:10
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -13,7 +13,7 @@
 
 namespace Sakura::Graphics
 {
-    Interface CommandContext;
+    SInterface CommandContext;
 }    
 
 namespace Sakura::Graphics::GpuTimeManager

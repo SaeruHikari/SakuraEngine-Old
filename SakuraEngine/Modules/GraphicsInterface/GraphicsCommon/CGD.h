@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 12:58:52
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 23:51:09
+ * @LastEditTime : 2020-02-12 12:30:34
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -14,7 +14,7 @@
 
 namespace Sakura::Graphics
 {
-    Interface CGD;
+    SInterface CGD;
 }
 
 namespace Sakura
@@ -27,8 +27,9 @@ namespace Sakura
 
 namespace Sakura::Graphics
 {
-    Interface CGD
+    SInterface CGD
     {
+        virtual ~CGD() = default;
         enum class TargetGraphicsInterface : std::uint32_t
         {
             CGD_TARGET_DIRECT3D12,

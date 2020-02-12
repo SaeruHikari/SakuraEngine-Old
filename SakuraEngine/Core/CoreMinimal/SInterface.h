@@ -8,11 +8,11 @@
  */
 #pragma once
 
-#ifndef Interface
-#define Interface struct
+#ifndef SInterface
+#define SInterface struct
 #endif
-#ifndef Implements
-#define Implements public
+#ifndef SImplements
+#define SImplements public
 #endif
 
 namespace Sakura

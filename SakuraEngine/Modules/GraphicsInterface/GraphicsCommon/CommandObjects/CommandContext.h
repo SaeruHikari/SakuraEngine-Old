@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-11 01:43:21
+ * @LastEditTime : 2020-02-12 12:30:54
  */
 #pragma once
 #include <mutex>
@@ -19,8 +19,8 @@
 
 namespace Sakura::Graphics
 {
-    Interface CommandContext;
-    Interface ContextManager;
+    SInterface CommandContext;
+    SInterface ContextManager;
 }
 
 namespace Sakura::Graphics
@@ -34,9 +34,10 @@ namespace Sakura::Graphics
         CommandContext_Count = 4
     };
 
-    Interface ContextManager
+    SInterface ContextManager
     {
     public:
+        virtual ~ContextManager() = default;
         ContextManager(void){}
         /**
          * @description: Allocate a command context, Type for d3d12  
@@ -54,9 +55,9 @@ namespace Sakura::Graphics
         std::queue<CommandContext*> sm_AvailableContexts[ECommandType::CommandContext_Count];
         std::mutex sm_ContextAllocationMutex;
     };
-    Interface CommandContext
+    SInterface CommandContext
     {
-        friend Interface ContextManager;
+        friend SInterface ContextManager;
     public:
         /**
          * @description: Get a usable context from the manager 

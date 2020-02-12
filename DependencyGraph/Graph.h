@@ -36,7 +36,7 @@ namespace DAG
         class GraphProperty = boost::no_property,
         class EdgeListS = boost::listS>
     using GraphVertex = 
-    boost::graph_traits<Graph<VertexProperty, GraphProperty, EdgeListS>>::
+    typename boost::graph_traits<Graph<VertexProperty, GraphProperty, EdgeListS>>::
                 vertex_descriptor;
 
     template <class VertexProperty = boost::no_property,
@@ -44,7 +44,7 @@ namespace DAG
         class GraphProperty = boost::no_property,
         class EdgeListS = boost::listS>
     using GraphEdge = 
-    boost::graph_traits<Graph<VertexProperty, GraphProperty, EdgeListS>>::
+    typename boost::graph_traits<Graph<VertexProperty, GraphProperty, EdgeListS>>::
                 edge_descriptor;
 
 
@@ -60,16 +60,16 @@ namespace DAG
         class EdgeProperty = boost::no_property,
         class GraphProperty = boost::no_property,
         class EdgeListS = boost::listS>
-    using MutaGraphVertex =
-    boost::graph_traits<MutaGraph<VertexProperty, GraphProperty, EdgeListS>>::
+    using MutaGraphVertex = 
+    typename boost::graph_traits<MutaGraph<VertexProperty, GraphProperty, EdgeListS>>::
                 vertex_descriptor;
 
     template <class VertexProperty = boost::no_property,
         class EdgeProperty = boost::no_property,
         class GraphProperty = boost::no_property,
         class EdgeListS = boost::listS>
-    using MutaGraphEdge =
-    boost::graph_traits<MutaGraph<VertexProperty, GraphProperty, EdgeListS>>::
+    using MutaGraphEdge = 
+    typename boost::graph_traits<MutaGraph<VertexProperty, GraphProperty, EdgeListS>>::
                 edge_descriptor;
 
     // returns the num of edges in the graph
@@ -115,9 +115,9 @@ namespace DAG
 
     template<typename... Ts,
         typename bidirGraph = boost::adjacency_list<Ts...>,
-        typename bidirVertex = bidirGraph::vertex_descriptor,
+        typename bidirVertex = typename bidirGraph::vertex_descriptor,
         typename IndexMap = 
-        boost::property_map<bidirGraph, boost::vertex_index_t>::type>
+        typename boost::property_map<bidirGraph, boost::vertex_index_t>::type>
     auto vertex_number(bidirVertex vert, bidirGraph g)
     {
         IndexMap index = get(boost::vertex_index, g);
@@ -126,9 +126,9 @@ namespace DAG
 
     template<typename prop_name_t, typename... Ts,
         typename bidirGraph = boost::adjacency_list<Ts...>,
-        typename bidirVertex = bidirGraph::vertex_descriptor,
+        typename bidirVertex = typename bidirGraph::vertex_descriptor,
         typename PropMap = 
-        boost::property_map<bidirGraph, prop_name_t>::type>
+        typename boost::property_map<bidirGraph, prop_name_t>::type>
     auto get_vertex_property(bidirVertex vert, bidirGraph g)
     {
         PropMap prop = get(prop_name_t(), g);
@@ -137,9 +137,9 @@ namespace DAG
     
     template<typename prop_name_t, typename... Ts,
         typename bidirGraph = boost::adjacency_list<Ts...>,
-        typename bidirEdge = bidirGraph::edge_descriptor,
+        typename bidirEdge = typename bidirGraph::edge_descriptor,
         typename PropMap = 
-        boost::property_map<bidirGraph, prop_name_t>::type>
+        typename boost::property_map<bidirGraph, prop_name_t>::type>
     auto get_edge_property(bidirEdge vert, bidirGraph g)
     {
         PropMap prop = get(prop_name_t(), g);

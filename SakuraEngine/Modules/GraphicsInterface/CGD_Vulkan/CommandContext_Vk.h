@@ -12,7 +12,7 @@
 
 namespace Sakura::Graphics::Vk
 {
-    class ContextManager_Vk : Implements ContextManager
+    class ContextManager_Vk : SImplements ContextManager
     {
     public:
         virtual CommandContext* 

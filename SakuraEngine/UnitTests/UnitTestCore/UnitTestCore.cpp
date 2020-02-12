@@ -47,7 +47,7 @@ TEST(UnitTestCore, TCoreMinimal)
     size_t i = 120;
     Sakura::atom u = i;
     auto msg = OutString + std::to_string(force_cast<int>(u));
-    Print(msg.c_str());
+    //Print(msg.c_str());
 }
 
 TEST(UnitTestCore, TMathTest)

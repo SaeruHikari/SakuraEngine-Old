@@ -12,7 +12,7 @@
 
 namespace Sakura
 {
-    class SLinuxEngine : Implements SEngine
+    class SLinuxEngine : SImplements SEngine
     {
         friend class SEngine;
         SLinuxEngine(const EngineDesc& _desc)

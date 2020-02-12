@@ -15,7 +15,7 @@ using namespace Sakura;
 
 namespace Sakura::path
 {
-    template<typename T, typename _T = std::remove_reference<T>::type,
+    template<typename T, typename _T = typename std::remove_reference<T>::type,
         typename std::enable_if<
         std::is_constructible<std::string_view, T>::value 
     >::type * = nullptr>
@@ -96,7 +96,7 @@ namespace Sakura::path
         return ____::__join(str, str2...);
     }    
     
-    template<typename T, typename _T = std::remove_reference<T>::type,
+    template<typename T, typename _T = typename std::remove_reference<T>::type,
     typename std::enable_if<
       std::is_member_function_pointer<decltype(&_T::substr)>::value
     >::type* = nullptr>
@@ -114,7 +114,7 @@ namespace Sakura::path
      * @return: 
      * @author: SaeruHikari
      */
-    template<typename T, typename _T = std::remove_reference<T>::type,
+    template<typename T, typename _T = typename std::remove_reference<T>::type,
             typename std::enable_if<
         std::is_constructible<std::string_view, T>::value 
     >::type * = nullptr>
@@ -124,7 +124,7 @@ namespace Sakura::path
         return std::move(res);
     } 
 
-    template<typename T, typename _T = std::remove_reference<T>::type,
+    template<typename T, typename _T = typename std::remove_reference<T>::type,
         typename std::enable_if<
         std::is_constructible<std::string_view, T>::value 
     >::type * = nullptr>
@@ -148,7 +148,7 @@ namespace Sakura::path
             return c != x.npos ? x.substr(c + 1) : x;
     }
 
-    template<typename T, typename _T = std::remove_reference<T>::type,
+    template<typename T, typename _T = typename std::remove_reference<T>::type,
        typename std::enable_if<
         std::is_constructible<std::string_view, T>::value 
     >::type * = nullptr>

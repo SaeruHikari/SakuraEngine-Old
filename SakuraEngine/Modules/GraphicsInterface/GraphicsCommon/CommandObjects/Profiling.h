@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-10 23:28:31
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-11 00:05:53
+ * @LastEditTime : 2020-02-12 12:31:20
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -13,12 +13,12 @@
 
 namespace Sakura::Graphics
 {
-    Interface CommandContext;
+    SInterface CommandContext;
 }
 
 namespace Sakura::Graphics
 {
-    Interface DebugLayer
+    SInterface DebugLayer
     {
     public:
         virtual void Enable() = 0;

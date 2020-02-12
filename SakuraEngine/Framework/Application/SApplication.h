@@ -13,7 +13,7 @@
 
 namespace Sakura
 {
-    Interface SApplication
+    SInterface SApplication
     {
         virtual bool Initialize(void) = 0;
         virtual int Run(void) = 0;

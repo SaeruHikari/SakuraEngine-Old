@@ -24,7 +24,7 @@ namespace Sakura
         Sakura::spmr_string title = "SakuraEngine Window";
     };
 
-    Interface SWindow
+    SInterface SWindow
     {
         // Interfaces
         SWindow() = default;
