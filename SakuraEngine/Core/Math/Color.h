@@ -5,10 +5,10 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 16:01:03
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-08 21:49:55
+ * @LastEditTime : 2020-02-13 02:34:12
  */
 #pragma once
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 namespace Sakura::Math
 {

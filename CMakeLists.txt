@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.11)
 
+project(Sakura)
+
+include(${CMAKE_SOURCE_DIR}/Conan/conanbuildinfo.cmake)
+conan_basic_setup()
+
 add_definitions(-D "SAKURA_CONSOLE_INOUT")
 add_definitions(-D "SAKURA_DEBUG_EDITOR")
 add_definitions(-D "SAKURA_DEBUG_GAME")

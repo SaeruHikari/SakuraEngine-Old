@@ -5,10 +5,10 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 16:06:25
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-08 21:49:42
+ * @LastEditTime : 2020-02-13 02:35:04
  */
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Geometry>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 namespace Sakura::Math
 {

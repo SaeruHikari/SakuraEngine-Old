@@ -5,11 +5,13 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 16:52:45
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 13:40:07
+ * @LastEditTime : 2020-02-13 03:05:09
  */
 #include <iostream>
 #include "gtest/gtest.h"
 #include "Core/Core.h"
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
 
 TEST(UnitTestCoreUtils, TTimeUtil)
 {
@@ -23,6 +25,9 @@ TEST(UnitTestCoreUtils, TTimeUtil)
     sstream strea;
     strea << "\nSStream Test\n";
     std::cout << strea.c_str();
+
+    //spdlog::info("Welcome to spdlog!");
+    //spdlog::error("Some error message with arg: {}", 1);
 }   
 
 TEST(UnitTestCoreUtils, PathUtil)

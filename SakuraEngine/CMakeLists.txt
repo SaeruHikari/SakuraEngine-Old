@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.11)
 
-project(Sakura VERSION 0.1.0)
-set(USE_CONAN true)
+project(SakuraEngine VERSION 0.1.0)
+
+include(${CMAKE_SOURCE_DIR}/Conan/conanbuildinfo.cmake)
+conan_basic_setup()
 
 add_definitions(-D "SAKURA_CONSOLE_INOUT")
 add_definitions(-D "SAKURA_DEBUG_EDITOR")
@@ -14,6 +16,9 @@ set(CMAKE_BUILD_TYPE "Debug")
 endif (NOT CMAKE_BUILD_TYPE)
 
 #features
+#[imports]
+#include, * -> ../Extern/include
+
 set(VAR_CONFIG_FLAGS " -D DEBUG")
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
@@ -52,14 +57,27 @@ elseif(WIN32)
     set(OS_WINDOWS 1)
 endif(UNIX)
 
+if(MSVC)     
+    foreach(var 
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO
+        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO
+      )
+      if(${var} MATCHES "/MD")
+        string(REGEX REPLACE "/MD" "/MT" ${var} "${${var}}")
+      endif()
+    endforeach()    
+endif(MSVC)
 
 if(MSVC)
     message(STATUS "MSVC Compiler cl.exe")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _CRT_SECURE_NO_WARNINGS") #Multi Thread Build Enable
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd /D _CRT_SECURE_NO_WARNINGS") #Multi Thread Build Enable
 else(MSVC)
     message(STATUS "Use GCC Compiler gcc.exe")
     add_definitions(-msse4.2)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts -march=native -O3 -pthread -lpthread ${VAR_CONFIG_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts 
+     -march=native -O3 -pthread -lpthread ${VAR_CONFIG_FLAGS}")
     message(STATUS "${VAR_CONFIG_FLAGS}")
 endif(MSVC)
 
@@ -76,7 +94,7 @@ endif()
 
 
 #Eigen3 Include
-if(USE_CONAN)
+if(true)
 else()
     set( EIGEN3_INCLUDE_DIR "$ENV{EIGEN_INCLUDE}" )
     if( NOT EIGEN3_INCLUDE_DIR )
