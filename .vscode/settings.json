@@ -106,7 +106,8 @@
         "xmemory": "cpp",
         "xstddef": "cpp",
         "xtr1common": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "*.h++": "cpp"
     },
     //"cmake.generator" : "MinGW Makefiles",
     "cmake.configureOnOpen": true,
