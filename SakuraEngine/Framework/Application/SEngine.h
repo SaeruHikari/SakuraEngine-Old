@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-10 19:08:16
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 20:26:26
+ * @LastEditTime : 2020-02-13 16:28:47
  */
 #pragma once
 #include "SApplication.h"
@@ -30,8 +30,8 @@ namespace Sakura
         SEngine(const EngineDesc& _desc)
             :desc(_desc){}
         SEngine() = default;
-        static void CreateEngine(const EngineDesc& _desc);
-        static std::unique_ptr<SWindow> CreateWindow(const WindowDesc& desc);
+        static void CreateSEngine(const EngineDesc& _desc);
+        static std::unique_ptr<SWindow> CreateSWindow(const WindowDesc& desc);
     public:
         // get;
         sinline const static EngineDesc GetEngineDesc(void)

@@ -3,7 +3,8 @@
 #include "../Containers/SString.h"
 #include "sstream.h"
 using namespace Sakura;
-namespace fs
+
+namespace Sakura::fs
 {
 	bool exists(const char* path);
 

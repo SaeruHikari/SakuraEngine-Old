@@ -16,3 +16,5 @@ message(STATUS "EngineUtils: Glob Win32 Version implements!")
 endif(UNIX)
 
 add_library(EngineUtils ${IMPL_FILES} ${COMMON_IMPL_FILES})
+
+target_link_libraries(EngineUtils ${CONAN_LIBS})

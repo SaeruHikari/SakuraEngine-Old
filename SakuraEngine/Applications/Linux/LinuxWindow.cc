@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-10 14:10:24
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 20:18:34
+ * @LastEditTime : 2020-02-13 17:10:00
  */
 #include "LinuxWindow.h"
 #include <iostream>
@@ -15,7 +15,7 @@ namespace Sakura
     void SLinuxWindow::OnDestroy(void)
     {
     #ifdef SAKURA_DEBUG_EDITOR
-        std::cout << "Window " + GetTitle() + " Destroyed." << std::endl;
+        Sakura::log::debug_info( "Window " + GetTitle() + " Destroyed.");
     #endif
         return;
     }
@@ -23,12 +23,13 @@ namespace Sakura
     int SLinuxWindow::OnCreate(void)
     {
     #ifdef SAKURA_DEBUG_EDITOR
-        std::cout << "Window " + GetTitle() + " Created." << std::endl;
+         Sakura::log::debug_info( "Window " + GetTitle() + " Created.");
     #endif
         return 0;
     }
 
     SLinuxWindow::SLinuxWindow(const WindowDesc& desc)
+        :Sakura::SWindow(desc)
     {
         windInfo.pConn = xcb_connect(0, 0);
         windInfo.pScreen = xcb_setup_roots_iterator(xcb_get_setup(windInfo.pConn)).data;
@@ -58,7 +59,7 @@ namespace Sakura
                             XCB_COPY_FROM_PARENT,        /* depth */
                             windInfo.window,                                      /* window ID */
                             windInfo.pScreen->root,                       /* parent window */
-                            20, 20,                                      /* x, y */
+                            desc.AncorX, desc.AncorY,                                      /* x, y */
                             desc.width, desc.height,                            /* width, height */
                             10,                                          /* boarder width */
                             XCB_WINDOW_CLASS_INPUT_OUTPUT, /* class */

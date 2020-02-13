@@ -5,10 +5,10 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 10:38:56
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 20:43:03
+ * @LastEditTime : 2020-02-13 16:29:13
  */
-#include "LinuxEngine.h"
 #include <iostream>
+#include "LinuxEngine.h"
 #include "LinuxWindow.h"
 
 using namespace Sakura;
@@ -29,7 +29,7 @@ bool SLinuxEngine::Destroy()
 }
 
 std::unique_ptr<SWindow>
-    SEngine::CreateWindow(const WindowDesc& desc)
+    SEngine::CreateSWindow(const WindowDesc& desc)
 {
     std::unique_ptr<SWindow> result = std::make_unique<SLinuxWindow>(desc);
     result->OnCreate();
@@ -37,7 +37,7 @@ std::unique_ptr<SWindow>
 }
 
 Sakura::SEngine* Sakura::____::eEngine;
-void SEngine::CreateEngine(const EngineDesc& _desc)
+void SEngine::CreateSEngine(const EngineDesc& _desc)
 {
     Sakura::____::eEngine = new Sakura::SLinuxEngine(_desc);
 }

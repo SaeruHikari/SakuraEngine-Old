@@ -5,11 +5,10 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 20:03:51
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 13:50:09
+ * @LastEditTime : 2020-02-13 16:44:20
  */
 #pragma once
 #include "Core/Containers/SString.h"
-#include "Core/CoreMinimal/SConcepts.h"
 
 using namespace Sakura;
 

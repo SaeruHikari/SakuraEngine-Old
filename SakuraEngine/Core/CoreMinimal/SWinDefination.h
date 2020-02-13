@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 00:41:22
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-12 12:26:55
+ * @LastEditTime : 2020-02-13 16:30:29
  */
 
 #pragma once
@@ -13,8 +13,10 @@
 static_assert(0, "Target platform is not Win32, check for compile flags!");
 #endif
 
-//#include <windows.h>
-//#include <minwindef.h>
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <minwindef.h>
+
 
 
 // TO DO: Win RT

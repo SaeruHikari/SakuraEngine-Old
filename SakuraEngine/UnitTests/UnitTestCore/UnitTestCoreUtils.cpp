@@ -5,13 +5,11 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 16:52:45
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-13 16:12:48
+ * @LastEditTime : 2020-02-13 17:02:30
  */
 #include <iostream>
 #include "gtest/gtest.h"
 #include "Core/Core.h"
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/basic_file_sink.h"
 
 TEST(UnitTestCoreUtils, TTimeUtil)
 {
@@ -26,7 +24,8 @@ TEST(UnitTestCoreUtils, TTimeUtil)
     strea << "\nSStream Test\n";
     std::cout << strea.c_str();
 
-    spdlog::info("Welcome to spdlog!");
+    Sakura::log::debug_info<Sakura::flags::DEBUG_EDITOR>
+        ("Welcome to spdlog!");
     spdlog::error("Some error message with arg: {}", 1);
 }   
 

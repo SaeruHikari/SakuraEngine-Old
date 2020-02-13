@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 10:43:36
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 20:19:10
+ * @LastEditTime : 2020-02-13 17:14:10
  */
 #pragma once
 #include "Core/CoreMinimal/CoreMinimal.h"
@@ -19,6 +19,9 @@ namespace Sakura
     {
         float width = 800;
         float height = 600;
+        float AncorX = 300;
+        float AncorY = 300;
+        bool bRegisterEx = true;
         Math::Unorm4 forground;
         Math::Unorm4 background;
         Sakura::spmr_string title = "SakuraEngine Window";
@@ -54,7 +57,7 @@ namespace Sakura
         sinline float GetWidth(void) {return desc.width;}
         sinline Math::Unorm4 GetBackgroundColor(void){return desc.background;}
         sinline Math::Unorm4 GetForeGroundColor(void){return desc.forground;}
-    private:
+    protected:
         WindowDesc desc;
     };
 }

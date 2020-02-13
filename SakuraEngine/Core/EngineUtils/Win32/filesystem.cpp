@@ -5,7 +5,7 @@
 #pragma warning (disable:4800)
 #include <Windows.h>
 using namespace Sakura;
-namespace fs
+namespace Sakura::fs
 {
 	bool exists(const char* path)
 	{
