@@ -8,6 +8,11 @@ A Cross-Platform Mordern Game Engine.
     * CMake √
   * UnitTest
     * GTest √
+  * PluginManager(ComingSoon) 🚧
+    * SPA(SakuraPluginAdministrator): Plugin Administrator to manage plugins
+      * Based on CMake.
+      * Load/Reload in order described with json file, by Dependecy Graph.
+      * Dispatch and handle requesting from plugins/modules.
   * Core
     * Platform Defination √(Win32/Linux)
     * EngineUtils(EnvQuery√, Timer√, T2StringCaster√, Path Operation√, Thread...)
