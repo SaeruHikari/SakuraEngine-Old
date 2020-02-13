@@ -5,9 +5,10 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-10 14:10:24
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-13 17:10:00
+ * @LastEditTime : 2020-02-13 22:35:32
  */
 #include "LinuxWindow.h"
+#include "Core/EngineUtils/log.h"
 #include <iostream>
 
 namespace Sakura

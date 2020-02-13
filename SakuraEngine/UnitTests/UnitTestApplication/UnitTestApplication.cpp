@@ -5,15 +5,15 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 11:07:17
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 19:39:42
+ * @LastEditTime : 2020-02-13 22:36:10
  */
 #include "Framework/Application/SEngine.h"
 #include "gtest/gtest.h"
 
 TEST(UnitTestApplication, LinuxApplication)
 {
-    //Sakura::EngineDesc desc;
-    //Sakura::SEngine::CreateEngine(desc);
-    //Sakura::WindowDesc windDesc;
-    //Sakura::SEngine::CreateWindow(windDesc);
+    Sakura::EngineDesc desc;
+    Sakura::SEngine::CreateSEngine(desc);
+    Sakura::WindowDesc windDesc;
+    Sakura::SEngine::CreateSWindow(windDesc);
 }

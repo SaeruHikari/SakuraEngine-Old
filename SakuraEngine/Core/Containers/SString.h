@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 17:21:30
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-10 00:44:08
+ * @LastEditTime : 2020-02-13 21:53:40
  */
 // Prototype from Star Engine :
 // https://github.com/star-e/StarEngine/blob/master/Star/SMap.h
@@ -36,7 +36,6 @@ namespace Sakura
         }
         sinline sstring_view view(const std::pmr::string& str) noexcept
         {
-            std::pmr::string wtf;
             return std::string_view(str);
         }
         /**

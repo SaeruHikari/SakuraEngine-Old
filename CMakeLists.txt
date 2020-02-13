@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 
+add_definitions("-std=c++2a")
 include(${CMAKE_SOURCE_DIR}/Conan/conanbuildinfo.cmake)
 conan_basic_setup()
 
@@ -27,14 +28,24 @@ else()
         set(ARCH_BIT 32)
 endif()
 
+if (NOT CMAKE_BUILD_TYPE)
+set(CMAKE_BUILD_TYPE "Debug")
+#set(CMAKE_BUILD_TYPE "Release")
+endif (NOT CMAKE_BUILD_TYPE)
+
+#features
+set(VAR_CONFIG_FLAGS " -D DEBUG")
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
+
+
 if(MSVC)
     message(STATUS "MSVC Compiler cl.exe")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd /D _CRT_SECURE_NO_WARNINGS") #Multi Thread Build Enable
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _CRT_SECURE_NO_WARNINGS") #Multi Thread Build Enable
 else(MSVC)
     message(STATUS "Use GCC Compiler gcc.exe")
     add_definitions(-msse4.2)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts 
-     -march=native -O3 -pthread -lpthread ${VAR_CONFIG_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts -march=native -O3 -pthread -lpthread ${VAR_CONFIG_FLAGS}")
     message(STATUS "${VAR_CONFIG_FLAGS}")
 endif(MSVC)
 

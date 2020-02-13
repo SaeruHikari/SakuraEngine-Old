@@ -14,5 +14,5 @@
 #include "T2String.h"
 #include "sstream.h"
 #include "ConsoleDesk.h"
-#include "filesystem.h"
+#include "fs.h"
 #include "log.h"

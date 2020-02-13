@@ -1,32 +1,11 @@
 cmake_minimum_required(VERSION 3.11)
 
-project(SakuraEngine VERSION 0.1.0)
-if(MSVC)     
-    foreach(var 
-        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO
-        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO
-      )
-      if(${var} MATCHES "/MD")
-        string(REGEX REPLACE "/MD" "/MT" ${var} "${${var}}")
-      endif()
-    endforeach()    
-endif(MSVC)
+project(Sakura VERSION 0.1.0)
 
 add_definitions(-D "SAKURA_CONSOLE_INOUT")
 add_definitions(-D "SAKURA_DEBUG_EDITOR")
 add_definitions(-D "SAKURA_DEBUG_GAME")
 add_definitions(-D "SAKURA_GRAPHICS_PROFILING")
-
-if (NOT CMAKE_BUILD_TYPE)
-set(CMAKE_BUILD_TYPE "Debug")
-#set(CMAKE_BUILD_TYPE "Release")
-endif (NOT CMAKE_BUILD_TYPE)
-
-set(VAR_CONFIG_FLAGS " -D DEBUG")
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 20)
 
 ADD_DEFINITIONS(-DMACRO)
 if(UNIX)
@@ -62,16 +41,16 @@ elseif(WIN32)
     set(OS_WINDOWS 1)
 endif(UNIX)
 
-#Eigen3 Include
-if(true)
+
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+include(TargetArchDetect)
+target_architecture(TARGET_ARCH)
+if((TARGET_ARCH MATCHES "x86_64" OR TARGET_ARCH MATCHES "ia64") AND NOT OF_32BIT)
+        message(STATUS "x86_64 Target Architechture detected.")
+        set(ARCH_BIT 64)
 else()
-    set( EIGEN3_INCLUDE_DIR "$ENV{EIGEN_INCLUDE}" )
-    if( NOT EIGEN3_INCLUDE_DIR )
-        message( STATUS "Please point the environment variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
-    else()
-    include_directories("${EIGEN3_INCLUDE_DIR}")
-    endif()
-    message( STATUS "Add Eigen3 Root: ${EIGEN3_INCLUDE_DIR}")
+        message(STATUS "x86 Target Architechture detected.")
+        set(ARCH_BIT 32)
 endif()
 
 #GTest
@@ -86,6 +65,7 @@ include_directories(
 include_directories(
     ../
 )
+
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 
