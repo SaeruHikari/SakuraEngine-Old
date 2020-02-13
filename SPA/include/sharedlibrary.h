@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 22:58:31
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-13 23:54:23
+ * @LastEditTime : 2020-02-14 00:32:17
  */
 #pragma once
 #include "confinfo.h"
@@ -20,7 +20,7 @@ using NativeLibHandle = HMODULE;
 
 #include <memory_resource>
 #include <string>
-namespace Sakura
+namespace Sakura::SPA
 {
     /**
      * @description: Provides cross-platform low-level 

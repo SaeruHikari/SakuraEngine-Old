@@ -50,6 +50,6 @@ else(MSVC)
 endif(MSVC)
 
 add_subdirectory(SakuraEngine)
-add_subdirectory(ModuleDriver)
+add_subdirectory(SPA)
 add_subdirectory(DependencyGraph)
 add_subdirectory(Extern)
