@@ -11,7 +11,7 @@ A Cross-Platform Mordern Game Engine.
   * PluginManager(ComingSoon) 🚧
     * SPA(SakuraPluginAdministrator): Plugin Administrator to manage plugins
       * Based on CMake.
-      * Load/Unload pulgins in order described with json file, by Dependecy Graph.
+      * Load/Unload plugins in order described with json file, by Dependency Graph.
       * Dispatch and handle requesting from plugins/modules.
   * Core
     * Platform Defination √(Win32/Linux)
