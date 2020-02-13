@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 16:52:45
  * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-13 03:05:09
+ * @LastEditTime : 2020-02-13 16:12:48
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -26,8 +26,8 @@ TEST(UnitTestCoreUtils, TTimeUtil)
     strea << "\nSStream Test\n";
     std::cout << strea.c_str();
 
-    //spdlog::info("Welcome to spdlog!");
-    //spdlog::error("Some error message with arg: {}", 1);
+    spdlog::info("Welcome to spdlog!");
+    spdlog::error("Some error message with arg: {}", 1);
 }   
 
 TEST(UnitTestCoreUtils, PathUtil)

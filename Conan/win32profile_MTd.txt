@@ -4,8 +4,10 @@ arch=x86_64
 arch_build=x86_64
 compiler=Visual Studio
 compiler.version=16
-compiler.runtime=MD
-build_type=Release
+compiler.runtime=MTd
+build_type=Debug
 os=Windows
-
 [options]
+[build_requires]
+[env]
+CONAN_CMAKE_GENERATOR = Ninja

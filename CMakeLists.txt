@@ -5,11 +5,6 @@ project(Sakura)
 include(${CMAKE_SOURCE_DIR}/Conan/conanbuildinfo.cmake)
 conan_basic_setup()
 
-add_definitions(-D "SAKURA_CONSOLE_INOUT")
-add_definitions(-D "SAKURA_DEBUG_EDITOR")
-add_definitions(-D "SAKURA_DEBUG_GAME")
-add_definitions(-D "SAKURA_GRAPHICS_PROFILING")
-
 if(MSVC)     
     foreach(var 
         CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
@@ -34,6 +29,16 @@ else()
         set(ARCH_BIT 32)
 endif()
 
+if(MSVC)
+    message(STATUS "MSVC Compiler cl.exe")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd /D _CRT_SECURE_NO_WARNINGS") #Multi Thread Build Enable
+else(MSVC)
+    message(STATUS "Use GCC Compiler gcc.exe")
+    add_definitions(-msse4.2)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts 
+     -march=native -O3 -pthread -lpthread ${VAR_CONFIG_FLAGS}")
+    message(STATUS "${VAR_CONFIG_FLAGS}")
+endif(MSVC)
 
 add_subdirectory(SakuraEngine)
 add_subdirectory(ModuleDriver)
