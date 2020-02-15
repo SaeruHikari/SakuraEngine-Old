@@ -20,4 +20,11 @@ namespace Sakura::SPA
         }
         InitializeMap[moduleName] = _register;
     }
+
+    IModule* ModuleManager::GetModule(std::string_view name)
+    {
+        if(ModulesMap.find(name) == ModulesMap.end())
+            return nullptr;
+        return ModulesMap[name].get();
+    }
 }

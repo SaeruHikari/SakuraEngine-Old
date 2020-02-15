@@ -16,16 +16,17 @@
 #include <string>
 #include <string_view>
 #include "moduleininfo.h"
+#include "imodule.h"
 #include <unordered_map>
 
 namespace Sakura::SPA
 {
-    struct IModule;
     class ModuleManager;
 }
 
 namespace Sakura::SPA
 {
+    using namespace ____;
     using namespace boost;
     struct ModuleProp_t
     {
@@ -45,8 +46,14 @@ namespace Sakura::SPA
     }    
     class ModuleManager
     {
+        friend struct IModule;
     public:
         ModuleManager() = default;
+        ModuleManager(std::string_view _moduleDir)
+            : moduleDir(_moduleDir)
+        {
+            
+        }
         static inline ModuleManager* Get()
         {
             if(____::mModuleManager != nullptr)
@@ -54,13 +61,50 @@ namespace Sakura::SPA
             else
                 return new ModuleManager();
         }
+        IModule* GetModule(std::string_view name);
+        template<typename T,
+            std::enable_if<
+                std::is_constructible<std::string_view, std::remove_reference<T>>::value
+            >::type * = nullptr>
+        inline IModule* GetModule(T&& name)
+        {
+            return GetModule(std::string_view(name));
+        }
+    private:
         void RegisterStaticallyLinkedModule(
             const std::pmr::string& moduleName, registerer _register);
     private:
+        std::string_view moduleDir;
         ModuleGraph moduleDependecyGraph;
     private:
         std::pmr::unordered_map<std::pmr::string, registerer> InitializeMap;
         std::pmr::unordered_map<std::string_view, std::unique_ptr<IModule>>
             ModulesMap;
     };
+
+    template<typename ModuleClass, 
+        std::enable_if<
+            std::is_base_of<IStaticModule, ModuleClass>::value>
+        ::type * = nullptr>
+    struct SStaticallyLinkedModuleRegistrant
+    {
+        SStaticallyLinkedModuleRegistrant(const std::pmr::string& InModuleName)
+        {
+            std::function<std::unique_ptr<IModule>(void)> func =
+                []()
+                {
+                    return std::make_unique<ModuleClass>();                     
+                };
+            ModuleManager::Get()
+                ->RegisterStaticallyLinkedModule(InModuleName, func);
+        }
+    };
+
+    #define IMPLEMENT_STATIC_MODULE(ModuleImplClass, ModuleName)\
+        static SStaticallyLinkedModuleRegistrant<ModuleImplClass>\
+        ModuleRegistrant##ModuleName(##ModuleName);\
+        /** static initialization for this lib can be forced by referencing this symbol */ \
+        void EmptyLinkFunctionForStaticInitialization##ModuleName(){}
+
+    #define IMPLEMENT_DYNAMIC_MODULE(ModuleImplClass, ModuleName) 
 }
