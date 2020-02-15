@@ -4,8 +4,8 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-14 00:31:40
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-14 00:42:08
+ * @LastEditors: SaeruHikari
+ * @LastEditTime : 2020-02-15 18:28:20
  */
 #pragma once
 #include <memory_resource>
@@ -31,13 +31,16 @@ namespace Sakura::SPA
      * @description: Struct that contains all plugin metadata
      * @author: SaeruHikari
      */
-    struct PluginInfo
+    struct ModuleInfo
     {
         std::pmr::string name; //!< name of the plugin
         std::pmr::string prettyname;//!< formatted name of the plugin
+        std::pmr::string engine_version;//!< version of the engine
         std::pmr::string version;// !< version of the plugin
         std::pmr::string license;//!< license of the plugin
+        std::pmr::string url; //!< url of the plugin 
         std::pmr::string copyright;//!< copyright of the plugin
+        std::pmr::string make;//!<making method
 
         // Dependencies array
         std::pmr::vector<std::unique_ptr<Dependency>> dependencies;

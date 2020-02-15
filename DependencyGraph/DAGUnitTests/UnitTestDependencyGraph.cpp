@@ -4,7 +4,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 17:06:04
- * @LastEditors  : SaeruHikari
+ * @LastEditors: SaeruHikari
  * @LastEditTime : 2020-02-11 23:40:46
  */
 #include "UnitTestDependencyGraph.h"
@@ -12,7 +12,6 @@
 //struct first_name_t {
 //    using kind = vertex_property_tag;
 //};
-
 int main(void)
 {
     using vertexProp = property<first_name_t, std::string>;
