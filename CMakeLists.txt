@@ -51,5 +51,6 @@ endif(MSVC)
 
 add_subdirectory(SakuraEngine)
 add_subdirectory(SPA)
+add_subdirectory(SPAUnitTest)
 add_subdirectory(DependencyGraph)
 add_subdirectory(Extern)

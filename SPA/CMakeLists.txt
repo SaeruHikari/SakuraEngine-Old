@@ -13,12 +13,11 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-add_subdirectory(SPAUnitTest)
 #Needed on Windows
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 #Compiler flags: Cpp20/Open Warning
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++2a -Wall -fvisibility=hidden")
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++2a -Wall -g -fvisibility=hidden")
 # Output extra warning infos
 if(UNIX OR MINGW)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")
@@ -35,14 +34,13 @@ file(
     include/whereami/src/*.h
 )
 
-#Add src files
 file (
     GLOB_RECURSE
     sources
     src/*.cpp
     src/*.h
 )
-file( # Only for IDE
+file( 
     GLOB_RECURSE
     includes
     include/*.h

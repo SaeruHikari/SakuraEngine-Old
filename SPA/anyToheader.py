@@ -24,7 +24,7 @@ def json2header(filereg, file_path):
     header += '#pragma once\n'
     header += '#include <tuple>\n'
     header += '#include <cstddef>\n\n'
-    header += 'const char sp_meta[] = {\n'  
+    header += 'inline static const char sp_meta[] = {\n'  
     counter = 0
     for _byte in content.encode():
         if counter >= 12:
@@ -36,11 +36,11 @@ def json2header(filereg, file_path):
     header = header.rstrip()
     header = header.rstrip(',')
     header += '\n};\n\n'
-    header += 'const std::size_t sp_meta_size = '
+    header += 'inline static const std::size_t sp_meta_size = '
     header += str(len(content.encode()))
     header += ';\n\n'
-    header += 'inline std::size_t __GetMetaSize(void)\n{\n    return sp_meta_size;\n}\n'
-    header += 'inline const char* __GetMetaData(void)\n{\n    return sp_meta;\n}\n'
+    header += 'inline static std::size_t __GetMetaSize(void)\n{\n    return sp_meta_size;\n}\n'
+    header += 'inline static const char* __GetMetaData(void)\n{\n    return sp_meta;\n}\n'
     fw.write(header)  
     return
     

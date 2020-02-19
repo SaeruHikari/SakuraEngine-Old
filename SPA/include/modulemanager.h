@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-15 18:50:54
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-15 18:51:03
+ * @LastEditTime: 2020-02-19 14:52:35
  */
 #pragma once
 #include "../../DependencyGraph/Graph.h"
@@ -13,6 +13,7 @@
 #include <memory>
 #include <memory_resource>
 #include <stdint.h>
+#include <iostream>
 #include <string>
 #include <string_view>
 #include "moduleininfo.h"
@@ -35,6 +36,8 @@ namespace Sakura::SPA
     class ModuleManager;
 }
 
+extern "C" DLLEXPORT Sakura::SPA::ModuleManager* GetModuleManager();
+
 namespace Sakura::SPA
 {
     using namespace boost;
@@ -50,10 +53,7 @@ namespace Sakura::SPA
     using ModuleProp = property<ModuleProp_t, ModuleProperty>;
     using ModuleGraph = DAG::Graph<ModuleProp>;
     using ModuleNode = DAG::GraphVertex<ModuleProp>;
-    namespace ____
-    {
-        extern ModuleManager* mModuleManager;
-    }    
+ 
     class ModuleManager
     {
         friend struct IModule;
@@ -64,14 +64,8 @@ namespace Sakura::SPA
         {
             
         }
-        static inline ModuleManager* Get()
-        {
-            if(____::mModuleManager != nullptr)
-                return ____::mModuleManager;
-            else
-                return new ModuleManager();
-        }
         IModule* GetModule(std::string_view name);
+        
         template<typename T,
             std::enable_if<
                 std::is_constructible<std::string_view, std::remove_reference<T>>::value
@@ -80,10 +74,22 @@ namespace Sakura::SPA
         {
             return GetModule(std::string_view(name));
         }
-    private:
-        void RegisterStaticallyLinkedModule(
+
+        virtual IModule* SpawnStaticModule(const std::pmr::string& name);
+
+        template<typename T,
+        std::enable_if<
+            std::is_constructible<std::string_view, std::remove_reference<T>>::value
+        >::type * = nullptr>
+        inline IModule* SpawnDynamicModule(T&& name)
+        {
+            return nullptr;
+        }
+    public:
+        virtual void RegisterStaticallyLinkedModule(
             const std::pmr::string& moduleName, registerer _register);
     private:
+        static ModuleManager* mModuleManager;
         std::string_view moduleDir;
         ModuleGraph moduleDependecyGraph;
     private:
@@ -92,36 +98,27 @@ namespace Sakura::SPA
             ModulesMap;
     };
 
-    template<typename ModuleClass, 
-        std::enable_if<
-            std::is_base_of<IStaticModule, ModuleClass>::value>
-        ::type * = nullptr>
+    template<typename ModuleClass>
     struct SStaticallyLinkedModuleRegistrant
     {
-        SStaticallyLinkedModuleRegistrant(const std::pmr::string& InModuleName)
+        SStaticallyLinkedModuleRegistrant(const char* InModuleName)
         {
             std::function<std::unique_ptr<IModule>(void)> func =
                 []()
                 {
                     return std::make_unique<ModuleClass>();                     
                 };
-            ModuleManager::Get()
+            GetModuleManager()
                 ->RegisterStaticallyLinkedModule(InModuleName, func);
         }
     };
 
-    #define IMPLEMENT_STATIC_MODULE(ModuleImplClass, ModuleName)\
-        static SStaticallyLinkedModuleRegistrant<ModuleImplClass>\
-        ModuleRegistrant##ModuleName(##ModuleName);\
-        /** static initialization for this lib can be forced by referencing this symbol */ \
-        void EmptyLinkFunctionForStaticInitialization##ModuleName(){}\
-        virtual const char* GetMetaData(void) override\
-        {return __GetMetaData();}\
-        virtual std::size_t GetMetaSize(void) override\
-        {return __GetMetaSize();}
+    #define IMPLEMENT_STATIC_MODULE(ModuleImplClass,ModuleName) \
+        inline static const Sakura::SPA::SStaticallyLinkedModuleRegistrant\
+        <ModuleImplClass> ModuleRegistrant##ModuleName(#ModuleName);
 
     #define IMPLEMENT_DYNAMIC_MODULE(ModuleImplClass, ModuleName) \
-        extern "C" DLLEXPORT IModule* InitializeModule()\
+        extern "C" DLLEXPORT Sakura::SPA::IModule* InitializeModule()\
         {\
             return new ModuleImpleClass();\
         }
