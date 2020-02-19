@@ -8,6 +8,7 @@
  * @LastEditTime: 2020-02-15 19:44:24
  */
 #include "../include/modulemanager.h"
+#include <iostream>
 
 int main(void)
 {

@@ -10,6 +10,7 @@
 #pragma once
 #include "confinfo.h"
 #include "sharedlibrary.h"
+#include <cstddef>
 
 namespace Sakura::SPA
 {
@@ -18,51 +19,57 @@ namespace Sakura::SPA
 
 namespace Sakura::SPA
 {
-    namespace ____
+    /**
+     * @description: Base of all plugins 
+     * @author: SaeruHikari
+     */
+    struct IModule
     {
+        friend class ModuleManager;
+    public:
+        virtual ~IModule() = default;
+        
         /**
-         * @description: Base of all plugins 
+         * @description: Called by the plugin manager when the plugin
+         * is loaded. All dependencies are available at this call.
          * @author: SaeruHikari
          */
-        struct IModule
-        {
-            friend class ModuleManager;
-        public:
-            virtual ~IModule() = default;
-            
-            /**
-             * @description: Called by the plugin manager when the plugin
-             * is loaded. All dependencies are available at this call.
-             * @author: SaeruHikari
-             */
-            virtual void OnLoad() = 0;
+        virtual void OnLoad() = 0;
 
-            /**
-            * @description: Called by the plugin manager when the plugin 
-            * is unloaded. All dependencies remains valide at this call.
-            * @author: SaeruHikari
-            */
-            virtual void OnUnload() = 0;    
+        /**
+        * @description: Called by the plugin manager when the plugin 
+        * is unloaded. All dependencies remains valide at this call.
+        * @author: SaeruHikari
+        */
+        virtual void OnUnload() = 0;    
 
-            /**
-             * @description: Called when the plugin is registered 
-             * as the main plugin.
-             * Main plugins can send request to all other plugins,
-             * even if thery are not in the dependencies' list.
-             * @note Always called after every plugins loaded() function.
-             * @author: SaeruHikari
-             */
-            virtual void MainPluginExec() {}
-        protected:
-            
-        };
-    }
-    struct IDynamicModule : public ____::IModule
+        /**
+         * @description: Called when the plugin is registered 
+         * as the main plugin.
+         * Main plugins can send request to all other plugins,
+         * even if thery are not in the dependencies' list.
+         * @note Always called after every plugins loaded() function.
+         * @author: SaeruHikari
+         */
+        virtual void MainPluginExec() {}
+
+        virtual const char* GetMetaData(void) = 0;
+        virtual std::size_t GetMetaSize(void) = 0;
+    };
+    struct IDynamicModule : public IModule
     {
         SharedLibrary sharedLib;
+        virtual const char* GetMetaData(void) override
+        {
+            return sharedLib.get<const char*>("sp_meta"); 
+        }
+        virtual std::size_t GetMetaSize(void) override
+        {
+            return sharedLib.get<std::size_t>("sp_meta_size");
+        }
     };
-    struct IStaticModule : public ____::IModule
+    struct IStaticModule : public IModule
     {
-        
+
     };
 }

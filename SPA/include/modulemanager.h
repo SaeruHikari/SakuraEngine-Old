@@ -18,6 +18,17 @@
 #include "moduleininfo.h"
 #include "imodule.h"
 #include <unordered_map>
+#ifdef __EMSCRIPTEN__
+#include "emscripten.h"
+#define DLLEXPORT EMSCRIPTEN_KEEPALIVE
+#define DLLLOCAL __attribute__((visibility("hidden")))
+#elif defined(__GNUC__)
+#define DLLEXPORT __attribute__((visibility("default")))
+#define DLLLOCAL __attribute__((visibility("hidden")))
+#else
+#define DLLEXPORT
+#define DLLLOCAL
+#endif
 
 namespace Sakura::SPA
 {
@@ -26,7 +37,6 @@ namespace Sakura::SPA
 
 namespace Sakura::SPA
 {
-    using namespace ____;
     using namespace boost;
     struct ModuleProp_t
     {
@@ -104,7 +114,15 @@ namespace Sakura::SPA
         static SStaticallyLinkedModuleRegistrant<ModuleImplClass>\
         ModuleRegistrant##ModuleName(##ModuleName);\
         /** static initialization for this lib can be forced by referencing this symbol */ \
-        void EmptyLinkFunctionForStaticInitialization##ModuleName(){}
+        void EmptyLinkFunctionForStaticInitialization##ModuleName(){}\
+        virtual const char* GetMetaData(void) override\
+        {return __GetMetaData();}\
+        virtual std::size_t GetMetaSize(void) override\
+        {return __GetMetaSize();}
 
-    #define IMPLEMENT_DYNAMIC_MODULE(ModuleImplClass, ModuleName) 
+    #define IMPLEMENT_DYNAMIC_MODULE(ModuleImplClass, ModuleName) \
+        extern "C" DLLEXPORT IModule* InitializeModule()\
+        {\
+            return new ModuleImpleClass();\
+        }
 }
