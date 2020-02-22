@@ -7,6 +7,7 @@
  * @LastEditors: SaeruHikari
  * @LastEditTime: 2020-02-22 16:41:06
  */
+#define API_EXPORTS
 #include "../include/modulemanager.h"
 #include "../include/confinfo.h"
 #include "../../Extern/include/json/json.hpp"
@@ -45,8 +46,8 @@ namespace Sakura::SPA
         std::pmr::string initName = "InitializeModule" + name;
         #ifdef CONFINFO_PLATFORM_LINUX
         sharedLib->load("../lib/lib"+name);
-        #elif CONFINFO_PLATFORM_WIN32
-        sharedLib.load("../lib/"+name);
+        #elif defined(CONFINFO_PLATFORM_WIN32)
+        sharedLib->load("../bin/"+name);
         #endif
         if(sharedLib->hasSymbol(initName.c_str()))
         {
@@ -105,7 +106,7 @@ namespace Sakura::SPA
     }
 }
 
-extern "C" DLLEXPORT Sakura::SPA::ModuleManager* GetModuleManager()
+SPA_API Sakura::SPA::ModuleManager* __stdcall GetModuleManager()
 {
     static Sakura::SPA::ModuleManager mModuleManager;
     return &mModuleManager;

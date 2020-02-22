@@ -28,8 +28,14 @@
 #define DLLEXPORT __attribute__((visibility("default")))
 #define DLLLOCAL __attribute__((visibility("hidden")))
 #else
-#define DLLEXPORT
+#define DLLEXPORT __declspec(dllexport)
 #define DLLLOCAL
+#endif
+
+#ifdef API_EXPORTS
+#define SPA_API __declspec(dllexport)
+#else
+#define SPA_API __declspec(dllimport)
 #endif
 
 namespace Sakura::SPA
@@ -37,7 +43,10 @@ namespace Sakura::SPA
     class ModuleManager;
 }
 
-extern "C" DLLEXPORT Sakura::SPA::ModuleManager* GetModuleManager();
+extern "C"
+{
+    SPA_API Sakura::SPA::ModuleManager* __stdcall GetModuleManager();
+}
 
 namespace Sakura::SPA
 {
@@ -69,7 +78,7 @@ namespace Sakura::SPA
         virtual IModule* GetModule(std::string_view name);
         
         template<typename T,
-            std::enable_if<
+            typename std::enable_if<
                 std::is_constructible<std::string_view, std::remove_reference<T>>::value
             >::type * = nullptr>
         inline IModule* GetModule(T&& name)

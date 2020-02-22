@@ -20,8 +20,7 @@ int main(void)
     auto mainModule = mng->GetModule(mainName);
     mng->SpawnDynamicModule(dynName);
     auto dynModule = mng->GetModule(dynName);
+    std::cout << mainModule->GetModuleInfo().name << std::endl;
     std::cout << dynModule->GetModuleInfo().name << std::endl;
-    std::cout << dynModule->GetModuleInfo().version << std::endl;
-    std::cout << dynModule->GetModuleInfo().engine_version << std::endl;
     return 0;
 }
