@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-15 19:44:24
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-22 12:59:05
+ * @LastEditTime: 2020-02-22 16:32:22
  */
 #include "../SPA/include/modulemanager.h"
 #include "plugin_main/plugin_main.h"
@@ -20,7 +20,8 @@ int main(void)
     auto mainModule = mng->GetModule(mainName);
     mng->SpawnDynamicModule(dynName);
     auto dynModule = mng->GetModule(dynName);
-    std::cout << std::endl << mainModule->GetMetaSize() << std::endl;
-    std::cout << std::endl << dynModule->GetMetaSize() << std::endl;
+    std::cout << dynModule->GetModuleInfo().name << std::endl;
+    std::cout << dynModule->GetModuleInfo().version << std::endl;
+    std::cout << dynModule->GetModuleInfo().engine_version << std::endl;
     return 0;
 }

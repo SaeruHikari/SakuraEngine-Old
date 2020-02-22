@@ -5,9 +5,10 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-15 18:50:54
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-22 12:09:05
+ * @LastEditTime: 2020-02-22 16:21:22
  */
 #pragma once
+#include "../../Extern/include/version/version.h"
 #include "../../DependencyGraph/Graph.h"
 #include <functional>
 #include <memory>
@@ -83,10 +84,12 @@ namespace Sakura::SPA
         virtual void RegisterStaticallyLinkedModule(
             const std::pmr::string& moduleName, registerer _register);
     private:
+        Version CoreVersion{"0.1.0"};
+        ModuleInfo ParseMetaData(const char* metadata);
+    private:
         static ModuleManager* mModuleManager;
         std::string_view moduleDir;
         ModuleGraph moduleDependecyGraph;
-    private:
         std::pmr::unordered_map<std::pmr::string, registerer> InitializeMap;
         std::pmr::unordered_map<std::string_view, std::unique_ptr<IModule>>
             ModulesMap;
@@ -112,8 +115,9 @@ namespace Sakura::SPA
         <ModuleImplClass> ModuleRegistrant##ModuleName(#ModuleName);
 
     #define IMPLEMENT_DYNAMIC_MODULE(ModuleImplClass, ModuleName) \
-        extern "C" DLLEXPORT Sakura::SPA::IModule* InitializeModule()\
+        extern "C" DLLEXPORT Sakura::SPA::IModule* InitializeModule##ModuleName()\
         {\
             return new ModuleImplClass();\
         }
+    
 }

@@ -1,7 +1,7 @@
 {
     "api" : "0.1.0",
     "name" : "plugin_main",
-    "prettyName" : "Plugin main",
+    "prettyname" : "Plugin main",
     "version" : "1.0.0",
     "linking" : "static",
     "dependencies" : [{"name":"plugin_1", "version":"1.0.0"}],

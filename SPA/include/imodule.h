@@ -5,10 +5,11 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-14 13:57:46
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-22 11:40:34
+ * @LastEditTime: 2020-02-22 16:07:37
  */
 #pragma once
 #include "confinfo.h"
+#include "moduleininfo.h"
 #include "sharedlibrary.h"
 #include <cstddef>
 
@@ -27,8 +28,10 @@ namespace Sakura::SPA
     {
         friend class ModuleManager;
     public:
+        IModule() = default;
+        IModule(const IModule& rhs) = delete;
+        IModule& operator=(const IModule& rhs) = delete;
         virtual ~IModule(){};
-        
         /**
          * @description: Called by the plugin manager when the plugin
          * is loaded. All dependencies are available at this call.
@@ -55,6 +58,13 @@ namespace Sakura::SPA
 
         virtual const char* GetMetaData(void) = 0;
         virtual std::size_t GetMetaSize(void) = 0;
+
+        virtual const ModuleInfo& GetModuleInfo()
+        {
+            return _information;
+        }
+    private:
+        ModuleInfo _information;
     };
     struct IDynamicModule : public IModule
     {
