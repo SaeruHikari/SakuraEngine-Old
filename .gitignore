@@ -6,5 +6,4 @@
 /SakuraEngine/build
 /.vs
 /build
-/Extern/include
 /Extern/googletest
