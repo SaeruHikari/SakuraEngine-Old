@@ -5,9 +5,10 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 23:23:02
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-19 14:52:25
+ * @LastEditTime: 2020-02-22 12:58:34
  */
 #include "../include/modulemanager.h"
+#include "../include/confinfo.h"
 
 namespace Sakura::SPA
 {
@@ -30,8 +31,27 @@ namespace Sakura::SPA
         auto func = InitializeMap[name];
         ModulesMap[name] = func();
         ModulesMap[name]->OnLoad();
-        std::cout << ModulesMap[name]->GetMetaSize();
         return ModulesMap[name].get();
+    }
+
+    IModule* ModuleManager::SpawnDynamicModule(const std::pmr::string& name)
+    {
+        std::unique_ptr<SharedLibrary> sharedLib = std::make_unique<SharedLibrary>();
+        #ifdef CONFINFO_PLATFORM_LINUX
+        sharedLib->load("../lib/lib"+name);
+        #elif CONFINFO_PLATFORM_WIN32
+        sharedLib.load("../lib/"+name);
+        #endif
+        if(sharedLib->hasSymbol("InitializeModule"))
+        {
+            auto func = sharedLib->get<IModule*()>("InitializeModule");
+            ModulesMap[name] = std::move(std::unique_ptr<IModule>(func()));
+            IDynamicModule* module = (IDynamicModule*)ModulesMap[name].get();
+            module->sharedLib = std::move(sharedLib);
+            module->OnLoad();
+            return module;
+        }
+        return nullptr;
     }
 
     IModule* ModuleManager::GetModule(std::string_view name)

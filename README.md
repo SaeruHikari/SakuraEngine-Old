@@ -1,7 +1,6 @@
 # SakuraEngine
 A Cross-Platform Mordern Game Engine.
 
->TODO:
   * Package Management
     * Conan √
   * Construct

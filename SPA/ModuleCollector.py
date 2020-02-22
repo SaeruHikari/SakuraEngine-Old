@@ -1,8 +1,8 @@
 '''
 @Author: your name
 @Date: 2020-02-16 14:02:58
-@LastEditTime: 2020-02-16 14:04:59
-@LastEditors: Please set LastEditors
+@LastEditTime: 2020-02-22 12:29:59
+@LastEditors: SaeruHikari
 @Description: In User Settings Edit
 @FilePath: /JustPlug-master/home/saeruhikari/Coding/SakuraEngine/SPA/StaticModuleCollector.py
 '''
@@ -32,10 +32,11 @@ def deal_header(json_name, file_path):
         if tokenDict[EntryJson['name']] == True:
             return
         tokenDict[EntryJson['name']] = True
-        pa = pathDict[EntryJson['name']].replace( \
-        file_path.rstrip('/')+'/', '', 1)
-        pa = os.path.dirname(pa) +'/'+EntryJson['name']+'.h'
-        header += '#include "' + pa + '"\n'
+        if EntryJson['linking'] == 'static' :
+            pa = pathDict[EntryJson['name']].replace( \
+            file_path.rstrip('/')+'/', '', 1)
+            pa = os.path.dirname(pa) +'/'+EntryJson['name']+'.h'
+            header += '#include "' + pa + '"\n'
         for dependency in EntryJson['dependencies']:
             if jsonDict[dependency['name']]['version'] == dependency['version']:
                 deal_header(dependency['name'], file_path)

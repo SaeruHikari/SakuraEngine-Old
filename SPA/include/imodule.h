@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-14 13:57:46
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-19 11:08:23
+ * @LastEditTime: 2020-02-22 11:40:34
  */
 #pragma once
 #include "confinfo.h"
@@ -27,7 +27,7 @@ namespace Sakura::SPA
     {
         friend class ModuleManager;
     public:
-        virtual ~IModule() = default;
+        virtual ~IModule(){};
         
         /**
          * @description: Called by the plugin manager when the plugin
@@ -58,14 +58,14 @@ namespace Sakura::SPA
     };
     struct IDynamicModule : public IModule
     {
-        SharedLibrary sharedLib;
+        std::unique_ptr<SharedLibrary> sharedLib;
         virtual const char* GetMetaData(void) override
         {
-            return sharedLib.get<const char*>("sp_meta"); 
+            return sharedLib->get<const char*>("sp_meta"); 
         }
         virtual std::size_t GetMetaSize(void) override
         {
-            return sharedLib.get<std::size_t>("sp_meta_size");
+            return sharedLib->get<std::size_t>("sp_meta_size");
         }
     };
     struct IStaticModule : public IModule

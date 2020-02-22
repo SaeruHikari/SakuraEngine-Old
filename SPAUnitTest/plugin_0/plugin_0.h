@@ -5,16 +5,15 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-19 11:18:30
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-19 11:35:08
+ * @LastEditTime: 2020-02-22 12:00:45
  */
 #pragma once
-#include "../../include/modulemanager.h"
+#include "../../SPA/include/modulemanager.h"
 
-class SModule : public Sakura::SPA::IStatcModule
+class SModule0 : public Sakura::SPA::IStaticModule
 {
-    
-    
-    IMPLEMENT_STATIC_MODULE(SModule, plugin_0);
+    #include "meta.h"
+    virtual void OnLoad() override;
+    virtual void OnUnload() override;
 };
-
-#include "meta.h"
+IMPLEMENT_STATIC_MODULE(SModule0, plugin_0);

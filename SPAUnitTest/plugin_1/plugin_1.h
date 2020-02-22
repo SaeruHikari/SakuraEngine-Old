@@ -5,16 +5,15 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-19 11:18:38
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-19 11:35:16
+ * @LastEditTime: 2020-02-22 12:10:02
  */
 #pragma once
-#include "../../include/modulemanager.h"
+#include "../../SPA/include/modulemanager.h"
 
-class SModule : public Sakura::SPA::IDynamicModule
+class SModule1 : public Sakura::SPA::IDynamicModule
 {
-    
-    
-    IMPLEMENT_DYNAMIC_MODULE(SModule, plugin_1);
+    #include "meta.h"
+    virtual void OnLoad() override;
+    virtual void OnUnload() override;
 };
-
-#include "meta.h"
+IMPLEMENT_DYNAMIC_MODULE(SModule1, plugin_1);

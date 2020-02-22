@@ -34,3 +34,9 @@ inline static const char* __GetMetaData(void)
 {
     return sp_meta;
 }
+public:
+virtual const char* GetMetaData(void) override
+{return __GetMetaData();}
+public:
+virtual std::size_t GetMetaSize(void) override
+{return __GetMetaSize();}

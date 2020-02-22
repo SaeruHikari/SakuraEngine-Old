@@ -3,6 +3,7 @@
     "name" : "plugin_0",
     "prettyName" : "Plugin 0",
     "version" : "1.0.0",
+    "linking" : "static",
     "author" : "",
     "url" : "",
     "license" : "",

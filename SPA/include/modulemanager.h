@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-15 18:50:54
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-19 14:52:35
+ * @LastEditTime: 2020-02-22 12:09:05
  */
 #pragma once
 #include "../../DependencyGraph/Graph.h"
@@ -64,7 +64,8 @@ namespace Sakura::SPA
         {
             
         }
-        IModule* GetModule(std::string_view name);
+
+        virtual IModule* GetModule(std::string_view name);
         
         template<typename T,
             std::enable_if<
@@ -76,15 +77,8 @@ namespace Sakura::SPA
         }
 
         virtual IModule* SpawnStaticModule(const std::pmr::string& name);
+        virtual IModule* SpawnDynamicModule(const std::pmr::string& name);
 
-        template<typename T,
-        std::enable_if<
-            std::is_constructible<std::string_view, std::remove_reference<T>>::value
-        >::type * = nullptr>
-        inline IModule* SpawnDynamicModule(T&& name)
-        {
-            return nullptr;
-        }
     public:
         virtual void RegisterStaticallyLinkedModule(
             const std::pmr::string& moduleName, registerer _register);
@@ -120,6 +114,6 @@ namespace Sakura::SPA
     #define IMPLEMENT_DYNAMIC_MODULE(ModuleImplClass, ModuleName) \
         extern "C" DLLEXPORT Sakura::SPA::IModule* InitializeModule()\
         {\
-            return new ModuleImpleClass();\
+            return new ModuleImplClass();\
         }
 }
