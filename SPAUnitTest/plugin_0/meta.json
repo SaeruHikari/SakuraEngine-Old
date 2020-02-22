@@ -4,6 +4,7 @@
     "prettyname" : "Plugin 0",
     "version" : "1.0.0",
     "linking" : "static",
+    "dependencies" : [{}],
     "author" : "",
     "url" : "",
     "license" : "",

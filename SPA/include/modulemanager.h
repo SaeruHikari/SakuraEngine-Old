@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-15 18:50:54
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-22 16:21:22
+ * @LastEditTime: 2020-02-23 00:55:18
  */
 #pragma once
 #include "../../Extern/include/version/version.h"
@@ -23,19 +23,21 @@
 #ifdef __EMSCRIPTEN__
 #include "emscripten.h"
 #define DLLEXPORT EMSCRIPTEN_KEEPALIVE
+#define SPA_API EMSCRIPTEN_KEEPALIVE
 #define DLLLOCAL __attribute__((visibility("hidden")))
+#define __stdcall 
 #elif defined(__GNUC__)
+#define SPA_API __attribute__((visibility("default")))
 #define DLLEXPORT __attribute__((visibility("default")))
 #define DLLLOCAL __attribute__((visibility("hidden")))
+#define __stdcall 
 #else
 #define DLLEXPORT __declspec(dllexport)
-#define DLLLOCAL
-#endif
-
 #ifdef API_EXPORTS
 #define SPA_API __declspec(dllexport)
 #else
 #define SPA_API __declspec(dllimport)
+#endif
 #endif
 
 namespace Sakura::SPA
@@ -43,10 +45,7 @@ namespace Sakura::SPA
     class ModuleManager;
 }
 
-extern "C"
-{
-    SPA_API Sakura::SPA::ModuleManager* __stdcall GetModuleManager();
-}
+extern "C" SPA_API Sakura::SPA::ModuleManager* __stdcall GetModuleManager();
 
 namespace Sakura::SPA
 {
@@ -69,12 +68,6 @@ namespace Sakura::SPA
         friend struct IModule;
     public:
         ModuleManager() = default;
-        ModuleManager(std::string_view _moduleDir)
-            : moduleDir(_moduleDir)
-        {
-            
-        }
-
         virtual IModule* GetModule(std::string_view name);
         
         template<typename T,
@@ -85,21 +78,28 @@ namespace Sakura::SPA
         {
             return GetModule(std::string_view(name));
         }
-
-        virtual IModule* SpawnStaticModule(const std::pmr::string& name);
-        virtual IModule* SpawnDynamicModule(const std::pmr::string& name);
-
+        virtual const ModuleGraph& MakeModuleGraph(const char* entry, 
+            bool shared = false);
+        virtual bool InitModuleGraph(void);
     public:
+        virtual void Root(const std::pmr::string& rootdir);
+        virtual std::string_view GetRoot(void);
         virtual void RegisterStaticallyLinkedModule(
-            const std::pmr::string& moduleName, registerer _register);
+            std::string_view moduleName, registerer _register);
+
+        virtual IModule* SpawnStaticModule(std::string_view name);
+        virtual IModule* SpawnDynamicModule(std::string_view name);
     private:
+        void __internal_MakeModuleGraph(std::string_view entry,
+            bool shared = false);
         Version CoreVersion{"0.1.0"};
         ModuleInfo ParseMetaData(const char* metadata);
     private:
-        static ModuleManager* mModuleManager;
-        std::string_view moduleDir;
+        std::pmr::string moduleDir;
+        std::pmr::string maimModuleName;
         ModuleGraph moduleDependecyGraph;
-        std::pmr::unordered_map<std::pmr::string, registerer> InitializeMap;
+        std::pmr::unordered_map<std::string_view, int> NodeMap;
+        std::pmr::unordered_map<std::string_view, registerer> InitializeMap;
         std::pmr::unordered_map<std::string_view, std::unique_ptr<IModule>>
             ModulesMap;
     };
