@@ -7,18 +7,20 @@
  * @LastEditors  : SaeruHikari
  * @LastEditTime : 2020-02-11 10:21:08
  */
+#define API_EXPORTS
 #include "../GraphicsCommon/CGD.h"
 #include <iostream>
 #include "../CGD_Vulkan/CGD_Vulkan.h"
+#include "CGDExport.h"
 #include "../CGD_Direct3D12/CGD_Direct3D12.h"
 
 
 using namespace Sakura::Graphics;
 
-Sakura::Graphics::CGD* Sakura::____::eCGD;
+Sakura::Graphics::CGD* CGD::eCGD = nullptr;
+
 void CGD::Initialize(TargetGraphicsInterface targetGI)
 {
-    //assert()
     switch (targetGI)
     {
     case (TargetGraphicsInterface::CGD_TARGET_DIRECT3D12):
@@ -33,4 +35,9 @@ void CGD::Initialize(TargetGraphicsInterface targetGI)
         std::cout << "Target Graphics Interface Not valid!" << std::endl;
         break;
     }
+}
+
+extern "C" SAKURA_API Sakura::Graphics::CGD * __stdcall GetCGD(void)
+{
+    return Sakura::Graphics::CGD::GetCGD();
 }

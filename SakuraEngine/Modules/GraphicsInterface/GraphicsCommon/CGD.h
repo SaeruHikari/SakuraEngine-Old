@@ -4,26 +4,13 @@
  * @Version: 0.1.0
  * @Author: SaeruHikari
  * @Date: 2020-02-02 12:58:52
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-12 12:30:34
+ * @LastEditors: SaeruHikari
+ * @LastEditTime: 2020-02-23 21:39:18
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "CommandObjects/CommandContext.h"
-
-namespace Sakura::Graphics
-{
-    SInterface CGD;
-}
-
-namespace Sakura
-{
-    namespace ____
-    {
-        extern Sakura::Graphics::CGD* eCGD;
-    }
-}
 
 namespace Sakura::Graphics
 {
@@ -36,20 +23,21 @@ namespace Sakura::Graphics
             CGD_TARGET_VULKAN,
             CGD_TARGET_NUMS
         };
-        static void Initialize(TargetGraphicsInterface targetGI);
+        SAKURA_API static void Initialize(TargetGraphicsInterface targetGI);
         virtual void Render(void) = 0;
         virtual void Destroy(void) = 0;
-        sinline static CGD* GetCGD(void)
+        SAKURA_API static CGD* GetCGD(void)
         {
-            ASSERT_RUNTIME(Sakura::____::eCGD != nullptr);
-            return Sakura::____::eCGD;
+            ASSERT_RUNTIME(eCGD != nullptr);
+            return eCGD;
         }
-        sinline static ContextManager* GetContextManager(void)
+        SAKURA_API static ContextManager* GetContextManager(void)
         {
             ASSERT_RUNTIME(GetCGD()->m_ContextManager.get() != nullptr);
             return GetCGD()->m_ContextManager.get();
         }
-    private:
+    protected:
+        SAKURA_API static Sakura::Graphics::CGD* eCGD;
         std::unique_ptr<ContextManager> m_ContextManager;
     };
 }

@@ -6,4 +6,7 @@ add_subdirectory(CGD)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/GraphicsCommon)
 
+add_library(CGDModule SHARED CGDModule.cpp)
+target_link_libraries(CGDModule CGD)
+
 message(STATUS "GraphicsInterface Root: ${CMAKE_CURRENT_SOURCE_DIR}")

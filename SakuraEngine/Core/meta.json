@@ -1,0 +1,12 @@
+{
+	"api": "0.1.0",
+	"name": "CoreModule",
+	"prettyname": "CoreModule",
+	"version": "1.0.0",
+	"linking": "static",
+	"dependencies": [{}],
+	"author": "",
+	"url": "",
+	"license": "",
+	"copyright": ""
+}

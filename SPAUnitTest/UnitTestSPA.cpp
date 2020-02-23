@@ -7,7 +7,7 @@
  * @LastEditors: SaeruHikari
  * @LastEditTime: 2020-02-23 16:55:12
  */
-#include "../SPA/SPAModules.generated.h"
+#include "SPAModules.generated.h"
 #include "../SPA/include/modulemanager.h"
 #include "plugin_main/plugin_main.h"
 #include <iostream>

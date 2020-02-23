@@ -14,7 +14,7 @@ using namespace Sakura::Graphics::Vk;
 
 void CGD_Vk::Initialize(void)
 {
-    Sakura::____::eCGD = new CGD_Vk();    
+    eCGD = new CGD_Vk();    
 }
 
 void CGD_Vk::Render(void)
@@ -25,5 +25,5 @@ void CGD_Vk::Render(void)
 void CGD_Vk::Destroy(void)
 {
     sout << "CGD_Vk: Destroy" << std::endl;
-    delete Sakura::____::eCGD;
+    delete eCGD;
 }

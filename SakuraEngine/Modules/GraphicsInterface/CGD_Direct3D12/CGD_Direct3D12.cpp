@@ -14,7 +14,7 @@ using namespace Sakura::Graphics::Dx12;
 
 void CGD_Direct3D12::Initialize(void)
 {
-    Sakura::____::eCGD = new CGD_Direct3D12();
+    eCGD = new CGD_Direct3D12();
 }
 
 void CGD_Direct3D12::Render(void)
@@ -25,5 +25,5 @@ void CGD_Direct3D12::Render(void)
 void CGD_Direct3D12::Destroy(void)
 {
     sout << "CGD_Direct3D 12: Destroy" << std::endl;
-    delete Sakura::____::eCGD;
+    delete eCGD;
 }

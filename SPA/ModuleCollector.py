@@ -19,7 +19,6 @@ tokenDict = dict()
 versionDic = dict()
 MainModuleName=str()
 header = str()
-fw = fw = open('SPAModules.generated.h', 'w')
 
 class FError(Exception):
     pass
@@ -91,13 +90,16 @@ def collect_meta(filereg='meta', file_path=os.getcwd(), engineApi='0.1.0'):
     return
 
 try:
+    global fw
     if(len(sys.argv) == 1):
         collect_meta()
     elif(len(sys.argv) == 2):
         collect_meta(sys.argv[1])
     elif(len(sys.argv) == 3):
+        fw = open(sys.argv[2]+'/SPAModules.generated.h', 'w')
         collect_meta(sys.argv[1], sys.argv[2])
     elif(len(sys.argv) == 4):
+        fw = open(sys.argv[2]+'/SPAModules.generated.h', 'w')
         collect_meta(sys.argv[1], sys.argv[2], sys.argv[3])
     deal_header_main(os.getcwd())
     fw.write(header)

@@ -25,11 +25,11 @@ namespace Sakura::Graphics
         for(auto i = 0u; i < 4; i++)
             sm_ContextPools[i].clear();
     }
-    using namespace Sakura::____;
+
     CommandContext& CommandContext::Begin(const spmr_string& ID)
     {
         CommandContext* NewContext = 
-        eCGD->GetContextManager()->AllocateContext(CommandContext_Graphics);
+        CGD::GetCGD()->GetContextManager()->AllocateContext(CommandContext_Graphics);
         NewContext->m_ID = ID;
         if(ID.length() > 0)
             Profiling::BeginBlock(ID, *NewContext);

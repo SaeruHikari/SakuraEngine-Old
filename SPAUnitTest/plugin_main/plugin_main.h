@@ -9,7 +9,6 @@
  */
 #pragma once
 #include "../../SPA/include/modulemanager.h"
-#include "../../SPA/SPAModules.generated.h"
 
 class SModule : public Sakura::SPA::IStaticModule
 {

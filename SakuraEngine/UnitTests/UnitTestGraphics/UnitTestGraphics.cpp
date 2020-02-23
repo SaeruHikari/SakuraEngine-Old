@@ -3,8 +3,8 @@
  * @Version: Do not edit
  * @Author: SaeruHikari
  * @Date: 2020-02-01 22:07:52
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-11 10:17:52
+ * @LastEditors: SaeruHikari
+ * @LastEditTime: 2020-02-23 21:37:00
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -30,14 +30,14 @@ TEST(UnitTestGraphics, CGDInterface)
     Sakura::Graphics::CGD::Initialize(
         Sakura::Graphics::CGD::TargetGraphicsInterface::CGD_TARGET_VULKAN
     );
-    Sakura::____::eCGD->Render();
-    Sakura::____::eCGD->Destroy();
+    Sakura::Graphics::CGD::GetCGD()->Render();
+    Sakura::Graphics::CGD::GetCGD()->Destroy();
 
     Sakura::Graphics::CGD::Initialize(
         Sakura::Graphics::CGD::TargetGraphicsInterface::CGD_TARGET_DIRECT3D12
     );
-    Sakura::____::eCGD->Render();
-    Sakura::____::eCGD->Destroy();
+    Sakura::Graphics::CGD::GetCGD()->Render();
+    Sakura::Graphics::CGD::GetCGD()->Destroy();
 }
 
 TEST(UnitTestGraphics, CommandObjects)

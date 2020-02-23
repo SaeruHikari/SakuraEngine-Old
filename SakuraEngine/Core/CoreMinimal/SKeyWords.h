@@ -4,8 +4,8 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 14:17:20
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-11 13:26:46
+ * @LastEditors: SaeruHikari
+ * @LastEditTime: 2020-02-23 21:38:32
  */
 #pragma once
 #include <string>
@@ -45,3 +45,23 @@ namespace Sakura
 #endif
 
 }
+
+#ifdef __EMSCRIPTEN__
+#include "emscripten.h"
+#define DLLEXPORT EMSCRIPTEN_KEEPALIVE
+#define SAKURA_API EMSCRIPTEN_KEEPALIVE
+#define DLLLOCAL __attribute__((visibility("hidden")))
+#define __stdcall 
+#elif defined(__GNUC__)
+#define SAKURA_API __attribute__((visibility("default")))
+#define DLLEXPORT __attribute__((visibility("default")))
+#define DLLLOCAL __attribute__((visibility("hidden")))
+#define __stdcall 
+#else
+#define DLLEXPORT __declspec(dllexport)
+#ifdef API_EXPORTS
+#define SAKURA_API __declspec(dllexport)
+#else
+#define SAKURA_API __declspec(dllimport)
+#endif
+#endif

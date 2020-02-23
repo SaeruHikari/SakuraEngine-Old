@@ -188,7 +188,10 @@ namespace Sakura::SPA
     {
         if(GetModuleProp(mainModuleName).bActive)
             return true;
-        return __internal_InitModuleGraph(mainModuleName);
+        if (!__internal_InitModuleGraph(mainModuleName))
+            return false;
+        GetModule(mainModuleName)->MainPluginExec();
+        return true;
     }
 
     bool ModuleManager::DestroyModuleGraph(void)
