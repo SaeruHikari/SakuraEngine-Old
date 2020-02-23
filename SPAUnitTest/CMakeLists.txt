@@ -1,5 +1,8 @@
 message(STATUS "Generating SPA/UnitTestSPA.exe")
 
+execute_process(COMMAND python ../SPA/anyToheader.py meta .json ../SPAUnitTest)
+execute_process(COMMAND python ../SPA/ModuleCollector.py meta  ../SPAUnitTest)
+
 project(UnitTestSPA VERSION 0.1.0)
 
 add_subdirectory(plugin_0)
