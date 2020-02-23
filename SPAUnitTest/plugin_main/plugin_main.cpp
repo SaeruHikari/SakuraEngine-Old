@@ -11,10 +11,10 @@
 
 void SModule::OnLoad()
 {
-    std::cout << "SMoudle OnLoad!" << std::endl;
+    std::cout << "SMoudle Loaded!" << std::endl;
 }
 
 void SModule::OnUnload()
 {
-    
+    std::cout << "SMoudle UnLoad!" << std::endl;
 }

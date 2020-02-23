@@ -129,10 +129,23 @@ namespace DAG
         typename bidirVertex = typename bidirGraph::vertex_descriptor,
         typename PropMap = 
         typename boost::property_map<bidirGraph, prop_name_t>::type>
-    auto get_vertex_property(bidirVertex vert, bidirGraph g)
+    auto get_vertex_property(bidirVertex vert, bidirGraph& g)
     {
-        PropMap prop = get(prop_name_t(), g);
+        PropMap& prop = get(prop_name_t(), g);
         return prop[vert];
+    }
+
+    template<typename prop_name_t, typename Val, typename... Ts,
+        typename bidirGraph = boost::adjacency_list<Ts...>,
+        typename bidirVertex = typename bidirGraph::vertex_descriptor,
+        typename PropMap =
+        typename boost::property_map<bidirGraph, prop_name_t>::type>
+    void set_vertex_property(bidirVertex vert, bidirGraph& g, Val&& x)
+    {
+        PropMap& prop = get(prop_name_t(), g);
+        put(prop, vert, x);
+        prop = get(prop_name_t(), g);
+        auto why = prop[vert];
     }
     
     template<typename prop_name_t, typename... Ts,
@@ -140,9 +153,9 @@ namespace DAG
         typename bidirEdge = typename bidirGraph::edge_descriptor,
         typename PropMap = 
         typename boost::property_map<bidirGraph, prop_name_t>::type>
-    auto get_edge_property(bidirEdge vert, bidirGraph g)
+    auto get_edge_property(bidirEdge vert, bidirGraph& g)
     {
-        PropMap prop = get(prop_name_t(), g);
+        PropMap& prop = get(prop_name_t(), g);
         return prop[vert];
     }
 }

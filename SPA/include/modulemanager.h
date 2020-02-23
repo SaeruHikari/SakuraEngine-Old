@@ -56,7 +56,8 @@ namespace Sakura::SPA
     };
     struct ModuleProperty
     {
-        ModuleInfo info;
+        bool bActive = false;
+        std::string_view name;
     };
     using registerer = std::function<std::unique_ptr<IModule>(void)>;
     using ModuleProp = property<ModuleProp_t, ModuleProperty>;
@@ -81,22 +82,27 @@ namespace Sakura::SPA
         virtual const ModuleGraph& MakeModuleGraph(const char* entry, 
             bool shared = false);
         virtual bool InitModuleGraph(void);
+        virtual bool DestroyModuleGraph(void);
     public:
-        virtual void Root(const std::pmr::string& rootdir);
+        virtual void Mount(const std::pmr::string& rootdir);
         virtual std::string_view GetRoot(void);
         virtual void RegisterStaticallyLinkedModule(
             std::string_view moduleName, registerer _register);
-
         virtual IModule* SpawnStaticModule(std::string_view name);
         virtual IModule* SpawnDynamicModule(std::string_view name);
+        virtual ModuleProperty& GetModuleProp(std::string_view name);
+        virtual void SetModuleProp(std::string_view name, const ModuleProperty& prop);
     private:
+        bool __internal_DestroyModuleGraph(std::string_view nodename);
         void __internal_MakeModuleGraph(std::string_view entry,
             bool shared = false);
+        bool __internal_InitModuleGraph(std::string_view nodename);
         Version CoreVersion{"0.1.0"};
         ModuleInfo ParseMetaData(const char* metadata);
     private:
         std::pmr::string moduleDir;
-        std::pmr::string maimModuleName;
+        std::vector<std::string_view> roots;
+        std::pmr::string mainModuleName;
         ModuleGraph moduleDependecyGraph;
         std::pmr::unordered_map<std::string_view, int> NodeMap;
         std::pmr::unordered_map<std::string_view, registerer> InitializeMap;

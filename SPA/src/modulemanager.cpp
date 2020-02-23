@@ -17,7 +17,7 @@ namespace Sakura::SPA
     void ModuleManager::RegisterStaticallyLinkedModule(
         std::string_view moduleName, registerer _register)
     {
-        if(InitializeMap.find(moduleName) != InitializeMap.end())
+        if (InitializeMap.find(moduleName) != InitializeMap.end())
         {
             return;
         }
@@ -26,9 +26,9 @@ namespace Sakura::SPA
 
     IModule* ModuleManager::SpawnStaticModule(std::string_view name)
     {
-        if(ModulesMap.find(name) != ModulesMap.end())
+        if (ModulesMap.find(name) != ModulesMap.end())
             return ModulesMap[name].get();
-        if(InitializeMap.find(name) == InitializeMap.end())
+        if (InitializeMap.find(name) == InitializeMap.end())
             return nullptr;
         auto func = InitializeMap[name];
         ModulesMap[name] = func();
@@ -41,27 +41,28 @@ namespace Sakura::SPA
 
     IModule* ModuleManager::SpawnDynamicModule(std::string_view name)
     {
-        std::unique_ptr<SharedLibrary> sharedLib 
+        std::unique_ptr<SharedLibrary> sharedLib
             = std::make_unique<SharedLibrary>();
         std::pmr::string initName("InitializeModule");
         std::pmr::string mName(name);
         initName.append(mName);
-        #ifdef CONFINFO_PLATFORM_LINUX
         std::pmr::string prefix = moduleDir;
+#ifdef CONFINFO_PLATFORM_LINUX
         prefix.append("/lib/lib");
-        #elif defined(CONFINFO_PLATFORM_WIN32)
-        std::pmr::string prefix("../bin/");
-        #endif
         prefix.append(name).append(".so");
-        if(!sharedLib->load(prefix))
+#elif defined(CONFINFO_PLATFORM_WIN32)
+        prefix.append("\\bin\\");
+        prefix.append(name).append(".dll");
+#endif
+        if (!sharedLib->load(prefix))
         {
             std::cerr << prefix << std::endl << "!!!!!!Load Shared Lib Error!!!!!";
             return nullptr;
-        }            
-        if(sharedLib->hasSymbol(initName.c_str()))
+        }
+        if (sharedLib->hasSymbol(initName.c_str()))
         {
-            auto func = 
-                sharedLib->get<IModule*()>(initName);
+            auto func =
+                sharedLib->get<IModule * ()>(initName);
             ModulesMap[name] = std::move(std::unique_ptr<IModule>(func()));
             IDynamicModule* module = (IDynamicModule*)ModulesMap[name].get();
             module->sharedLib = std::move(sharedLib);
@@ -75,13 +76,13 @@ namespace Sakura::SPA
 
     ModuleInfo ModuleManager::ParseMetaData(const char* metadata)
     {
+        ModuleInfo info;
         try
         {
             using json = nlohmann::json;
             json tree = json::parse(metadata);
-            if(Version(tree.at("api").get<std::string>()).compatible(CoreVersion))
+            if (Version(tree.at("api").get<std::string>()).compatible(CoreVersion))
             {
-                ModuleInfo info;
                 info.name = tree.at("name").get<std::string>();
                 info.prettyname = tree.at("prettyname").get<std::string>();
                 info.engine_version = tree.at("api").get<std::string>();
@@ -91,7 +92,7 @@ namespace Sakura::SPA
                 info.version = tree.at("version").get<std::string>();
                 info.linking = tree.at("linking").get<std::string>();
                 json jsonDependecy = tree.at("dependencies");
-                for(json& jdep : jsonDependecy)
+                for (json& jdep : jsonDependecy)
                 {
                     Dependency dep;
                     dep.name = jdep.at("name").get<std::string>();
@@ -101,55 +102,112 @@ namespace Sakura::SPA
                 return info;
             }
         }
-        catch(const std::exception& e)
+        catch (const std::exception & e)
         {
             //std::cerr << e.what() << '\n';
         }
-        return ModuleInfo();
+        return info;
     }
 
     IModule* ModuleManager::GetModule(std::string_view name)
     {
-        if(ModulesMap.find(name) == ModulesMap.end())
+        if (ModulesMap.find(name) == ModulesMap.end())
             return nullptr;
         return ModulesMap[name].get();
     }
 
-    bool ModuleManager::InitModuleGraph(void)
+    ModuleProperty& ModuleManager::GetModuleProp(std::string_view entry)
     {
-        return true;
+        return DAG::get_vertex_property<ModuleProp_t>(DAG::vertex(NodeMap[entry], moduleDependecyGraph), moduleDependecyGraph);
     }
 
-    const ModuleGraph& ModuleManager::MakeModuleGraph
-        (const char* entry, bool shared/*=false*/)
+    void ModuleManager::SetModuleProp(std::string_view entry, const ModuleProperty& prop)
     {
-        maimModuleName = entry;
-        __internal_MakeModuleGraph(entry, shared);
-        return moduleDependecyGraph;
+        DAG::set_vertex_property<ModuleProp_t>(DAG::vertex(NodeMap[entry], moduleDependecyGraph), moduleDependecyGraph, prop);
+    }
+
+    bool ModuleManager::__internal_InitModuleGraph(std::string_view nodename)
+    {
+        for (auto&& iter : GetModule(nodename)->GetModuleInfo().dependencies)
+        {
+            if (GetModuleProp(iter.name).bActive)
+                continue;
+            if (!__internal_InitModuleGraph(iter.name))
+                return false;
+        }
+        GetModule(nodename)->OnLoad();
+        ModuleProperty prop;
+        prop.bActive = true;
+        prop.name = GetModuleProp(nodename).name;
+        SetModuleProp(nodename, prop);
+        return true;
     }
 
     void ModuleManager::__internal_MakeModuleGraph(std::string_view entry,
         bool shared)
     {
         std::string_view entryView(entry);
-        IModule* mainModule = shared ? 
-            SpawnDynamicModule(entryView) 
+        IModule* mainModule = shared ?
+            SpawnDynamicModule(entryView)
             : SpawnStaticModule(entryView);
         static int nodeNum = 0;
         NodeMap[entry] = nodeNum++;
-        for(auto&& iter : mainModule->GetModuleInfo().dependencies)
+        ModuleProperty prop;
+        prop.name = entry;
+        DAG::add_vertex(prop, moduleDependecyGraph);
+        if (mainModule->GetModuleInfo().dependencies.size() == 0)
+            roots.push_back(entry);
+        for (auto i = 0u; i < mainModule->GetModuleInfo().dependencies.size(); i++)
         {
-            std::string_view iterView(iter.name);
+            std::string_view iterView(mainModule->GetModuleInfo().dependencies[i].name);
             // Static
-            if(InitializeMap.find(iter.name) != InitializeMap.end())
+            if (InitializeMap.find(iterView) != InitializeMap.end())
                 __internal_MakeModuleGraph(iterView, false);
             else
                 __internal_MakeModuleGraph(iterView, true);
             DAG::add_edge(NodeMap[entry], NodeMap[iterView], moduleDependecyGraph);
-        }      
+        }
     }
 
-    void ModuleManager::Root(const std::pmr::string& rootdir)
+    bool ModuleManager::__internal_DestroyModuleGraph(std::string_view nodename)
+    {
+        auto prevs = DAG::inv_adjacent_vertices(ModuleNode(NodeMap[nodename]), moduleDependecyGraph);
+        auto prop = GetModuleProp(nodename).name;
+        for (auto iter = prevs.first; iter != prevs.second; iter++)
+        {
+            auto n = GetModuleProp(DAG::get_vertex_property<ModuleProp_t>(*iter, moduleDependecyGraph).name).name;
+            __internal_DestroyModuleGraph(n);
+        }
+        GetModule(nodename)->OnUnload();
+        return true;
+    }
+
+    bool ModuleManager::InitModuleGraph(void)
+    {
+        if(GetModuleProp(mainModuleName).bActive)
+            return true;
+        return __internal_InitModuleGraph(mainModuleName);
+    }
+
+    bool ModuleManager::DestroyModuleGraph(void)
+    {
+        for (auto& iter : roots)
+        {
+            if (!__internal_DestroyModuleGraph(iter))
+                return false;
+        }
+        return true;
+    }
+
+    const ModuleGraph& ModuleManager::MakeModuleGraph
+        (const char* entry, bool shared/*=false*/)
+    {
+        mainModuleName = entry;
+        __internal_MakeModuleGraph(mainModuleName, shared);
+        return moduleDependecyGraph;
+    }
+
+    void ModuleManager::Mount(const std::pmr::string& rootdir)
     {
         moduleDir = rootdir;
     }

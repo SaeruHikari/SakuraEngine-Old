@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.10)
 
 add_definitions("-std=c++2a")
 include(${CMAKE_SOURCE_DIR}/Conan/conanbuildinfo.cmake)

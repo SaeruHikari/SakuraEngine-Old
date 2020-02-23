@@ -15,15 +15,15 @@
 int main(void)
 {
     auto mng = GetModuleManager();
-    mng->Root("/home/saeruhikari/Coding/SakuraEngine/build");
+#ifdef _Linux
+    mng->Mount("/home/saeruhikari/Coding/SakuraEngine/build");
+#elif defined(_WIN32)
+    mng->Mount("D:\\Coding\\SakuraEngine\\build");
+#endif
     std::cout << "Root: " << mng->GetRoot() << std::endl;
     std::string mainName = "plugin_main";
-    std::string_view dynName = "plugin_1";
     mng->MakeModuleGraph(mainName.c_str());
-    auto mainModule = mng->GetModule(mainName);
-    auto dynModule = mng->GetModule(dynName);
-    std::cout << mainModule->GetModuleInfo().name << std::endl;
-    std::cout << dynModule->GetModuleInfo().name << std::endl;
-    std::cout << dynModule->GetModuleInfo().version << std::endl;
+    mng->InitModuleGraph();
+    mng->DestroyModuleGraph();
     return 0;
 }
