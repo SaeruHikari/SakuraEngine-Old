@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 23:23:02
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-23 00:59:20
+ * @LastEditTime: 2020-02-23 16:56:37
  */
 #define API_EXPORTS
 #include "../include/modulemanager.h"
@@ -118,7 +118,9 @@ namespace Sakura::SPA
 
     ModuleProperty& ModuleManager::GetModuleProp(std::string_view entry)
     {
-        return DAG::get_vertex_property<ModuleProp_t>(DAG::vertex(NodeMap[entry], moduleDependecyGraph), moduleDependecyGraph);
+        auto res = DAG::get_vertex_property<ModuleProp_t>
+            (ModuleNode(NodeMap[entry]), moduleDependecyGraph);
+        return res;
     }
 
     void ModuleManager::SetModuleProp(std::string_view entry, const ModuleProperty& prop)
