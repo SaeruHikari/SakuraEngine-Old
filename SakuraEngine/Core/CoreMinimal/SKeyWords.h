@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 14:17:20
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-23 21:38:32
+ * @LastEditTime: 2020-02-23 23:49:49
  */
 #pragma once
 #include <string>
@@ -35,16 +35,9 @@ namespace Sakura
         #define sinline inline
     #endif
 #endif
-
-#ifndef snoexcept 
-    #if defined(DEBUG) || defined(_DEBUG)
-        #define snoexcpet noexcept
-    #else
-        #define snoexcpt
-    #endif
-#endif
-
 }
+
+#define snoexcept noexcept
 
 #ifdef __EMSCRIPTEN__
 #include "emscripten.h"

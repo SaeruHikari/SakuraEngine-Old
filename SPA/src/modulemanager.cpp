@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 23:23:02
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-23 16:56:37
+ * @LastEditTime: 2020-02-24 00:34:49
  */
 #define API_EXPORTS
 #include "../include/modulemanager.h"
@@ -48,11 +48,17 @@ namespace Sakura::SPA
         initName.append(mName);
         std::pmr::string prefix = moduleDir;
 #ifdef CONFINFO_PLATFORM_LINUX
-        prefix.append("/lib/lib");
-        prefix.append(name).append(".so");
+        prefix.append("/lib/lib").append(name);
+        #if defined(DEBUG) || defined(_DEBUG)
+        prefix.append("d");
+        #endif
+        prefix.append(".so");
 #elif defined(CONFINFO_PLATFORM_WIN32)
-        prefix.append("\\bin\\");
-        prefix.append(name).append(".dll");
+        prefix.append("\\bin\\").append(name);
+        #if defined(DEBUG) || defined(_DEBUG)
+        prefix.append("d");
+        #endif
+        prefix.append(".dll");
 #endif
         if (!sharedLib->load(prefix))
         {

@@ -1,6 +1,19 @@
 cmake_minimum_required(VERSION 3.10)
 
 add_definitions("-std=c++2a")
+set(CMAKE_DEBUG_POSTFIX d)
+
+#conan config
+if(MSVC) 
+if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+execute_process(COMMAND conan install . --profile=win32profile_MTd.txt --build missing
+WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Conan)
+else(${CMAKE_BUILD_TYPE} MATCHES "Release")
+execute_process(COMMAND conan install . --profile=win32profile_MT.txt --build missing 
+WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Conan)
+endif()
+endif(MSVC)
+
 include(${CMAKE_SOURCE_DIR}/Conan/conanbuildinfo.cmake)
 conan_basic_setup()
 
@@ -28,10 +41,7 @@ else()
         set(ARCH_BIT 32)
 endif()
 
-if (NOT CMAKE_BUILD_TYPE)
-set(CMAKE_BUILD_TYPE "Debug")
-#set(CMAKE_BUILD_TYPE "Release")
-endif (NOT CMAKE_BUILD_TYPE)
+
 
 #features
 set(VAR_CONFIG_FLAGS " -D DEBUG")

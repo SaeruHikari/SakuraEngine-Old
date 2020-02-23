@@ -1,0 +1,12 @@
+{
+	"api": "0.1.0",
+	"name": "CGDMoudle",
+	"prettyname": "CGDMoudle",
+	"version": "1.0.0",
+	"linking": "shared",
+	"dependencies": [ {} ],
+	"author": "",
+	"url": "",
+	"license": "",
+	"copyright": ""
+}

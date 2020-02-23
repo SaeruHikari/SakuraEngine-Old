@@ -9,7 +9,7 @@
  */
 
 #pragma once
-#ifndef SAKURA_TARGET_PLATFORM_WIN32
+#ifndef _WIN32
 static_assert(0, "Target platform is not Win32, check for compile flags!");
 #endif
 

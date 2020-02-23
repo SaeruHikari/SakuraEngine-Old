@@ -4,8 +4,8 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 14:21:56
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 23:55:35
+ * @LastEditors: SaeruHikari
+ * @LastEditTime: 2020-02-23 23:51:13
  */
 #pragma once
 #include "Core/CoreMinimal/SKeyWords.h"
@@ -21,7 +21,7 @@ namespace Sakura
     };
 
     template<class T, class... Args>
-    sinline void convert(const std::variant<Args...>& var, T& res) snoexcpet
+    sinline void convert(const std::variant<Args...>& var, T& res) snoexcept
     {
         res = visit(([](const auto& v) {
             return T(v);
@@ -29,7 +29,7 @@ namespace Sakura
     }
 
     template<class T, class...Args>
-    sinline auto convert(const std::variant<Args...>& var) snoexcpet
+    sinline auto convert(const std::variant<Args...>& var) snoexcept
     {
         return visit(([](const auto& v) {
             return T(v);
@@ -37,7 +37,7 @@ namespace Sakura
     }
 
     template<class T, class... Ts>
-    constexpr bool is(const std::variant<Ts...>& var) snoexcpet
+    constexpr bool is(const std::variant<Ts...>& var) snoexcept
     {
         return std::holds_alternative<T>(var);   
     }
