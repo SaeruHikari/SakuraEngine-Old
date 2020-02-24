@@ -8,11 +8,11 @@ A Cross-Platform Mordern Game Engine.
   * UnitTest
     * GTest √
   * PluginManager √
-    * [[SPA]](SPA/)(SakuraPluginAdministrator): Plugin Administrator to manage plugins
+    * [SPA](SPA/)(SakuraPluginAdministrator): Plugin Administrator to manage plugins
       * Based on Python Batcher.
       * Load/Unload plugins in order described with json file, by Dependency Graph.
       * Dispatch and handle requesting from plugins/modules.
-  * Core
+  * [Core](SakuraEngine/Core/) √ 
     * Platform Defination √(Win32/Linux)
     * EngineUtils(EnvQuery√, Timer√, T2StringCaster√, Path Operation√, Thread...)
     * Math √(Eigen3)
@@ -24,7 +24,7 @@ A Cross-Platform Mordern Game Engine.
   * Script
     * Mono?
     * Auto-Binding / Binding Machine
-  * Graphics
+  * Graphics: [CGD](SakuraEngine/GraphicsInterface) 🚧
     * GraphicsUtils
       * GraphicsProfiling(GpuTimer...) 🚧
     * TargetGraphicsInterface 🚧
@@ -45,7 +45,7 @@ A Cross-Platform Mordern Game Engine.
       * PBR Shading Models
       * F+ Shading
       * Culling
-      * Shadowing
+      * Shadowing 
       * SSAO(GTAO/HBAO+)
       * RTAO
       * DDGI
