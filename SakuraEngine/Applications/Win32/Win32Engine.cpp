@@ -4,9 +4,10 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-12 16:25:00
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-13 17:23:07
+ * @LastEditors: SaeruHikari
+ * @LastEditTime: 2020-02-24 11:38:49
  */
+#define API_EXPORTS
 #include "Win32Window.h"
 #include "Win32Engine.h"
 #include "Core/EngineUtils/ConsoleDesk.h"
@@ -29,7 +30,7 @@ bool Sakura::SWin32Engine::Destroy(void)
 	return true;
 }
 
-std::unique_ptr<Sakura::SWindow>
+SAKURA_API std::unique_ptr<Sakura::SWindow>
 	Sakura::SEngine::CreateSWindow(const Sakura::WindowDesc& desc)
 {
 	std::unique_ptr<Sakura::SWindow> result 
@@ -46,7 +47,29 @@ std::unique_ptr<Sakura::SWindow>
 }
 
 Sakura::SEngine* Sakura::____::eEngine;
-void Sakura::SEngine::CreateSEngine(const EngineDesc& _desc)
+SAKURA_API void Sakura::SEngine::CreateSEngine(const EngineDesc& _desc)
 {
 	Sakura::____::eEngine = new Sakura::SWin32Engine(_desc);
+}
+
+SAKURA_API Sakura::EngineDesc Sakura::SEngine::GetEngineDesc(void)
+{
+	if(____::eEngine == nullptr)
+		assert(0 && "Error! Engine not Created!");
+	else
+	{
+		return ____::eEngine->desc;                
+	}
+	return EngineDesc();
+}
+
+SAKURA_API Sakura::SEngine* Sakura::SEngine::GetEngine(void)
+{
+	if(____::eEngine == nullptr)
+		assert(0 && "Error! Engine not Created!");
+	else
+	{
+		return ____::eEngine;
+	}
+	return nullptr;
 }

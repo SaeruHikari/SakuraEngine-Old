@@ -1,0 +1,16 @@
+{
+	"api": "0.1.0",
+	"name": "EditorModule",
+	"prettyname": "EditorModule",
+	"version": "1.0.0",
+	"linking": "shared",
+    "dependencies": [ 
+                        {"name":"CoreModule", "version":"1.0.0"},
+						{"name":"ApplicationModule", "version":"1.0.0"},
+						{"name":"CGDModule", "version":"1.0.0"}
+                    ],
+	"author": "",
+	"url": "",
+	"license": "",
+	"copyright": ""
+}

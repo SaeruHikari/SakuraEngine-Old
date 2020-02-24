@@ -1,5 +1,5 @@
 if(${CMAKE_SYSTEM} MATCHES "Linux")
-add_library(LinuxApp LinuxEngine.cc LinuxWindow.cc)
+add_library(LinuxApp SHARED LinuxEngine.cc LinuxWindow.cc)
 find_library(XCB xcb)
 message(STATUS "FOUND XCB: ${XCB}")
 target_link_libraries(LinuxApp xcb Core)

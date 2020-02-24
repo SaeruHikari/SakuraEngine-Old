@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 23:23:02
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-24 00:34:49
+ * @LastEditTime: 2020-02-24 13:48:00
  */
 #define API_EXPORTS
 #include "../include/modulemanager.h"
@@ -136,6 +136,8 @@ namespace Sakura::SPA
 
     bool ModuleManager::__internal_InitModuleGraph(std::string_view nodename)
     {
+        if(GetModuleProp(nodename).bActive) 
+            return true;
         for (auto&& iter : GetModule(nodename)->GetModuleInfo().dependencies)
         {
             if (GetModuleProp(iter.name).bActive)
@@ -179,14 +181,19 @@ namespace Sakura::SPA
 
     bool ModuleManager::__internal_DestroyModuleGraph(std::string_view nodename)
     {
+        if(!GetModuleProp(nodename).bActive) 
+            return true;
         auto prevs = DAG::inv_adjacent_vertices(ModuleNode(NodeMap[nodename]), moduleDependecyGraph);
-        auto prop = GetModuleProp(nodename).name;
         for (auto iter = prevs.first; iter != prevs.second; iter++)
         {
-            auto n = GetModuleProp(DAG::get_vertex_property<ModuleProp_t>(*iter, moduleDependecyGraph).name).name;
-            __internal_DestroyModuleGraph(n);
+            auto n = GetModuleProp(DAG::get_vertex_property<ModuleProp_t>(*iter, moduleDependecyGraph).name);
+            __internal_DestroyModuleGraph(n.name);
         }
         GetModule(nodename)->OnUnload();
+        ModuleProperty prop;
+        prop.bActive = false;
+        prop.name = GetModuleProp(nodename).name;
+        SetModuleProp(nodename, prop);
         return true;
     }
 

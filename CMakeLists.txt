@@ -12,6 +12,9 @@ else(${CMAKE_BUILD_TYPE} MATCHES "Release")
 execute_process(COMMAND conan install . --profile=win32profile_MT.txt --build missing 
 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Conan)
 endif()
+else(MSVC)
+execute_process(COMMAND conan install . --build missing 
+WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Conan)
 endif(MSVC)
 
 include(${CMAKE_SOURCE_DIR}/Conan/conanbuildinfo.cmake)
