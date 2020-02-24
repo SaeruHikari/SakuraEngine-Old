@@ -8,7 +8,7 @@ A Cross-Platform Mordern Game Engine.
   * UnitTest
     * GTest √
   * PluginManager √
-    * SPA(SakuraPluginAdministrator): Plugin Administrator to manage plugins
+    * [[SPA]](SPA/)(SakuraPluginAdministrator): Plugin Administrator to manage plugins
       * Based on Python Batcher.
       * Load/Unload plugins in order described with json file, by Dependency Graph.
       * Dispatch and handle requesting from plugins/modules.
