@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
 
-add_definitions("-std=c++2a")
+find_package(Vulkan REQUIRED)
+if(Vulkan_FOUND)
+include_directories(${Vulkan_INCLUDE_DIRS})
+endif()
+
+if(LINUX)
+else()
+execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/Extern/ExternGet.py WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Extern)
+endif()
+
 set(CMAKE_DEBUG_POSTFIX d)
 
 #conan config
@@ -27,8 +36,8 @@ if(MSVC)
         CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
         CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO
       )
-      if(${var} MATCHES "/MD")
-        string(REGEX REPLACE "/MD" "/MT" ${var} "${${var}}")
+      if(${var} MATCHES "/MT")
+        string(REGEX REPLACE "/MT" "/MD" ${var} "${${var}}")
       endif()
     endforeach()    
 endif(MSVC)
@@ -44,8 +53,6 @@ else()
         set(ARCH_BIT 32)
 endif()
 
-
-
 #features
 set(VAR_CONFIG_FLAGS " -D DEBUG")
 set(CMAKE_C_STANDARD 11)
@@ -58,12 +65,15 @@ if(MSVC)
 else(MSVC)
     message(STATUS "Use GCC Compiler gcc.exe")
     add_definitions(-msse4.2)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts -fPIC -march=native -O3 -pthread -lpthread ${VAR_CONFIG_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -fconcepts -fPIC -march=native -O3 -pthread -lpthread ${VAR_CONFIG_FLAGS}")
     message(STATUS "${VAR_CONFIG_FLAGS}")
 endif(MSVC)
 
-add_subdirectory(SakuraEngine)
+add_subdirectory(Extern)
+add_subdirectory(DependencyGraph)
 add_subdirectory(SPA)
 add_subdirectory(SPAUnitTest)
-add_subdirectory(DependencyGraph)
-add_subdirectory(Extern)
+add_subdirectory(SakuraEngine)
+
+
+

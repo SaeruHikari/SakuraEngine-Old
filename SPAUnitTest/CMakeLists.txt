@@ -1,7 +1,7 @@
 message(STATUS "Generating SPA/UnitTestSPA.exe")
 
-execute_process(COMMAND python ../SPA/anyToheader.py meta .json ../SPAUnitTest)
-execute_process(COMMAND python ../SPA/ModuleCollector.py meta  ../SPAUnitTest)
+execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/SPA/anyToheader.py meta .json ${CMAKE_SOURCE_DIR}/SPAUnitTest)
+execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/SPA/ModuleCollector.py meta  ${CMAKE_SOURCE_DIR}/SPAUnitTest)
 
 project(UnitTestSPA VERSION 0.1.0)
 

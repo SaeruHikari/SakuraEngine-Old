@@ -427,8 +427,8 @@ private:
     }
 
     void createGraphicsPipeline() {
-        auto vertShaderCode = readFile("shaders/vert.spv");
-        auto fragShaderCode = readFile("shaders/frag.spv");
+        auto vertShaderCode = readFile("SakuraEngine/UnitTests/UnitTestGraphics/vert.spv");
+        auto fragShaderCode = readFile("SakuraEngine/UnitTests/UnitTestGraphics/frag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
