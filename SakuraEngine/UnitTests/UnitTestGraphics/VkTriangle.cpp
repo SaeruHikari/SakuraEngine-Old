@@ -1,7 +1,10 @@
-﻿#include "SakuraEngine/Framework/Application/SEngine.h"
-#include <algorithm>
+﻿#include <algorithm>
 #define GLFW_INCLUDE_VULKAN
+#ifdef _WIN32
 #include <glfw/glfw3.h>
+#else
+#include <GLFW/glfw3.h>
+#endif
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -12,7 +15,7 @@
 #include <cstdint>
 #include <optional>
 #include <set>
-
+#include <cassert>
 const int WIDTH = 800;
 const int HEIGHT = 600;
 
@@ -29,7 +32,7 @@ const std::vector<const char*> deviceExtensions = {
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
 #else
-const bool enableValidationLayers = true;
+const bool enableValidationLayers = false;
 #endif
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
@@ -74,7 +77,6 @@ public:
 
 private:
     GLFWwindow* window;
-    GLFWwindow* window2;
 
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
@@ -107,8 +109,9 @@ private:
     size_t currentFrame = 0;
 
     void initWindow() {
-        glfwInit();
-
+        std::cout << std::endl << glfwGetVersionString() << std::endl;
+        if(glfwInit() != GLFW_TRUE)
+            assert(0);
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 

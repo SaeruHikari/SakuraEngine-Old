@@ -5,12 +5,12 @@ if(Vulkan_FOUND)
 include_directories(${Vulkan_INCLUDE_DIRS})
 endif()
 
-if(LINUX)
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 else()
 execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/Extern/ExternGet.py WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Extern)
-endif()
-
+endif(LINUX)
 set(CMAKE_DEBUG_POSTFIX d)
+
 
 #conan config
 if(MSVC) 
@@ -22,7 +22,8 @@ execute_process(COMMAND conan install . --profile=win32profile_MT.txt --build mi
 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Conan)
 endif()
 else(MSVC)
-execute_process(COMMAND conan install . --build missing 
+
+execute_process(COMMAND conan install . --profile=linuxprofile_MT.txt --build missing --build glfw
 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Conan)
 endif(MSVC)
 

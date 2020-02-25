@@ -1,7 +1,7 @@
 add_subdirectory(googletest)
 add_subdirectory(include)
 
-if(LINUX)
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 else()
 add_subdirectory(_internal)
 endif()

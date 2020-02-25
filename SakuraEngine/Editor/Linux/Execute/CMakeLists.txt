@@ -1,0 +1,3 @@
+add_executable(SakuraEngineEditorLinux LinuxExecute.cpp)
+
+target_link_libraries(SakuraEngineEditorLinux SPA CoreModule)
