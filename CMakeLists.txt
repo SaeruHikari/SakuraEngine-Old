@@ -1,17 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(ENV{HTTP_PROXY} http://127.0.0.1:10809)
-
 set(VCPKG_PKGS eigen3 boost gtest spdlog glfw3 SDL2 fmt)
 if(WIN32)
 execute_process(COMMAND vcpkg install --triplet x64-windows ${VCPKG_PKGS})
 set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake)
 else()
-execute_process(COMMAND vcpkg install --triplet x64-linux ${VCPKG_PKGS})
+#execute_process(COMMAND $ENV{VCPKG_ROOT}/vcpkg install --triplet x64-linux ${VCPKG_PKGS})
 set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 endif()
 message(STATUS "TOOL CHAIN: ${CMAKE_TOOLCHAIN_FILE}")
-
+project(Sakura)
 enable_testing()
 
 find_package(Boost REQUIRED)

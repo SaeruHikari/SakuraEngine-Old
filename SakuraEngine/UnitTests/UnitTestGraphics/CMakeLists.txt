@@ -1,7 +1,7 @@
 message(STATUS "Generating UnitTestGraphics.exe")
 add_executable(UnitTestGraphics UnitTestGraphics.cpp)
 add_executable(VkTriangle VkTriangle.cpp)
-#add_executable(SDLHello SDLHello.cpp)
+add_executable(SDLHello SDLHello.cpp)
 
 if(WIN32)
 else()
@@ -19,6 +19,6 @@ target_link_libraries(VkTriangle ${Vulkan_LIBRARY} glfw)
 else()
 target_link_libraries(VkTriangle -lGL -lGLU -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lglfw ${Vulkan_LIBRARY})
 endif()
-#target_link_libraries(SDLHello SDL2)
+target_link_libraries(SDLHello SDL2)
 
 
