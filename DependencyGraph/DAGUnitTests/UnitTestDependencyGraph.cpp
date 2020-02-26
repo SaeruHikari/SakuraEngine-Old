@@ -5,14 +5,14 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 17:06:04
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-23 00:51:15
+ * @LastEditTime: 2020-02-26 10:04:47
  */
 #include "UnitTestDependencyGraph.h"
 
 //struct first_name_t {
 //    using kind = vertex_property_tag;
 //};
-int _main(void)
+int main(void)
 {
     using vertexProp = property<first_name_t, std::string>;
     using Graph = DAG::Graph<vertexProp>;
@@ -21,11 +21,11 @@ int _main(void)
 
     Graph g(5);
    
-    //boost::add_edge(3, 1, g);
-    //boost::add_edge(2, 1, g);
-    //boost::add_edge(3, 2, g);
-    //boost::add_edge(2, 3, g);
-    //boost::add_edge(5, 3, g);
+    boost::add_edge(3, 1, g);
+    boost::add_edge(2, 1, g);
+    boost::add_edge(3, 2, g);
+    boost::add_edge(2, 3, g);
+    boost::add_edge(5, 3, g);
     std::cout << "num vertices: " << boost::num_vertices(g);
     
     property_map<Graph, first_name_t>::type
@@ -68,7 +68,7 @@ int _main(void)
 
 
 using namespace boost;
-int main(int,char*[])
+int _main(int,char*[])
 {
     using vertexProp = property<first_name_t, std::string>;
     //typedef adjacency_list<vecS, vecS, bidirectionalS, vertexProp> Graph;

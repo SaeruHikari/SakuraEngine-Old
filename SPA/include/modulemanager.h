@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-15 18:50:54
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-23 16:55:36
+ * @LastEditTime: 2020-02-26 10:15:24
  */
 #pragma once
 #include "../../Extern/include/version/version.h"
@@ -115,6 +115,7 @@ namespace Sakura::SPA
     {
         SStaticallyLinkedModuleRegistrant(const char* InModuleName)
         {
+            std::cout << "StaticallyLinking Module" << std::endl;
             std::function<std::unique_ptr<IModule>(void)> func =
                 []()
                 {

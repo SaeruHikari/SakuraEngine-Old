@@ -1,5 +1,43 @@
 cmake_minimum_required(VERSION 3.10)
 
+set(ENV{HTTP_PROXY} http://127.0.0.1:10809)
+
+#conan config
+#if(MSVC) 
+#if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+#execute_process(COMMAND conan install . --profile=win32profile_MTd.txt --build missing
+#WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Conan)
+#else(${CMAKE_BUILD_TYPE} MATCHES "Release")
+#execute_process(COMMAND conan install . --profile=win32profile_MT.txt --build missing 
+#WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Conan)
+#endif()
+#else(MSVC)
+#execute_process(COMMAND conan install . --profile=linuxprofile_MT.txt --build missing --build glfw
+#WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Conan)
+#endif(MSVC)
+
+#include(${CMAKE_SOURCE_DIR}/Conan/conanbuildinfo.cmake)
+#conan_basic_setup()
+set(VCPKG_PKGS eigen3 boost gtest spdlog glfw3 SDL2 fmt)
+if(WIN32)
+execute_process(COMMAND vcpkg install --triplet x64-windows ${VCPKG_PKGS})
+set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake)
+else()
+execute_process(COMMAND vcpkg install --triplet x64-linux ${VCPKG_PKGS})
+set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
+endif()
+message(STATUS "TOOL CHAIN: ${CMAKE_TOOLCHAIN_FILE}")
+enable_testing()
+
+find_package(glfw3 CONFIG REQUIRED)
+find_package(GTest CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+
+find_package(Boost REQUIRED)
+if(Boost_FOUND)
+include_directories(${Boost_INCLUDE_DIRS})
+endif()
 find_package(Vulkan REQUIRED)
 if(Vulkan_FOUND)
 include_directories(${Vulkan_INCLUDE_DIRS})
@@ -7,28 +45,10 @@ endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 else()
-execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/Extern/ExternGet.py WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Extern)
-endif(LINUX)
+#execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/Extern/ExternGet.py WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Extern)
+endif()
 set(CMAKE_DEBUG_POSTFIX d)
 
-
-#conan config
-if(MSVC) 
-if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-execute_process(COMMAND conan install . --profile=win32profile_MTd.txt --build missing
-WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Conan)
-else(${CMAKE_BUILD_TYPE} MATCHES "Release")
-execute_process(COMMAND conan install . --profile=win32profile_MT.txt --build missing 
-WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Conan)
-endif()
-else(MSVC)
-
-execute_process(COMMAND conan install . --profile=linuxprofile_MT.txt --build missing --build glfw
-WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Conan)
-endif(MSVC)
-
-include(${CMAKE_SOURCE_DIR}/Conan/conanbuildinfo.cmake)
-conan_basic_setup()
 
 if(MSVC)     
     foreach(var 

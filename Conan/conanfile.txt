@@ -1,7 +1,0 @@
-[requires]
-spdlog/1.5.0
-eigen/3.3.7@conan/stable
-boost/1.72.0
- 
-[generators]
-cmake

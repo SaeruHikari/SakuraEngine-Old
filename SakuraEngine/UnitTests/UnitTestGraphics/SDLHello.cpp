@@ -5,18 +5,13 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:43:56
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-26 00:36:29
+ * @LastEditTime: 2020-02-26 09:20:51
  */
 #include <iostream>
 extern "C"
 {
-	#ifdef _WIN32
-	#include "SDL.h"
-	#include "SDL_surface.h"
-	#else
 	#include "SDL2/SDL.h"
 	#include "SDL2/SDL_surface.h"
-	#endif
 	#undef main
 }
 

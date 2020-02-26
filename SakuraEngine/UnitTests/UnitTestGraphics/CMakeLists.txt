@@ -1,11 +1,24 @@
 message(STATUS "Generating UnitTestGraphics.exe")
 add_executable(UnitTestGraphics UnitTestGraphics.cpp)
 add_executable(VkTriangle VkTriangle.cpp)
-add_executable(SDLHello SDLHello.cpp)
+#add_executable(SDLHello SDLHello.cpp)
 
+if(WIN32)
+else()
 find_package(glfw3 REQUIRED)
+endif()
 
-target_link_libraries(UnitTestGraphics gtest gtest_main gmock Core CGDModule)
-target_link_libraries(VkTriangle ${CONAN_LIBS} -lGL -lGLU -lX11 -lXxf86vm -lXrandr -lpthread -lXi glfw ${Vulkan_LIBRARY} ApplicationModule)
-target_link_libraries(SDLHello SDL2)
+target_link_libraries(
+UnitTestGraphics 
+GTest::gtest GTest::gtest_main 
+GTest::gmock GTest::gmock_main 
+Core CGDModule)
+
+if(WIN32)
+target_link_libraries(VkTriangle ${Vulkan_LIBRARY} glfw)
+else()
+target_link_libraries(VkTriangle -lGL -lGLU -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lglfw ${Vulkan_LIBRARY})
+endif()
+#target_link_libraries(SDLHello SDL2)
+
 

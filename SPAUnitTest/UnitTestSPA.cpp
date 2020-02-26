@@ -5,15 +5,16 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-15 19:44:24
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-23 16:55:12
+ * @LastEditTime: 2020-02-26 10:00:52
  */
 #include "SPAModules.generated.h"
 #include "../SPA/include/modulemanager.h"
 #include "plugin_main/plugin_main.h"
 #include <iostream>
 
-int main(void)
+int main()
 {
+    std::cout << "UnitTestSPA" << std::endl;
     auto mng = GetModuleManager();
 #ifndef _WIN32
     mng->Mount("/home/saeruhikari/Coding/SakuraEngine/build");

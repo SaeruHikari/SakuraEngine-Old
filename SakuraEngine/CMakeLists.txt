@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.11)
 
 project(Sakura VERSION 0.1.0)
-execute_process(COMMAND python ../SPA/anyToheader.py meta .json ../SakuraEngine WORKING_DIRECTORY ../SPA)
-execute_process(COMMAND python ../SPA/ModuleCollector.py meta  ../SakuraEngine WORKING_DIRECTORY ../SPA)
+execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/SPA/anyToheader.py meta .json ${CMAKE_SOURCE_DIR}/SakuraEngine)
+execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/SPA/ModuleCollector.py meta  ${CMAKE_SOURCE_DIR}/SakuraEngine)
 
 add_definitions(-D "SAKURA_CONSOLE_INOUT")
 add_definitions(-D "SAKURA_DEBUG_EDITOR")
