@@ -20,3 +20,5 @@ GTest::gmock GTest::gmock_main CoreModule)
 target_link_libraries(UnitTestCoreUtils 
 GTest::gtest GTest::gtest_main 
 GTest::gmock GTest::gmock_main CoreModule)
+
+add_test(UnitTestCore UnitTestCore)

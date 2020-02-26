@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 18:20:07
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-26 10:06:04
+ * @LastEditTime: 2020-02-26 13:32:11
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -40,11 +40,6 @@ struct B
    size_t x = 0;
    float y = 15; 
 };
-
-TEST(WTF, WHY)
-{
-    std::cout << "???";
-}
 
 TEST(UnitTestCore, TCoreMinimal)
 {
