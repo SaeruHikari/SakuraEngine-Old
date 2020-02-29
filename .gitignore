@@ -7,3 +7,5 @@
 /.vs
 /build
 /Extern/googletest
+*meta.h
+*.generated.h
