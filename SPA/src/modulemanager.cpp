@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 23:23:02
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-26 09:30:18
+ * @LastEditTime: 2020-03-01 01:34:15
  */
 #define API_EXPORTS
 #include "../include/modulemanager.h"
@@ -48,16 +48,26 @@ namespace Sakura::SPA
         initName.append(mName);
         std::pmr::string prefix = moduleDir;
 #ifdef CONFINFO_PLATFORM_LINUX
+    #if defined(DEBUG) || defined(_DEBUG)
+        prefix.append("/Debug");
+    #else
+        prefix.append("/Release");
+    #endif
         prefix.append("/lib/lib").append(name);
-        #if defined(DEBUG) || defined(_DEBUG)
+    #if defined(DEBUG) || defined(_DEBUG)
         prefix.append("d");
-        #endif
+    #endif
         prefix.append(".so");
 #elif defined(CONFINFO_PLATFORM_WIN32)
+    #if defined(DEBUG) || defined(_DEBUG)
+        prefix.append("\\Debug");
+    #else
+        prefix.append("\\Release");
+    #endif
         prefix.append("\\bin\\").append(name);
-        #if defined(DEBUG) || defined(_DEBUG)
+    #if defined(DEBUG) || defined(_DEBUG)
         prefix.append("d");
-        #endif
+    #endif
         prefix.append(".dll");
 #endif
         if (!sharedLib->load(prefix))
@@ -169,7 +179,8 @@ namespace Sakura::SPA
             roots.push_back(entry);
         for (auto i = 0u; i < mainModule->GetModuleInfo().dependencies.size(); i++)
         {
-            std::string_view iterView(mainModule->GetModuleInfo().dependencies[i].name);
+            std::string_view iterView
+                = std::string_view(mainModule->GetModuleInfo().name);
             // Static
             if (InitializeMap.find(iterView) != InitializeMap.end())
                 __internal_MakeModuleGraph(iterView, false);

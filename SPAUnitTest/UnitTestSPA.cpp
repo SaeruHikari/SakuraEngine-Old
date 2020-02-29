@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-15 19:44:24
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-26 10:00:52
+ * @LastEditTime: 2020-03-01 01:34:08
  */
 #include "SPAModules.generated.h"
 #include "../SPA/include/modulemanager.h"
@@ -24,7 +24,8 @@ int main()
     std::cout << "Root: " << mng->GetRoot() << std::endl;
     std::string mainName = "plugin_main";
     mng->MakeModuleGraph(mainName.c_str());
-    mng->InitModuleGraph();
+    if(!mng->InitModuleGraph())
+        std::cerr << "Graph Init Failed!";
     mng->DestroyModuleGraph();
     return 0;
 }

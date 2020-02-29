@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(VCPKG_PKGS eigen3 boost gtest spdlog glfw3 SDL2 fmt)
+set(VCPKG_PKGS eigen3 boost gtest spdlog glfw3 SDL2 fmt xxHash)
 if(WIN32)
 execute_process(COMMAND 
 $ENV{VCPKG_ROOT}/vcpkg install --triplet x64-windows ${VCPKG_PKGS})
@@ -10,9 +10,9 @@ endif()
 set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE PATH "")
 message(STATUS "TOOL CHAIN: ${CMAKE_TOOLCHAIN_FILE}")
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin)
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
@@ -28,6 +28,7 @@ include_directories(${Vulkan_INCLUDE_DIRS})
 endif()
 enable_testing()
 find_package(GTest CONFIG REQUIRED)
+include_directories(${xxHash_Includes})
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 else()
@@ -61,10 +62,8 @@ else()
 endif()
 
 #features
-set(VAR_CONFIG_FLAGS " -D DEBUG")
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
-
 
 if(MSVC)
     message(STATUS "MSVC Compiler cl.exe")

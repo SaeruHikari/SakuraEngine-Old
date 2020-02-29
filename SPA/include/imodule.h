@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-14 13:57:46
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-22 16:07:37
+ * @LastEditTime: 2020-02-29 23:17:20
  */
 #pragma once
 #include "confinfo.h"
@@ -62,6 +62,10 @@ namespace Sakura::SPA
         virtual const ModuleInfo& GetModuleInfo()
         {
             return _information;
+        }
+        virtual std::string_view GetNameView()
+        {
+            return std::string_view(_information.name);
         }
     private:
         ModuleInfo _information;
