@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 18:20:07
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-26 13:32:11
+ * @LastEditTime: 2020-02-27 13:59:14
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -99,3 +99,8 @@ TEST(UnitTestCore, TContainerTest)
     pmrVec.push_back(valf);
 }
 
+int main(int argc, char* argv[])
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}

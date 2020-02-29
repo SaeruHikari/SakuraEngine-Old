@@ -11,5 +11,7 @@ add_library(CGD_Vulkan
     CommandContext_Vk.cpp 
     ../CGD/CommandContext.cpp  
     ../CGD/Profiling.cpp
-    ${SpecificTimerImpl}
+    ${SpecificTimerImpl} 
 )
+
+target_link_libraries(CGD_Vulkan Core  ${Vulkan_LIBRARY})

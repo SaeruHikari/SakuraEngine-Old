@@ -5,38 +5,14 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:43:56
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-26 09:20:51
+ * @LastEditTime: 2020-02-29 13:32:14
  */
 #include <iostream>
-extern "C"
-{
-	#include "SDL2/SDL.h"
-	#include "SDL2/SDL_surface.h"
-	#undef main
-}
+#include "VkTestApplication.h"
 
-using namespace std;
 int main(int argc, char** argv)
 {
-	SDL_Window *win = SDL_CreateWindow("hello world!", 100, 100, 640, 480, SDL_WINDOW_RESIZABLE);
-#ifdef _WIN32
-	SDL_Surface *picture = SDL_LoadBMP("E:/material/lessons.bmp");
-#else
-	SDL_Surface *picture = SDL_LoadBMP("/home/saeruhikari/Downloads/test.bmp");
-#endif
-	SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-	SDL_Texture *tex = SDL_CreateTextureFromSurface(ren, picture);
- 
-	SDL_FreeSurface(picture);
-	SDL_RenderClear(ren);
-	SDL_RenderCopy(ren, tex, NULL, NULL);
-	SDL_RenderPresent(ren);
-	SDL_Delay(4000);
-	SDL_DestroyTexture(tex);
-	SDL_DestroyRenderer(ren);
-	SDL_DestroyWindow(win);
-	SDL_Quit();
- 
-	cout << "Success!" << endl;
+	auto app = std::make_unique<VkTestApplication>();
+	app->run();
 	return 0;
 }

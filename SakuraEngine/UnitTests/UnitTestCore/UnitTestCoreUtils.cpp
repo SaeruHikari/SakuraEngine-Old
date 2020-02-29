@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 16:52:45
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-26 10:07:33
+ * @LastEditTime: 2020-02-27 13:59:34
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -63,4 +63,10 @@ TEST(UnitTestCoreUtils, FileSystem)
     testtxt.open("D:/Coding/testtxt.txt", 'r');
     auto str = testtxt.read(fs::fsize("D:/Coding/testtxt.txt"));
     std::cout << str;
+}
+
+int main(int argc, char* argv[])
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

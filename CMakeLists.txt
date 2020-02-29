@@ -6,14 +6,16 @@ execute_process(COMMAND
 $ENV{VCPKG_ROOT}/vcpkg install --triplet x64-windows ${VCPKG_PKGS})
 else()
 execute_process(COMMAND vcpkg install --triplet x64-linux ${VCPKG_PKGS})
-set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE PATH "")
 endif()
+set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE PATH "")
 message(STATUS "TOOL CHAIN: ${CMAKE_TOOLCHAIN_FILE}")
 
-project(Sakura)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-find_package(SDL2 CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(Boost REQUIRED)
@@ -66,7 +68,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 if(MSVC)
     message(STATUS "MSVC Compiler cl.exe")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _CRT_SECURE_NO_WARNINGS") #Multi Thread Build Enable
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _CRT_SECURE_NO_WARNINGS -DNOMINMAX") #Multi Thread Build Enable
 else(MSVC)
     message(STATUS "Use GCC Compiler gcc.exe")
     add_definitions(-msse4.2)

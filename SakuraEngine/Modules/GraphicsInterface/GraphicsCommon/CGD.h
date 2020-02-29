@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 12:58:52
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-23 21:39:18
+ * @LastEditTime: 2020-02-29 20:38:46
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -14,6 +14,11 @@
 
 namespace Sakura::Graphics
 {
+    struct CGD_Info
+    {
+        bool enableDebugLayer = false;
+        std::vector<const char*> extentionNames;
+    };
     SInterface CGD
     {
         virtual ~CGD() = default;
@@ -23,7 +28,8 @@ namespace Sakura::Graphics
             CGD_TARGET_VULKAN,
             CGD_TARGET_NUMS
         };
-        SAKURA_API static void Initialize(TargetGraphicsInterface targetGI);
+        SAKURA_API static void Initialize(TargetGraphicsInterface targetGI,
+            CGD_Info info = {});
         virtual void Render(void) = 0;
         virtual void Destroy(void) = 0;
         SAKURA_API static CGD* GetCGD(void)

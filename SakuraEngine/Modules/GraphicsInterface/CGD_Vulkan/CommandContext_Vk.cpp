@@ -4,18 +4,19 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-11 10:19:18
+ * @LastEditors: SaeruHikari
+ * @LastEditTime: 2020-02-29 12:45:08
  */
 #include "../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "CommandContext_Vk.h"
-#include "Core/EngineUtils/ConsoleDesk.h"
+#include "Core/EngineUtils/log.h"
+
 
 namespace Sakura::Graphics::Vk
 {
     CommandContext* ContextManager_Vk::AllocateContext(ECommandType type, bool bTransiant)
     {
-        sout << "Vulkan Context Manager Allocate Context!" << std::endl;
+        Sakura::log::debug_info("Vulkan Context Manager Allocate Context!");
         return nullptr;
     }
 }

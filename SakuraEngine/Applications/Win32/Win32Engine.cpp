@@ -5,12 +5,12 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-12 16:25:00
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-24 11:38:49
+ * @LastEditTime: 2020-02-29 12:49:24
  */
 #define API_EXPORTS
 #include "Win32Window.h"
 #include "Win32Engine.h"
-#include "Core/EngineUtils/ConsoleDesk.h"
+#include "Core/EngineUtils/log.h"
 using namespace Sakura;
 bool Sakura::SWin32Engine::Initialize(void)
 {
@@ -20,7 +20,7 @@ bool Sakura::SWin32Engine::Initialize(void)
 int Sakura::SWin32Engine::Run(void)
 {
 #ifdef SAKURA_DEBUG_EDITOR
-	sout << "SWin32 Engine Run!" << std::endl;
+	Sakura::log::debug_info( "SWin32 Engine Run!");
 #endif
 	return 0;
 }

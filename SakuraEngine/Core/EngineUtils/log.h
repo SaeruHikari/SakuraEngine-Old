@@ -4,9 +4,10 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 16:32:13
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-13 17:34:35
+ * @LastEditors: SaeruHikari
+ * @LastEditTime: 2020-02-29 20:16:22
  */
+#pragma once
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "Core/CoreMinimal/SFlags.h"

@@ -4,8 +4,8 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-12 12:30:54
+ * @LastEditors: SaeruHikari
+ * @LastEditTime: 2020-02-29 21:29:53
  */
 #pragma once
 #include <mutex>
@@ -61,11 +61,19 @@ namespace Sakura::Graphics
     public:
         /**
          * @description: Get a usable context from the manager 
-         * @param {} 
-         * @return: 
+         * @return: a command context ref
          * @author: SaeruHikari
          */
         static CommandContext& Begin(const spmr_string& ID = "");
+        
+        /**
+         * @description: Ends the encoding 
+         * @param {type} 
+         * @return: 
+         * @author: SaeruHikari
+         */
+        virtual void End() = 0;
+
         sinline ECommandType GetCommandContextType(void)
         {
             return this->m_Type;

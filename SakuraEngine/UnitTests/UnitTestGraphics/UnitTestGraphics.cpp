@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 22:07:52
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-23 21:37:00
+ * @LastEditTime: 2020-02-27 13:59:48
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -47,4 +47,10 @@ TEST(UnitTestGraphics, CommandObjects)
     mng->AllocateContext(
         Sakura::Graphics::ECommandType::CommandContext_Graphics,
         true);
+}
+
+int main(int argc, char* argv[])
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
