@@ -5,15 +5,32 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 12:58:52
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-29 20:38:46
+ * @LastEditTime: 2020-03-02 02:14:55
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "CommandObjects/CommandContext.h"
+#include "SakuraEngine/Core/EngineUtils/log.h"
+
 
 namespace Sakura::Graphics
 {
+    template<typename... Ts>
+    void debug_info(Ts... params)
+    {
+        spdlog::get("Graphics")->info(params...);
+    }
+    template<typename... Ts>
+    void debug_warn(Ts... params)
+    {
+        spdlog::get("Graphics")->warn(params...);
+    }
+    template<typename... Ts>
+    void debug_error(Ts... params)
+    {
+        spdlog::get("Graphics")->error(params...);
+    }
     struct CGD_Info
     {
         bool enableDebugLayer = false;

@@ -5,13 +5,14 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 13:16:31
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-29 22:26:00
+ * @LastEditTime: 2020-03-01 23:47:37
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
 #include <iostream>
 #include <vulkan/vulkan.h>
-#include "SakuraEngine/Core/EngineUtils/log.h"
+
+using namespace Sakura::flags;
 
 namespace Sakura::Graphics::Vk
 {
@@ -39,7 +40,9 @@ namespace Sakura::Graphics::Vk
     private:
         static bool validate;
         void __createVkInstance(uint pCount, const char** pName);
+        void __pickPhysicalDevice();
         VkInstance instance;
+        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger;
     };
     
@@ -93,7 +96,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
     void* pUserData) 
 {
-    Sakura::log::debug_error("validation layer: " + 
+    Sakura::Graphics::debug_error("validation layer: " + 
         std::string(pCallbackData->pMessage));
     return VK_FALSE;
 }

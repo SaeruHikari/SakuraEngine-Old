@@ -1,0 +1,1 @@
+add_library(xxhash xxhash.c xxhsum.c)

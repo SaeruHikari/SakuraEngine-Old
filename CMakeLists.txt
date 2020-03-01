@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 #/home/saeruhikari/OpenLib/vcpkg/vcpkg install --triplet x64-linux eigen3 boost gtest spdlog glfw3 SDL2 fmt xxHash SDL2[vulkan]
-set(VCPKG_PKGS eigen3 boost gtest spdlog glfw3 SDL2 fmt xxHash)
+set(VCPKG_PKGS eigen3 boost gtest spdlog glfw3 SDL2 fmt xxhash entt)
 if(WIN32)
 execute_process(COMMAND 
 $ENV{VCPKG_ROOT}/vcpkg install --triplet x64-windows ${VCPKG_PKGS})
@@ -17,6 +17,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin)
 
 enable_testing()
+find_package(EnTT CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
@@ -31,12 +32,7 @@ if(Vulkan_FOUND)
 include_directories(${Vulkan_INCLUDE_DIRS})
 endif()
 
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-else()
-#execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/Extern/ExternGet.py WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/Extern)
-endif()
 set(CMAKE_DEBUG_POSTFIX d)
-
 
 if(MSVC)     
     foreach(var 

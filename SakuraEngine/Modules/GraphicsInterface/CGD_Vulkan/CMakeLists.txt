@@ -14,4 +14,4 @@ add_library(CGD_Vulkan
     ${SpecificTimerImpl} 
 )
 
-target_link_libraries(CGD_Vulkan Core  ${Vulkan_LIBRARY})
+target_link_libraries(CGD_Vulkan Core ${Vulkan_LIBRARY})

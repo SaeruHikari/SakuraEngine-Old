@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 13:24:35
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-29 17:34:53
+ * @LastEditTime: 2020-03-02 02:14:04
  */
 #define API_EXPORTS
 #include "../GraphicsCommon/CGD.h"
@@ -22,6 +22,7 @@ Sakura::Graphics::CGD* CGD::eCGD = nullptr;
 
 void CGD::Initialize(TargetGraphicsInterface targetGI, CGD_Info info)
 {
+    static auto logger = Sakura::log::regist_logger("Graphics");
     switch (targetGI)
     {
     case (TargetGraphicsInterface::CGD_TARGET_DIRECT3D12):

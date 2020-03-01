@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 13:16:38
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-29 22:27:50
+ * @LastEditTime: 2020-03-02 00:00:00
  */
 #include "CGD_Vulkan.h"
 #include "Core/EngineUtils/ConsoleDesk.h"
@@ -16,7 +16,7 @@ using namespace Sakura::Graphics::Vk;
 
 void CGD_Vk::Initialize(Sakura::Graphics::CGD_Info info)
 {
-    Sakura::log::debug_info("CGD_Vk: Initialize");
+    Sakura::Graphics::debug_info("CGD_Vk: Initialize");
     auto reCGD = new CGD_Vk();    
     reCGD->VkInit(info);    
     if(info.enableDebugLayer)
@@ -26,7 +26,7 @@ void CGD_Vk::Initialize(Sakura::Graphics::CGD_Info info)
 
 void CGD_Vk::Render(void)
 {
-    Sakura::log::debug_info("CGD_Vk: Render");
+    Sakura::Graphics::debug_info("CGD_Vk: Render");
 }
 
 void populateDebugMessengerCreateInfo(
@@ -84,7 +84,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
 
 void CGD_Vk::Destroy(void)
 {
-    Sakura::log::debug_info("CGD_Vk: Destroy");
+    Sakura::Graphics::debug_info("CGD_Vk: Destroy");
     if(validate)
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
     vkDestroyInstance(instance, nullptr);
@@ -95,14 +95,11 @@ void CGD_Vk::VkInit(Sakura::Graphics::CGD_Info info)
 {
     uint32 extensionCount = (uint32)VkEnumInstanceExtensions().size();
     if(extensionCount < 0)
-        Sakura::log::debug_error<Sakura::flags::DEBUG_GAME_AND_EDITOR>
+        Sakura::Graphics::debug_error
             ("0 Vulkan extensions supported, check your platform/device!");
     else if(extensionCount < info.extentionNames.size())
-        Sakura::log::debug_error<Sakura::flags::DEBUG_GAME_AND_EDITOR>
+        Sakura::Graphics::debug_error
             ("Do not support so many Vulkan extensions, check your CGD_Info");
-    else
-        Sakura::log::debug_info<Sakura::flags::DEBUG_GAME_AND_EDITOR>
-            ("No Vulkan extensions supported, check your platform");
             
     const std::vector<const char*> deviceExtensions = 
     {
@@ -111,6 +108,7 @@ void CGD_Vk::VkInit(Sakura::Graphics::CGD_Info info)
     validate = info.enableDebugLayer;
     __createVkInstance(static_cast<uint>(info.extentionNames.size()),
         info.extentionNames.data());
+    __pickPhysicalDevice();
 }
 
 bool CGD_Vk::validate = false;
@@ -118,7 +116,8 @@ void CGD_Vk::__createVkInstance(uint pCount, const char** pName)
 {
     if(validate && !VkCheckValidationLayerSupport())
     {
-        Sakura::log::debug_error("Vulkan: validation layers requested, \
+        Sakura::Graphics::debug_error(
+            "Vulkan: validation layers requested, \
             but not available!");
     }
     VkApplicationInfo appInfo = {};
@@ -139,7 +138,8 @@ void CGD_Vk::__createVkInstance(uint pCount, const char** pName)
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
     if (validate) 
     {
-        Sakura::log::debug_info("Vulkan: Enable Validation Layer!");
+        Sakura::Graphics::debug_info(
+            "Vulkan: Enable Validation Layer!");
         createInfo.enabledLayerCount 
             = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames 
@@ -158,7 +158,22 @@ void CGD_Vk::__createVkInstance(uint pCount, const char** pName)
     createInfo.ppEnabledExtensionNames = pName;
 
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) 
-        Sakura::log::debug_error("Vulkan: failed to create instance!");
+        Sakura::log::error("Vulkan: failed to create instance!");
     else
-        Sakura::log::debug_info("Vulkan: create instance succeed!");
+        Sakura::Graphics::debug_info(
+            "Vulkan: create instance succeed!");
+}
+
+void CGD_Vk::__pickPhysicalDevice()
+{
+    uint32_t deviceCount = 0;
+    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+    if (deviceCount == 0) 
+    {
+        Sakura::log::error("failed to find GPUs with Vulkan support!");
+        throw std::runtime_error("failed to find GPUs with Vulkan support!");
+    }
+    else
+        Sakura::Graphics::debug_info(
+            "Vulkan: Physical Devices support");
 }

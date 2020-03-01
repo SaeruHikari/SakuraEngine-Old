@@ -5,11 +5,10 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 11:07:17
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-03-01 11:13:39
+ * @LastEditTime: 2020-03-01 20:07:14
  */
 #include "Framework/Application/SEngine.h"
 #include "gtest/gtest.h"
-#include "SakuraEngine/Core/EngineUtils/SHash.h"
 
 TEST(UnitTestApplication, LinuxApplication)
 {
@@ -23,7 +22,5 @@ int main(int argc, char* argv[])
 {
     ::testing::InitGoogleTest(&argc, argv);
     std::string val = "plugin_main";
-    Sakura::hash::hash_code _h =
-        Sakura::hash::hash(val, XXH64_hash_t(12));
     return RUN_ALL_TESTS();
 }
