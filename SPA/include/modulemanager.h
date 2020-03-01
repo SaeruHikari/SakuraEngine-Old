@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-15 18:50:54
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-29 23:40:45
+ * @LastEditTime: 2020-03-01 13:42:56
  */
 #pragma once
 #include "../../Extern/include/version/version.h"
@@ -57,7 +57,7 @@ namespace Sakura::SPA
     struct ModuleProperty
     {
         bool bActive = false;
-        std::string_view name;
+        std::pmr::string name;
     };
     using registerer = std::function<std::unique_ptr<IModule>(void)>;
     using ModuleProp = property<ModuleProp_t, ModuleProperty>;
@@ -69,17 +69,9 @@ namespace Sakura::SPA
         friend struct IModule;
     public:
         ModuleManager() = default;
-        virtual IModule* GetModule(std::string_view name);
-        
-        template<typename T,
-            typename std::enable_if<
-                std::is_constructible<std::string_view, std::remove_reference<T>>::value
-            >::type * = nullptr>
-        inline IModule* GetModule(T&& name)
-        {
-            return GetModule(std::string_view(name));
-        }
-        virtual const ModuleGraph& MakeModuleGraph(const char* entry, 
+        virtual IModule* GetModule(const std::pmr::string& name);
+    
+        virtual const ModuleGraph& MakeModuleGraph(const std::pmr::string& entry, 
             bool shared = false);
         virtual bool InitModuleGraph(void);
         virtual bool DestroyModuleGraph(void);
@@ -87,26 +79,26 @@ namespace Sakura::SPA
         virtual void Mount(const std::pmr::string& rootdir);
         virtual std::string_view GetRoot(void);
         virtual void RegisterStaticallyLinkedModule(
-            std::string_view moduleName, registerer _register);
-        virtual IModule* SpawnStaticModule(std::string_view name);
-        virtual IModule* SpawnDynamicModule(std::string_view name);
-        virtual ModuleProperty& GetModuleProp(std::string_view name);
-        virtual void SetModuleProp(std::string_view name, const ModuleProperty& prop);
+            const char* moduleName, registerer _register);
+        virtual IModule* SpawnStaticModule(const std::pmr::string& moduleName);
+        virtual IModule* SpawnDynamicModule(const std::pmr::string& moduleName);
+        virtual ModuleProperty GetModuleProp(const std::pmr::string& name);
+        virtual void SetModuleProp(const std::pmr::string& name, const ModuleProperty& prop);
     private:
-        bool __internal_DestroyModuleGraph(std::string_view nodename);
-        void __internal_MakeModuleGraph(std::string_view entry,
+        bool __internal_DestroyModuleGraph(const std::pmr::string& nodename);
+        void __internal_MakeModuleGraph(const std::pmr::string& entry,
             bool shared = false);
-        bool __internal_InitModuleGraph(std::string_view nodename);
+        bool __internal_InitModuleGraph(const std::pmr::string& nodename);
         Version CoreVersion{"0.1.0"};
         ModuleInfo ParseMetaData(const char* metadata);
     private:
         std::pmr::string moduleDir;
-        std::vector<std::string_view> roots;
+        std::vector<std::pmr::string> roots;
         std::pmr::string mainModuleName;
         ModuleGraph moduleDependecyGraph;
-        std::pmr::unordered_map<std::string_view, int> NodeMap;
-        std::pmr::unordered_map<std::string_view, registerer> InitializeMap;
-        std::pmr::unordered_map<std::string_view, std::unique_ptr<IModule>>
+        std::pmr::map<std::pmr::string, int, std::less<>> NodeMap;
+        std::pmr::map<std::pmr::string, registerer, std::less<>> InitializeMap;
+        std::pmr::map<std::pmr::string, std::unique_ptr<IModule>, std::less<>>
             ModulesMap;
     };
 

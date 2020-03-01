@@ -5,11 +5,29 @@
  * @Autor: SaeruHikari
  * @Date: 2020-03-01 01:20:04
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-03-01 01:41:12
+ * @LastEditTime: 2020-03-01 11:21:21
  */
+#pragma once
+#include "SakuraEngine/Core/CoreMinimal/SDefination.h"
 #include "xxhash.h"
+#include <memory_resource>
+#include <string>
 
-XXH64_hash_t xhash(const void* buffer, size_t size, XXH64_hash_t seed)
+namespace Sakura::hash
 {
-    return XXH64(buffer, size, seed);
+    using hash_code = uint64;
+    uint64 hash(const void* buffer, size_t size, uint64 seed)
+    {
+        return XXH64(buffer, size, seed);
+    }
+
+    uint64 hash(const std::string& str, uint64 seed)
+    {
+        return XXH64(str.c_str(), str.size(), seed);
+    }
+
+    uint64 hash(const std::pmr::string& str, uint64 seed)
+    {
+        return XXH64(str.c_str(), str.size(), seed);
+    }
 }

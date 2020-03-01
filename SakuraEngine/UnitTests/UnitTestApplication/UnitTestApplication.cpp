@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-09 11:07:17
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-03-01 01:41:02
+ * @LastEditTime: 2020-03-01 11:13:39
  */
 #include "Framework/Application/SEngine.h"
 #include "gtest/gtest.h"
@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
 {
     ::testing::InitGoogleTest(&argc, argv);
     std::string val = "plugin_main";
-    XXH64_hash_t _h = xhash(val.data(), val.size(), XXH64_hash_t(12));
+    Sakura::hash::hash_code _h =
+        Sakura::hash::hash(val, XXH64_hash_t(12));
     return RUN_ALL_TESTS();
 }
