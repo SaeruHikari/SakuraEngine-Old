@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-14 13:57:46
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-03-01 13:35:38
+ * @LastEditTime: 2020-03-01 19:19:46
  */
 #pragma once
 #include "confinfo.h"
@@ -20,12 +20,6 @@ namespace Sakura::SPA
 
 namespace Sakura::SPA
 {
-    template<class T = std::pmr::string>
-    std::size_t hash(T&& str)
-    {
-        std::hash<std::pmr::string> hash_fn;
-        return hash_fn(str);
-    }
     /**
      * @description: Base of all plugins 
      * @author: SaeruHikari
@@ -69,10 +63,7 @@ namespace Sakura::SPA
         {
             return _information;
         }
-        virtual std::size_t GetNameHash()
-        {
-            return hash(_information.name);
-        }
+
     private:
         ModuleInfo _information;
     };

@@ -3,8 +3,8 @@
  * @Version: 0.1.0
  * @Author: SaeruHikari
  * @Date: 2020-02-02 00:13:54
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-12 12:22:49
+ * @LastEditors: SaeruHikari
+ * @LastEditTime: 2020-03-01 19:25:18
  */
 #pragma once
 #include "SKeyWords.h"
@@ -101,13 +101,3 @@ sinline To force_cast(From f)
 {
     return (To)f;
 }
-
-#if defined(DEBUG) || defined(_DEBUG)
-#else
-    #ifdef SAKURA_DEBUG_EDITOR
-    #undef SAKURA_DEBUG_EDITOR
-    #endif
-    #ifdef SAKURA_DEBUG_GAME
-    #undef SAKURA_DEBUG_GAME
-    #endif
-#endif
