@@ -4,8 +4,8 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-24 13:24:40
- * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-03-02 13:25:39
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-03-02 17:43:06
  */
 #include "SakuraEngine/SPAModules.generated.h"//include generated file in the root path
 #include "SPA/include/modulemanager.h"
@@ -24,7 +24,6 @@ int main(void)
     mng->MakeModuleGraph(mainName.c_str(), true);
     auto edit = mng->GetModule("EditorModule");
     mng->InitModuleGraph();
-    CoreModule::debug_info("EditorModule");
     mng->DestroyModuleGraph();
     return 0;
 }

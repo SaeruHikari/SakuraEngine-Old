@@ -17,34 +17,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  *  IN THESOFTWARE.
  * 
- * 
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-01 19:46:34
- * @LastEditTime: 2020-03-02 15:01:28
+ * @Date: 2020-03-02 18:44:11
+ * @LastEditTime: 2020-03-02 18:55:16
  */
 #pragma once
-#include "SakuraEngine/Core/CoreMinimal/SDefination.h"
-#include "xxhash.h"
-#include <memory_resource>
-#include <string>
+#include "Core/CoreMinimal/SInterface.h"
 
-namespace Sakura::hash
+namespace Sakura::Graphics
 {
-    using hash_code = uint64;
-    static uint64 hash(const void* buffer, size_t size, uint64 seed)
-    {
-        return XXH64(buffer, size, seed);
-    }
+    SInterface CommandContext;
+    SInterface Fence;
+}
 
-    static uint64 hash(const std::string& str, uint64 seed)
+namespace Sakura::Graphics
+{
+    enum CommandQueueTypes
     {
-        return XXH64(str.c_str(), str.size(), seed);
-    }
+        COMMAND_QUEUE_GRAPHICS,
+        COMMAND_QUEUE_COMPUTE,
+        COMMAND_QUEUE_COPY
+    };
 
-    static uint64 hash(const std::pmr::string& str, uint64 seed)
+    SInterface CommandQueue
     {
-        return XXH64(str.c_str(), str.size(), seed);
+        virtual void Submit(CommandContext& commandContext) = 0;
+
+        virtual void Submit(Fence& fence) = 0;
+
+        virtual bool WaitFence(Fence& fence, std::uint64_t timeout) = 0;
+
+        virtual void WaitIdle() = 0;
+
+    protected:
+        CommandQueue() = default;
     }
 }

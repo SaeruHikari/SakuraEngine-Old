@@ -4,14 +4,14 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 23:23:02
- * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-03-01 13:54:41
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-03-02 17:59:39
  */
 #define API_EXPORTS
 #include "../include/modulemanager.h"
 #include "../include/confinfo.h"
 #include "../../Extern/include/json/json.hpp"
-
+//#define SPA_OUTPUT_LOG
 namespace Sakura::SPA
 {
     void ModuleManager::RegisterStaticallyLinkedModule(
@@ -41,6 +41,8 @@ namespace Sakura::SPA
 
     IModule* ModuleManager::SpawnDynamicModule(const std::pmr::string& name)
     {
+        if (ModulesMap.find(name) != ModulesMap.end())
+            return ModulesMap[name].get();
         std::unique_ptr<SharedLibrary> sharedLib
             = std::make_unique<SharedLibrary>();
         std::pmr::string initName("InitializeModule");
@@ -72,9 +74,14 @@ namespace Sakura::SPA
 #endif
         if (!sharedLib->load(prefix))
         {
-            std::cerr << prefix << std::endl << "!!!!!!Load Shared Lib Error!!!!!";
+            std::cerr << prefix << std::endl 
+                << "Load Shared Lib Error: " << sharedLib->errorString() << std::endl;
             return nullptr;
         }
+#ifdef SPA_OUTPUT_LOG
+        else
+             std::cout << prefix << ": Load dll success!" << std::endl;
+#endif
         if (sharedLib->hasSymbol(initName.c_str()))
         {
             auto func =
@@ -170,6 +177,8 @@ namespace Sakura::SPA
     void ModuleManager::__internal_MakeModuleGraph(const std::pmr::string& entry,
         bool shared)
     {
+        if(NodeMap.find(entry) != NodeMap.end())
+            return;
         IModule* mainModule = shared ?
             SpawnDynamicModule(entry)
             : SpawnStaticModule(entry);
@@ -198,15 +207,17 @@ namespace Sakura::SPA
     {
         if(!GetModuleProp(nodename).bActive) 
             return true;
-        auto prevs = DAG::inv_adjacent_vertices(
+        auto nexts = DAG::inv_adjacent_vertices(
             ModuleNode(NodeMap.find(nodename)->second), moduleDependecyGraph);
-        for (auto iter = prevs.first; iter != prevs.second; iter++)
+        for (auto iter = nexts.first; iter != nexts.second; iter++)
         {
-            auto name = DAG::get_vertex_property<ModuleProp_t>(*iter, moduleDependecyGraph).name;
+            auto name = DAG::get_vertex_property<ModuleProp_t>
+                (*iter, moduleDependecyGraph).name;
             auto n = GetModuleProp(name);
             __internal_DestroyModuleGraph(n.name);
         }
         GetModule(nodename)->OnUnload();
+        //DAG::remove_vertex(NodeMap[nodename], moduleDependecyGraph);
         ModuleProperty prop;
         prop.bActive = false;
         prop.name = GetModuleProp(nodename).name;

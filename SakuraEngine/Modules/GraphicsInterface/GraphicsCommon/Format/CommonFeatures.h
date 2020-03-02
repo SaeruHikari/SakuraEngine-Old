@@ -21,30 +21,18 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-01 19:46:34
- * @LastEditTime: 2020-03-02 15:01:28
+ * @Date: 2020-03-02 16:42:07
+ * @LastEditTime: 2020-03-02 17:23:47
  */
 #pragma once
-#include "SakuraEngine/Core/CoreMinimal/SDefination.h"
-#include "xxhash.h"
-#include <memory_resource>
-#include <string>
+#include <bitset>
 
-namespace Sakura::hash
+namespace Sakura::Graphics
 {
-    using hash_code = uint64;
-    static uint64 hash(const void* buffer, size_t size, uint64 seed)
+    struct DeviceFeatures
     {
-        return XXH64(buffer, size, seed);
-    }
-
-    static uint64 hash(const std::string& str, uint64 seed)
-    {
-        return XXH64(str.c_str(), str.size(), seed);
-    }
-
-    static uint64 hash(const std::pmr::string& str, uint64 seed)
-    {
-        return XXH64(str.c_str(), str.size(), seed);
-    }
+        std::bitset<64> val;
+        inline static const constexpr std::size_t geometryShader = 1;
+        inline static const constexpr std::size_t logicOp = 2;
+    };
 }

@@ -4,8 +4,8 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
- * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-29 21:29:53
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-03-02 18:45:46
  */
 #pragma once
 #include <mutex>
@@ -19,6 +19,7 @@
 
 namespace Sakura::Graphics
 {
+    SInterface CommandQueue;
     SInterface CommandContext;
     SInterface ContextManager;
 }

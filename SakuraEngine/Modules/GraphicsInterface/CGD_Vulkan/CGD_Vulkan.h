@@ -1,11 +1,28 @@
 /*
- * @This File is Part of Sakura by SaeruHikari: 
- * @Descripttion: Vulkan Version CGD
+ * @CopyRight: MIT License
+ * Copyright (c) 2020 SaeruHikari
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ *  IN THESOFTWARE.
+ * 
+ * 
+ * @Description: Vulkan implementation of CGD
  * @Version: 0.1.0
- * @Author: SaeruHikari
- * @Date: 2020-02-02 13:16:31
- * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-03-01 23:47:37
+ * @Autor: SaeruHikari
+ * @Date: 2020-02-25 22:25:59
+ * @LastEditTime: 2020-03-02 18:33:35
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -19,6 +36,7 @@ namespace Sakura::Graphics::Vk
     class CGD_Vk : public Sakura::Graphics::CGD
     {
         friend SInterface CGD;
+        DECLARE_LOGGER("CGD_Vk")
     public:
         CGD_Vk() = default;
         virtual void Render(void) override;   
@@ -35,13 +53,17 @@ namespace Sakura::Graphics::Vk
          * @author: SaeruHikari
          */
         void VkInit(CGD_Info info);
-
+        static bool validate;
         void setupDebugMessenger();
     private:
-        static bool validate;
-        void __createVkInstance(uint pCount, const char** pName);
-        void __pickPhysicalDevice();
+        void createVkInstance(uint pCount, const char** pName);
+        void pickPhysicalDevice();
+        void createLogicalDevice(
+            Sakura::Graphics::DeviceFeatures deviceFeatures);
+    private:
         VkInstance instance;
+        VkDevice device;
+        VkQueue graphicsQueue;
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger;
     };
@@ -96,7 +118,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
     void* pUserData) 
 {
-    Sakura::Graphics::debug_error("validation layer: " + 
+    Sakura::Graphics::Vk::CGD_Vk::debug_error("validation layer: " + 
         std::string(pCallbackData->pMessage));
     return VK_FALSE;
 }

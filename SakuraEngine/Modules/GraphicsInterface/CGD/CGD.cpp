@@ -1,23 +1,39 @@
 /*
- * @This File is Part of Sakura by SaeruHikari: 
- * @Descripttion: CopyRight SaeruHikari
+ * @CopyRight: MIT License
+ * Copyright (c) 2020 SaeruHikari
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ *  IN THESOFTWARE.
+ * 
+ * 
+ * @Description: 
  * @Version: 0.1.0
- * @Author: SaeruHikari
- * @Date: 2020-02-02 13:24:35
- * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-03-02 02:14:04
+ * @Autor: SaeruHikari
+ * @Date: 2020-02-25 22:25:59
+ * @LastEditTime: 2020-03-02 14:58:45
  */
-#define API_EXPORTS
-#include "../GraphicsCommon/CGD.h"
-#include <iostream>
+#define API_EXPORTS     
+#include "../GraphicsCommon/CGD.h" 
+#include <iostream> 
 #include "../CGD_Vulkan/CGD_Vulkan.h"
 #include "CGDExport.h"
-#include "Core/EngineUtils/log.h"
+#include "Core/EngineUtils/log.h" 
 #include "../CGD_Direct3D12/CGD_Direct3D12.h"
-
-
-using namespace Sakura::Graphics;
-
+  
+using namespace Sakura::Graphics;  
+  
 Sakura::Graphics::CGD* CGD::eCGD = nullptr;
 
 void CGD::Initialize(TargetGraphicsInterface targetGI, CGD_Info info)

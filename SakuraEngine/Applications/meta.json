@@ -4,7 +4,7 @@
 	"prettyname": "ApplicationModule",
 	"version": "1.0.0",
 	"linking": "shared",
-	"dependencies": [ {"name":"CoreModule", "version":"1.0.0"} ],
+	"dependencies": [ {"name":"CGDModule", "version":"1.0.0"} ],
 	"author": "",
 	"url": "",
 	"license": "",

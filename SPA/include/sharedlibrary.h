@@ -4,24 +4,24 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 22:58:31
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-14 00:32:17
+ * @LastEditors: SaeruHikari
+ * @LastEditTime: 2020-03-02 14:33:34
  */
 #pragma once
-#include "confinfo.h"
+#include "confinfo.h" 
 
 #if defined(CONFINFO_PLATFORM_LINUX) || defined(CONFINFO_PLATFORM_CYGWIN)
 #include <dlfcn.h>
 using NativeLibHandle = void*;
-#elif defined(CONFINFO_PLATFORM_WIN32)
+#elif defined(CONFINFO_PLATFORM_WIN32) 
 #include <windows.h>
 using NativeLibHandle = HMODULE;
 #endif
-
+    
 #include <memory_resource>
 #include <string>
 namespace Sakura::SPA
-{
+{      
     /**
      * @description: Provides cross-platform low-level 
      * access to shared library 
