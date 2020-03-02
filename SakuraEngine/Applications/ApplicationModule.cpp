@@ -5,21 +5,21 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-24 11:46:54
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-24 11:52:52
+ * @LastEditTime: 2020-03-02 13:40:18
  */
 #include "ApplicationModule.h"
 #include "SakuraEngine/Core/Core.h"
 
 void ApplicationModule::OnLoad()
 {
-    Sakura::log::debug_info<Sakura::flags::DEBUG_EDITOR>
+    ApplicationModule::debug_info<Sakura::flags::DEBUG_EDITOR>
         ("ApplicationModule Loaded!");
 	return;
 }
 
 void ApplicationModule::OnUnload()
 {
-    Sakura::log::debug_info<Sakura::flags::DEBUG_EDITOR>
+    ApplicationModule::debug_info<Sakura::flags::DEBUG_EDITOR>
         ("ApplicationModule Unloaded!");
 	return;
 }

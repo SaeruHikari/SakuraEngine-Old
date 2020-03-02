@@ -5,20 +5,21 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-23 22:46:32
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-24 11:53:29
+ * @LastEditTime: 2020-03-02 13:26:56
  */
+#define API_EXPORTS
 #include "CoreModule.h"
 
 void CoreModule::OnLoad()
 {
-	Sakura::log::debug_info
+	CoreModule::debug_info
 		<Sakura::flags::DEBUG_EDITOR>("CoreModule Loaded!");
 	return;
 }
 
 void CoreModule::OnUnload()
 {
-	Sakura::log::debug_info<Sakura::flags::DEBUG_EDITOR>
+	CoreModule::debug_info<Sakura::flags::DEBUG_EDITOR>
         ("CoreModule Unloaded!");
 	return;
 }

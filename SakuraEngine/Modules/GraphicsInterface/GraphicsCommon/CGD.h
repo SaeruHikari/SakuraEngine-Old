@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 12:58:52
  * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-03-02 02:14:55
+ * @LastEditTime: 2020-03-02 12:31:10
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -19,17 +19,17 @@ namespace Sakura::Graphics
     template<typename... Ts>
     void debug_info(Ts... params)
     {
-        spdlog::get("Graphics")->info(params...);
+        Sakura::log::debug_info_l("Graphics", params...);
     }
     template<typename... Ts>
     void debug_warn(Ts... params)
     {
-        spdlog::get("Graphics")->warn(params...);
+        Sakura::log::debug_warn_l("Graphics", params...);
     }
     template<typename... Ts>
     void debug_error(Ts... params)
     {
-        spdlog::get("Graphics")->error(params...);
+        Sakura::log::debug_error_l("Graphics", params...);
     }
     struct CGD_Info
     {

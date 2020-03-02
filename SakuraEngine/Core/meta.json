@@ -3,7 +3,7 @@
 	"name": "CoreModule",
 	"prettyname": "CoreModule",
 	"version": "1.0.0",
-	"linking": "static",
+	"linking": "shared",
 	"dependencies": [{}],
 	"author": "",
 	"url": "",
