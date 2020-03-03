@@ -1,12 +1,12 @@
 <!--
  * @Author: your name
  * @Date: 2020-03-03 23:06:12
- * @LastEditTime: 2020-03-03 23:23:00
+ * @LastEditTime: 2020-03-04 00:40:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \undefinedd:\SakuraDocument\_coverpage.md
  -->
-![logo](https://file.moetu.org/images/2020/03/03/Sakura-Icon3327e691441cb7a0.md.jpg)
+![logo](https://file.moetu.org/images/2020/03/03/Sakura-Iconb56a2209e558d5bb.md.png)
 
 # Sakura Engine
 
@@ -17,4 +17,4 @@
   
 
 [GitHub](https://github.com/SaeruHikari/SakuraEngine)
-[Learn More](#quick-start)
+[Learn More](README.md)
