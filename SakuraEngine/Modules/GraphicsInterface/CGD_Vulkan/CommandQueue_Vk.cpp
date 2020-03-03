@@ -17,37 +17,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  *  IN THESOFTWARE.
  * 
+ * 
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-02 18:44:11
- * @LastEditTime: 2020-03-03 11:25:29
+ * @Date: 2020-03-03 10:41:13
+ * @LastEditTime: 2020-03-03 11:30:29
  */
-#pragma once
-#include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
+#include "CommandQueue_Vk.h"
+#include "CommandContext_Vk.h"
 
-namespace Sakura::Graphics
+using namespace Sakura::Graphics;
+using namespace Sakura::Graphics::Vk;
+
+void CommandQueue_Vk::Submit(CommandContext& commandContext)
 {
-    SInterface CommandContext;
-    SInterface Fence;
+    
 }
 
-namespace Sakura::Graphics
+void CommandQueue_Vk::Submit(Fence& fence)
 {
-    enum CommandQueueTypes
-    {
-        COMMAND_QUEUE_GRAPHICS,
-        COMMAND_QUEUE_COMPUTE,
-        COMMAND_QUEUE_COPY
-    };
+    
+}
 
-    SInterface CommandQueue
-    {
-        virtual void Submit(CommandContext& commandContext) = 0;
-        virtual void Submit(Fence& fence) = 0;
-        virtual bool WaitFence(Fence& fence, std::uint64_t timeout) = 0;
-        virtual void WaitIdle() = 0;
-    protected:
-        CommandQueue() = default;
-    };
+bool CommandQueue_Vk::WaitFence(Fence& fence, std::uint64_t timeout)
+{
+    return true;
+}
+
+void CommandQueue_Vk::WaitIdle()
+{
+    
 }

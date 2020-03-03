@@ -10,6 +10,7 @@ add_library(CGD_Vulkan
     CGD_Vulkan.cpp  
     CommandContext_Vk.cpp 
     ../CGD/CommandContext.cpp  
+    CommandQueue_Vk.cpp  
     ../CGD/Profiling.cpp
     ${SpecificTimerImpl} 
 )

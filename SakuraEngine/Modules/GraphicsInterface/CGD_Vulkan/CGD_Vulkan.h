@@ -22,12 +22,13 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-02 18:33:35
+ * @LastEditTime: 2020-03-03 11:17:06
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
+#include "CommandQueue_Vk.h"
 #include <iostream>
-#include <vulkan/vulkan.h>
+
 
 using namespace Sakura::flags;
 
@@ -63,7 +64,7 @@ namespace Sakura::Graphics::Vk
     private:
         VkInstance instance;
         VkDevice device;
-        VkQueue graphicsQueue;
+        std::unique_ptr<CommandQueue_Vk> graphicsQueue;
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger;
     };

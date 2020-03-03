@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-02 18:33:44
+ * @LastEditTime: 2020-03-03 11:17:38
  */
 #include "CGD_Vulkan.h"
 #include "Core/EngineUtils/ConsoleDesk.h"
@@ -336,5 +336,6 @@ void CGD_Vk::createLogicalDevice(
     else
         CGD_Vk::debug_info("Vulkan: Create logical device");
     
-    vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
+    graphicsQueue = std::make_unique<CommandQueue_Vk>();
+    vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue->VkQueue);
 }
