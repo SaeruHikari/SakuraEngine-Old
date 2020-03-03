@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-03-04 00:28:22
- * @LastEditTime: 2020-03-04 01:17:32
+ * @LastEditTime: 2020-03-04 01:39:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \undefinedd:\Coding\SakuraEngine\docs\index.html
@@ -33,21 +33,20 @@
  
  
  <link rel="stylesheet" href="//unpkg.com/gitalk/dist/gitalk.css">
- 
- 
- <script src="//unpkg.com/docsify/lib/plugins/gitalk.min.js"></script>
  <script src="//unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+ <script src="//unpkg.com/docsify/lib/plugins/gitalk.min.js"></script>
  <script>
-   const gitalk = new Gitalk({
-     clientID: 'd1cfbbfbcac4f9de5073',
-     clientSecret: 'c7dff0fe7f3abb7714aa1e4038a5a0c632c11221',
-     repo: 'saeruhikari.github.io',
+   var gitalk = new Gitalk({
+     clientID: '14ced85685f4cacb2d8f',
+     clientSecret: 'dc819cbeb18887595e214f4747b0f1c6100abaf1',
+     repo: 'SaeruHikari.github.io',
      owner: 'SaeruHikari',
      admin: ['SaeruHikari'],
-     id: 'location.pathname',
+     title: location.hash.match(/#(.*?)([?]|$)/)[1],
+     id: location.hash.match(/#(.*?)([?]|$)/)[1],
      distractionFreeMode: true
-   });
-   gitalk.render('gitalk-container');
+   })
  </script>
  
  </html>
