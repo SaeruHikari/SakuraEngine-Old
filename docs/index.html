@@ -1,22 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ch">
+  
 <head>
   <meta charset="UTF-8">
   <title>Document</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <meta name="description" content="Description">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/vue.css">
+  <link rel="stylesheet" href="//unpkg.com/docsify/themes/vue.css">
 </head>
+
 <body>
   <div id="app">Please wait...</div>
   <script>
     window.$docsify = {
       name: 'Sakura Engine',
       repo: 'https://github.com/SaeruHikari/SakuraEngine',
-      coverpage: true
+      coverpage: true,
+      loadSidebar: true
     }
   </script>
   <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
 </body>
+
+
+<link rel="stylesheet" href="//unpkg.com/gitalk/dist/gitalk.css">
+
+
+<script src="//unpkg.com/docsify/lib/plugins/gitalk.min.js"></script>
+<script src="//unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script>
+  const gitalk = new Gitalk({
+    clientID: 'd1cfbbfbcac4f9de5073',
+    clientSecret: 'c7dff0fe7f3abb7714aa1e4038a5a0c632c11221',
+    repo: 'https://github.com/SaeruHikari/SakuraEngine',
+    owner: 'SaeruHikari',
+    admin: ['SaeruHikari'],
+    // facebook-like distraction free mode
+    distractionFreeMode: true
+  })
+</script>
+
 </html>
+
+
+
