@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-03-04 07:52:42
- * @LastEditTime: 2020-03-04 11:12:17
+ * @LastEditTime: 2020-03-04 11:58:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \docs\Modules\README.md
@@ -50,7 +50,7 @@ SakuraEngine使用完全的模块化开发。
 - 装载与初始化
 - 自动卸载与清理
 
-&emsp;&emsp;由于C++缺失必须的语言级功能, 并且我们需要维护模块化开发的模块依赖, SakuraEngine的模块化开发基于自定义开发工具[SPA](../DevTools/SPA/SakuraPackageAdminister.md)。SPA需要用户在编辑时提供模块元数据(名称/版本/依赖等),工具自动在编译时将元数据注入, 并在运行时做依赖保序的加载以及初始化。
+&emsp;&emsp;由于C++缺失必须的语言级功能, 并且我们需要维护模块化开发的模块依赖, SakuraEngine的模块化开发基于自定义开发工具[SPA](/DevTools/SPA/SakuraPackageAdminister.md)。SPA需要用户在编辑时提供模块元数据(名称/版本/依赖等),工具自动在编译时将元数据注入, 并在运行时做依赖保序的加载以及初始化。
 
 &emsp;&emsp;链接部分, SPA采取不干预的制度。这也是为了确保用户可以自由链接, 在大部分时候选择并链接到自己想要的静态库, 而不是递归地去链接动态库, 引入不必要的overhead和runtime eror。
 
@@ -58,4 +58,4 @@ SakuraEngine使用完全的模块化开发。
 
 &emsp;&emsp;SPA同时支持**静态模块**和**动态模块**且都可以引入状态, 但在不能确保唯一链接的情况下, 请总是使用**动态模块**。
 
-&emsp;&emsp;更为详细的内容, 请参阅[SPA](../DevTools/SPA/SakuraPackageAdminister.md)页。您可以在SPA的文档下学会如何创建用于SakruaEngine的模块, 并且了解到SPA批处理工具的一切细节。
+&emsp;&emsp;更为详细的内容, 请参阅[SPA](/DevTools/SPA/SakuraPackageAdminister.md)页。您可以在SPA的文档下学会如何创建用于SakruaEngine的模块, 并且了解到SPA批处理工具的一切细节。

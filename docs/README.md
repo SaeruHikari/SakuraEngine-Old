@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-03-01 20:09:10
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-04 09:34:33
+ * @LastEditTime: 2020-03-04 11:48:27
  -->
 <h1 align="center">Sakura Engine</h1>
 <div align="center">
@@ -40,7 +40,7 @@
 &emsp;&emsp;[Framework](https://github.com/SaeruHikari/SakuraEngine/tree/master/SakuraEngine/Framework)提供了框架式/接口式开发下大概率复用的一些接口, 以及[Engine](https://github.com/SaeruHikari/SakuraEngine/blob/master/SakuraEngine/Framework/Application/SEngine.h), [Window](https://github.com/SaeruHikari/SakuraEngine/blob/master/SakuraEngine/Framework/Application/SWindow.h)接口等关键性接口。
 
 ## 模块
-&emsp;&emsp;为了以稳定地维护并持续引擎的开发, 引擎将会完全模块化。提供模块管理器[SPA](DevTools/SPA/SakuraPackageAdminister.md)和一个完全无状态的静态[CoreModule](SakuraEngine/Core)模块, 其余功能全部导出共享库并模块化加载(当然静态模块也是支持的, 且容许其拥有状态)。
+&emsp;&emsp;为了以稳定地维护并持续引擎的开发, 引擎将会完全模块化。提供模块管理器[SPA](DevTools/SPA/SakuraPackageAdminister.md)和一个无状态的动态[CoreModule](SakuraEngine/Core)模块, 其余功能全部导出共享库并模块化加载(当然静态模块也是支持的, 且容许其拥有状态)。
 
 &emsp;&emsp;引擎以主模块为起点, 依依赖顺序加载并初始化所有的模块后, 从主模块的入口函数进入自定义程序循环。这也意味着引擎将会完全可装卸, 但需要额外留意版本控制。单元测试[SPAUnitTest](https://github.com/SaeruHikari/SakuraEngine/tree/master/SPAUnitTest)描述了一组简单的模块依赖图, 可以找到模块系统的示例。
 

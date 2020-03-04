@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-03 11:17:06
+ * @LastEditTime: 2020-03-04 22:13:37
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -46,6 +46,9 @@ namespace Sakura::Graphics::Vk
         {
             CGD_Vk::validate = true;
         }
+        auto GetVkInstance(){return instance;}
+        virtual std::unique_ptr<Sakura::Graphics::CommandQueue>
+            InitQueueSet(void* mainSurface);
         // Vulkan functions
     private:
         static void Initialize(CGD_Info info);
@@ -58,10 +61,9 @@ namespace Sakura::Graphics::Vk
         void setupDebugMessenger();
     private:
         void createVkInstance(uint pCount, const char** pName);
-        void pickPhysicalDevice();
-        void createLogicalDevice(
-            Sakura::Graphics::DeviceFeatures deviceFeatures);
+        void pickPhysicalDevice(VkSurfaceKHR surface);
     private:
+        Sakura::Graphics::DeviceFeatures deviceFeatures;
         VkInstance instance;
         VkDevice device;
         std::unique_ptr<CommandQueue_Vk> graphicsQueue;

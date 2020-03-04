@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 16:32:13
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-04 09:02:11
+ * @LastEditTime: 2020-03-04 18:33:47
  */
 #pragma once
 #include "spdlog/spdlog.h"
@@ -218,8 +218,6 @@ namespace Sakura::log
 public:\
     inline static auto get_logger()\
     {\
-        if(spdlog::get(name) == nullptr)\
-            std::cout << "Construct New: " << name << std::endl;\
         static auto logger = Sakura::log::regist_logger(name);\
         return logger.get();\
     }\
