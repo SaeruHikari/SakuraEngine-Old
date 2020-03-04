@@ -22,11 +22,12 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 01:07:05
+ * @LastEditTime: 2020-03-05 01:33:21
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
 #include "CommandObjects/CommandQueue_Vk.h"
+#include "GraphicsObjects/SwapChain_Vk.h"
 #include <iostream>
 
 
@@ -63,6 +64,9 @@ namespace Sakura::Graphics::Vk
             InitQueueSet(void* mainSurface, CGDEntity& device);
         // Vulkan functions
         static void Initialize(CGDInfo info, CGDEntity& device);
+        static std::unique_ptr<Sakura::Graphics::SwapChain>
+            CreateSwapChain(const int width, const int height, 
+                CGDEntity& device, void* mainSurface);
     private:
          /**
          * @description: Initial Vulkan Device

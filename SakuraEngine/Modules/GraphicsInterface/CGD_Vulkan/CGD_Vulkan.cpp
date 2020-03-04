@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 00:57:52
+ * @LastEditTime: 2020-03-05 01:12:16
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -247,6 +247,7 @@ VkPhysicalDeviceFeatures getDeviceFeatureVk(
     return deviceFeature;
 }
 
+#define _CGD_VK_IMPLEMENTATION_
 #include "SwapChain_Vk.inl"
 
 bool isDeviceSuitable(VkPhysicalDevice phy_device, 

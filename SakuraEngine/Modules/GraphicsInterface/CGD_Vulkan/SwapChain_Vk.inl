@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-05 01:05:14
+ * @LastEditTime: 2020-03-05 01:40:11
  */
 
 // Swap Chain Support Details
@@ -103,3 +103,78 @@ inline VkExtent2D chooseSwapExtent(const int width, const int height,
         return actualExtent;
     }
 }
+
+#ifdef _CGD_VK_IMPLEMENTATION_
+std::unique_ptr<Sakura::Graphics::SwapChain>
+    CGD_Vk::CreateSwapChain(const int width, const int height, 
+        CGDEntity& device, void* mainSurface)
+{
+    auto res = std::make_unique<Sakura::Graphics::Vk::SwapChain_Vk>();
+    CGDEntityVk& vkdevice = (CGDEntityVk&)(device);
+    VkSurfaceKHR surface = *(VkSurfaceKHR*)mainSurface;
+    auto physicalDevice = vkdevice.physicalDevice;
+    SwapChainSupportDetails swapChainSupport 
+        = querySwapChainSupport(physicalDevice, surface);
+
+    VkSurfaceFormatKHR surfaceFormat = 
+        chooseSwapSurfaceFormat(swapChainSupport.formats);
+    VkPresentModeKHR presentMode = 
+        chooseSwapPresentMode(swapChainSupport.presentModes);
+    VkExtent2D extent = chooseSwapExtent(width, height,
+        swapChainSupport.capabilities);
+
+    uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+    if (swapChainSupport.capabilities.maxImageCount > 0 
+        && imageCount > swapChainSupport.capabilities.maxImageCount)
+        imageCount = swapChainSupport.capabilities.maxImageCount;
+
+    VkSwapchainCreateInfoKHR createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    createInfo.surface = surface;
+
+    createInfo.minImageCount = imageCount;
+    createInfo.imageFormat = surfaceFormat.format;
+    createInfo.imageColorSpace = surfaceFormat.colorSpace;
+    createInfo.imageExtent = extent;
+    createInfo.imageArrayLayers = 1;
+    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+    QueueFamilyIndices indices = findQueueFamilies(physicalDevice, surface);
+    uint32_t queueFamilyIndices[] = 
+        {indices.graphicsFamily.value(), indices.presentFamily.value()};
+    
+    if (indices.graphicsFamily != indices.presentFamily) 
+    {
+        createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+        createInfo.queueFamilyIndexCount = 2;
+        createInfo.pQueueFamilyIndices = queueFamilyIndices;
+    } 
+    else
+        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    createInfo.presentMode = presentMode;
+    createInfo.clipped = VK_TRUE;
+
+    createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+    if (vkCreateSwapchainKHR(vkdevice.device, &createInfo,
+            nullptr, &res->swapChain) != VK_SUCCESS) 
+    {
+        Sakura::log::error("failed to create swap chain!");
+        throw std::runtime_error("failed to create swap chain!");
+    }
+
+    vkGetSwapchainImagesKHR(vkdevice.device, res->swapChain,
+        &imageCount, nullptr);
+    res->swapChainImages.resize(imageCount);
+    vkGetSwapchainImagesKHR(vkdevice.device, res->swapChain,
+        &imageCount, res->swapChainImages.data());
+
+    res->swapChainImageFormat = surfaceFormat.format;
+    res->swapChainExtent = extent;
+    res->device = &vkdevice.device;
+    return std::move(res);
+}
+#endif

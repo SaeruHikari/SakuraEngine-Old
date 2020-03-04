@@ -21,18 +21,26 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-04 21:41:05
- * @LastEditTime: 2020-03-05 01:41:57
+ * @Date: 2020-03-05 01:29:37
+ * @LastEditTime: 2020-03-05 01:41:39
  */
 #pragma once
-#include "Core/CoreMinimal/SInterface.h"
-#include "Core/CoreMinimal/SDefination.h"
-#include "../Format/CommonFeatures.h"
+#include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
 
-namespace Sakura::Graphics
+namespace Sakura::Graphics::Vk
 {
-    SInterface SwapChain
+    struct SwapChain_Vk : public Sakura::Graphics::SwapChain
     {
-        virtual ~SwapChain() {};
+        virtual ~SwapChain_Vk() override
+        {
+            if(!device)
+                Sakura::log::error("SwapChain Destructor: VkDevice is nullptr!");
+            vkDestroySwapchainKHR(*device, swapChain, nullptr);
+        }
+        VkDevice* device = nullptr;
+        VkSwapchainKHR swapChain;
+        std::vector<VkImage> swapChainImages;
+        VkFormat swapChainImageFormat;
+        VkExtent2D swapChainExtent;
     };
 }
