@@ -22,14 +22,14 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-02 16:42:07
- * @LastEditTime: 2020-03-02 17:23:47
+ * @LastEditTime: 2020-03-05 00:27:37
  */
 #pragma once
 #include <bitset>
 
 namespace Sakura::Graphics
 {
-    struct DeviceFeatures
+    struct PhysicalDeviceFeatures
     {
         std::bitset<64> val;
         inline static const constexpr std::size_t geometryShader = 1;

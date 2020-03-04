@@ -1,3 +1,5 @@
+add_subdirectory(CommandObjects)
+
 find_file(SpecificTimerImpl GpuTimer.cpp *GpuTimer*.cpp 
     PATHS ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -8,9 +10,9 @@ endif(SpecificTimerImpl)
 
 add_library(CGD_Vulkan 
     CGD_Vulkan.cpp  
-    CommandContext_Vk.cpp 
+    CommandObjects/CommandContext_Vk.cpp 
     ../CGD/CommandContext.cpp  
-    CommandQueue_Vk.cpp  
+    CommandObjects/CommandQueue_Vk.cpp  
     ../CGD/Profiling.cpp
     ${SpecificTimerImpl} 
 )

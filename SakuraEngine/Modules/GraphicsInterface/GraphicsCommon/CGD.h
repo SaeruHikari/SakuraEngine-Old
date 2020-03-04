@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-04 22:23:06
+ * @LastEditTime: 2020-03-05 00:28:03
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -33,38 +33,33 @@
 
 namespace Sakura::Graphics
 {
-    struct CGD_Info
+    struct CGDInfo
     {
         bool enableDebugLayer = false;
         std::vector<const char*> extentionNames;
-        DeviceFeatures deviceFeatures;
+        PhysicalDeviceFeatures physicalDeviceFeatures;
     };
-    SInterface CGD
+    
+    SInterface CGDEntity
     {
-        DECLARE_LOGGER("CGD")
-        virtual ~CGD() = default;
-        enum class TargetGraphicsInterface : std::uint32_t
+        ContextManager* GetContextManager(void)
         {
-            CGD_TARGET_DIRECT3D12,
-            CGD_TARGET_VULKAN,
-            CGD_TARGET_NUMS
-        };
-        SAKURA_API static void Initialize(TargetGraphicsInterface targetGI,
-            CGD_Info info = {});
-        virtual void Render(void) = 0;
-        virtual void Destroy(void) = 0;
-        SAKURA_API static CGD* GetCGD(void)
-        {
-            ASSERT_RUNTIME(eCGD != nullptr);
-            return eCGD;
+            return m_ContextManager.get();
         }
-        SAKURA_API static ContextManager* GetContextManager(void)
+        virtual std::string_view GetTargetInterface(void)
         {
-            ASSERT_RUNTIME(GetCGD()->m_ContextManager.get() != nullptr);
-            return GetCGD()->m_ContextManager.get();
+            static std::pmr::string target = "null";
+            return std::string_view(target);
         }
+        bool validate = false;
     protected:
-        SAKURA_API static Sakura::Graphics::CGD* eCGD;
         std::unique_ptr<ContextManager> m_ContextManager;
+    };
+    
+    enum class TargetGraphicsInterface : std::uint32_t
+    {
+        CGD_TARGET_DIRECT3D12,
+        CGD_TARGET_VULKAN,
+        CGD_TARGET_NUMS
     };
 }

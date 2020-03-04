@@ -3,15 +3,15 @@
  * @Version: Do not edit
  * @Author: SaeruHikari
  * @Date: 2020-02-01 22:07:52
- * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-27 13:59:48
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-03-05 01:07:48
  */
 #include <iostream>
 #include "gtest/gtest.h"
 #include "Modules/GraphicsInterface/GraphicsCommon/Format/PixelFormat.h"
 #include "Modules/GraphicsInterface/CGD_Vulkan/Vulkan_FormatTransfer.h"
 #include "Modules/GraphicsInterface/GraphicsCommon/CGD.h"
-#include "Modules/GraphicsInterface/CGD_Vulkan/CommandContext_Vk.h"
+#include "Modules/GraphicsInterface/CGD_Vulkan/CommandObjects/CommandContext_Vk.h"
 
 TEST(UnitTestGraphics, FirstPrint)
 {
@@ -27,17 +27,7 @@ TEST(UnitTestGraphics, PixelFormat)
 
 TEST(UnitTestGraphics, CGDInterface)
 {
-    Sakura::Graphics::CGD::Initialize(
-        Sakura::Graphics::CGD::TargetGraphicsInterface::CGD_TARGET_VULKAN
-    );
-    Sakura::Graphics::CGD::GetCGD()->Render();
-    Sakura::Graphics::CGD::GetCGD()->Destroy();
 
-    Sakura::Graphics::CGD::Initialize(
-        Sakura::Graphics::CGD::TargetGraphicsInterface::CGD_TARGET_DIRECT3D12
-    );
-    Sakura::Graphics::CGD::GetCGD()->Render();
-    Sakura::Graphics::CGD::GetCGD()->Destroy();
 }
 
 TEST(UnitTestGraphics, CommandObjects)

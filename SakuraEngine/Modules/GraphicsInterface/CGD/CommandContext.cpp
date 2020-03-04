@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-02 15:02:19
+ * @LastEditTime: 2020-03-04 23:19:48
  */
 #include "../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../GraphicsCommon/CGD.h"
@@ -43,11 +43,10 @@ namespace Sakura::Graphics
             sm_ContextPools[i].clear();
     }
 
-    CommandContext& CommandContext::Begin(const spmr_string& ID)
+    CommandContext& CommandContext::Begin(ContextManager* mng, const spmr_string& ID)
     {
         CommandContext* NewContext = 
-        CGD::GetCGD()->GetContextManager()
-            ->AllocateContext(CommandContext_Graphics);
+            mng->AllocateContext(CommandContext_Graphics);
         NewContext->m_ID = ID;
         if(ID.length() > 0)
             Profiling::BeginBlock(ID, *NewContext);

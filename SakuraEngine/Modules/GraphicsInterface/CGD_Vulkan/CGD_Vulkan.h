@@ -22,11 +22,11 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-04 22:13:37
+ * @LastEditTime: 2020-03-05 01:07:05
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
-#include "CommandQueue_Vk.h"
+#include "CommandObjects/CommandQueue_Vk.h"
 #include <iostream>
 
 
@@ -34,41 +34,44 @@ using namespace Sakura::flags;
 
 namespace Sakura::Graphics::Vk
 {
-    class CGD_Vk : public Sakura::Graphics::CGD
+    struct CGDEntityVk : public CGDEntity
     {
-        friend SInterface CGD;
-        DECLARE_LOGGER("CGD_Vk")
-    public:
-        CGD_Vk() = default;
-        virtual void Render(void) override;   
-        virtual void Destroy(void) override; 
-        inline SAKURA_API static void OpenValidateLayer()
-        {
-            CGD_Vk::validate = true;
-        }
+        friend class CGD_Vk;
         auto GetVkInstance(){return instance;}
-        virtual std::unique_ptr<Sakura::Graphics::CommandQueue>
-            InitQueueSet(void* mainSurface);
-        // Vulkan functions
     private:
-        static void Initialize(CGD_Info info);
-        /**
-         * @description: Initial Vulkan Device
-         * @author: SaeruHikari
-         */
-        void VkInit(CGD_Info info);
-        static bool validate;
-        void setupDebugMessenger();
-    private:
-        void createVkInstance(uint pCount, const char** pName);
-        void pickPhysicalDevice(VkSurfaceKHR surface);
-    private:
-        Sakura::Graphics::DeviceFeatures deviceFeatures;
+        Sakura::Graphics::PhysicalDeviceFeatures physicalDeviceFeatures;
         VkInstance instance;
         VkDevice device;
         std::unique_ptr<CommandQueue_Vk> graphicsQueue;
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger;
+    public:
+        const std::vector<const char*> deviceExtensions = 
+        {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        };
+    };
+
+    class CGD_Vk 
+    {
+        DECLARE_LOGGER("CGD_Vk")
+    public:
+        CGD_Vk() = default;
+        static void Render(CGDEntity& device);   
+        static void Destroy(CGDEntity& device); 
+        static std::unique_ptr<Sakura::Graphics::CommandQueue>
+            InitQueueSet(void* mainSurface, CGDEntity& device);
+        // Vulkan functions
+        static void Initialize(CGDInfo info, CGDEntity& device);
+    private:
+         /**
+         * @description: Initial Vulkan Device
+         * @author: SaeruHikari
+         */
+        static void VkInit(CGDInfo info, CGDEntity& device);
+        static void setupDebugMessenger(CGDEntity& device);
+        static void createVkInstance(uint pCount, const char** pName, CGDEntity& device);
+        static void pickPhysicalDevice(VkSurfaceKHR surface, CGDEntity& device);
     };
     
     /**

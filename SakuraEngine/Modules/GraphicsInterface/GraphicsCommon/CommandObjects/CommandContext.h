@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-02 18:45:46
+ * @LastEditTime: 2020-03-04 23:19:27
  */
 #pragma once
 #include <mutex>
@@ -65,7 +65,7 @@ namespace Sakura::Graphics
          * @return: a command context ref
          * @author: SaeruHikari
          */
-        static CommandContext& Begin(const spmr_string& ID = "");
+        static CommandContext& Begin(ContextManager*, const spmr_string& ID = "");
         
         /**
          * @description: Ends the encoding 
