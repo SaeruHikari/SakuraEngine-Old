@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 16:32:13
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-02 15:33:05
+ * @LastEditTime: 2020-03-04 09:02:11
  */
 #pragma once
 #include "spdlog/spdlog.h"
@@ -216,24 +216,31 @@ namespace Sakura::log
 
 #define DECLARE_LOGGER(name) \
 public:\
-	template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
-		typename... Ts>\
-	inline static void debug_info(Ts... params)\
-	{\
-		Sakura::log::debug_info_l<buildVar>(logger.get(), params...);\
-	}\
+    inline static auto get_logger()\
+    {\
+        if(spdlog::get(name) == nullptr)\
+            std::cout << "Construct New: " << name << std::endl;\
+        static auto logger = Sakura::log::regist_logger(name);\
+        return logger.get();\
+    }\
 	template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
 		typename... Ts>\
 	inline static void debug_warn(Ts... params)\
 	{\
-		Sakura::log::debug_warn_l<buildVar>(name, params...);\
+		Sakura::log::debug_warn_l<buildVar>(get_logger(), params...);\
+	}\
+    template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
+		typename... Ts>\
+	inline static void debug_info(Ts... params)\
+	{\
+		Sakura::log::debug_info_l<buildVar>(get_logger(), params...);\
 	}\
 	template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
 		typename... Ts>\
 	inline static void debug_error(Ts... params)\
 	{\
-		Sakura::log::debug_error_l<buildVar>(name, params...);\
+		Sakura::log::debug_error_l<buildVar>(get_logger(), params...);\
 	}\
-private:\
-	inline static auto logger = Sakura::log::regist_logger(name);\
 public:
+
+

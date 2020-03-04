@@ -22,9 +22,8 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 12:13:48
- * @LastEditTime: 2020-03-03 13:14:18
+ * @LastEditTime: 2020-03-04 11:08:52
  -->
-[简体中文](./README.md) | [English](./README.en-US.md)
 <h1 align="left">Sakura Package Administer(SPA)</h1>
 
 &emsp;&emsp;SakuraEngine的模块/插件管理器。可以跨平台加载共享库, 并根据依赖进行加载调度。

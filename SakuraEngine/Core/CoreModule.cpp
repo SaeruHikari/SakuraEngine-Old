@@ -4,8 +4,8 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-23 22:46:32
- * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-03-02 13:26:56
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-03-04 09:01:09
  */
 #define API_EXPORTS
 #include "CoreModule.h"
