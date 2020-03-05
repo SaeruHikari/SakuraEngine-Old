@@ -18,6 +18,7 @@ add_library(CGD_Vulkan
     ../CGD/CommandContext.cpp  
     CommandObjects/CommandQueue_Vk.cpp  
     ../CGD/Profiling.cpp
+    ResourceObjects/GpuResourceVk.cpp
     ${SpecificTimerImpl} 
 )
 

@@ -22,11 +22,19 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 22:41:33
- * @LastEditTime: 2020-03-05 22:41:57
+ * @LastEditTime: 2020-03-05 22:46:29
  */
 #include "GpuResourceVk.h"
 
-void GetSize(uint32& width, uint32& height)
+using namespace Sakura::Graphics::Vk;
+using namespace Sakura;
+
+void GpuResourceVk::GetSize(uint32& width, uint32& height)
+{
+    
+}
+
+void GpuResourceVkImage::GetSize(uint32& width, uint32& height)
 {
     
 }

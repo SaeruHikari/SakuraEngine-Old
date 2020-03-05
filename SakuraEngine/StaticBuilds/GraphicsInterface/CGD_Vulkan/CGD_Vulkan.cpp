@@ -22,12 +22,13 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 17:31:03
+ * @LastEditTime: 2020-03-05 22:53:52
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
 #include <set>
 #include "Core/EngineUtils/ConsoleDesk.h"
+#include "ResourceObjects/GpuResourceVk.h"
 #include "SakuraEngine/Core/Core.h"
 #include "vulkan/vulkan.hpp"
 

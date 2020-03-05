@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 01:29:37
- * @LastEditTime: 2020-03-05 18:03:52
+ * @LastEditTime: 2020-03-05 22:47:45
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
@@ -49,7 +49,6 @@ namespace Sakura::Graphics::Vk
             height = swapChainExtent.height;
         }
         VkSwapchainKHR swapChain;
-        std::vector<VkImage> swapChainImages;
         VkFormat swapChainImageFormat;
         VkExtent2D swapChainExtent;
     private:

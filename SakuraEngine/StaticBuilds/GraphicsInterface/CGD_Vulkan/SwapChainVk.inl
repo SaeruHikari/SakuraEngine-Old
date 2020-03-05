@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-05 18:02:52
+ * @LastEditTime: 2020-03-05 23:12:30
  */
 
 // Swap Chain Support Details
@@ -169,8 +169,20 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
     vkGetSwapchainImagesKHR(vkdevice.device, res->swapChain,
         &imageCount, nullptr);
     res->swapChainImages.resize(imageCount);
+    
+    std::vector<VkImage> chainImages;
+    chainImages.resize(imageCount);
     vkGetSwapchainImagesKHR(vkdevice.device, res->swapChain,
-        &imageCount, res->swapChainImages.data());
+        &imageCount, chainImages.data());
+    
+    res->swapChainImages.resize(imageCount);
+    for(auto i = 0u; i < imageCount; i++)
+    {
+        std::unique_ptr<GpuResourceVkImage> vkImg 
+            = std::make_unique<GpuResourceVkImage>();
+        vkImg->image = chainImages[i];
+        res->swapChainImages[i] = std::move(vkImg);
+    }
 
     res->swapChainImageFormat = surfaceFormat.format;
     res->swapChainExtent = extent;

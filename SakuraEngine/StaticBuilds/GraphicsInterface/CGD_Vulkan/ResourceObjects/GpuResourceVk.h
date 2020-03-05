@@ -22,9 +22,10 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 18:01:43
- * @LastEditTime: 2020-03-05 22:41:21
+ * @LastEditTime: 2020-03-05 22:47:27
  */
 #pragma once
+#include "vulkan/vulkan.h"
 #include "../../GraphicsCommon/ResourceObjects/Resource.h"
 
 namespace Sakura::Graphics::Vk
@@ -33,9 +34,10 @@ namespace Sakura::Graphics::Vk
     {
         virtual void GetSize(uint32& width, uint32& height) override;
     };
-    struct GpuResourceVkImage : public GpuResourceVk
+    struct GpuResourceVkImage : public GpuResource
     {
-        
+        virtual void GetSize(uint32& width, uint32& height) override;
+        VkImage image;
     };
     
 } // namespace Sakura::Graphics::Vk
