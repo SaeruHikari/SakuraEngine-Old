@@ -4,14 +4,14 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 22:07:52
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-05 01:07:48
+ * @LastEditTime: 2020-03-05 14:08:04
  */
 #include <iostream>
 #include "gtest/gtest.h"
-#include "Modules/GraphicsInterface/GraphicsCommon/Format/PixelFormat.h"
-#include "Modules/GraphicsInterface/CGD_Vulkan/Vulkan_FormatTransfer.h"
-#include "Modules/GraphicsInterface/GraphicsCommon/CGD.h"
-#include "Modules/GraphicsInterface/CGD_Vulkan/CommandObjects/CommandContext_Vk.h"
+#include "StaticBuilds/GraphicsInterface/GraphicsCommon/Format/PixelFormat.h"
+#include "StaticBuilds/GraphicsInterface/CGD_Vulkan/Vulkan_FormatTransfer.h"
+#include "StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
+#include "StaticBuilds/GraphicsInterface/CGD_Vulkan/CommandObjects/CommandContext_Vk.h"
 
 TEST(UnitTestGraphics, FirstPrint)
 {

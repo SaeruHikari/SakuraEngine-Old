@@ -21,18 +21,46 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-02 16:42:07
- * @LastEditTime: 2020-03-05 00:27:37
+ * @Date: 2020-02-25 22:25:59
+ * @LastEditTime: 2020-03-05 12:39:53
  */
 #pragma once
-#include <bitset>
+#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/SDefination.h"
+#include "CommandObjects/CommandContext.h"
+#include "SakuraEngine/Core/EngineUtils/log.h"
+#include "Format/CommonFeatures.h"
 
 namespace Sakura::Graphics
 {
-    struct PhysicalDeviceFeatures
+    struct CGDInfo
     {
-        std::bitset<64> val;
-        inline static const constexpr std::size_t geometryShader = 1;
-        inline static const constexpr std::size_t logicOp = 2;
+        bool enableDebugLayer = false;
+        std::vector<const char*> extentionNames;
+        PhysicalDeviceFeatures physicalDeviceFeatures;
+    };
+    
+    SInterface CGDEntity
+    {
+        ContextManager* GetContextManager(void)
+        {
+            return contextManager.get();
+        }
+        virtual std::string_view GetTargetInterface(void)
+        {
+            static std::pmr::string target = "null";
+            return std::string_view(target);
+        }
+        bool validate = false;
+    protected:
+        std::unique_ptr<CommandQueue> graphicsQueue;
+        std::unique_ptr<ContextManager> contextManager;
+    };
+    
+    enum class TargetGraphicsInterface : std::uint32_t
+    {
+        CGD_TARGET_DIRECT3D12,
+        CGD_TARGET_VULKAN,
+        CGD_TARGET_NUMS
     };
 }

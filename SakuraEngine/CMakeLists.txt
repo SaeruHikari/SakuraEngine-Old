@@ -73,6 +73,7 @@ set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 
 add_subdirectory(Core)
+add_subdirectory(StaticBuilds)
 add_subdirectory(Modules)
 add_subdirectory(UnitTests)
 add_subdirectory(Editor)

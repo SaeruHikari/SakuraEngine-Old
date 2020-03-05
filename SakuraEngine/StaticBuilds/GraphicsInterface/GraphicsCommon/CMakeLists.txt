@@ -1,0 +1,3 @@
+add_subdirectory(Format)
+add_subdirectory(CommandObjects)
+add_subdirectory(GraphicsObjects)

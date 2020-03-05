@@ -22,10 +22,10 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-05 11:14:33
+ * @LastEditTime: 2020-03-05 14:07:00
  */
-#include "SakuraEngine/Modules/GraphicsInterface/GraphicsCommon/CGD.h"
-#include "SakuraEngine/Modules/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
 extern "C"
 {
 	#include "SDL2/SDL.h"
