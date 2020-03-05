@@ -3,8 +3,8 @@
  * @Version: 0.1.0
  * @Author: SaeruHikari
  * @Date: 2020-02-02 00:13:54
- * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-03-01 19:25:18
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-03-05 17:13:39
  */
 #pragma once
 #include "SKeyWords.h"
@@ -69,18 +69,6 @@
 #ifndef MIN_INT64
 #define MIN_INT64  ((int64) ~MAX_INT64)
 #endif
-
-
-namespace Sakura
-{
-    enum class ETargetPlatForm : std::uint32_t
-    {
-        E_WIN32,
-        E_LINUX,
-        E_OSX,
-        E_COUNT
-    };
-}
 
 /**
  * @description: put this into a class-body to 
