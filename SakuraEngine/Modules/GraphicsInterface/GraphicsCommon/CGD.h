@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 00:28:03
+ * @LastEditTime: 2020-03-05 12:39:53
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -44,7 +44,7 @@ namespace Sakura::Graphics
     {
         ContextManager* GetContextManager(void)
         {
-            return m_ContextManager.get();
+            return contextManager.get();
         }
         virtual std::string_view GetTargetInterface(void)
         {
@@ -53,7 +53,8 @@ namespace Sakura::Graphics
         }
         bool validate = false;
     protected:
-        std::unique_ptr<ContextManager> m_ContextManager;
+        std::unique_ptr<CommandQueue> graphicsQueue;
+        std::unique_ptr<ContextManager> contextManager;
     };
     
     enum class TargetGraphicsInterface : std::uint32_t

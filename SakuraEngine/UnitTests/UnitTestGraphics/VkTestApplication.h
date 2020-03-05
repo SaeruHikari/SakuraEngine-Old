@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-05 01:20:55
+ * @LastEditTime: 2020-03-05 11:14:33
  */
 #include "SakuraEngine/Modules/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/Modules/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -69,26 +69,26 @@ private:
         cgd_info.enableDebugLayer = true;
         cgd_info.extentionNames = VkSDL_GetInstanceExtensions(win,
             cgd_info.enableDebugLayer);
-        using _CGD = CGD_Vk;
-        _CGD::Initialize(cgd_info, entityVk);
+        using CGD = CGD_Vk;
+        CGD::Initialize(cgd_info, entityVk);
         SDL_Vulkan_CreateSurface(win, entityVk.GetVkInstance(), &surface);
-        _CGD::InitQueueSet(&surface, entityVk);
-        _CGD::CreateSwapChain(width, height, entityVk, &surface);
+        CGD::InitQueueSet(&surface, entityVk);
+        CGD::CreateSwapChain(width, height, entityVk, &surface);
     }
 
     void mainLoop()
     {
         using Sakura::Graphics::Vk::CGD_Vk;
-        using _CGD = CGD_Vk;
-        _CGD::Render(entityVk);
+        using CGD = CGD_Vk;
+        CGD::Render(entityVk);
     }
 
     void cleanUp()
     {
         using Sakura::Graphics::Vk::CGD_Vk;
-        using _CGD = CGD_Vk;
+        using CGD = CGD_Vk;
         vkDestroySurfaceKHR(entityVk.GetVkInstance(), surface, nullptr);
-        _CGD::Destroy(entityVk);
+        CGD::Destroy(entityVk);
 	    SDL_DestroyWindow(win);
         SDL_Quit();
     }

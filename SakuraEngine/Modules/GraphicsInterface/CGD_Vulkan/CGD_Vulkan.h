@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 01:33:21
+ * @LastEditTime: 2020-03-05 12:39:41
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -43,7 +43,6 @@ namespace Sakura::Graphics::Vk
         Sakura::Graphics::PhysicalDeviceFeatures physicalDeviceFeatures;
         VkInstance instance;
         VkDevice device;
-        std::unique_ptr<CommandQueue_Vk> graphicsQueue;
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger;
     public:
