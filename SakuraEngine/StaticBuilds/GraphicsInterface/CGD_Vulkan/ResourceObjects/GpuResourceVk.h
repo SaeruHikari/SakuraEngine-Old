@@ -21,45 +21,22 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 17:30:03
+ * @Date: 2020-03-05 18:01:43
+ * @LastEditTime: 2020-03-05 22:41:21
  */
 #pragma once
-#include "Core/CoreMinimal/SInterface.h"
-#include "Core/CoreMinimal/SDefination.h"
-#include "CommandObjects/CommandContext.h"
-#include "SakuraEngine/Core/EngineUtils/log.h"
-#include "Format/CommonFeatures.h"
+#include "../../GraphicsCommon/ResourceObjects/Resource.h"
 
-namespace Sakura::Graphics
+namespace Sakura::Graphics::Vk
 {
-    struct CGDInfo
+    struct GpuResourceVk : public GpuResource
     {
-        bool enableDebugLayer = false;
-        std::vector<const char*> extentionNames;
-        PhysicalDeviceFeatures physicalDeviceFeatures;
+        virtual void GetSize(uint32& width, uint32& height) override;
+    };
+    struct GpuResourceVkImage : public GpuResourceVk
+    {
+        
     };
     
-    SInterface CGDEntity
-    {
-        ContextManager* GetContextManager(void)
-        {
-            return contextManager.get();
-        }
-        virtual std::string_view GetTargetInterface(void)
-        {
-            static std::pmr::string target = "null";
-            return std::string_view(target);
-        }
-        bool validate = false;
-        std::unique_ptr<CommandQueue> graphicsQueue;
-        std::unique_ptr<ContextManager> contextManager;
-    };
-    
-    enum class TargetGraphicsInterface : std::uint32_t
-    {
-        CGD_TARGET_DIRECT3D12,
-        CGD_TARGET_VULKAN,
-        CGD_TARGET_NUMS
-    };
-}
+} // namespace Sakura::Graphics::Vk
+

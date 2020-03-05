@@ -27,7 +27,7 @@
 #pragma once
 #include "../GraphicsCommon/CGD.h"
 #include "CommandObjects/CommandQueue_Vk.h"
-#include "GraphicsObjects/SwapChain_Vk.h"
+#include "GraphicsObjects/SwapChainVk.h"
 #include <iostream>
 
 

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 12:41:03
+ * @LastEditTime: 2020-03-05 17:31:03
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -176,9 +176,6 @@ void CGD_Vk::createVkInstance(uint pCount, const char** pName, CGDEntity& device
 
     if (vkCreateInstance(&createInfo, nullptr, &vkdevice.instance) != VK_SUCCESS) 
         Sakura::log::error("Vulkan: failed to create instance!");
-    else
-        CGD_Vk::debug_info(
-            "Vulkan: create instance succeed!");
 }
 
 struct QueueFamilyIndices
@@ -248,7 +245,7 @@ VkPhysicalDeviceFeatures getDeviceFeatureVk(
 }
 
 #define _CGD_VK_IMPLEMENTATION_
-#include "SwapChain_Vk.inl"
+#include "SwapChainVk.inl"
 
 bool isDeviceSuitable(VkPhysicalDevice phy_device, 
         VkSurfaceKHR surface, CGDEntityVk& vkdevice) 
@@ -360,8 +357,6 @@ std::unique_ptr<Sakura::Graphics::CommandQueue>
         Sakura::log::error("Vulkan: failed to create logical device!");
         throw std::runtime_error("Vulkan: failed to create logical device!");
     }
-    else
-        CGD_Vk::debug_info("Vulkan: Create logical device");
     
     // Create Queue
     auto graphicsQueue = std::make_unique<CommandQueue_Vk>();

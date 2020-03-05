@@ -22,25 +22,37 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 01:29:37
- * @LastEditTime: 2020-03-05 01:41:39
+ * @LastEditTime: 2020-03-05 18:03:52
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
+#include "../../GraphicsCommon/ResourceObjects/Resource.h"
 
 namespace Sakura::Graphics::Vk
 {
-    struct SwapChain_Vk : public Sakura::Graphics::SwapChain
+    struct SwapChainVk : public Sakura::Graphics::SwapChain
     {
-        virtual ~SwapChain_Vk() override
+        friend class CGD_Vk;
+        virtual ~SwapChainVk() override
         {
             if(!device)
                 Sakura::log::error("SwapChain Destructor: VkDevice is nullptr!");
             vkDestroySwapchainKHR(*device, swapChain, nullptr);
         }
-        VkDevice* device = nullptr;
+        virtual PixelFormat GetPixelFormat() override
+        {
+            return PixelFormat::R8G8B8A8_UNORM;
+        }
+        virtual void GetExtent(uint32& width, uint32 height) override
+        {
+            width = swapChainExtent.width;
+            height = swapChainExtent.height;
+        }
         VkSwapchainKHR swapChain;
         std::vector<VkImage> swapChainImages;
         VkFormat swapChainImageFormat;
         VkExtent2D swapChainExtent;
+    private:
+        VkDevice* device = nullptr;
     };
 }

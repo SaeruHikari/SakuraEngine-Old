@@ -22,11 +22,12 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-04 21:41:05
- * @LastEditTime: 2020-03-05 01:41:57
+ * @LastEditTime: 2020-03-05 17:49:35
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
+#include "../Format/PixelFormat.h"
 #include "../Format/CommonFeatures.h"
 
 namespace Sakura::Graphics
@@ -34,5 +35,8 @@ namespace Sakura::Graphics
     SInterface SwapChain
     {
         virtual ~SwapChain() {};
+        virtual PixelFormat GetPixelFormat() = 0;
+        virtual void GetExtent(uint32& width, uint32 height) = 0;
+        uint32 swapChainCount = 2;
     };
 }

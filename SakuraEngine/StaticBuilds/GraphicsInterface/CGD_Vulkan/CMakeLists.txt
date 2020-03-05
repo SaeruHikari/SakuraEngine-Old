@@ -1,4 +1,8 @@
 add_subdirectory(CommandObjects)
+add_subdirectory(GraphicsObjects)
+add_subdirectory(ResourceObjects)
+
+include_directories(${Vulkan_INCLUDES})
 
 find_file(SpecificTimerImpl GpuTimer.cpp *GpuTimer*.cpp 
     PATHS ${CMAKE_CURRENT_SOURCE_DIR})

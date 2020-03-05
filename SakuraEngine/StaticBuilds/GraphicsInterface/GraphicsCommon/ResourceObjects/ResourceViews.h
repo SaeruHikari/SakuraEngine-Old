@@ -21,45 +21,30 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 17:30:03
+ * @Date: 2020-03-05 17:35:59
+ * @LastEditTime: 2020-03-05 22:38:21
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
-#include "CommandObjects/CommandContext.h"
-#include "SakuraEngine/Core/EngineUtils/log.h"
-#include "Format/CommonFeatures.h"
+#include "../Format/CommonFeatures.h"
 
 namespace Sakura::Graphics
 {
-    struct CGDInfo
+    enum ResourceViewType
     {
-        bool enableDebugLayer = false;
-        std::vector<const char*> extentionNames;
-        PhysicalDeviceFeatures physicalDeviceFeatures;
+        IMAGE_VIEW_TYPE_UNKNOWN,
+        IMAGE_VIEW_TYPE_Buffer,
+        IMAGE_VIEW_TYPE_2D,
+        IMAGE_VIEW_TYPE_2D_ARRAY,
+        IMAGE_VIEW_TYPE_3D,
+        IMAGE_VIEW_TYPES_COUNT
     };
-    
-    SInterface CGDEntity
+
+    SInterface ResourceView
     {
-        ContextManager* GetContextManager(void)
-        {
-            return contextManager.get();
-        }
-        virtual std::string_view GetTargetInterface(void)
-        {
-            static std::pmr::string target = "null";
-            return std::string_view(target);
-        }
-        bool validate = false;
-        std::unique_ptr<CommandQueue> graphicsQueue;
-        std::unique_ptr<ContextManager> contextManager;
-    };
-    
-    enum class TargetGraphicsInterface : std::uint32_t
-    {
-        CGD_TARGET_DIRECT3D12,
-        CGD_TARGET_VULKAN,
-        CGD_TARGET_NUMS
+        virtual void Attach(GpuResource& resource) = 0; 
+        virtual const PixelFormat GetPixelFormat(void) const = 0;
+        ResourceViewType viewType = IMAGE_VIEW_TYPE_UNKNOWN;
     };
 }

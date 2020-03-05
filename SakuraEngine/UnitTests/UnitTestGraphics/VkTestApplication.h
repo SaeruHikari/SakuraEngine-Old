@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-05 14:07:00
+ * @LastEditTime: 2020-03-05 20:26:58
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -36,6 +36,7 @@ extern "C"
 #include "SakuraEngine/Core/Core.h"
 #include "vulkan/vulkan.h"
 #include "Extern/include/SDL2Tools/SDL2Vk.hpp"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Vulkan_FormatTransfer.h"
 using namespace Sakura;
 
 class VkTestApplication
@@ -90,6 +91,10 @@ private:
         vkDestroySurfaceKHR(entityVk.GetVkInstance(), surface, nullptr);
         CGD::Destroy(entityVk);
 	    SDL_DestroyWindow(win);
+        VkFormat fmt = Sakura::Graphics::Vk::Transfer(
+            Sakura::Graphics::PixelFormat::R32G32B32A32_UINT);
+        VkFormat fmt2 = Sakura::Graphics::Vk::Transfer(
+            Sakura::Graphics::PixelFormat::S_R32G32B32A32_UINT);
         SDL_Quit();
     }
 

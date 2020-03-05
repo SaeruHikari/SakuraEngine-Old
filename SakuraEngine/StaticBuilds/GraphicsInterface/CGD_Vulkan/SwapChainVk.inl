@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-05 01:40:11
+ * @LastEditTime: 2020-03-05 18:02:52
  */
 
 // Swap Chain Support Details
@@ -109,7 +109,7 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
     CGD_Vk::CreateSwapChain(const int width, const int height, 
         CGDEntity& device, void* mainSurface)
 {
-    auto res = std::make_unique<Sakura::Graphics::Vk::SwapChain_Vk>();
+    auto res = std::make_unique<Sakura::Graphics::Vk::SwapChainVk>();
     CGDEntityVk& vkdevice = (CGDEntityVk&)(device);
     VkSurfaceKHR surface = *(VkSurfaceKHR*)mainSurface;
     auto physicalDevice = vkdevice.physicalDevice;
@@ -174,6 +174,7 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
 
     res->swapChainImageFormat = surfaceFormat.format;
     res->swapChainExtent = extent;
+    res->swapChainCount = imageCount;
     res->device = &vkdevice.device;
     return std::move(res);
 }

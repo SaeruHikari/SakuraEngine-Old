@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 22:07:52
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-05 14:08:04
+ * @LastEditTime: 2020-03-05 19:01:28
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -22,7 +22,7 @@ TEST(UnitTestGraphics, PixelFormat)
 {
     Sakura::Graphics::PixelFormat pf;
     pf = Sakura::Graphics::PixelFormat::R64G64B64A64_UINT;
-    std::cout << "uint Graphics Format: " << Sakura::Graphics::Vk::Transfer(pf) << std::endl;
+    //std::cout << "uint Graphics Format: " << Sakura::Graphics::Vk::Transfer(pf) << std::endl;
 }
 
 TEST(UnitTestGraphics, CGDInterface)
