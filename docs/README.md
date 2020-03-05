@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-03-01 20:09:10
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-04 11:48:27
+ * @LastEditTime: 2020-03-05 16:39:55
  -->
 <h1 align="center">Sakura Engine</h1>
 <div align="center">
@@ -17,7 +17,7 @@
 - ⚙️ 模块/插件化: 基于依赖图的模块管理器[SPA](DevTools/SPA/SakuraPackageAdminister.md), 支持静态/动态导出的插件/模块;
 
 # 待实现
-- 🧰 跨图形接口: [CGD](Modules/CGD/CGD.md)(CommonGraphicsDevice)现代图形API([Direct3D12](Modules/CGD/CGD_Direct3D12.md), [Vulkan](Modules/CGD/CGD_Vulkan.md)的上层抽象;
+- 🧰 跨图形接口: [CGD](Modules/CGD/CGD.md)(CommonGraphicsDevice)现代图形API([Direct3D12](StaticBuilds/CGD/CGD_Direct3D12.md), [Vulkan](StaticBuilds/CGD/CGD_Vulkan.md)的上层抽象;
 - 🎨 渲染调度: RenderGraph, 数据驱动可自由配置装载的Pass;
 - 🖼️ 渲染特性: 字体渲染, RayTracing Layer, F+ Pipeline, 粒子...
 - 📂 资产管理: 支持虚拟路径挂载, 资源依赖以及异步读取的资产管理系统;

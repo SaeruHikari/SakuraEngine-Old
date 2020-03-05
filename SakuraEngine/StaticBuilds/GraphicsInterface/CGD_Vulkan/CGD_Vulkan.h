@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 12:39:41
+ * @LastEditTime: 2020-03-05 16:45:40
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -37,15 +37,12 @@ namespace Sakura::Graphics::Vk
 {
     struct CGDEntityVk : public CGDEntity
     {
-        friend class CGD_Vk;
-        auto GetVkInstance(){return instance;}
-    private:
+        const auto GetVkInstance(){return instance;}
         Sakura::Graphics::PhysicalDeviceFeatures physicalDeviceFeatures;
         VkInstance instance;
         VkDevice device;
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger;
-    public:
         const std::vector<const char*> deviceExtensions = 
         {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME

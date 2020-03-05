@@ -1,19 +1,37 @@
 <!--
- * @Author: your name
- * @Date: 2020-03-05 11:22:58
- * @LastEditTime: 2020-03-05 12:45:32
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \docs\Modules\CGD\CGD_Device.md
+ * @CopyRight: MIT License
+* Copyright (c) 2020 SaeruHikari
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+*  IN THESOFTWARE.
+* 
+* 
+ * @Description: 
+ * @Version: 0.1.0
+ * @Autor: SaeruHikari
+ * @Date: 2020-03-05 13:54:51
+ * @LastEditTime: 2020-03-05 15:49:29
  -->
 <h1 align="left">CGD设备族</h1>
-
+ 
 ## 简介
 &emsp;&emsp;为了不引入全局状态, 现代图形API往往需要用户创建并维护各式各样的对象, 例如VkInstance, D3D12Device, Queue, SwapChain, Fence等。CGD保持了这一特性, 因此所有的CGD函数都是静态无副作用的(就像您在Vk和D3D12看到的任一函数一样)。
 
 &emsp;&emsp;CGD设备族就是现代图形API设备的一套抽象接口。
 
-![CGD_entity](Modules/CGD/../../CGDEntity.svg)
+![CGD_entity](CGDEntity.svg)
 
 &emsp;&emsp;通过它您也可以不安全地访问到下层运行着的图形接口的具体设备, 但是并不推荐这样做。
 
