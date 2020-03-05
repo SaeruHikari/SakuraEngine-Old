@@ -22,34 +22,29 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 01:29:37
- * @LastEditTime: 2020-03-05 22:47:45
+ * @LastEditTime: 2020-03-06 00:50:42
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
 #include "../../GraphicsCommon/ResourceObjects/Resource.h"
+#include "../Vulkan_FormatTransfer.h"
 
 namespace Sakura::Graphics::Vk
 {
     struct SwapChainVk : public Sakura::Graphics::SwapChain
     {
         friend class CGD_Vk;
-        virtual ~SwapChainVk() override
+        virtual ~SwapChainVk() override;
+        inline VkFormat GetVkPixelFormat() 
         {
-            if(!device)
-                Sakura::log::error("SwapChain Destructor: VkDevice is nullptr!");
-            vkDestroySwapchainKHR(*device, swapChain, nullptr);
+            return Transfer(swapChainImageFormat);
         }
-        virtual PixelFormat GetPixelFormat() override
+        inline void SetPixelFormat(const VkFormat fmt)
         {
-            return PixelFormat::R8G8B8A8_UNORM;
+            swapChainImageFormat = Sakura::Graphics::Vk::Transfer(fmt);
         }
-        virtual void GetExtent(uint32& width, uint32 height) override
-        {
-            width = swapChainExtent.width;
-            height = swapChainExtent.height;
-        }
+        virtual void GetExtent(uint32& width, uint32& height) override;
         VkSwapchainKHR swapChain;
-        VkFormat swapChainImageFormat;
         VkExtent2D swapChainExtent;
     private:
         VkDevice* device = nullptr;

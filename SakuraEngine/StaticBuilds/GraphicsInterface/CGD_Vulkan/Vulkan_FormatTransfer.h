@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 12:36:02
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-05 23:39:42
+ * @LastEditTime: 2020-03-06 00:11:34
  */
 #pragma once
 #include "vulkan/vulkan.h"
@@ -409,7 +409,7 @@ return VkFormat::VK_FORMAT_UNDEFINED;}
 
 namespace Sakura::Graphics::Vk
 {
-    VkFormat Transfer(const Sakura::Graphics::PixelFormat format)
+    static VkFormat Transfer(const Sakura::Graphics::PixelFormat format)
     {
         switch (format)
         {
@@ -429,7 +429,7 @@ return PixelFormat::format;
 
 namespace Sakura::Graphics::Vk
 {
-    Sakura::Graphics::PixelFormat Transfer(const VkFormat format)
+    static Sakura::Graphics::PixelFormat Transfer(const VkFormat format)
     {
         switch (format)
         {

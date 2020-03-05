@@ -19,6 +19,8 @@ add_library(CGD_Vulkan
     CommandObjects/CommandQueue_Vk.cpp  
     ../CGD/Profiling.cpp
     ResourceObjects/GpuResourceVk.cpp
+    ResourceObjects/ResourceViewVk.cpp
+    GraphicsObjects/SwapChainVk.cpp
     ${SpecificTimerImpl} 
 )
 

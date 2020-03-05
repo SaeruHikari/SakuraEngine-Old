@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-05 23:35:45
+ * @LastEditTime: 2020-03-06 00:15:25
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -74,7 +74,10 @@ private:
         CGD::Initialize(cgd_info, entityVk);
         SDL_Vulkan_CreateSurface(win, entityVk.GetVkInstance(), &surface);
         CGD::InitQueueSet(&surface, entityVk);
-        CGD::CreateSwapChain(width, height, entityVk, &surface);
+        swapChain = std::move(
+            CGD::CreateSwapChain(width, height, entityVk, &surface));
+        auto fmt = swapChain->GetPixelFormat();
+        std::cout << fmt;
     }
 
     void mainLoop()
@@ -88,15 +91,11 @@ private:
     {
         using Sakura::Graphics::Vk::CGD_Vk;
         using CGD = CGD_Vk;
+        swapChain.reset();
         vkDestroySurfaceKHR(entityVk.GetVkInstance(), surface, nullptr);
         CGD::Destroy(entityVk);
 	    SDL_DestroyWindow(win);
-        VkFormat fmt = Sakura::Graphics::Vk::Transfer(
-            Sakura::Graphics::PixelFormat::R32G32B32A32_UINT);
-        VkFormat fmt2 = Sakura::Graphics::Vk::Transfer(
-            Sakura::Graphics::PixelFormat::S_R32G32B32A32_UINT);
-        auto fmt_s = Sakura::Graphics::Vk::Transfer(fmt);
-        auto fmt_s2 = Sakura::Graphics::Vk::Transfer(fmt2);
+        
         SDL_Quit();
     }
 
@@ -107,6 +106,7 @@ private:
     
     const int width = 1280;
     const int height = 720;
+    std::unique_ptr<Sakura::Graphics::SwapChain> swapChain;
     Sakura::Graphics::Vk::CGDEntityVk entityVk;
     VkSurfaceKHR surface;
     SDL_Window* win = nullptr;

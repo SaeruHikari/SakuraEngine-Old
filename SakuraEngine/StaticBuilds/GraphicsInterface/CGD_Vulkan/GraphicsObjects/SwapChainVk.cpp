@@ -21,47 +21,27 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-05 17:35:59
- * @LastEditTime: 2020-03-06 01:17:38
+ * @Date: 2020-03-06 00:49:22
+ * @LastEditTime: 2020-03-06 01:04:03
  */
-#pragma once
-#include "Core/CoreMinimal/SInterface.h"
-#include "Core/CoreMinimal/SDefination.h"
-#include "../Format/CommonFeatures.h"
-#include "../Format/PixelFormat.h"
+#include "SwapChainVk.h"
 
-namespace Sakura::Graphics
+using namespace Sakura::Graphics::Vk;
+using namespace Sakura;
+
+SwapChainVk::~SwapChainVk()
 {
-    SInterface CGDEntity;
+    if(!device)
+        Sakura::log::error("SwapChain Destructor: VkDevice is nullptr!");
+    for (auto&& imageView : resourceViews)
+    {
+        
+    }
+    vkDestroySwapchainKHR(*device, swapChain, nullptr);
 }
 
-namespace Sakura::Graphics
+void SwapChainVk::GetExtent(uint32& width, uint32& height)
 {
-    enum ResourceViewType
-    {
-        IMAGE_VIEW_TYPE_UNKNOWN,
-        IMAGE_VIEW_TYPE_Buffer,
-        IMAGE_VIEW_TYPE_2D,
-        IMAGE_VIEW_TYPE_2D_ARRAY,
-        IMAGE_VIEW_TYPE_3D,
-        IMAGE_VIEW_TYPES_COUNT
-    };
-
-    SInterface ResourceView
-    {
-        ResourceView(const CGDEntity& _device, const ResourceViewType _viewType)
-            :device(_device), viewType(_viewType){}
-        virtual ~ResourceView(){}
-        const PixelFormat GetPixelFormat(void) const {return pixelFormat;}
-        PixelFormat SetPixelFormat(const PixelFormat fmt){pixelFormat = fmt;}
-        const ResourceViewType GetViewType(void) const  
-        {
-            return viewType;
-        }
-        virtual void Destory(const CGDEntity& entity) = 0;
-    protected:
-        PixelFormat pixelFormat;
-        ResourceViewType viewType = IMAGE_VIEW_TYPE_UNKNOWN;
-        const CGDEntity& device;
-    };
+    width = swapChainExtent.width;
+    height = swapChainExtent.height;
 }
