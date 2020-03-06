@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 01:29:37
- * @LastEditTime: 2020-03-06 00:50:42
+ * @LastEditTime: 2020-03-06 11:23:48
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
@@ -34,19 +34,19 @@ namespace Sakura::Graphics::Vk
     struct SwapChainVk : public Sakura::Graphics::SwapChain
     {
         friend class CGD_Vk;
+        SwapChainVk(const VkSwapchainKHR _chain, 
+            const CGDEntity& _device,const uint32 _chainCount)
+            :swapChain(_chain), SwapChain(_device, _chainCount)
+        {
+            
+        }
         virtual ~SwapChainVk() override;
+        virtual void GetExtent(uint32& width, uint32& height) override;
         inline VkFormat GetVkPixelFormat() 
         {
             return Transfer(swapChainImageFormat);
         }
-        inline void SetPixelFormat(const VkFormat fmt)
-        {
-            swapChainImageFormat = Sakura::Graphics::Vk::Transfer(fmt);
-        }
-        virtual void GetExtent(uint32& width, uint32& height) override;
         VkSwapchainKHR swapChain;
         VkExtent2D swapChainExtent;
-    private:
-        VkDevice* device = nullptr;
     };
 }

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-06 00:15:25
+ * @LastEditTime: 2020-03-06 10:29:51
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -77,7 +77,6 @@ private:
         swapChain = std::move(
             CGD::CreateSwapChain(width, height, entityVk, &surface));
         auto fmt = swapChain->GetPixelFormat();
-        std::cout << fmt;
     }
 
     void mainLoop()
@@ -95,7 +94,6 @@ private:
         vkDestroySurfaceKHR(entityVk.GetVkInstance(), surface, nullptr);
         CGD::Destroy(entityVk);
 	    SDL_DestroyWindow(win);
-        
         SDL_Quit();
     }
 

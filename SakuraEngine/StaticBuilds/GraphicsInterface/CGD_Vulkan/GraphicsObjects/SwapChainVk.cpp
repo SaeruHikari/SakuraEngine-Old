@@ -22,22 +22,19 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:49:22
- * @LastEditTime: 2020-03-06 01:04:03
+ * @LastEditTime: 2020-03-06 11:16:14
  */
 #include "SwapChainVk.h"
+#include "../ResourceObjects/GpuResourceVk.h"
+#include "../CGD_Vulkan.h"
 
 using namespace Sakura::Graphics::Vk;
 using namespace Sakura;
 
 SwapChainVk::~SwapChainVk()
 {
-    if(!device)
-        Sakura::log::error("SwapChain Destructor: VkDevice is nullptr!");
-    for (auto&& imageView : resourceViews)
-    {
-        
-    }
-    vkDestroySwapchainKHR(*device, swapChain, nullptr);
+    CGDEntityVk& vkdevice = (CGDEntityVk&)(device);
+    vkDestroySwapchainKHR(vkdevice.device, swapChain, nullptr);
 }
 
 void SwapChainVk::GetExtent(uint32& width, uint32& height)

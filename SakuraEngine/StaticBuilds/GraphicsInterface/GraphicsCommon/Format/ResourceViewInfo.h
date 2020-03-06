@@ -21,41 +21,22 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-06 00:57:40
- * @LastEditTime: 2020-03-06 11:16:41
+ * @Date: 2020-03-06 10:34:16
+ * @LastEditTime: 2020-03-06 10:45:29
  */
-#include "ResourceViewVk.h"
-#include "GpuResourceVk.h"
-#include "../CGD_Vulkan.h"
+#pragma once
 
-using namespace Sakura::Graphics;
-using namespace Sakura::Graphics::Vk;
-
-void ResourceViewVkImage::Detach()
+namespace Sakura::Graphics
 {
-    CGDEntityVk& vkdevice = (CGDEntityVk&)device;
-    vkDestroyImageView(vkdevice.device, vkImgView, nullptr);
-}
-
-void ResourceViewVkImage::Attach(const GpuResource& resource)
-{
-    CGDEntityVk& vkdevice = (CGDEntityVk&)device;
-    if (vkCreateImageView(vkdevice.device, &viewCreateInfo, 
-        nullptr, &vkImgView) != VK_SUCCESS) 
+    enum ResourceViewType
     {
-        Sakura::log::error("failed to create image views!");
-        throw std::runtime_error("failed to create image views!");
-    }
-}
-
-ResourceViewVkImage::~ResourceViewVkImage()
-{
-    Detach();
-}
-
-ResourceViewVkImage::ResourceViewVkImage(
-    const CGDEntity& _device)
-    :ResourceView(_device, ResourceViewType::IMAGE_VIEW_TYPE_2D)
-{
-    viewCreateInfo.viewType = Transfer(IMAGE_VIEW_TYPE_2D);
+        IMAGE_VIEW_TYPE_1D,
+        IMAGE_VIEW_TYPE_2D,
+        IMAGE_VIEW_TYPE_3D,
+        IMAGE_VIEW_TYPE_CUBE,
+        IMAGE_VIEW_TYPE_1D_ARRAY,
+        IMAGE_VIEW_TYPE_2D_ARRAY,
+        IMAGE_VIEW_TYPE_CUBE_ARRAY,
+        IMAGE_VIEW_TYPES_COUNT
+    };
 }

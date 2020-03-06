@@ -22,9 +22,11 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:37:46
- * @LastEditTime: 2020-03-06 01:18:16
+ * @LastEditTime: 2020-03-06 10:49:50
  */
 #pragma once
+#include "SakuraEngine/Core/CoreMinimal/SInterface.h"
+#include "../Vulkan_InfoTransfer.h"
 #include "../../GraphicsCommon/ResourceObjects/ResourceViews.h"
 #include "vulkan/vulkan.h"
 
@@ -41,7 +43,9 @@ namespace Sakura::Graphics::Vk
     {
         ResourceViewVkImage(const CGDEntity&);
         virtual ~ResourceViewVkImage() override;
-        virtual void Destory(const CGDEntity& entity) override;
+        virtual void Detach() override;
+        virtual void Attach(const GpuResource&) override;
         VkImageView vkImgView;
+        VkImageViewCreateInfo viewCreateInfo;
     };
 }

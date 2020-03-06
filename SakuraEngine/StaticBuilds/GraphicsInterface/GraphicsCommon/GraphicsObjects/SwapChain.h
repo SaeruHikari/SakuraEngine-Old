@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-04 21:41:05
- * @LastEditTime: 2020-03-06 00:53:11
+ * @LastEditTime: 2020-03-06 11:22:19
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -38,14 +38,30 @@ namespace Sakura::Graphics
 {
     SInterface SwapChain
     {
-        virtual ~SwapChain() {};
+        SwapChain(const CGDEntity& _device, const uint32 _chainCount)
+            :device(_device), swapChainCount(_chainCount)
+            {
+                swapChainImages.resize(_chainCount);
+                resourceViews.resize(_chainCount);
+            }
+        virtual ~SwapChain() {}
         virtual void GetExtent(uint32& width, uint32& height) = 0;
+
         const PixelFormat GetPixelFormat() const {return swapChainImageFormat;};
-        void SetPixelFormat(const PixelFormat fmt){swapChainImageFormat=fmt;}
+        GpuResource* GetSwapChainImage(std::size_t frameIndex)
+        {
+            return swapChainImages[frameIndex].get();
+        }
+        ResourceView* GetChainImageView(std::size_t frameIndex)
+        {
+            return resourceViews[frameIndex].get();
+        }
         uint32 swapChainCount = 2;
+    protected:
         std::vector<std::unique_ptr<GpuResource>> swapChainImages;
         std::vector<std::unique_ptr<ResourceView>> resourceViews;
     protected:
         PixelFormat swapChainImageFormat;
+        const CGDEntity& device;
     };
 }

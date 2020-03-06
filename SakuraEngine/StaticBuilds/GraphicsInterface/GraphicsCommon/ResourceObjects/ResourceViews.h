@@ -22,31 +22,23 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:35:59
- * @LastEditTime: 2020-03-06 01:17:38
+ * @LastEditTime: 2020-03-06 10:47:35
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "../Format/CommonFeatures.h"
 #include "../Format/PixelFormat.h"
+#include "../Format/ResourceViewInfo.h"
 
 namespace Sakura::Graphics
 {
     SInterface CGDEntity;
+    SInterface GpuResource;
 }
 
 namespace Sakura::Graphics
 {
-    enum ResourceViewType
-    {
-        IMAGE_VIEW_TYPE_UNKNOWN,
-        IMAGE_VIEW_TYPE_Buffer,
-        IMAGE_VIEW_TYPE_2D,
-        IMAGE_VIEW_TYPE_2D_ARRAY,
-        IMAGE_VIEW_TYPE_3D,
-        IMAGE_VIEW_TYPES_COUNT
-    };
-
     SInterface ResourceView
     {
         ResourceView(const CGDEntity& _device, const ResourceViewType _viewType)
@@ -58,10 +50,11 @@ namespace Sakura::Graphics
         {
             return viewType;
         }
-        virtual void Destory(const CGDEntity& entity) = 0;
+        virtual void Detach() = 0;
+        virtual void Attach(const GpuResource&) = 0;
     protected:
         PixelFormat pixelFormat;
-        ResourceViewType viewType = IMAGE_VIEW_TYPE_UNKNOWN;
+        ResourceViewType viewType;
         const CGDEntity& device;
     };
 }
