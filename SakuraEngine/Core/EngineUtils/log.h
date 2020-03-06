@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 16:32:13
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-04 18:33:47
+ * @LastEditTime: 2020-03-06 12:35:14
  */
 #pragma once
 #include "spdlog/spdlog.h"
@@ -221,19 +221,19 @@ public:\
         static auto logger = Sakura::log::regist_logger(name);\
         return logger.get();\
     }\
-	template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
+	template<Sakura::flags::BuildVar buildVar = Sakura::flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
 		typename... Ts>\
 	inline static void debug_warn(Ts... params)\
 	{\
 		Sakura::log::debug_warn_l<buildVar>(get_logger(), params...);\
 	}\
-    template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
+    template<Sakura::flags::BuildVar buildVar = Sakura::flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
 		typename... Ts>\
 	inline static void debug_info(Ts... params)\
 	{\
 		Sakura::log::debug_info_l<buildVar>(get_logger(), params...);\
 	}\
-	template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
+	template<Sakura::flags::BuildVar buildVar = Sakura::flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
 		typename... Ts>\
 	inline static void debug_error(Ts... params)\
 	{\

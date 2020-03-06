@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-06 00:47:18
+ * @LastEditTime: 2020-03-06 12:34:50
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -363,10 +363,10 @@ std::unique_ptr<Sakura::Graphics::CommandQueue>
     // Create Queue
     auto graphicsQueue = std::make_unique<CommandQueue_Vk>();
     vkGetDeviceQueue(vkdevice.device, indices.graphicsFamily.value(),
-        0, &graphicsQueue->VkQueue);
+        0, &graphicsQueue->vkQueue);
     auto presentQueue = std::make_unique<CommandQueue_Vk>();
     vkGetDeviceQueue(vkdevice.device, indices.presentFamily.value(),
-        0, &presentQueue->VkQueue);
+        0, &presentQueue->vkQueue);
 
     vkdevice.graphicsQueue = std::move(graphicsQueue);
     return std::move(presentQueue);

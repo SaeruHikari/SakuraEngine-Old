@@ -47,6 +47,10 @@ if(MSVC)
     endforeach()    
 endif(MSVC)
 
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+add_definitions(-D_DEBUG)
+endif ()
+
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(TargetArchDetect)
 target_architecture(TARGET_ARCH)

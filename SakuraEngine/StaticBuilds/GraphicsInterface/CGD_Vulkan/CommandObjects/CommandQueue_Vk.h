@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:39:51
- * @LastEditTime: 2020-03-05 01:07:37
+ * @LastEditTime: 2020-03-06 12:34:28
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandQueue.h"
@@ -40,6 +40,6 @@ namespace Sakura::Graphics::Vk
         virtual bool WaitFence(Fence& fence, std::uint64_t timeout) override;
         virtual void WaitIdle() override;
     private:
-        VkQueue VkQueue;
+        VkQueue vkQueue;
     };
 }
