@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-07 01:03:59
+ * @LastEditTime: 2020-03-07 01:18:55
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -32,6 +32,7 @@
 #include "Format/CommonFeatures.h"
 #include "ResourceObjects/Shader.h"
 #include "ResourceObjects/ResourceFlags.h"
+#include "GraphicsObjects/GraphicsPipeline.h"
 
 namespace Sakura::Graphics
 {

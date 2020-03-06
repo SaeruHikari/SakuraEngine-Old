@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:47:38
- * @LastEditTime: 2020-03-06 23:18:38
+ * @LastEditTime: 2020-03-07 01:20:42
  */
 #pragma once
 #include <memory_resource>
@@ -32,17 +32,77 @@
 
 namespace Sakura::Graphics
 {
+    struct VertexInput
+    {
+
+    };
+    
+    enum class Topology
+    {
+        PointList,
+        LineList,
+        LineStrip,
+        TriangleList,
+        TriangleStrip
+    };
+
+    struct InputAssemblyStateCreateInfo
+    {
+        Topology topo = Topology::TriangleList;
+        bool primitiveRestartEnable = false;
+    };
+
+    struct Rect2D
+    {
+        Rect2D(uint32 _extentX, uint32 _extentY)
+            :ExtentX(_extentX), ExtentY(_extentY){}
+        int offsetX = 0;
+        int offsetY = 0;
+        uint32 ExtentX;
+        uint32 ExtentY;
+    };
+
+    struct Viewport
+    {
+        Viewport(float _width, float _height)
+            :width(_width), height(_height){}
+        float x = 0.f;
+        float y = 0.f;
+        float width = 0.f;
+        float height = 0.f;
+    };
+
+    struct ViewportStateCreateInfo
+    {
+        ViewportStateCreateInfo(float _width, float _height)
+            :vp(_width, _height)
+        {
+            scissors = new Rect2D(_width, _height);
+        }
+        uint32 viewportCount = 1;
+        Viewport vp;
+        uint32 scissorCount = 1;
+        Rect2D* scissors = nullptr;
+    };
+
     struct ShaderStage
     {
         StageFlags stage;
         Shader* shader = nullptr;
         std::pmr::string entry;
     };
+
     struct GraphicsPipelineCreateInfo
     {
-        GraphicsPipelineCreateInfo(const std::size_t stageNum) 
-            :stages(stageNum){}
+        GraphicsPipelineCreateInfo(
+            const std::size_t stageNum, float width, float height) 
+            :viewportStateCreateInfo(width, height)
+        {
+            stages.resize(stageNum);
+        }
+        InputAssemblyStateCreateInfo assemblyStateCreateInfo;
         std::pmr::vector<ShaderStage> stages;
+        ViewportStateCreateInfo viewportStateCreateInfo;
     };
     SInterface GraphcisPipeline
     {
