@@ -22,14 +22,13 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:35:59
- * @LastEditTime: 2020-03-06 10:47:35
+ * @LastEditTime: 2020-03-06 15:24:50
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "../Format/CommonFeatures.h"
 #include "../Format/PixelFormat.h"
-#include "../Format/ResourceViewInfo.h"
 
 namespace Sakura::Graphics
 {
@@ -39,19 +38,39 @@ namespace Sakura::Graphics
 
 namespace Sakura::Graphics
 {
+    enum ResourceViewType
+    {
+        IMAGE_VIEW_TYPE_1D,
+        IMAGE_VIEW_TYPE_2D,
+        IMAGE_VIEW_TYPE_3D,
+        IMAGE_VIEW_TYPE_CUBE,
+        IMAGE_VIEW_TYPE_1D_ARRAY,
+        IMAGE_VIEW_TYPE_2D_ARRAY,
+        IMAGE_VIEW_TYPE_CUBE_ARRAY,
+        IMAGE_VIEW_TYPES_COUNT
+    };
+    inline static bool isImageView(const ResourceViewType type)
+    {
+        return type <= IMAGE_VIEW_TYPE_CUBE_ARRAY;
+    }
+    struct ViewCreateInfo
+    {
+        PixelFormat format;
+        ResourceViewType viewType;
+    };
+
     SInterface ResourceView
     {
-        ResourceView(const CGDEntity& _device, const ResourceViewType _viewType)
-            :device(_device), viewType(_viewType){}
         virtual ~ResourceView(){}
         const PixelFormat GetPixelFormat(void) const {return pixelFormat;}
-        PixelFormat SetPixelFormat(const PixelFormat fmt){pixelFormat = fmt;}
         const ResourceViewType GetViewType(void) const  
         {
             return viewType;
         }
         virtual void Detach() = 0;
-        virtual void Attach(const GpuResource&) = 0;
+    protected:
+        ResourceView(const CGDEntity& _device)
+            :device(_device){}
     protected:
         PixelFormat pixelFormat;
         ResourceViewType viewType;
