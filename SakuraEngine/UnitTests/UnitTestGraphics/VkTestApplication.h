@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-06 10:29:51
+ * @LastEditTime: 2020-03-06 22:47:35
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -65,25 +65,30 @@ public:
 private:
     void initVulkan()
     {
-        using Sakura::Graphics::Vk::CGD_Vk;
         Sakura::Graphics::CGDInfo cgd_info;
+        cgd = new Sakura::Graphics::Vk::CGD_Vk();
         cgd_info.enableDebugLayer = true;
         cgd_info.extentionNames = VkSDL_GetInstanceExtensions(win,
             cgd_info.enableDebugLayer);
-        using CGD = CGD_Vk;
-        CGD::Initialize(cgd_info, entityVk);
-        SDL_Vulkan_CreateSurface(win, entityVk.GetVkInstance(), &surface);
-        CGD::InitQueueSet(&surface, entityVk);
+        cgd->Initialize(cgd_info);
+        SDL_Vulkan_CreateSurface(win,
+            ((Sakura::Graphics::Vk::CGD_Vk*)cgd)->GetVkInstance(), &surface);
+        cgd->InitQueueSet(&surface);
         swapChain = std::move(
-            CGD::CreateSwapChain(width, height, entityVk, &surface));
-        auto fmt = swapChain->GetPixelFormat();
+            cgd->CreateSwapChain(width, height, &surface));
+        Sakura::fs::file vs_f
+("D:\\Coding\\SakuraEngine\\SakuraEngine\\UnitTests\\UnitTestGraphics\\vert.spv",
+        'r');
+        std::vector<char> vs_bytes(vs_f.size());
+        vs_f.read(vs_bytes.data(), vs_bytes.size());
+        cgd->CreateShader(vs_bytes.data(), vs_bytes.size());
     }
 
     void mainLoop()
     {
         using Sakura::Graphics::Vk::CGD_Vk;
         using CGD = CGD_Vk;
-        CGD::Render(entityVk);
+        cgd->Render();
     }
 
     void cleanUp()
@@ -91,8 +96,9 @@ private:
         using Sakura::Graphics::Vk::CGD_Vk;
         using CGD = CGD_Vk;
         swapChain.reset();
-        vkDestroySurfaceKHR(entityVk.GetVkInstance(), surface, nullptr);
-        CGD::Destroy(entityVk);
+        vkDestroySurfaceKHR(((Sakura::Graphics::Vk::CGD_Vk*)cgd)->GetVkInstance(),
+            surface, nullptr);
+        cgd->Destroy();
 	    SDL_DestroyWindow(win);
         SDL_Quit();
     }
@@ -104,8 +110,8 @@ private:
     
     const int width = 1280;
     const int height = 720;
+    Sakura::Graphics::CGD* cgd;
     std::unique_ptr<Sakura::Graphics::SwapChain> swapChain;
-    Sakura::Graphics::Vk::CGDEntityVk entityVk;
     VkSurfaceKHR surface;
     SDL_Window* win = nullptr;
 };

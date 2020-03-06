@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:57:40
- * @LastEditTime: 2020-03-06 11:16:41
+ * @LastEditTime: 2020-03-07 01:05:04
  */
 #include "ResourceViewVk.h"
 #include "GpuResourceVk.h"
@@ -33,14 +33,33 @@ using namespace Sakura::Graphics::Vk;
 
 void ResourceViewVkImage::Detach()
 {
-    CGDEntityVk& vkdevice = (CGDEntityVk&)device;
-    vkDestroyImageView(vkdevice.device, vkImgView, nullptr);
+    CGD_Vk& vkdevice = (CGD_Vk&)(device);
+    if(vkImgView != VK_NULL_HANDLE)
+        vkDestroyImageView(vkdevice.GetCGDEntity().device, vkImgView, nullptr);
+    vkImgView = VK_NULL_HANDLE;
 }
 
-void ResourceViewVkImage::Attach(const GpuResource& resource)
+void ResourceViewVkImage::Attach(
+    const GpuResource& resource, const ViewCreateInfo& info)
 {
-    CGDEntityVk& vkdevice = (CGDEntityVk&)device;
-    if (vkCreateImageView(vkdevice.device, &viewCreateInfo, 
+    Detach();
+    CGD_Vk& vkdevice = (CGD_Vk&)device;
+    auto vkres = (GpuResourceVkImage&)resource;
+    VkImageViewCreateInfo viewCreateInfo = {};
+    viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    viewCreateInfo.viewType = Transfer(info.viewType);
+    viewCreateInfo.format = Transfer(info.format);
+    viewCreateInfo.image = vkres.image;
+    viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewCreateInfo.subresourceRange.baseMipLevel = 0;
+    viewCreateInfo.subresourceRange.levelCount = 1;
+    viewCreateInfo.subresourceRange.baseArrayLayer = 0;
+    viewCreateInfo.subresourceRange.layerCount = 1;
+    if (vkCreateImageView(vkdevice.GetCGDEntity().device, &viewCreateInfo, 
         nullptr, &vkImgView) != VK_SUCCESS) 
     {
         Sakura::log::error("failed to create image views!");
@@ -54,8 +73,39 @@ ResourceViewVkImage::~ResourceViewVkImage()
 }
 
 ResourceViewVkImage::ResourceViewVkImage(
-    const CGDEntity& _device)
+    const CGD_Vk& _device)
     :ResourceView(_device, ResourceViewType::IMAGE_VIEW_TYPE_2D)
 {
-    viewCreateInfo.viewType = Transfer(IMAGE_VIEW_TYPE_2D);
+   
+}
+
+std::unique_ptr<ResourceView> CGD_Vk::ViewIntoImage(
+    const GpuResource& resource, const ViewCreateInfo& info) const
+{
+    auto res = 
+        std::make_unique<ResourceViewVkImage>(*this);
+    
+    auto vkres = (GpuResourceVkImage&)resource;
+    VkImageViewCreateInfo viewCreateInfo = {};
+    viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    viewCreateInfo.viewType = Transfer(info.viewType);
+    viewCreateInfo.format = Transfer(info.format);
+    viewCreateInfo.image = vkres.image;
+    viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewCreateInfo.subresourceRange.baseMipLevel = 0;
+    viewCreateInfo.subresourceRange.levelCount = 1;
+    viewCreateInfo.subresourceRange.baseArrayLayer = 0;
+    viewCreateInfo.subresourceRange.layerCount = 1;
+    if (vkCreateImageView(entityVk.device, &viewCreateInfo, 
+        nullptr, &res->vkImgView) != VK_SUCCESS) 
+    {
+        Sakura::log::error("failed to create image views!");
+        throw std::runtime_error("failed to create image views!");
+    }
+
+    return std::move(res);
 }

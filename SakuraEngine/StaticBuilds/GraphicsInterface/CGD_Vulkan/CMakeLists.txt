@@ -20,6 +20,7 @@ add_library(CGD_Vulkan
     ../CGD/Profiling.cpp
     ResourceObjects/GpuResourceVk.cpp
     ResourceObjects/ResourceViewVk.cpp
+    ResourceObjects/ShaderVk.cpp
     GraphicsObjects/SwapChainVk.cpp
     ${SpecificTimerImpl} 
 )

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 17:30:03
+ * @LastEditTime: 2020-03-07 01:03:59
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -30,6 +30,16 @@
 #include "CommandObjects/CommandContext.h"
 #include "SakuraEngine/Core/EngineUtils/log.h"
 #include "Format/CommonFeatures.h"
+#include "ResourceObjects/Shader.h"
+#include "ResourceObjects/ResourceFlags.h"
+
+namespace Sakura::Graphics
+{
+    SInterface SwapChain;
+    SInterface ResourceView;
+    SInterface GpuResource;
+    struct ViewCreateInfo;
+}
 
 namespace Sakura::Graphics
 {
@@ -39,27 +49,40 @@ namespace Sakura::Graphics
         std::vector<const char*> extentionNames;
         PhysicalDeviceFeatures physicalDeviceFeatures;
     };
-    
-    SInterface CGDEntity
-    {
-        ContextManager* GetContextManager(void)
-        {
-            return contextManager.get();
-        }
-        virtual std::string_view GetTargetInterface(void)
-        {
-            static std::pmr::string target = "null";
-            return std::string_view(target);
-        }
-        bool validate = false;
-        std::unique_ptr<CommandQueue> graphicsQueue;
-        std::unique_ptr<ContextManager> contextManager;
-    };
-    
+
     enum class TargetGraphicsInterface : std::uint32_t
     {
         CGD_TARGET_DIRECT3D12,
         CGD_TARGET_VULKAN,
         CGD_TARGET_NUMS
+    };
+
+    SInterface CGD
+    {
+        virtual void Initialize(CGDInfo info) = 0;
+        virtual std::unique_ptr<SwapChain> CreateSwapChain(
+            const int width, const int height, 
+            void* mainSurface) = 0;
+
+        virtual void Render() = 0;
+        virtual void Destroy() = 0;
+
+
+        virtual std::unique_ptr<Shader> CreateShader(
+            const char*, std::size_t) = 0;
+        virtual const char* CompileShader(const char*, std::size_t) = 0;
+        virtual std::unique_ptr<CommandQueue> InitQueueSet(
+            void* mainSurface) = 0;
+
+        virtual std::unique_ptr<ResourceView>
+            ViewIntoImage(const GpuResource&, const ViewCreateInfo&) const = 0;
+
+        template<ResourceType type>
+        std::unique_ptr<ResourceView> ViewIntoResource(
+            const GpuResource& resource, const ViewCreateInfo& info) const
+        {
+            if constexpr (type == ResourceType::Texture2D)
+                return std::move(ViewIntoImage(resource, info));
+        }
     };
 }

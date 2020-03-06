@@ -21,19 +21,38 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-05 17:36:56
- * @LastEditTime: 2020-03-06 23:51:21
+ * @Date: 2020-03-06 20:51:22
+ * @LastEditTime: 2020-03-06 23:01:17
  */
-#pragma once
-#include "Core/CoreMinimal/SInterface.h"
-#include "Core/CoreMinimal/SDefination.h"
-#include "ResourceFlags.h"
-#include "../Format/CommonFeatures.h"
+#include "ShaderVk.h"
+#include "../CGD_Vulkan.h"
 
-namespace Sakura::Graphics
+using namespace Sakura::Graphics;
+using namespace Sakura::Graphics::Vk;
+
+ShaderVk::~ShaderVk()
 {
-    SInterface GpuResource
-    {
-        virtual void GetSize(uint32& width, uint32& height) = 0;
-    };
+    vkDestroyShaderModule(device, shaderModule, nullptr);
 }
+
+std::unique_ptr<Shader> CGD_Vk::CreateShader(
+    const char* data, std::size_t dataSize)
+{
+    auto shader = std::make_unique<ShaderVk>(entityVk.device);
+    VkShaderModuleCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = dataSize;
+    createInfo.pCode = reinterpret_cast<const uint32_t*>(data);
+    if (vkCreateShaderModule(entityVk.device, &createInfo,
+        nullptr, &shader->shaderModule) != VK_SUCCESS) 
+    {
+        throw std::runtime_error("failed to create shader module!");
+    }
+    return std::move(shader);
+}
+
+const char* CGD_Vk::CompileShader(const char* src, std::size_t srcSize)
+{
+    return nullptr;
+}
+

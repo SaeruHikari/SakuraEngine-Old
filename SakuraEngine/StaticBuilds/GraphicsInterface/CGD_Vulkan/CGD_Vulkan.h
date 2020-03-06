@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 16:45:40
+ * @LastEditTime: 2020-03-07 00:43:41
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -35,9 +35,9 @@ using namespace Sakura::flags;
 
 namespace Sakura::Graphics::Vk
 {
-    struct CGDEntityVk : public CGDEntity
+    struct CGDEntityVk
     {
-        const auto GetVkInstance(){return instance;}
+        
         Sakura::Graphics::PhysicalDeviceFeatures physicalDeviceFeatures;
         VkInstance instance;
         VkDevice device;
@@ -47,31 +47,52 @@ namespace Sakura::Graphics::Vk
         {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
+        ContextManager* GetContextManager(void)
+        {
+            return contextManager.get();
+        }
+        bool validate = false;
+        std::unique_ptr<CommandQueue_Vk> graphicsQueue;
+        std::unique_ptr<ContextManager> contextManager;
     };
 
-    class CGD_Vk 
+    class CGD_Vk : public CGD
     {
         DECLARE_LOGGER("CGD_Vk")
     public:
         CGD_Vk() = default;
-        static void Render(CGDEntity& device);   
-        static void Destroy(CGDEntity& device); 
-        static std::unique_ptr<Sakura::Graphics::CommandQueue>
-            InitQueueSet(void* mainSurface, CGDEntity& device);
+        virtual void Render() override final;   
+        virtual void Destroy() override final; 
+        virtual std::unique_ptr<Sakura::Graphics::CommandQueue>
+            InitQueueSet(void* mainSurface) override final;
         // Vulkan functions
-        static void Initialize(CGDInfo info, CGDEntity& device);
-        static std::unique_ptr<Sakura::Graphics::SwapChain>
+        virtual void Initialize(CGDInfo info) override final;
+        virtual std::unique_ptr<Sakura::Graphics::SwapChain>
             CreateSwapChain(const int width, const int height, 
-                CGDEntity& device, void* mainSurface);
+                void* mainSurface) override final;
+        const auto GetVkInstance(){return entityVk.instance;}
+        const CGDEntityVk& GetCGDEntity(){return entityVk;}
+    public:
+        // Implements: See ResourceObjects/ShaderVk.cpp
+        virtual std::unique_ptr<Shader> CreateShader(
+            const char*, std::size_t) override final;
+        virtual const char* CompileShader(
+            const char*, std::size_t) override final;
+    public:
+        // Implements: See ResourceObjects/ResourceViewVk.cpp
+        virtual std::unique_ptr<ResourceView> ViewIntoImage(
+            const GpuResource&, const ViewCreateInfo&) const override final;
     private:
          /**
          * @description: Initial Vulkan Device
          * @author: SaeruHikari
          */
-        static void VkInit(CGDInfo info, CGDEntity& device);
-        static void setupDebugMessenger(CGDEntity& device);
-        static void createVkInstance(uint pCount, const char** pName, CGDEntity& device);
-        static void pickPhysicalDevice(VkSurfaceKHR surface, CGDEntity& device);
+        void VkInit(CGDInfo info);
+        void setupDebugMessenger();
+        void createVkInstance(uint pCount, const char** pName);
+        void pickPhysicalDevice(VkSurfaceKHR surface);
+    private:
+        CGDEntityVk entityVk;
     };
     
     /**

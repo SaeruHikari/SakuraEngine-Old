@@ -21,19 +21,27 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-05 17:36:56
- * @LastEditTime: 2020-03-06 23:51:21
+ * @Date: 2020-03-06 20:43:34
+ * @LastEditTime: 2020-03-06 23:01:26
  */
 #pragma once
-#include "Core/CoreMinimal/SInterface.h"
-#include "Core/CoreMinimal/SDefination.h"
-#include "ResourceFlags.h"
-#include "../Format/CommonFeatures.h"
+#include "../../GraphicsCommon/ResourceObjects/Shader.h"
+#include "vulkan/vulkan.h"
 
-namespace Sakura::Graphics
+using namespace Sakura::Graphics;
+
+namespace Sakura::Graphics::Vk
 {
-    SInterface GpuResource
+    inline static bool CheckAvailable(ShaderType type){return true;}
+    inline static bool CheckAvailable(ShaderSourceType type){return true;}
+    inline static bool CheckAvailable(ShaderCompileFlags flags){return true;}
+    inline static bool CheckAvailable(StageFlags flags){return true;}
+    struct ShaderVk : public Shader
     {
-        virtual void GetSize(uint32& width, uint32& height) = 0;
+        ShaderVk(const VkDevice& _device)
+            : device(_device){}
+        virtual ~ShaderVk() override final;
+        VkShaderModule shaderModule;
+        const VkDevice& device;
     };
 }

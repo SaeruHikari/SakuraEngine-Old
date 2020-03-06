@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:39:51
- * @LastEditTime: 2020-03-06 12:34:28
+ * @LastEditTime: 2020-03-07 00:03:27
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandQueue.h"
@@ -35,10 +35,10 @@ namespace Sakura::Graphics::Vk
     {
         friend class CGD_Vk;
     public:
-        virtual void Submit(CommandContext& commandContext) override;
-        virtual void Submit(Fence& fence) override;
-        virtual bool WaitFence(Fence& fence, std::uint64_t timeout) override;
-        virtual void WaitIdle() override;
+        virtual void Submit(CommandContext& commandContext) override final;
+        virtual void Submit(Fence& fence) override final;
+        virtual bool WaitFence(Fence& fence, std::uint64_t timeout) override final;
+        virtual void WaitIdle() override final;
     private:
         VkQueue vkQueue;
     };

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-06 11:23:31
+ * @LastEditTime: 2020-03-07 01:05:41
  */
 
 // Swap Chain Support Details
@@ -106,12 +106,10 @@ inline VkExtent2D chooseSwapExtent(const int width, const int height,
 
 #ifdef _CGD_VK_IMPLEMENTATION_
 std::unique_ptr<Sakura::Graphics::SwapChain>
-    CGD_Vk::CreateSwapChain(const int width, const int height, 
-        CGDEntity& device, void* mainSurface)
+    CGD_Vk::CreateSwapChain(const int width, const int height, void* mainSurface)
 {
-    CGDEntityVk& vkdevice = (CGDEntityVk&)(device);
     VkSurfaceKHR surface = *(VkSurfaceKHR*)mainSurface;
-    auto physicalDevice = vkdevice.physicalDevice;
+    auto physicalDevice = entityVk.physicalDevice;
     SwapChainSupportDetails swapChainSupport 
         = querySwapChainSupport(physicalDevice, surface);
 
@@ -159,7 +157,7 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
 
     // Create SwapChain
     VkSwapchainKHR swapChain;
-    if (vkCreateSwapchainKHR(vkdevice.device, &createInfo,
+    if (vkCreateSwapchainKHR(entityVk.device, &createInfo,
             nullptr, &swapChain) != VK_SUCCESS) 
     {
         Sakura::log::error("failed to create swap chain!");
@@ -167,41 +165,27 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
     }
 
     // Get SwapChain Images
-    vkGetSwapchainImagesKHR(vkdevice.device, swapChain,
+    vkGetSwapchainImagesKHR(entityVk.device, swapChain,
         &imageCount, nullptr);
     std::vector<VkImage> chainImages(imageCount);
-    vkGetSwapchainImagesKHR(vkdevice.device, swapChain,
+    vkGetSwapchainImagesKHR(entityVk.device, swapChain,
         &imageCount, chainImages.data());
     
     // Create Image Views
-    VkImageViewCreateInfo viewCreateInfo = {};
-    viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewCreateInfo.format = surfaceFormat.format;
-    viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-    viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-    viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-    viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-    viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    viewCreateInfo.subresourceRange.baseMipLevel = 0;
-    viewCreateInfo.subresourceRange.levelCount = 1;
-    viewCreateInfo.subresourceRange.baseArrayLayer = 0;
-    viewCreateInfo.subresourceRange.layerCount = 1;
-
+    ViewCreateInfo vinfo;
+    vinfo.format = Transfer(surfaceFormat.format);
+    vinfo.viewType = IMAGE_VIEW_TYPE_2D;
     auto res = std::make_unique<Sakura::Graphics::Vk::SwapChainVk>(
-            swapChain, device, imageCount);
+            swapChain, *this, imageCount);
     for(auto i = 0u; i < imageCount; i++)
     {
         // Images
         std::unique_ptr<GpuResourceVkImage> vkImg 
             = std::make_unique<GpuResourceVkImage>(chainImages[i]);
         // Views
-        viewCreateInfo.image = chainImages[i];
-        std::unique_ptr<ResourceViewVkImage> vkView
-            = std::make_unique<ResourceViewVkImage>(device);
-        vkView->viewCreateInfo = viewCreateInfo;
-        vkView->Attach(*vkImg.get());
-
+        auto vkView= ViewIntoResource<ResourceType::Texture2D>(
+            *vkImg.get(), vinfo);
+ 
         res->swapChainImages[i] = std::move(vkImg);
         res->resourceViews[i] = std::move(vkView);
     }

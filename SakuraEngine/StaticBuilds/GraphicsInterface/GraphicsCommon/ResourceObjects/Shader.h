@@ -21,66 +21,63 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-05 17:35:59
- * @LastEditTime: 2020-03-07 00:56:06
+ * @Date: 2020-03-06 16:50:13
+ * @LastEditTime: 2020-03-06 23:03:54
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
-#include "../Format/CommonFeatures.h"
-#include "../Format/PixelFormat.h"
 
 namespace Sakura::Graphics
 {
-    SInterface CGD;
-    SInterface GpuResource;
-}
-struct VkImageViewCreateInfo;
-namespace Sakura::Graphics
-{
-    enum ResourceViewType
+    SInterface Shader
     {
-        IMAGE_VIEW_TYPE_1D,
-        IMAGE_VIEW_TYPE_2D,
-        IMAGE_VIEW_TYPE_3D,
-        IMAGE_VIEW_TYPE_CUBE,
-        IMAGE_VIEW_TYPE_1D_ARRAY,
-        IMAGE_VIEW_TYPE_2D_ARRAY,
-        IMAGE_VIEW_TYPE_CUBE_ARRAY,
-        IMAGE_VIEW_TYPES_COUNT
-    };
-    inline static bool isImageView(const ResourceViewType type)
-    {
-        return type <= IMAGE_VIEW_TYPE_CUBE_ARRAY;
-    }
-    struct ViewCreateInfo
-    {
-        PixelFormat format;
-        ResourceViewType viewType;
-    };
-    
-    SInterface ResourceView
-    {
-        virtual ~ResourceView(){}
-        const PixelFormat GetPixelFormat(void) const {return pixelFormat;}
-        const ResourceViewType GetViewType(void) const  
-        {
-            return viewType;
-        }
-        virtual void Attach(const GpuResource&, const ViewCreateInfo&) = 0;
-        virtual void Detach() = 0;
-    protected:
-        ResourceView(
-            const CGD& _device, const ResourceViewType vt)
-            :device(_device), viewType(vt){}
-    protected:
-        PixelFormat pixelFormat;
-        ResourceViewType viewType;
-        const CGD& device;
+        virtual ~Shader(){}
     };
 
-    SInterface VertexBufferView
+    enum ShaderType
     {
-        
+        Undefined,
+        VertexShader,
+        HullShader, // Tessellation Control
+        DomainShader,  // Tessellation Evaluation
+        GeometryShader,
+        PixelShader,
+        ComputeShader,
+        RayTracingGeneration,
+        RayTracingClosetHit,
+        RayTracingMiss,
+        MeshShader,
+        ShaderTypeCount
     };
+
+    enum ShaderSourceType
+    {
+        CodeString,
+        BinaryBuffer,
+        ShaderSourceTypeCount
+    };
+
+    enum ShaderCompileFlags
+    {
+        Debug       = (1 << 0), //!< Insert debug information.
+        O1          = (1 << 1), //!< Optimization level 1.
+        O2          = (1 << 2), //!< Optimization level 2.
+        O3          = (1 << 3), //!< Optimization level 3.
+        WarnError   = (1 << 4) //!< Warnings are treated as errors.
+    };
+
+    enum StageFlags
+    {
+        VertexStage         = (1 << 0),
+        HullStage    = (1 << 1),
+        DomainStage = (1 << 2),
+        GeometryStage       = (1 << 3),
+        PixelStage       = (1 << 4),
+        ComputeStage        = (1 << 5),
+        AllTessStages       = (HullStage | DomainStage),
+        AllGraphicsStages   = (VertexStage | AllTessStages | GeometryStage | PixelStage),
+        AllStages           = (AllGraphicsStages | ComputeStage)
+    };
+
 }

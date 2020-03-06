@@ -22,10 +22,10 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 10:37:15
- * @LastEditTime: 2020-03-06 10:53:33
+ * @LastEditTime: 2020-03-06 15:53:11
  */
 #pragma once
-#include "../GraphicsCommon/Format/ResourceViewInfo.h"
+#include "../GraphicsCommon/ResourceObjects/ResourceViews.h"
 #include "SakuraEngine/Core/EngineUtils/log.h"
 #include "vulkan/vulkan.h"
 

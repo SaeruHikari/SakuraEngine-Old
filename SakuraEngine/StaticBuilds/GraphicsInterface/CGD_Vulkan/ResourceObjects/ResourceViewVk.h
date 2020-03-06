@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:37:46
- * @LastEditTime: 2020-03-06 10:49:50
+ * @LastEditTime: 2020-03-07 00:58:29
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/SInterface.h"
@@ -30,22 +30,21 @@
 #include "../../GraphicsCommon/ResourceObjects/ResourceViews.h"
 #include "vulkan/vulkan.h"
 
-namespace Sakura::Graphics
+namespace Sakura::Graphics::Vk
 {
-    SInterface CGDEntity;
+    class CGD_Vk;
 }
 
 namespace Sakura::Graphics::Vk
 {
     using namespace Sakura::Graphics;
-    
+
     struct ResourceViewVkImage : public ResourceView
     {
-        ResourceViewVkImage(const CGDEntity&);
-        virtual ~ResourceViewVkImage() override;
-        virtual void Detach() override;
-        virtual void Attach(const GpuResource&) override;
-        VkImageView vkImgView;
-        VkImageViewCreateInfo viewCreateInfo;
+        ResourceViewVkImage(const CGD_Vk&);
+        virtual ~ResourceViewVkImage() override final;
+        virtual void Detach() override final;
+        virtual void Attach(const GpuResource&, const ViewCreateInfo&) override final;
+        VkImageView vkImgView = VK_NULL_HANDLE;
     };
 }

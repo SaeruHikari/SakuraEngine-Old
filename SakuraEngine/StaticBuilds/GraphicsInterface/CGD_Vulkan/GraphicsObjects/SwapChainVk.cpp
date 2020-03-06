@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:49:22
- * @LastEditTime: 2020-03-06 11:16:14
+ * @LastEditTime: 2020-03-06 22:01:25
  */
 #include "SwapChainVk.h"
 #include "../ResourceObjects/GpuResourceVk.h"
@@ -33,8 +33,8 @@ using namespace Sakura;
 
 SwapChainVk::~SwapChainVk()
 {
-    CGDEntityVk& vkdevice = (CGDEntityVk&)(device);
-    vkDestroySwapchainKHR(vkdevice.device, swapChain, nullptr);
+    CGD_Vk& vkdevice = (CGD_Vk&)(device);
+    vkDestroySwapchainKHR(vkdevice.GetCGDEntity().device, swapChain, nullptr);
 }
 
 void SwapChainVk::GetExtent(uint32& width, uint32& height)

@@ -21,19 +21,44 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-05 17:36:56
- * @LastEditTime: 2020-03-06 23:51:21
+ * @Date: 2020-03-06 23:50:42
+ * @LastEditTime: 2020-03-06 23:53:45
  */
 #pragma once
-#include "Core/CoreMinimal/SInterface.h"
-#include "Core/CoreMinimal/SDefination.h"
-#include "ResourceFlags.h"
-#include "../Format/CommonFeatures.h"
 
 namespace Sakura::Graphics
 {
-    SInterface GpuResource
+    enum class ResourceType
     {
-        virtual void GetSize(uint32& width, uint32& height) = 0;
+        Undefined,
+        Buffer,
+        Texture1D,
+        Texture2D,
+        Texture3D,
+        Sampler
+    };
+
+    enum class ResourceFlags
+    {
+        None,
+        AllowRenderTarget,
+        AllowDepthStencil,
+        AllowUnorderedAccess,
+        DenyShaderResource,
+        AllowCrossAdapter
+    };
+
+    enum class CPUAccessFlags
+    {
+        Read        = (1 << 0),
+        Write       = (1 << 1),
+        ReadWrite   = (Read | Write)
+    };
+
+    enum class MiscFlags
+    {
+        DynamicUsage    = (1 << 0),
+        GenerateMips    = (1 << 1),
+        NoInitialData   = (1 << 2)
     };
 }
