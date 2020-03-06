@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-03-04 07:52:14
- * @LastEditTime: 2020-03-05 15:48:26
+ * @LastEditTime: 2020-03-06 11:28:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \docs\Modules\CGD\CGD.md
@@ -9,7 +9,7 @@
 <h1 align="left">CGD模块</h1>
 
 ## 简介
-&emsp;&emsp;CGD是SakuraEngine的跨图形接口抽象层, 即通用图形设备。CGD是兼容驱动各种现代图形API的一层薄抽象。CGD力求兼容所有现代图形API的同时保证编程层面上的简化以及"原汁原味", 让用户能够像在原生的现代API下一样思考问题。
+&emsp;&emsp;CGD是SakuraEngine的跨图形接口抽象层, 即通用图形设备。CGD是兼容驱动各种现代图形API的一层薄抽象, 除了一些虚表调用外力求0 overhead。CGD力求兼容所有现代图形API的同时保证编程层面上的简化以及"原汁原味", 让用户能够像在原生的现代API下一样思考问题。
 
 &emsp;&emsp;CGD的另一个特点是不引入状态, 这也是现代图形API的一个最大特点(所有的状态由用户维护)。
 
