@@ -36,6 +36,17 @@ namespace Sakura::Graphics::Vk
     inline static bool CheckAvailable(ShaderSourceType type){return true;}
     inline static bool CheckAvailable(ShaderCompileFlags flags){return true;}
     inline static bool CheckAvailable(StageFlags flags){return true;}
+
+	sinline static VkShaderStageFlagBits Transfer(StageFlags info)
+	{
+        return VkShaderStageFlagBits(info);
+	}
+
+	sinline static StageFlags Transfer(VkShaderStageFlagBits info)
+	{
+		return StageFlags(info);
+	}
+
     struct ShaderVk : public Shader
     {
         ShaderVk(const VkDevice& _device)

@@ -45,6 +45,7 @@ namespace Sakura::Graphics
         PixelShader,
         ComputeShader,
         RayTracingGeneration,
+        RayTracingAnyHit,
         RayTracingClosetHit,
         RayTracingMiss,
         MeshShader,
@@ -69,15 +70,18 @@ namespace Sakura::Graphics
 
     enum StageFlags
     {
-        VertexStage         = (1 << 0),
-        HullStage    = (1 << 1),
-        DomainStage = (1 << 2),
-        GeometryStage       = (1 << 3),
-        PixelStage       = (1 << 4),
-        ComputeStage        = (1 << 5),
-        AllTessStages       = (HullStage | DomainStage),
-        AllGraphicsStages   = (VertexStage | AllTessStages | GeometryStage | PixelStage),
-        AllStages           = (AllGraphicsStages | ComputeStage)
+        VertexStage         = 0x00000001,
+        HullStage           = 0x00000002,
+        DomainStage         = 0x00000004,
+        GeometryStage       = 0x00000008,
+        PixelStage          = 0x00000010,
+        ComputeStage        = 0x00000020,
+        AllGraphics         = 0x0000001F,
+        RayGeneration       = 0x00000100,
+        RayAnyHit           = 0x00000200,
+        RayClosestHit       = 0x00000400,
+        RayMiss             = 0x00000800,
+        MeshStage           = 0x00000080,
     };
 
 }

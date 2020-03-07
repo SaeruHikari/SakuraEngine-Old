@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:47:38
- * @LastEditTime: 2020-03-07 01:20:42
+ * @LastEditTime: 2020-03-07 11:34:28
  */
 #pragma once
 #include <memory_resource>
@@ -37,75 +37,79 @@ namespace Sakura::Graphics
 
     };
     
-    enum class Topology
+    enum PrimitiveTopology
     {
-        PointList,
-        LineList,
-        LineStrip,
-        TriangleList,
-        TriangleStrip
+        PointList = 0,
+        LineList = 1,
+        LineStrip = 2,
+        TriangleList = 3,
+        TriangleStrip = 4,
+        TriangleFan = 5,
+        LineListWithAdjacency = 6,
+        LineStripWithAdjacency = 7,
+        TriangleListWithAdjacency = 8,
+        TriangleStripWithAdjacency = 9,
+        PatchList = 10
     };
 
     struct InputAssemblyStateCreateInfo
     {
-        Topology topo = Topology::TriangleList;
+        PrimitiveTopology topo = PrimitiveTopology::TriangleList;
         bool primitiveRestartEnable = false;
+    };
+
+    struct Extent2D
+    {
+        uint32 width;
+        uint32 height;
+    };
+
+    struct Offset2D
+    {
+		int32 x = 0;
+		int32 y = 0;
     };
 
     struct Rect2D
     {
-        Rect2D(uint32 _extentX, uint32 _extentY)
-            :ExtentX(_extentX), ExtentY(_extentY){}
-        int offsetX = 0;
-        int offsetY = 0;
-        uint32 ExtentX;
-        uint32 ExtentY;
+        Offset2D offset;
+        Extent2D extent;
     };
 
     struct Viewport
     {
-        Viewport(float _width, float _height)
-            :width(_width), height(_height){}
         float x = 0.f;
         float y = 0.f;
         float width = 0.f;
         float height = 0.f;
+        float minDepth = 0.f;
+        float maxDepth = 1.f;
     };
 
     struct ViewportStateCreateInfo
     {
-        ViewportStateCreateInfo(float _width, float _height)
-            :vp(_width, _height)
-        {
-            scissors = new Rect2D(_width, _height);
-        }
         uint32 viewportCount = 1;
-        Viewport vp;
+        Viewport* vps;
         uint32 scissorCount = 1;
         Rect2D* scissors = nullptr;
     };
 
-    struct ShaderStage
+    struct ShaderStageCreateInfo
     {
         StageFlags stage;
         Shader* shader = nullptr;
-        std::pmr::string entry;
+        spmr_string entry;
     };
 
     struct GraphicsPipelineCreateInfo
     {
-        GraphicsPipelineCreateInfo(
-            const std::size_t stageNum, float width, float height) 
-            :viewportStateCreateInfo(width, height)
-        {
-            stages.resize(stageNum);
-        }
         InputAssemblyStateCreateInfo assemblyStateCreateInfo;
-        std::pmr::vector<ShaderStage> stages;
+        std::pmr::vector<ShaderStageCreateInfo> stages;
         ViewportStateCreateInfo viewportStateCreateInfo;
     };
+
     SInterface GraphcisPipeline
     {
-        virtual void Create(const ShaderStage& stageToBind) = 0;
+        virtual void Create(const ShaderStageCreateInfo& stageToBind) = 0;
     };
 }
