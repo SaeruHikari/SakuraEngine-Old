@@ -1,5 +1,6 @@
 add_subdirectory(CommandObjects)
 add_subdirectory(GraphicsObjects)
+add_subdirectory(Flags)
 add_subdirectory(ResourceObjects)
 
 include_directories(${Vulkan_INCLUDES})

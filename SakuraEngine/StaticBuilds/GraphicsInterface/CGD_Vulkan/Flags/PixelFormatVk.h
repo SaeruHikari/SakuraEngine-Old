@@ -5,12 +5,12 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 12:36:02
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-06 00:11:34
+ * @LastEditTime: 2020-03-08 00:44:56
  */
 #pragma once
 #include "vulkan/vulkan.h"
 #include "SakuraEngine/Core/EngineUtils/log.h"
-#include "../GraphicsCommon/Format/PixelFormat.h"
+#include "../../GraphicsCommon/Flags/PixelFormat.h"
 
 #define FORMAT_MAPPER() \
     VK_FORMAT_MAPPING(UNKNOWN, VK_FORMAT_UNDEFINED); \
@@ -409,6 +409,10 @@ return VkFormat::VK_FORMAT_UNDEFINED;}
 
 namespace Sakura::Graphics::Vk
 {
+    static VkBlendOp Transfer(const BlendOp op)
+    {
+        return VkBlendOp(op);
+    }
     static VkFormat Transfer(const Sakura::Graphics::PixelFormat format)
     {
         switch (format)
@@ -429,6 +433,10 @@ return PixelFormat::format;
 
 namespace Sakura::Graphics::Vk
 {
+    static BlendOp Transfer(const VkBlendOp op)
+    {
+        return BlendOp(op);
+    }
     static Sakura::Graphics::PixelFormat Transfer(const VkFormat format)
     {
         switch (format)

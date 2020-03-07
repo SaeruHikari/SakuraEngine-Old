@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 11:41:23
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-05 22:36:54
+ * @LastEditTime: 2020-03-08 00:42:28
  */
 #pragma once
 #include <cinttypes>
@@ -14,6 +14,93 @@ namespace Sakura
 {
     namespace Graphics
     {
+        enum ColorComponentFlags 
+        {
+            ColorComponentR = 0x00000001,
+            ColorComponentG = 0x00000002,
+            ColorComponentB = 0x00000004,
+            ColorComponentA = 0x00000008
+        };
+        using ColorComoponents = std::uint32_t;
+
+        enum BlendFactor
+        {
+            BlendFactorZero = 0,
+            BlendFactorOne = 1,
+            BlendFactorSrcColor = 2,
+            BlendFactorOneMinusSrcColor = 3,
+            BlendFactorDstColor = 4,
+            BlendFactorOneMinusDstColor = 5,
+            BlendFactorSrcAlpha = 6,
+            BlendFactorOneMinusSrcAlpha = 7,
+            BlendFactorDstAlpha = 8,
+            BlendFactorOneMinusDstAlpha = 9,
+            BlendFactorConstantColor = 10,
+            BlendFactorOneMinusConstantColor = 11,
+            BlendFactorConstantAlpha = 12,
+            BlendFactorOneMinusConstantAlpha = 13,
+            BlendFactorSrcAlphaSaturate = 14,
+            BlendFactorSrc1Color = 15,
+            BlendFactorOneMinusSrc1Color = 16,
+            BlendFactorSrc1Alpha = 17,
+            BlendFactorOneMinusSrc1Alpha = 18
+        };
+
+        enum BlendOp
+        {
+            BlendOpAdd = 0,
+            BlendOpSubstract = 1,
+            BlendOpReverseSubstract = 2,
+            BlendOpMin = 3,
+            BlendOpMax = 4,
+            BlendOpZeroExt = 1000148000,
+            BlnedOpSrcExt = 1000148001,
+            BlendOpDstExt = 1000148002,
+            BlnedOpSrcOverExt = 1000148003,
+            BlnedOpDstOverExt = 1000148004,
+            BlnedOpSrcInExt = 1000148005,
+            BlnedOpDstInExt = 1000148006,
+            BlnedOpSrcOutExt = 1000148007,
+            BlnedOpDstOutExt = 1000148008,
+            BlendOpSrcAtopExt = 1000148009,
+            BlendOpDstAtopExt = 1000148010,
+            BlendOpXorExt = 1000148011,
+            BlendOpMultiplyExt = 1000148012,
+            BlendOpScreenExt = 1000148013,
+            BlendOpOverlayExt = 1000148014,
+            BlendOpDarkenExt = 1000148015,
+            BlendOpLightenExt = 1000148016,
+            BlendOpColorDodgeExt = 1000148017,
+            BlendOpColorBurnExt = 1000148018,
+            BlendOpHardLightExt = 1000148019,
+            BlendOpSoftLightExt = 1000148020,
+            BlendOpDifferenceExt = 1000148021,
+            BlendOpExclusionExt = 1000148022,
+            BlendOpInvertExt = 1000148023,
+            BlendOpInvertRGBExt = 1000148024,
+            BlendOpLinearDodgeExt = 1000148025,
+            BlendOpLinearBurnExt = 1000148026,
+            BlendOpVividLightExt = 1000148027,
+            BlendOpLinearLightExt = 1000148028,
+            BlendOpPinLightExt = 1000148029,
+            BlendOpHardMixExt = 1000148030,
+            BlendOpHSLHueExt = 1000148031,
+            BlendOpHSLSaturationExt = 1000148032,
+            BlendOpHSLColorExt = 1000148033,
+            BlendOpHSLLuminosityExt = 1000148034,
+            BlendOpPlusExt = 1000148035,
+            BlendOpPlusClampedExt = 1000148036,
+            BlendOpPlusClampedAlphaExt = 1000148037,
+            BlendOpDarkerExt = 1000148038,
+            BlendOpMinusExt = 1000148039,
+            BlendOpMinusClampedExt = 1000148040,
+            BlendOpContrastExt = 1000148041,
+            BlendOpInvertOVGExt = 1000148042,
+            BlendOpRedExt = 1000148043,
+            BlendOpGreenExt = 1000148044,
+            BlendOpBlueExt = 1000148045,
+        };
+
         /**
          * @description:  Common formats of DXGI_FORMAT and VkFormat
          */

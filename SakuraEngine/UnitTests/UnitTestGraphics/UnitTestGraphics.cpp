@@ -4,12 +4,12 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-01 22:07:52
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-05 19:01:28
+ * @LastEditTime: 2020-03-08 00:00:25
  */
 #include <iostream>
 #include "gtest/gtest.h"
-#include "StaticBuilds/GraphicsInterface/GraphicsCommon/Format/PixelFormat.h"
-#include "StaticBuilds/GraphicsInterface/CGD_Vulkan/Vulkan_FormatTransfer.h"
+#include "StaticBuilds/GraphicsInterface/GraphicsCommon/Flags/PixelFormat.h"
+#include "StaticBuilds/GraphicsInterface/CGD_Vulkan/Flags/PixelFormatVk.h"
 #include "StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "StaticBuilds/GraphicsInterface/CGD_Vulkan/CommandObjects/CommandContext_Vk.h"
 

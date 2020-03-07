@@ -22,12 +22,12 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 11:13:03
- * @LastEditTime: 2020-03-07 11:36:54
+ * @LastEditTime: 2020-03-08 00:50:25
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
-#include "../../GraphicsCommon/GraphicsObjects/GraphicsPipeline.h"
 #include "../ResourceObjects/ShaderVk.h"
+#include "../../GraphicsCommon/Flags/GraphicsPipelineStates.h"
 
 
 namespace Sakura::Graphics::Vk
@@ -50,6 +50,56 @@ namespace Sakura::Graphics::Vk
     sinline static PrimitiveTopology Transfer(const VkPrimitiveTopology topo)
     {
         return PrimitiveTopology(topo);
+    }
+
+    sinline static VkPolygonMode Transfer(const PolygonMode mode)
+    {
+        return VkPolygonMode(mode);
+    }
+
+    sinline static PolygonMode Transfer(const VkPolygonMode mode)
+    {
+        return PolygonMode(mode);
+    }
+
+    sinline static CullModes Transfer(const VkCullModeFlagBits vkMode)
+    {
+        return CullModes(vkMode);
+    }
+
+    sinline static VkCullModeFlagBits Transfer(const CullModes mode)
+    {
+        return VkCullModeFlagBits(mode);
+    }
+
+    sinline static VkFrontFace Transfer(const FrontFace frontFace)
+    {
+        return VkFrontFace(frontFace);
+    }
+
+    sinline static FrontFace Transfer(const VkFrontFace frontFace)
+    {
+        return FrontFace(frontFace);
+    }
+
+    sinline static VkSampleCountFlagBits Transfer(const SampleCountFlag flag)
+    {
+        return VkSampleCountFlagBits(flag);
+    }
+     
+    sinline static SampleCountFlag Transfer(const VkSampleCountFlagBits flag)
+    {
+        return SampleCountFlag(flag);
+    }
+
+    sinline static VkBlendFactor Transfer(const BlendFactor factor)
+    {
+        return VkBlendFactor(factor);
+    }
+
+    sinline static BlendFactor Transfer(const VkBlendFactor factor)
+    {
+        return BlendFactor(factor);
     }
 
     sinline static VkPipelineInputAssemblyStateCreateInfo Transfer(
@@ -81,7 +131,7 @@ namespace Sakura::Graphics::Vk
     {
         return *(Rect2D*)&rect2D;
     }
-
+    
     sinline static VkViewport Transfer(const Viewport& vp)
     {
         return *(VkViewport*)&vp;
@@ -167,4 +217,67 @@ namespace Sakura::Graphics::Vk
         stage.pName = info.entry.c_str();
         return stage;
 	}
+
+    sinline static VkPipelineRasterizationStateCreateInfo Transfer(
+        const RasterizationStateCreateInfo& info)
+    {
+        VkPipelineRasterizationStateCreateInfo rasterizer  = {};
+        rasterizer.sType = 
+            VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        rasterizer.depthClampEnable = 
+            info.depthClampEnable ? VK_TRUE : VK_FALSE;
+        rasterizer.rasterizerDiscardEnable = VK_FALSE;
+        rasterizer.polygonMode = Transfer(info.polygonMode);
+        rasterizer.lineWidth = 1.f;
+        rasterizer.cullMode = Transfer(info.cullMode);
+        rasterizer.frontFace = Transfer(info.frontFace);
+        rasterizer.depthBiasEnable = 
+            info.depthBiasEnable ? VK_TRUE : VK_FALSE;
+        rasterizer.depthBiasConstantFactor =
+            info.depthBiasConstantFactor; 
+        rasterizer.depthBiasClamp = info.depthBiasClamp;
+        rasterizer.depthBiasSlopeFactor = info.depthBiasSlopeFactor; 
+        return rasterizer;
+    }
+
+    sinline static VkPipelineMultisampleStateCreateInfo Transfer(
+        const MultisampleStateCreateInfo& in)
+    {
+        VkPipelineMultisampleStateCreateInfo multisampling = {};
+        multisampling.sType =
+            VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+        multisampling.alphaToCoverageEnable 
+            = in.alphaToCoverageEnable ? VK_TRUE : VK_FALSE;
+        multisampling.alphaToOneEnable
+            = in.alphaToOneEnable ? VK_TRUE : VK_FALSE;
+        multisampling.sampleShadingEnable
+            = in.sampleShadingEnable ? VK_TRUE : VK_FALSE;
+        multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+        multisampling.minSampleShading = in.minSampleShading;
+        multisampling.pSampleMask = nullptr;
+        multisampling.rasterizationSamples
+            = Transfer(in.rasterizationSamples);
+        return multisampling;    
+    }
+
+    sinline static VkPipelineColorBlendAttachmentState Transfer(
+        const ColorBlendAttachmentState& state)
+    {
+        VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
+        colorBlendAttachment.colorWriteMask = state.colorWriteMask;
+        colorBlendAttachment.blendEnable = 
+            state.blendEnable ? VK_TRUE : VK_FALSE;
+        colorBlendAttachment.srcColorBlendFactor 
+            = Transfer(state.srcColorBlendFactor); 
+        colorBlendAttachment.dstColorBlendFactor 
+            = Transfer(state.dstColorBlendFactor); 
+        colorBlendAttachment.colorBlendOp 
+            = Transfer(state.colorBlendOp); 
+        colorBlendAttachment.srcAlphaBlendFactor 
+            = Transfer(state.srcAlphaBlendFactor);
+        colorBlendAttachment.dstAlphaBlendFactor
+            = Transfer(state.dstAlphaBlendFactor); 
+        colorBlendAttachment.alphaBlendOp 
+            = Transfer(state.alphaBlendOp);
+    }
 }

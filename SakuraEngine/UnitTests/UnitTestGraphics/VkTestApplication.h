@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-07 11:33:06
+ * @LastEditTime: 2020-03-08 00:00:37
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -36,8 +36,8 @@ extern "C"
 #include "SakuraEngine/Core/Core.h"
 #include "vulkan/vulkan.h"
 #include "Extern/include/SDL2Tools/SDL2Vk.hpp"
-#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Vulkan_FormatTransfer.h"
-#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/GraphicsObjects/GraphicsPipelineVk.h"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Flags/PixelFormatVk.h"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Flags/GraphicsPipelineStatesVk.h"
 using namespace Sakura;
 
 class VkTestApplication

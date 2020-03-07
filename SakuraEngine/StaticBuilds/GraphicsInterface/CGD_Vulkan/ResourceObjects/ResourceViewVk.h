@@ -22,11 +22,11 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:37:46
- * @LastEditTime: 2020-03-07 00:58:29
+ * @LastEditTime: 2020-03-07 23:59:33
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/SInterface.h"
-#include "../Vulkan_InfoTransfer.h"
+#include "../Flags/TypesVk.h"
 #include "../../GraphicsCommon/ResourceObjects/ResourceViews.h"
 #include "vulkan/vulkan.h"
 

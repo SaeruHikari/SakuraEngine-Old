@@ -22,12 +22,12 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 01:29:37
- * @LastEditTime: 2020-03-07 00:03:40
+ * @LastEditTime: 2020-03-07 23:58:48
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
 #include "../../GraphicsCommon/ResourceObjects/Resource.h"
-#include "../Vulkan_FormatTransfer.h"
+#include "../Flags/PixelFormatVk.h"
 
 namespace Sakura::Graphics::Vk
 {

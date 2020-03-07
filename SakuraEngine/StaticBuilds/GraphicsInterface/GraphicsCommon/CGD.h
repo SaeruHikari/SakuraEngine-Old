@@ -22,14 +22,14 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-07 01:18:55
+ * @LastEditTime: 2020-03-07 23:27:46
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "CommandObjects/CommandContext.h"
 #include "SakuraEngine/Core/EngineUtils/log.h"
-#include "Format/CommonFeatures.h"
+#include "Flags/CommonFeatures.h"
 #include "ResourceObjects/Shader.h"
 #include "ResourceObjects/ResourceFlags.h"
 #include "GraphicsObjects/GraphicsPipeline.h"

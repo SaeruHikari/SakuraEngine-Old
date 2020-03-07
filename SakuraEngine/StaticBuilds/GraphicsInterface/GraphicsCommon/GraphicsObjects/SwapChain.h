@@ -22,13 +22,13 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-04 21:41:05
- * @LastEditTime: 2020-03-06 21:50:21
+ * @LastEditTime: 2020-03-07 23:28:06
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
-#include "../Format/PixelFormat.h"
-#include "../Format/CommonFeatures.h"
+#include "../Flags/PixelFormat.h"
+#include "../Flags/CommonFeatures.h"
 #include <memory>
 #include <vector>
 #include "../ResourceObjects/Resource.h"

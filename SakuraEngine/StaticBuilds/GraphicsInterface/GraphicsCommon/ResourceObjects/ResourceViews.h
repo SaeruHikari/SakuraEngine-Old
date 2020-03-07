@@ -22,13 +22,13 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:35:59
- * @LastEditTime: 2020-03-07 00:56:06
+ * @LastEditTime: 2020-03-07 23:28:21
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
-#include "../Format/CommonFeatures.h"
-#include "../Format/PixelFormat.h"
+#include "../Flags/CommonFeatures.h"
+#include "../Flags/PixelFormat.h"
 
 namespace Sakura::Graphics
 {
