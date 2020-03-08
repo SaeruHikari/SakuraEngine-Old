@@ -85,6 +85,8 @@ else()
     message(STATUS "${VAR_CONFIG_FLAGS}")
 endif(MSVC)
 
+include_directories(Extern/include/)
+
 add_subdirectory(Extern)
 add_subdirectory(DependencyGraph)
 add_subdirectory(SPA)
