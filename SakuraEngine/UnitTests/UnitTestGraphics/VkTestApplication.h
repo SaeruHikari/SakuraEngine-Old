@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-08 00:00:37
+ * @LastEditTime: 2020-03-08 16:34:38
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -77,9 +77,16 @@ private:
         cgd->InitQueueSet(&surface);
         swapChain = std::move(
             cgd->CreateSwapChain(width, height, &surface));
+#if defined(CONFINFO_PLATFORM_LINUX) 
+#elif defined(CONFINFO_PLATFORM_MACOS)
+        Sakura::fs::file vs_f
+("/Users/saeruhikari/Coding/SakuraEngine/SakuraEngine/UnitTests/UnitTestGraphics/vert.spv",
+        'r');
+#elif defined(CONFINFO_PLATFORM_WIN32)
         Sakura::fs::file vs_f
 ("D:\\Coding\\SakuraEngine\\SakuraEngine\\UnitTests\\UnitTestGraphics\\vert.spv",
         'r');
+#endif
         std::vector<char> vs_bytes(vs_f.size());
         vs_f.read(vs_bytes.data(), vs_bytes.size());
         cgd->CreateShader(vs_bytes.data(), vs_bytes.size());

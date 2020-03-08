@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 11:13:03
- * @LastEditTime: 2020-03-08 00:50:25
+ * @LastEditTime: 2020-03-08 12:33:38
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
@@ -173,6 +173,7 @@ namespace Sakura::Graphics::Vk
 			}
 			viewportState.pViewports = vps.data();
 		}
+        return viewportState;
     }
 
     sinline static ViewportStateCreateInfo Transfer(const VkPipelineViewportStateCreateInfo& info)

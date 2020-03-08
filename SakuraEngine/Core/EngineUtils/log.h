@@ -5,32 +5,58 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 16:32:13
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-06 12:35:14
+ * @LastEditTime: 2020-03-08 16:26:18
  */
 #pragma once
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/basic_file_sink.h"
 #include "Core/CoreMinimal/SFlags.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/sinks/basic_file_sink.h"
+#include <memory>
+#include <iostream>
 
 namespace Sakura::log
 {
-    using spdlog::info;
-    using spdlog::error;
-    using spdlog::log;
-    using spdlog::warn;
-    using spdlog::get;
+    struct logger
+    {
+
+    };
+    
+    template<typename... Params>
+    inline std::shared_ptr<logger> get(Params... params)
+    {
+        return std::make_shared<logger>();
+    }
+    template<typename... Params>
+    inline void error(Params... params)
+    {
+        
+    }
+    template<typename... Params>
+    inline void info(Params... params)
+    {
+        
+    }
+    template<typename... Params>
+    inline void warn(Params... params)
+    {
+        
+    }
+    template<typename P>
+    void __log_internal(P p){std::cout << p << std::endl;}
+    template<typename P, typename... Ps>
+    void __log_internal(P p, Ps... ps)
+    {
+        std::cout << p << std::endl;
+        __log_internal(ps...);
+    }
+    template<typename... Params>
+    inline void log(Params... params)
+    {
+        __log_internal(params...);
+    }
 
     inline auto regist_logger(const char* channel)
     {
-        if(spdlog::get(channel) != nullptr)
-        {
-            spdlog::get(channel)->warn("Log:: Do not allocate logger with same name twice!");
-            return spdlog::get(channel);
-        }
-        else
-            return spdlog::stdout_color_mt(channel);    
+        auto res = std::make_shared<logger>();
+        return res;
     }
 
     template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,
@@ -40,14 +66,15 @@ namespace Sakura::log
     #ifdef SAKURA_DEBUG_EDITOR
         if constexpr ((buildVar && flags::BuildVar::DEBUG_EDITOR) != 0)
         {
-            spdlog::get(logger)->info(params...);
+            log(params...);
+            //spdlog::get(logger)->info(params...);
             return;
         }
     #endif
     #ifdef SAKURA_DEBUG_GAME
         if constexpr ((buildVar && flags::BuildVar::DEBUG_GAME) != 0)
         {
-            spdlog::get(logger)->info(params...);
+            //spdlog::get(logger)->info(params...);
             return;
         }
     #endif
@@ -55,19 +82,20 @@ namespace Sakura::log
 
     template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,
      typename... Ts>
-    void debug_info_l(spdlog::logger* logger, Ts... params)
+    void debug_info_l(logger* logger, Ts... params)
     {
     #ifdef SAKURA_DEBUG_EDITOR
         if constexpr ((buildVar && flags::BuildVar::DEBUG_EDITOR) != 0)
         {
-            logger->info(params...);
+            log(params...);
+            //logger->info(params...);
             return;
         }
     #endif
     #ifdef SAKURA_DEBUG_GAME
         if constexpr ((buildVar && flags::BuildVar::DEBUG_GAME) != 0)
         {
-            logger->info(params...);
+            //logger->info(params...);
             return;
         }
     #endif
@@ -75,19 +103,20 @@ namespace Sakura::log
 
     template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,
      typename... Ts>
-    void debug_warn_l(spdlog::logger* logger, Ts... params)
+    void debug_warn_l(logger* logger, Ts... params)
     {
     #ifdef SAKURA_DEBUG_EDITOR
         if constexpr ((buildVar && flags::BuildVar::DEBUG_EDITOR) != 0)
         {
-            logger->warn(params...);
+            log(params...);
+            //logger->warn(params...);
             return;
         }
     #endif
     #ifdef SAKURA_DEBUG_GAME
         if constexpr ((buildVar && flags::BuildVar::DEBUG_GAME) != 0)
         {
-            logger->warn(params...);
+            //logger->warn(params...);
             return;
         }
     #endif
@@ -95,19 +124,20 @@ namespace Sakura::log
 
     template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,
      typename... Ts>
-    void debug_error_l(spdlog::logger* logger, Ts... params)
+    void debug_error_l(logger* logger, Ts... params)
     {
     #ifdef SAKURA_DEBUG_EDITOR
         if constexpr ((buildVar && flags::BuildVar::DEBUG_EDITOR) != 0)
         {
-            logger->error(params...);
+            log(params...);
+            //logger->error(params...);
             return;
         }
     #endif
     #ifdef SAKURA_DEBUG_GAME
         if constexpr ((buildVar && flags::BuildVar::DEBUG_GAME) != 0)
         {
-            logger->error(params...);
+            //logger->error(params...);
             return;
         }
     #endif
@@ -120,14 +150,15 @@ namespace Sakura::log
     #ifdef SAKURA_DEBUG_EDITOR
         if constexpr ((buildVar && flags::BuildVar::DEBUG_EDITOR) != 0)
         {
-            spdlog::get(logger)->warn(params...);
+            log(params...);
+            //spdlog::get(logger)->warn(params...);
             return;
         }
     #endif
     #ifdef SAKURA_DEBUG_GAME
         if constexpr ((buildVar && flags::BuildVar::DEBUG_GAME) != 0)
         {
-            spdlog::get(logger)->warn(params...);
+            //spdlog::get(logger)->warn(params...);
             return;
         }
     #endif
@@ -140,14 +171,14 @@ namespace Sakura::log
     #ifdef SAKURA_DEBUG_EDITOR
         if constexpr ((buildVar && flags::BuildVar::DEBUG_EDITOR) != 0)
         {
-            spdlog::get(logger)->error(params...);
+            //spdlog::get(logger)->error(params...);
             return;
         }
     #endif
     #ifdef SAKURA_DEBUG_GAME
         if constexpr ((buildVar && flags::BuildVar::DEBUG_GAME) != 0)
         {
-            spdlog::get(logger)->error(params...);
+            //spdlog::get(logger)->error(params...);
             return;
         }
     #endif
@@ -160,14 +191,15 @@ namespace Sakura::log
     #ifdef SAKURA_DEBUG_EDITOR
         if constexpr ((buildVar && flags::BuildVar::DEBUG_EDITOR) != 0)
         {
-            spdlog::info(params...);
+            
+            //spdlog::info(params...);
             return;
         }
     #endif
     #ifdef SAKURA_DEBUG_GAME
         if constexpr ((buildVar && flags::BuildVar::DEBUG_GAME) != 0)
         {
-            spdlog::info(params...);
+            //spdlog::info(params...);
             return;
         }
     #endif
@@ -180,14 +212,15 @@ namespace Sakura::log
     #ifdef SAKURA_DEBUG_EDITOR
         if constexpr ((buildVar && flags::BuildVar::DEBUG_EDITOR) != 0)
         {
-            spdlog::error(params...);
+            log(params...);
+            //spdlog::error(params...);
             return;
         }
     #endif
     #ifdef SAKURA_DEBUG_GAME
         if constexpr ((buildVar && flags::BuildVar::DEBUG_GAME) != 0)
         {
-            spdlog::error(params...);
+            //spdlog::error(params...);
             return;
         }
     #endif
@@ -200,14 +233,15 @@ namespace Sakura::log
     #ifdef SAKURA_DEBUG_EDITOR
         if constexpr ((buildVar && flags::BuildVar::DEBUG_EDITOR) != 0)
         {
-            spdlog::warn(params...);
+            log(params...);
+            //spdlog::warn(params...);
             return;
         }
     #endif
     #ifdef SAKURA_DEBUG_GAME
         if constexpr ((buildVar && flags::BuildVar::DEBUG_GAME) != 0)
         {
-            spdlog::warn(params...);
+            //spdlog::warn(params...);
             return;
         }
     #endif

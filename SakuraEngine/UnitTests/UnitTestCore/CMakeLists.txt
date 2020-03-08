@@ -16,9 +16,9 @@ add_executable(UnitTestCoreUtils UnitTestCoreUtils.cpp)
 
 target_link_libraries(UnitTestCore 
 GTest::gtest GTest::gtest_main 
-GTest::gmock GTest::gmock_main CoreModule)
+GTest::gmock GTest::gmock_main Core)
 target_link_libraries(UnitTestCoreUtils 
 GTest::gtest GTest::gtest_main 
-GTest::gmock GTest::gmock_main CoreModule)
+GTest::gmock GTest::gmock_main Core)
 
 add_test(UnitTestCore UnitTestCore)

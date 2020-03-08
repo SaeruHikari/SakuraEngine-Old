@@ -4,13 +4,13 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 22:58:31
- * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-03-02 14:33:34
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-03-08 12:33:05
  */
 #pragma once
 #include "confinfo.h" 
 
-#if defined(CONFINFO_PLATFORM_LINUX) || defined(CONFINFO_PLATFORM_CYGWIN)
+#if defined(CONFINFO_PLATFORM_LINUX) || defined(CONFINFO_PLATFORM_CYGWIN) || defined(CONFINFO_PLATFORM_MACOS)
 #include <dlfcn.h>
 using NativeLibHandle = void*;
 #elif defined(CONFINFO_PLATFORM_WIN32) 
@@ -187,7 +187,7 @@ namespace Sakura::SPA
         std::pmr::string _lastError;
         NativeLibHandle _handle = nullptr;
         // Linux implementation
-#if defined(CONFINFO_PLATFORM_LINUX) || defined(CONFINFO_PLATFORM_CYGWIN)
+#if defined(CONFINFO_PLATFORM_LINUX) || defined(CONFINFO_PLATFORM_CYGWIN) || defined(CONFINFO_PLATFORM_MACOS)
     bool loadImpl(const char* path)
     {
         _lastError.clear();

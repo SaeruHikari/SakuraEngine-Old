@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-06 21:43:30
+ * @LastEditTime: 2020-03-08 16:31:03
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -328,7 +328,6 @@ std::unique_ptr<Sakura::Graphics::CommandQueue>
     VkPhysicalDeviceFeatures deviceFeature = 
         getDeviceFeatureVk(entityVk.physicalDeviceFeatures);
     
-
     // Create Logical Device
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

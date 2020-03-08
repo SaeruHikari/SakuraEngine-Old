@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 23:23:02
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-02 17:59:39
+ * @LastEditTime: 2020-03-08 16:20:05
  */
 #define API_EXPORTS
 #include "../include/modulemanager.h"
@@ -49,7 +49,7 @@ namespace Sakura::SPA
         std::pmr::string mName(name);
         initName.append(mName);
         std::pmr::string prefix = moduleDir;
-#ifdef CONFINFO_PLATFORM_LINUX
+#if defined(CONFINFO_PLATFORM_LINUX) 
     #if defined(DEBUG) || defined(_DEBUG)
         prefix.append("/Debug");
     #else
@@ -60,6 +60,17 @@ namespace Sakura::SPA
         prefix.append("d");
     #endif
         prefix.append(".so");
+#elif defined(CONFINFO_PLATFORM_MACOS)
+    #if defined(DEBUG) || defined(_DEBUG)
+        prefix.append("/Debug");
+    #else
+        prefix.append("/Release"); 
+    #endif
+        prefix.append("/lib/lib").append(name);
+    #if defined(DEBUG) || defined(_DEBUG)
+        prefix.append("d");
+    #endif
+        prefix.append(".dylib");
 #elif defined(CONFINFO_PLATFORM_WIN32)
     #if defined(DEBUG) || defined(_DEBUG)
         prefix.append("\\Debug");
@@ -179,7 +190,7 @@ namespace Sakura::SPA
     {
         if(NodeMap.find(entry) != NodeMap.end())
             return;
-        IModule* mainModule = shared ?
+        IModule* _module = shared ?
             SpawnDynamicModule(entry)
             : SpawnStaticModule(entry);
         static int nodeNum = 0;
@@ -188,12 +199,12 @@ namespace Sakura::SPA
         prop.name = entry;
         prop.bActive = false;
         DAG::add_vertex(prop, moduleDependecyGraph);
-        if (mainModule->GetModuleInfo().dependencies.size() == 0)
+        if (_module->GetModuleInfo().dependencies.size() == 0)
             roots.push_back(entry);
-        for (auto i = 0u; i < mainModule->GetModuleInfo().dependencies.size(); i++)
+        for (auto i = 0u; i < _module->GetModuleInfo().dependencies.size(); i++)
         {
             const char* iterName
-                = mainModule->GetModuleInfo().dependencies[i].name.c_str();
+                = _module->GetModuleInfo().dependencies[i].name.c_str();
             // Static
             if (InitializeMap.find(iterName) != InitializeMap.end())
                 __internal_MakeModuleGraph(iterName, false);

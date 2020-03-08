@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-02 15:02:30
+ * @LastEditTime: 2020-03-08 13:56:55
  */
 #include <iostream>
 #include "gtest/gtest.h"
@@ -41,9 +41,9 @@ TEST(UnitTestCoreUtils, TTimeUtil)
     strea << "\nSStream Test\n";
     std::cout << strea.c_str();
 
-    Sakura::log::debug_info<Sakura::flags::DEBUG_EDITOR>
-        ("Welcome to spdlog!");
-    spdlog::error("Some error message with arg: {}", 1);
+    //Sakura::log::debug_info<Sakura::flags::DEBUG_EDITOR>
+    //    ("Welcome to spdlog!");
+    //spdlog::error("Some error message with arg: {}", 1);
 }   
 
 TEST(UnitTestCoreUtils, PathUtil)

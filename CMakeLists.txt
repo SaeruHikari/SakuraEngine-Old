@@ -1,12 +1,20 @@
 cmake_minimum_required(VERSION 3.10)
 #/home/saeruhikari/OpenLib/vcpkg/vcpkg install --triplet x64-linux eigen3 boost gtest spdlog glfw3 SDL2 fmt xxHash SDL2[vulkan]
-set(VCPKG_PKGS eigen3 boost gtest spdlog glfw3 SDL2 fmt xxhash entt)
+set(VCPKG_PKGS eigen3 boost gtest spdlog glfw3 SDL2 SDL2[vulkan] fmt xxhash entt)
+
 if(WIN32)
 execute_process(COMMAND 
 $ENV{VCPKG_ROOT}/vcpkg install --triplet x64-windows ${VCPKG_PKGS})
-else()
+elseif(UNIX)
+  if(APPLE)
+    #vcpkg install --triplet x64-osx eigen3 boost gtest spdlog glfw3 SDL2 fmt xxhash entt
+    #execute_process(COMMAND $ENV{VCPKG_ROOT}/vcpkg install --triplet x64-osx ${VCPKG_PKGS})
+  elseif(${CMAKE_SYSTEM_NAME}  MATCHES ANDROID)
+  else(APPLE)
 #execute_process(COMMAND $ENV{VCPKG_ROOT}/vcpkg install --triplet x64-linux ${VCPKG_PKGS})
-endif()
+  endif(APPLE)
+endif(WIN32)
+
 set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
 message(STATUS "TOOL CHAIN: ${CMAKE_TOOLCHAIN_FILE}")
 
@@ -69,7 +77,11 @@ set(CMAKE_CXX_STANDARD 20)
 if(MSVC)
     message(STATUS "MSVC Compiler cl.exe")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _CRT_SECURE_NO_WARNINGS -DNOMINMAX") #Multi Thread Build Enable
-else(MSVC)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message(STATUS "Use CLANG Compiler lang.exe")
+    add_definitions(-msse4.2)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -m64 -fPIC -march=native -O3 -pthread -lpthread ${VAR_CONFIG_FLAGS}")
+else()
     message(STATUS "Use GCC Compiler gcc.exe")
     add_definitions(-msse4.2)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -m64 -fconcepts -fPIC -march=native -O3 -pthread -lpthread ${VAR_CONFIG_FLAGS}")
