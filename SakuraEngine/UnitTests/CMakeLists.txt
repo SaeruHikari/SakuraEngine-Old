@@ -11,11 +11,3 @@ if(MSVC)
       endif()
     endforeach()    
 endif(MSVC)
-
-#GTest Support
-include_directories(
-    ${PROJECT_SOURCE_DIR}/Extern/googletest/googletest/include
-)
-include_directories(
-    ${PROJECT_SOURCE_DIR}/Extern/googletest/googlemock/include
-)
