@@ -1,24 +1,11 @@
 {
     "version": "0.2.0",
     "configurations": [
-        
-        {
-            "name": "(lldb) 启动",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "/usr/local/bin/lldb",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "lldb"
-        },
         {
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/${relativeFileDirname}/${fileBasenameNoExtension}.exe",
+            "program": "${command:cmake.launchTargetPath}",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/${relativeFileDirname}",

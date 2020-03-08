@@ -1,6 +1,4 @@
 add_subdirectory(UnitTestGraphics)
-add_subdirectory(UnitTestCore)
-add_subdirectory(UnitTestApplication)
 if(MSVC)     
     foreach(var 
         CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
