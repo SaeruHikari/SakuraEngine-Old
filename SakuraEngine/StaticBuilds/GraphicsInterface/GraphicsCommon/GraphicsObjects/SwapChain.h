@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-04 21:41:05
- * @LastEditTime: 2020-03-07 23:28:06
+ * @LastEditTime: 2020-03-08 22:28:56
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -37,6 +37,7 @@
 namespace Sakura::Graphics
 {
     SInterface CGD;
+    struct Extent2D;
 }
 
 namespace Sakura::Graphics
@@ -50,8 +51,7 @@ namespace Sakura::Graphics
                 resourceViews.resize(_chainCount);
             }
         virtual ~SwapChain() {}
-        virtual void GetExtent(uint32& width, uint32& height) = 0;
-
+        virtual Extent2D GetExtent() const = 0;
         const PixelFormat GetPixelFormat() const {return swapChainImageFormat;};
         GpuResource* GetSwapChainImage(std::size_t frameIndex)
         {

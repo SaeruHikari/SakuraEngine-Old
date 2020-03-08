@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 23:25:42
- * @LastEditTime: 2020-03-07 23:32:47
+ * @LastEditTime: 2020-03-08 21:37:20
  */
 #pragma once
 #include "../Flags/GraphicsPipelineStates.h"
@@ -31,8 +31,10 @@
 
 namespace Sakura::Graphics
 {
-    SInterface GraphcisPipeline
+    SInterface GraphicsPipeline
     {
-        virtual void Create(const ShaderStageCreateInfo& stageToBind) = 0;
+        virtual ~GraphicsPipeline() = default;
+    protected:
+        GraphicsPipeline() = default;
     };
 }

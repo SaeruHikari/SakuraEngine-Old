@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 12:36:02
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-08 00:44:56
+ * @LastEditTime: 2020-03-08 19:09:35
  */
 #pragma once
 #include "vulkan/vulkan.h"
@@ -407,11 +407,17 @@ std::string fmt##format = #format; \
 Sakura::log::warn(val##format + fmt##format); \
 return VkFormat::VK_FORMAT_UNDEFINED;}
 
+using namespace Sakura::Graphics;
+
 namespace Sakura::Graphics::Vk
 {
     static VkBlendOp Transfer(const BlendOp op)
     {
         return VkBlendOp(op);
+    }
+    static VkLogicOp Transfer(const Sakura::Graphics::LogicOp op)
+    {   
+        return VkLogicOp(op);
     }
     static VkFormat Transfer(const Sakura::Graphics::PixelFormat format)
     {
@@ -436,6 +442,10 @@ namespace Sakura::Graphics::Vk
     static BlendOp Transfer(const VkBlendOp op)
     {
         return BlendOp(op);
+    }
+    static LogicOp Transfer(const VkLogicOp op)
+    {
+        return LogicOp(op);
     }
     static Sakura::Graphics::PixelFormat Transfer(const VkFormat format)
     {

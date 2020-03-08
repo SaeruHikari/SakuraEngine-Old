@@ -21,37 +21,56 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-05 01:29:37
- * @LastEditTime: 2020-03-08 22:29:40
+ * @Date: 2020-03-06 23:50:42
+ * @LastEditTime: 2020-03-08 23:48:29
  */
 #pragma once
-#include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
-#include "../../GraphicsCommon/ResourceObjects/Resource.h"
-#include "../Flags/PixelFormatVk.h"
 
 namespace Sakura::Graphics
 {
-    struct Extent2D;
-}
-
-namespace Sakura::Graphics::Vk
-{
-    struct SwapChainVk : public Sakura::Graphics::SwapChain
+    enum class ResourceType
     {
-        friend class CGD_Vk;
-        SwapChainVk(const VkSwapchainKHR _chain, 
-            const CGD& _device,const uint32 _chainCount)
-            :swapChain(_chain), SwapChain(_device, _chainCount)
-        {
-            
-        }
-        virtual ~SwapChainVk() override final;
-        virtual Extent2D GetExtent() const override final;
-        inline VkFormat GetVkPixelFormat() 
-        {
-            return Transfer(swapChainImageFormat);
-        }
-        VkSwapchainKHR swapChain;
-        VkExtent2D swapChainExtent;
+        Undefined,
+        Buffer,
+        Texture1D,
+        Texture2D,
+        Texture3D,
+        Sampler
+    };
+
+    enum ImageLayout
+    {
+        Unknown = 0,
+        General = 1,
+        ColorAttachment = 2,
+        DepthStencilAttachment = 3,
+        DepthStencilReadOnly = 4,
+        TransferSrcOptimal = 6,
+        TransferDstOptimal = 7,
+        Preinitialized = 8,
+        DepthReadOnlyStencilAttachment = 1000117000,
+        DepthAttachmentStencilReadOnly = 1000117001,
+        DepthAttachment = 1000241000,
+        DepthReadOnly = 1000241001,
+        StencilAttachment = 1000241002,
+        StencilReadOnly = 1000241003,
+        PresentSrc = 1000001002,
+        SharedPresent = 1000111000,
+        ShadingRateOptimalNV = 1000164003,
+        FragmentDensityMapOptimalExt = 1000218000
+    };
+
+    enum class CPUAccessFlags
+    {
+        Read        = (1 << 0),
+        Write       = (1 << 1),
+        ReadWrite   = (Read | Write)
+    };
+
+    enum class MiscFlags
+    {
+        DynamicUsage    = (1 << 0),
+        GenerateMips    = (1 << 1),
+        NoInitialData   = (1 << 2)
     };
 }

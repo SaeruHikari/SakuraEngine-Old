@@ -22,10 +22,11 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:49:22
- * @LastEditTime: 2020-03-06 22:01:25
+ * @LastEditTime: 2020-03-08 22:30:33
  */
 #include "SwapChainVk.h"
 #include "../ResourceObjects/GpuResourceVk.h"
+#include "../Flags/GraphicsPipelineStatesVk.h"
 #include "../CGD_Vulkan.h"
 
 using namespace Sakura::Graphics::Vk;
@@ -37,8 +38,10 @@ SwapChainVk::~SwapChainVk()
     vkDestroySwapchainKHR(vkdevice.GetCGDEntity().device, swapChain, nullptr);
 }
 
-void SwapChainVk::GetExtent(uint32& width, uint32& height)
+Extent2D SwapChainVk::GetExtent() const
 {
-    width = swapChainExtent.width;
-    height = swapChainExtent.height;
+    Extent2D extent;
+    extent.width = swapChainExtent.width;
+    extent.height = swapChainExtent.height;
+    return extent;
 }

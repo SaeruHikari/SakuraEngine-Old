@@ -22,17 +22,51 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:47:38
- * @LastEditTime: 2020-03-08 00:43:46
+ * @LastEditTime: 2020-03-09 00:38:53
  */
 #pragma once
 #include <memory_resource>
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
+#include "Core/Containers/SString.h"
 #include "../ResourceObjects/Shader.h"
 #include "PixelFormat.h"
 
+using namespace Sakura;
+
 namespace Sakura::Graphics
 {
+    enum PipelineStageFlags
+    {
+        TopOfPipeStage = 0x00000001,
+        DrawIndirectStage = 0x00000002,
+        VertexInputStage = 0x00000004,
+        VetrtexShaderStage = 0x00000008,
+        HullShaderStage = 0x00000010,
+        DomainShaderStage = 0x00000020,
+        GeometryShaderStage = 0x00000040,
+        PixelShaderStage = 0x00000080,
+        EarlyPixelTestsStage = 0x00000100,
+        LatePixelTestsStage = 0x00000200,
+        ColorAttachmentOutputStage = 0x00000400,
+        ComputeShaderStage = 0x00000800,
+        TransferStage = 0x00001000,
+        BottomOfPipeStage = 0x00002000,
+        HostStage = 0x00004000,
+        AllGraphicsStage = 0x00008000,
+        AllCommandsStage = 0x00010000,
+        TransformFeedBackStage = 0x01000000,
+        ConditionalRenderingStage = 0x00040000,
+        CommandProcessStage = 0x00020000,
+        ShadingRateImageStage = 0x00400000,
+        RayTracingShaderStage = 0x00200000,
+        AccelerationStructureBuildStage = 0x02000000,
+        TaskShaderStage = 0x00080000,
+        MeshShaderStage = 0x00100000,
+        FragmentDensityProcessStage = 0x00800000
+    };
+    using PipelineStageFlag = uint32;
+    
     enum PrimitiveTopology
     {
         PointList = 0,
@@ -74,17 +108,31 @@ namespace Sakura::Graphics
         CullModeBack = 0x00000002,
         CullModeFrontAndBack = 0x00000003
     };
+    
+    enum DynamicState
+    {
+        DynamicStateViewport = 0,
+        DynamicStateScissor = 1,
+        DynamicStateLineWidth = 2,
+        DynamicStateDepthBias = 3,
+        DynamicStateBlendConstants = 4,
+        DynamicStateDepthBounds = 5,
+        DynamicStateStencilCompareMask = 6,
+        DynamicStateStencilWriteMask = 7,
+        DynamicStateStencilReference = 8,
+        DynamicStateViewportWScalingNV = 1000087000,
+        DynamicStateDiscardRectangleExt = 1000099000,
+        DynamicStateSampleLocationsExt = 1000143000,
+        DynamicStateViewportShadingRatePaletteNV = 1000164004,
+        DynamicStateViewportCoarseSampleOrderNV = 1000164006,
+        DynamicStateExclusiveScissorNV = 1000205001,
+        DynamicStateLineStrippleExt = 1000259000
+    };
 
     enum FrontFace
     {
         FrontFaceCounterClockWise = 0,
         FrontFaceClockWise = 1
-    };
-
-    struct InputAssemblyStateCreateInfo
-    {
-        PrimitiveTopology topo = PrimitiveTopology::TriangleList;
-        bool primitiveRestartEnable = false;
     };
 
     struct Extent2D
@@ -115,21 +163,31 @@ namespace Sakura::Graphics
         float maxDepth = 1.f;
     };
 
-    struct ViewportStateCreateInfo
+    struct InputAssemblyStateCreateInfo
     {
-        uint32 viewportCount = 1;
-        Viewport* vps;
-        uint32 scissorCount = 1;
-        Rect2D* scissors = nullptr;
+        PrimitiveTopology topo = PrimitiveTopology::TriangleList;
+        bool primitiveRestartEnable = false;
     };
 
+    struct VertexInputStateCreateInfo 
+    {
+        uint32_t vertexBindingDescriptionCount = 0;
+        uint32_t vertexAttributeDescriptionCount = 0;
+    };
+
+    struct ViewportStateCreateInfo
+    {
+        std::vector<Viewport> vps;
+        std::vector<Rect2D> scissors;
+    };
+    
     struct DepthStencilStateCreateInfo
     {
         bool depthTestEnable = true;
         bool depthWriteEnable = true;
         bool depthBoundsTestEnable = false;
         bool stencilTestEnable = false;
-        float minDepthBounds;
+        float minDepthBounds = 0.f;
         float maxDepthBounds;
     };
 
@@ -147,6 +205,7 @@ namespace Sakura::Graphics
         PolygonMode polygonMode = PolygonMode::PolygonFill;
         FrontFace frontFace = FrontFace::FrontFaceClockWise;
         bool depthBiasEnable = false;
+        float lineWidth = 1.f;
         float depthBiasConstantFactor = 0.f;
         float depthBiasClamp = 0.f;
         float depthBiasSlopeFactor = 0.f;
@@ -175,11 +234,58 @@ namespace Sakura::Graphics
         BlendFactor dstAlphaBlendFactor = BlendFactor::BlendFactorZero;
         BlendOp alphaBlendOp = BlendOp::BlendOpAdd;
     };
+    inline static const ColorBlendAttachmentState defaultAttachment = {};
 
+    struct ColorBlendStateCreateInfo
+    {
+        bool logicOpEnable = false;
+        LogicOp logicOp = LogicOp::LogicOpCopy;
+        std::vector<ColorBlendAttachmentState> colorBlendAttachment 
+            = {defaultAttachment};
+        float blendConstants[4] = {0.f, 0.f, 0.f, 0.f};
+    };
+
+    struct DynamicStateCreateInfo
+    {
+        std::vector<DynamicState> dynamicStates;
+    };
+
+    struct DescriptorSetLayout
+    {
+
+    };
+
+    struct PushConstantRange
+    {
+
+    };
+
+    /**
+     * @description: uniform values in the shaders. 
+     * @author: SaeruHikari
+     */
+    struct PipelineLayoutCreateInfo
+    {
+        std::vector<DescriptorSetLayout> pSetLayouts;
+        std::vector<PushConstantRange> pPushConstantRanges;
+    };
+
+    /**
+     * @description: fill this structure to Create PSO Object.
+     * @author: SaeruHikari
+     */
     struct GraphicsPipelineCreateInfo
     {
         InputAssemblyStateCreateInfo assemblyStateCreateInfo;
-        std::pmr::vector<ShaderStageCreateInfo> stages;
+        VertexInputStateCreateInfo viewInputStateCreateInfo;
         ViewportStateCreateInfo viewportStateCreateInfo;
+        DepthStencilStateCreateInfo depthStencilCreateInfo;
+        RasterizationStateCreateInfo rasterizationStateCreateInfo;
+        MultisampleStateCreateInfo multisampleStateCreateInfo;
+        DynamicStateCreateInfo dynamicStateCreateInfo;
+        // No transfer function !
+        ColorBlendStateCreateInfo colorBlendStateCreateInfo;
+        PipelineLayoutCreateInfo pipelineLayoutInfo;
+        std::pmr::vector<ShaderStageCreateInfo> stages;
     };
 }

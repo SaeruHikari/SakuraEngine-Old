@@ -21,37 +21,39 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-05 01:29:37
- * @LastEditTime: 2020-03-08 22:29:40
+ * @Date: 2020-03-08 21:06:12
+ * @LastEditTime: 2020-03-08 21:43:00
  */
-#pragma once
-#include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
-#include "../../GraphicsCommon/ResourceObjects/Resource.h"
-#include "../Flags/PixelFormatVk.h"
+#include "GraphicsPipelineVk.h"
+#include "../Flags/GraphicsPipelineStatesVk.h"
+#include "../CGD_Vulkan.h"
 
-namespace Sakura::Graphics
+using namespace Sakura::Graphics;
+using namespace Sakura::Graphics::Vk;
+
+GraphicsPipelineVk::~GraphicsPipelineVk()
 {
-    struct Extent2D;
+    vkDestroyPipelineLayout(
+        cgd.GetCGDEntity().device, pipelineLayout, nullptr);
 }
 
-namespace Sakura::Graphics::Vk
+GraphicsPipelineVk::GraphicsPipelineVk(
+    const GraphicsPipelineCreateInfo& info, const CGD_Vk& _cgd)
+        :cgd(_cgd)
 {
-    struct SwapChainVk : public Sakura::Graphics::SwapChain
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo = 
+        Transfer(info.pipelineLayoutInfo);
+    if (vkCreatePipelineLayout(cgd.GetCGDEntity().device,
+        &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
     {
-        friend class CGD_Vk;
-        SwapChainVk(const VkSwapchainKHR _chain, 
-            const CGD& _device,const uint32 _chainCount)
-            :swapChain(_chain), SwapChain(_device, _chainCount)
-        {
-            
-        }
-        virtual ~SwapChainVk() override final;
-        virtual Extent2D GetExtent() const override final;
-        inline VkFormat GetVkPixelFormat() 
-        {
-            return Transfer(swapChainImageFormat);
-        }
-        VkSwapchainKHR swapChain;
-        VkExtent2D swapChainExtent;
-    };
+        Sakura::Graphics::Vk::CGD_Vk::debug_error("failed to create pipeline layout!");
+        throw std::runtime_error("failed to create pipeline layout!");
+    }
+}
+
+std::unique_ptr<GraphicsPipeline> CGD_Vk::CreateGraphicsPipeline(
+    const GraphicsPipelineCreateInfo& info) const
+{
+    auto* vkPipeline = new GraphicsPipelineVk(info, *this);
+    return std::move(std::unique_ptr<GraphicsPipeline>(vkPipeline));
 }

@@ -21,44 +21,32 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-06 23:50:42
- * @LastEditTime: 2020-03-06 23:53:45
+ * @Date: 2020-03-08 21:04:52
+ * @LastEditTime: 2020-03-08 21:51:00
  */
 #pragma once
+#include "../../GraphicsCommon/GraphicsObjects/GraphicsPipeline.h"
+#include "vulkan/vulkan.h"
 
-namespace Sakura::Graphics
+using namespace Sakura::Graphics;
+namespace Sakura::Graphics::Vk
 {
-    enum class ResourceType
-    {
-        Undefined,
-        Buffer,
-        Texture1D,
-        Texture2D,
-        Texture3D,
-        Sampler
-    };
+    class CGD_Vk;
+}
 
-    enum class ResourceFlags
+namespace Sakura::Graphics::Vk
+{
+    class GraphicsPipelineVk : SImplements GraphicsPipeline
     {
-        None,
-        AllowRenderTarget,
-        AllowDepthStencil,
-        AllowUnorderedAccess,
-        DenyShaderResource,
-        AllowCrossAdapter
-    };
-
-    enum class CPUAccessFlags
-    {
-        Read        = (1 << 0),
-        Write       = (1 << 1),
-        ReadWrite   = (Read | Write)
-    };
-
-    enum class MiscFlags
-    {
-        DynamicUsage    = (1 << 0),
-        GenerateMips    = (1 << 1),
-        NoInitialData   = (1 << 2)
+        friend class CGD_Vk;
+        virtual ~GraphicsPipelineVk() override final;
+    public:
+        void AddRenderPass();
+    protected:
+        GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
+            const CGD_Vk& cgd);
+    protected:
+        VkPipelineLayout pipelineLayout;
+        const CGD_Vk& cgd;
     };
 }

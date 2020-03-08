@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 11:41:23
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-08 00:42:28
+ * @LastEditTime: 2020-03-08 19:16:09
  */
 #pragma once
 #include <cinttypes>
@@ -14,6 +14,10 @@ namespace Sakura
 {
     namespace Graphics
     {
+        /**
+         * @description: Color Components of RGBA, simply casted from Vk flags 
+         * @author: SaeruHikari
+         */
         enum ColorComponentFlags 
         {
             ColorComponentR = 0x00000001,
@@ -23,6 +27,10 @@ namespace Sakura
         };
         using ColorComoponents = std::uint32_t;
 
+        /**
+         * @description: Blend factor enum, simply casted from Vk Op enum. 
+         * @author: SaeruHikari
+         */
         enum BlendFactor
         {
             BlendFactorZero = 0,
@@ -46,6 +54,10 @@ namespace Sakura
             BlendFactorOneMinusSrc1Alpha = 18
         };
 
+        /**
+         * @description: Blend op enum, simply casted from Vk Op enum. 
+         * @author: SaeruHikari
+         */
         enum BlendOp
         {
             BlendOpAdd = 0,
@@ -99,6 +111,30 @@ namespace Sakura
             BlendOpRedExt = 1000148043,
             BlendOpGreenExt = 1000148044,
             BlendOpBlueExt = 1000148045,
+        };
+
+        /**
+         * @description: Logic op enum, simply casted from Vk Op enum. 
+         * @author: SaeruHikari
+         */
+        enum LogicOp
+        {
+            LogicOpClear = 0,
+            LogicOpAnd = 1,
+            LogicOpAndReverse = 2,
+            LogicOpCopy = 3,
+            LogicOpAndInverted = 4,
+            LogicOpNoOp = 5,
+            LogicOpXor = 6,
+            LogicOpOr = 7,
+            LogicOpNor = 8,
+            LogicOpEquivalent = 9,
+            LogicOpInvert = 10,
+            LogicOpOrReverse = 11,
+            LogicOpCopyInverted = 12,
+            LogicOpOrInverted = 13,
+            LogicOpNand = 14,
+            LogicOpSet = 15
         };
 
         /**

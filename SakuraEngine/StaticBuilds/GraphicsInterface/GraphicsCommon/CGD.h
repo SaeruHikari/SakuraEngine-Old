@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-07 23:27:46
+ * @LastEditTime: 2020-03-09 00:43:30
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -31,8 +31,9 @@
 #include "SakuraEngine/Core/EngineUtils/log.h"
 #include "Flags/CommonFeatures.h"
 #include "ResourceObjects/Shader.h"
-#include "ResourceObjects/ResourceFlags.h"
+#include "Flags/ResourceFlags.h"
 #include "GraphicsObjects/GraphicsPipeline.h"
+#include "GraphicsObjects/RenderPass.h"
 
 namespace Sakura::Graphics
 {
@@ -74,6 +75,12 @@ namespace Sakura::Graphics
         virtual const char* CompileShader(const char*, std::size_t) = 0;
         virtual std::unique_ptr<CommandQueue> InitQueueSet(
             void* mainSurface) = 0;
+
+        virtual std::unique_ptr<GraphicsPipeline> CreateGraphicsPipeline(
+            const GraphicsPipelineCreateInfo& info) const = 0;
+
+        virtual std::unique_ptr<RenderPass> CreateRenderPass(
+            const RenderPassCreateInfo& rpInfo) const = 0;
 
         virtual std::unique_ptr<ResourceView>
             ViewIntoImage(const GpuResource&, const ViewCreateInfo&) const = 0;

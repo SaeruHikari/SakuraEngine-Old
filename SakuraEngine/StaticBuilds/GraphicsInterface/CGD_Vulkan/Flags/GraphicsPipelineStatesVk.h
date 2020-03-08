@@ -22,12 +22,13 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 11:13:03
- * @LastEditTime: 2020-03-08 12:33:38
+ * @LastEditTime: 2020-03-08 23:59:33
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
 #include "../ResourceObjects/ShaderVk.h"
 #include "../../GraphicsCommon/Flags/GraphicsPipelineStates.h"
+#include "PixelFormatVk.h"
 
 
 namespace Sakura::Graphics::Vk
@@ -142,70 +143,21 @@ namespace Sakura::Graphics::Vk
         return *(Viewport*)&vp;
     }
 
+    sinline static VkDynamicState Transfer(const DynamicState state)
+    {
+        return VkDynamicState(state);
+    }
+
     sinline static VkPipelineViewportStateCreateInfo Transfer(
         const ViewportStateCreateInfo& info)
     {
 		VkPipelineViewportStateCreateInfo viewportState = {};
 		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-		viewportState.viewportCount = info.viewportCount;
-		viewportState.scissorCount = info.scissorCount;
-        // Scissors
-        if (info.scissorCount == 0)
-            viewportState.pScissors = nullptr;
-        else
-        {
-			std::vector<VkRect2D> scissors(info.scissorCount);
-			for (auto i = 0u; i < info.scissorCount; i++)
-			{
-				scissors[i] = Transfer(info.scissors[i]);
-			}
-			viewportState.pScissors = scissors.data();
-        }
-		// Viewports
-		if (info.viewportCount == 0)
-			viewportState.pViewports = nullptr;
-		else
-		{
-			std::vector<VkViewport> vps(info.scissorCount);
-			for (auto i = 0u; i < info.scissorCount; i++)
-			{
-                vps[i] = Transfer(info.vps[i]);
-			}
-			viewportState.pViewports = vps.data();
-		}
+        viewportState.pScissors = (const VkRect2D*)info.scissors.data();
+        viewportState.scissorCount = info.scissors.size();
+        viewportState.pViewports = (const VkViewport*)info.vps.data();
+        viewportState.viewportCount = info.vps.size();
         return viewportState;
-    }
-
-    sinline static ViewportStateCreateInfo Transfer(const VkPipelineViewportStateCreateInfo& info)
-    {
-        ViewportStateCreateInfo res;
-        res.scissorCount = info.scissorCount;
-        res.viewportCount = info.viewportCount;
-
-		// Scissors
-		if (info.scissorCount == 0)
-            res.scissors = nullptr;
-		else
-		{
-			std::vector<Rect2D> scissors(info.scissorCount);
-			for (auto i = 0u; i < info.scissorCount; i++)
-			{
-				scissors[i] = Transfer(info.pScissors[i]);
-			}
-            res.scissors = scissors.data();
-		}
-		// Viewports
-		if (info.viewportCount == 0)
-            res.vps = nullptr;
-		else
-		{
-			std::vector<Viewport> vps(info.scissorCount);
-			for (auto i = 0u; i < info.scissorCount; i++)
-			{
-				vps[i] = Transfer(info.pViewports[i]);
-			}
-            res.vps = vps.data();
-		}
     }
 
 	sinline static VkPipelineShaderStageCreateInfo Transfer(
@@ -280,5 +232,48 @@ namespace Sakura::Graphics::Vk
             = Transfer(state.dstAlphaBlendFactor); 
         colorBlendAttachment.alphaBlendOp 
             = Transfer(state.alphaBlendOp);
+        return colorBlendAttachment;
     }
+
+    sinline static VkPipelineDynamicStateCreateInfo Transfer(
+        const DynamicStateCreateInfo dynamicCreateInfo)
+    {
+        VkPipelineDynamicStateCreateInfo dynamicState = {};
+        dynamicState.sType = 
+            VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dynamicState.pDynamicStates 
+            = (const VkDynamicState*)dynamicCreateInfo.dynamicStates.data();
+        dynamicState.dynamicStateCount 
+            = dynamicCreateInfo.dynamicStates.size();
+        return dynamicState;
+    }
+
+    sinline static VkPipelineLayoutCreateInfo Transfer(
+        const PipelineLayoutCreateInfo& info)
+    {
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
+        pipelineLayoutInfo.sType = 
+            VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipelineLayoutInfo.pSetLayouts = nullptr;
+        pipelineLayoutInfo.setLayoutCount = 0;
+        pipelineLayoutInfo.pushConstantRangeCount = 0;
+        pipelineLayoutInfo.pPushConstantRanges = nullptr;
+        //pipelineLayoutInfo.pSetLayouts = info.pSetLayouts.data(); 
+        //pipelineLayoutInfo.pPushConstantRanges 
+        //    = info.pPushConstantRanges.data(); 
+        return pipelineLayoutInfo;
+    }
+
+    sinline static VkDescriptorSetLayout Transfer(const DescriptorSetLayout layout)
+    {
+        VkDescriptorSetLayout res = {};
+        return res;
+    }
+
+    sinline static VkPushConstantRange Transfer(const PushConstantRange range)
+    {
+        VkPushConstantRange res = {};
+        return res;
+    }
+
 }

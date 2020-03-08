@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-07 00:43:41
+ * @LastEditTime: 2020-03-09 00:58:05
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -70,8 +70,8 @@ namespace Sakura::Graphics::Vk
         virtual std::unique_ptr<Sakura::Graphics::SwapChain>
             CreateSwapChain(const int width, const int height, 
                 void* mainSurface) override final;
-        const auto GetVkInstance(){return entityVk.instance;}
-        const CGDEntityVk& GetCGDEntity(){return entityVk;}
+        const auto GetVkInstance() const {return entityVk.instance;}
+        const CGDEntityVk& GetCGDEntity() const {return entityVk;}
     public:
         // Implements: See ResourceObjects/ShaderVk.cpp
         virtual std::unique_ptr<Shader> CreateShader(
@@ -79,9 +79,18 @@ namespace Sakura::Graphics::Vk
         virtual const char* CompileShader(
             const char*, std::size_t) override final;
     public:
+        // Implements: See GraphicsObjects/GraphicsPipelineVk.cpp
+        virtual std::unique_ptr<GraphicsPipeline> CreateGraphicsPipeline(
+            const GraphicsPipelineCreateInfo& info) const override final;
+    public:
         // Implements: See ResourceObjects/ResourceViewVk.cpp
         virtual std::unique_ptr<ResourceView> ViewIntoImage(
             const GpuResource&, const ViewCreateInfo&) const override final;
+    public:
+    // Implements: See GraphicsObjects/RenderPassVk.cpp
+        virtual std::unique_ptr<RenderPass> CreateRenderPass(
+            const RenderPassCreateInfo& rpInfo) const override final;
+
     private:
          /**
          * @description: Initial Vulkan Device
