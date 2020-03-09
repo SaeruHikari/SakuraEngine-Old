@@ -22,11 +22,11 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 23:24:08
- * @LastEditTime: 2020-03-09 01:33:39
+ * @LastEditTime: 2020-03-09 12:20:00
  */
 #pragma once
-#include "../../GraphicsCommon/GraphicsObjects/RenderPass.h"
-#include "../Flags/PixelFormatVk.h"
+#include "../../GraphicsCommon/GraphicsObjects/RenderProgress.h"
+#include "../Flags/FormatVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
 #include "vulkan/vulkan.h"
 
@@ -76,7 +76,7 @@ namespace Sakura::Graphics::Vk
         return colorAttachmentRef;
     }
 
-    inline static VkSubpassDescription Transfer(const SubpassDescription& desc)
+    inline static VkSubpassDescription Transfer(const SubprogressDescription& desc)
     {
         VkSubpassDescription subpass = {};
         subpass.pipelineBindPoint = Transfer(desc.pipelineBindPoint);
@@ -104,14 +104,15 @@ namespace Sakura::Graphics::Vk
         return subpass;
     }
 
-    class RenderPassVk : SImplements RenderPass
+    class RenderProgressVk : SImplements RenderProgress
     {
         friend class CGD_Vk;
+        friend class GraphicsPipelineVk;
     public:
-        virtual ~RenderPassVk();
+        virtual ~RenderProgressVk();
     protected:
-        RenderPassVk(
-            const RenderPassCreateInfo& info, const CGD_Vk& _cgd);
+        RenderProgressVk(
+            const RenderProgressCreateInfo& info, const CGD_Vk& _cgd);
         VkRenderPass renderPass;
         const CGD_Vk& cgd;
     };

@@ -22,21 +22,21 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-09 00:45:42
- * @LastEditTime: 2020-03-09 01:34:30
+ * @LastEditTime: 2020-03-09 12:16:44
  */
-#include "RenderPassVk.h"
+#include "RenderProgressVk.h"
 #include "../CGD_Vulkan.h"
 
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Vk;
 
-RenderPassVk::~RenderPassVk()
+RenderProgressVk::~RenderProgressVk()
 {
     vkDestroyRenderPass(cgd.GetCGDEntity().device, renderPass, nullptr);
 }
 
-RenderPassVk::RenderPassVk(
-    const RenderPassCreateInfo& info, const CGD_Vk& _cgd)
+RenderProgressVk::RenderProgressVk(
+    const RenderProgressCreateInfo& info, const CGD_Vk& _cgd)
         :cgd(_cgd)
 {
     VkRenderPassCreateInfo renderPassInfo = {};
@@ -51,12 +51,12 @@ RenderPassVk::RenderPassVk(
     }
     renderPassInfo.pAttachments = colorAttachments;
 
-    renderPassInfo.subpassCount = info.subPasses.size();
+    renderPassInfo.subpassCount = info.subProcs.size();
     VkSubpassDescription* subpasses 
-        = new VkSubpassDescription[info.subPasses.size()];
-    for(auto i = 0u; i < info.subPasses.size(); i++)
+        = new VkSubpassDescription[info.subProcs.size()];
+    for(auto i = 0u; i < info.subProcs.size(); i++)
     {
-        subpasses[i] = Transfer(info.subPasses[i]);
+        subpasses[i] = Transfer(info.subProcs[i]);
     }
     renderPassInfo.pSubpasses = subpasses;
 
@@ -82,9 +82,9 @@ RenderPassVk::RenderPassVk(
     delete[] deps;
 }
 
-std::unique_ptr<RenderPass> CGD_Vk::CreateRenderPass(
-            const RenderPassCreateInfo& rpInfo) const
+std::unique_ptr<RenderProgress> CGD_Vk::CreateRenderProgress(
+    const RenderProgressCreateInfo& rpInfo) const
 {
-    auto res = new RenderPassVk(rpInfo, *this);
-    return std::move(std::unique_ptr<RenderPassVk>(res));
+    auto res = new RenderProgressVk(rpInfo, *this);
+    return std::move(std::unique_ptr<RenderProgressVk>(res));
 }

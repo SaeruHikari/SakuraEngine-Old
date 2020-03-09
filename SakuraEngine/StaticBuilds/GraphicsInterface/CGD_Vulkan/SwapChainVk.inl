@@ -22,11 +22,12 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-07 01:21:53
+ * @LastEditTime: 2020-03-09 13:35:27
  */
 
 // Swap Chain Support Details
 #pragma once
+#include "Flags/GraphicsPipelineStatesVk.h"
 #include <algorithm>
 struct SwapChainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;
@@ -180,13 +181,14 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
     for(auto i = 0u; i < imageCount; i++)
     {
         // Images
-        std::unique_ptr<GpuResourceVkImage> vkImg 
-            = std::make_unique<GpuResourceVkImage>(chainImages[i]);
+        GpuResourceVkImage* _img = 
+            new GpuResourceVkImage(chainImages[i], Transfer(extent));
         // Views
         auto vkView= ViewIntoResource<ResourceType::Texture2D>(
-            *vkImg.get(), vinfo);
+            *_img, vinfo);
  
-        res->swapChainImages[i] = std::move(vkImg);
+        res->swapChainImages[i] = 
+            std::move(std::unique_ptr<GpuResourceVkImage>(_img));
         res->resourceViews[i] = std::move(vkView);
     }
     res->swapChainImageFormat = Transfer(surfaceFormat.format);

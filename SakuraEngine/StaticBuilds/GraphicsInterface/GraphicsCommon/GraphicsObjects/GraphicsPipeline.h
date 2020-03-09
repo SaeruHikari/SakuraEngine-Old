@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 23:25:42
- * @LastEditTime: 2020-03-08 21:37:20
+ * @LastEditTime: 2020-03-09 13:47:18
  */
 #pragma once
 #include "../Flags/GraphicsPipelineStates.h"
@@ -31,9 +31,19 @@
 
 namespace Sakura::Graphics
 {
+    SInterface Attachments
+    {
+        virtual ~Attachments() = default;
+        std::vector<ResourceView*> renderTargets;
+        uint32 width;
+        uint32 height;
+    };
+
     SInterface GraphicsPipeline
     {
         virtual ~GraphicsPipeline() = default;
+    public:
+        virtual void Attach(const Attachments& attachments) = 0;
     protected:
         GraphicsPipeline() = default;
     };

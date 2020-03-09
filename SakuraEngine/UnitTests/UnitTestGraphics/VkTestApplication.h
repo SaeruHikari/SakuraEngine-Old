@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-09 01:35:12
+ * @LastEditTime: 2020-03-09 12:28:31
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -36,7 +36,7 @@ extern "C"
 #include "SakuraEngine/Core/Core.h"
 #include "vulkan/vulkan.h"
 #include "Extern/include/SDL2Tools/SDL2Vk.hpp"
-#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Flags/PixelFormatVk.h"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Flags/FormatVk.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Flags/GraphicsPipelineStatesVk.h"
 using namespace Sakura;
 
@@ -66,6 +66,7 @@ public:
 private:
     void initVulkan()
     {
+        // Create Devices
         Sakura::Graphics::CGDInfo cgd_info;
         cgd = new Sakura::Graphics::Vk::CGD_Vk();
         cgd_info.enableDebugLayer = true;
@@ -76,7 +77,20 @@ private:
             ((Sakura::Graphics::Vk::CGD_Vk*)cgd)->GetVkInstance(), &surface);
         cgd->InitQueueSet(&surface);
         swapChain = std::move(
-            cgd->CreateSwapChain(width, height, &surface));
+        cgd->CreateSwapChain(width, height, &surface));
+
+        //Create Render Progress
+        RenderProgressCreateInfo rpinfo = {};
+        AttachmentDescription colorAttachment;
+        colorAttachment.format = swapChain->GetPixelFormat();
+        AttachmentReference colorAttachmentRef = {};
+        SubprogressDescription subprog = {};
+        subprog.colorAttachments.push_back(colorAttachmentRef);
+        rpinfo.attachments.push_back(colorAttachment);
+        rpinfo.subProcs.push_back(subprog);
+        auto prog = cgd->CreateRenderProgress(rpinfo);
+
+        // Create PSO
 #if defined(CONFINFO_PLATFORM_LINUX) 
 #elif defined(CONFINFO_PLATFORM_MACOS)
         Sakura::fs::file vs_f
@@ -99,7 +113,7 @@ private:
         fs_f.read(fs_bytes.data(), fs_bytes.size());
         vertshader = cgd->CreateShader(vs_bytes.data(), vs_bytes.size());
         fragshader = cgd->CreateShader(fs_bytes.data(), fs_bytes.size());
-        GraphicsPipelineCreateInfo info = {};
+        GraphicsPipelineCreateInfo info;
         ShaderStageCreateInfo vsStage, fsStage;
         vsStage.stage = StageFlags::VertexStage;
         vsStage.shader = vertshader.get();
@@ -107,28 +121,15 @@ private:
         fsStage.stage = StageFlags::PixelStage;
         fsStage.shader = fragshader.get();
         fsStage.entry = "main";
-        info.stages.push_back(vsStage);
-        info.stages.push_back(fsStage);
+        info.shaderStages.push_back(vsStage);
+        info.shaderStages.push_back(fsStage);
         Viewport vp = {};
         vp.height = 720; vp.width = 1280;
         Rect2D scissor = {};
         scissor.extent = swapChain->GetExtent();
         info.viewportStateCreateInfo.vps.push_back(vp);
         info.viewportStateCreateInfo.scissors.push_back(scissor);
-        auto pso = cgd->CreateGraphicsPipeline(info);
-
-        RenderPassCreateInfo rpinfo = {};
-        AttachmentDescription colorAttachment;
-        colorAttachment.format = swapChain->GetPixelFormat();
-
-        AttachmentReference colorAttachmentRef = {};
-        SubpassDescription subpass = {};
-        subpass.colorAttachments.push_back(colorAttachmentRef);
-
-        rpinfo.attachments.push_back(colorAttachment);
-        rpinfo.subPasses.push_back(subpass);
-
-        auto pass = cgd->CreateRenderPass(rpinfo);
+        auto pso = cgd->CreateGraphicsPipeline(info, *prog.get());
     }
 
     void mainLoop()

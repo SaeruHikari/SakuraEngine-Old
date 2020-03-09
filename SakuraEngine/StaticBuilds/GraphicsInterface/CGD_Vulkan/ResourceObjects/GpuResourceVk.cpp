@@ -22,19 +22,10 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 22:41:33
- * @LastEditTime: 2020-03-05 22:46:29
+ * @LastEditTime: 2020-03-09 13:18:28
  */
 #include "GpuResourceVk.h"
+#include "../Flags/GraphicsPipelineStatesVk.h"
 
 using namespace Sakura::Graphics::Vk;
 using namespace Sakura;
-
-void GpuResourceVk::GetSize(uint32& width, uint32& height)
-{
-    
-}
-
-void GpuResourceVkImage::GetSize(uint32& width, uint32& height)
-{
-    
-}

@@ -22,12 +22,12 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 22:05:50
- * @LastEditTime: 2020-03-09 01:13:42
+ * @LastEditTime: 2020-03-09 12:02:55
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
-#include "../Flags/PixelFormat.h"
+#include "../Flags/Format.h"
 #include "../Flags/GraphicsPipelineStates.h"
 #include "../Flags/ResourceFlags.h"
 
@@ -36,23 +36,16 @@ namespace Sakura::Graphics
     struct AttachmentDescription;
     struct AttachmentReference;
     struct SubpassDescription;
-    struct RenderPassCreateInfo;
+    struct RenderProgressCreateInfo;
 }
 
 namespace Sakura::Graphics
 {
-    SInterface RenderPass
+    SInterface RenderProgress
     {
-        virtual ~RenderPass() = default;
+        virtual ~RenderProgress() = default;
     protected:
-        RenderPass() = default;
-    };
-
-    SInterface SubRenderPass
-    {
-        virtual ~SubRenderPass() = default;
-    protected:
-        SubRenderPass() = default;
+        RenderProgress() = default;
     };
 
     enum AttachmentLoadOp
@@ -91,7 +84,7 @@ namespace Sakura::Graphics
 
     struct AttachmentDescription
     {
-        PixelFormat format;
+        Format format;
         SampleCountFlag samples = SampleCount_1Bit;
         AttachmentLoadOp loadOp = AttachmentLoadOp::AttachmentLoadOpClear;
         AttachmentStoreOp storeOp = AttachmentStoreOp::AttachmentStoreOpStore;
@@ -109,7 +102,7 @@ namespace Sakura::Graphics
         ImageLayout layout = ImageLayout::ColorAttachment;
     };
 
-    struct SubpassDescription
+    struct SubprogressDescription
     {
         PipelineBindPoint pipelineBindPoint 
             = PipelineBindPoint::BindPointGraphics;
@@ -120,7 +113,7 @@ namespace Sakura::Graphics
         std::vector<uint32> preserveAttachments;
     };
     
-    struct SubpassDependency
+    struct SubProgressDependency
     {
         uint32 srcSubpass;
         uint32 dstSubpass;
@@ -131,10 +124,10 @@ namespace Sakura::Graphics
         DependencyFlag dependencyFlags;
     };
     
-    struct RenderPassCreateInfo
+    struct RenderProgressCreateInfo
     {
         std::vector<AttachmentDescription> attachments;
-        std::vector<SubpassDescription> subPasses;
-        std::vector<SubpassDependency> dependencies;
+        std::vector<SubprogressDescription> subProcs;
+        std::vector<SubProgressDependency> dependencies;
     };
 }

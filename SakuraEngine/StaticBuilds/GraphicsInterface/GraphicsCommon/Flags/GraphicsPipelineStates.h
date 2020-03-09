@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:47:38
- * @LastEditTime: 2020-03-09 00:38:53
+ * @LastEditTime: 2020-03-09 11:24:24
  */
 #pragma once
 #include <memory_resource>
@@ -30,7 +30,7 @@
 #include "Core/CoreMinimal/SDefination.h"
 #include "Core/Containers/SString.h"
 #include "../ResourceObjects/Shader.h"
-#include "PixelFormat.h"
+#include "Format.h"
 
 using namespace Sakura;
 
@@ -163,16 +163,39 @@ namespace Sakura::Graphics
         float maxDepth = 1.f;
     };
 
+    enum VertexInputRate
+    {
+        VertexInputRateVertex = 0,
+        VertexInputRateInstance = 1
+    };
+
     struct InputAssemblyStateCreateInfo
     {
         PrimitiveTopology topo = PrimitiveTopology::TriangleList;
         bool primitiveRestartEnable = false;
     };
 
+    struct VertexInputBindingDescription
+    {
+        uint32 binding;
+        uint32 stride;
+        VertexInputRate inputRate;
+    };
+
+    struct VertexInputAttributeDescription
+    {
+        uint32 location;
+        uint32 binding;
+        Format format;
+        uint32 offset;
+    };
+
     struct VertexInputStateCreateInfo 
     {
-        uint32_t vertexBindingDescriptionCount = 0;
-        uint32_t vertexAttributeDescriptionCount = 0;
+        std::vector<VertexInputBindingDescription> 
+            vertexBindingDescriptions;
+        std::vector<VertexInputAttributeDescription> 
+            vertexAttributeDescriptions;
     };
 
     struct ViewportStateCreateInfo
@@ -266,8 +289,8 @@ namespace Sakura::Graphics
      */
     struct PipelineLayoutCreateInfo
     {
-        std::vector<DescriptorSetLayout> pSetLayouts;
-        std::vector<PushConstantRange> pPushConstantRanges;
+        std::vector<DescriptorSetLayout> setLayouts;
+        std::vector<PushConstantRange> pushConstantRanges;
     };
 
     /**
@@ -276,8 +299,8 @@ namespace Sakura::Graphics
      */
     struct GraphicsPipelineCreateInfo
     {
-        InputAssemblyStateCreateInfo assemblyStateCreateInfo;
-        VertexInputStateCreateInfo viewInputStateCreateInfo;
+        InputAssemblyStateCreateInfo inputassembly;
+        VertexInputStateCreateInfo vertexInputInfo;
         ViewportStateCreateInfo viewportStateCreateInfo;
         DepthStencilStateCreateInfo depthStencilCreateInfo;
         RasterizationStateCreateInfo rasterizationStateCreateInfo;
@@ -286,6 +309,6 @@ namespace Sakura::Graphics
         // No transfer function !
         ColorBlendStateCreateInfo colorBlendStateCreateInfo;
         PipelineLayoutCreateInfo pipelineLayoutInfo;
-        std::pmr::vector<ShaderStageCreateInfo> stages;
+        std::pmr::vector<ShaderStageCreateInfo> shaderStages;
     };
 }

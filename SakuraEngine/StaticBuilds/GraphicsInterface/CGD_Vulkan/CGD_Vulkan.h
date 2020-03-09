@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-09 00:58:05
+ * @LastEditTime: 2020-03-09 12:15:02
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -37,7 +37,6 @@ namespace Sakura::Graphics::Vk
 {
     struct CGDEntityVk
     {
-        
         Sakura::Graphics::PhysicalDeviceFeatures physicalDeviceFeatures;
         VkInstance instance;
         VkDevice device;
@@ -53,6 +52,8 @@ namespace Sakura::Graphics::Vk
         }
         bool validate = false;
         std::unique_ptr<CommandQueue_Vk> graphicsQueue;
+        std::unique_ptr<CommandQueue_Vk> computeQueue;
+        std::unique_ptr<CommandQueue_Vk> copyQueue;
         std::unique_ptr<ContextManager> contextManager;
     };
 
@@ -81,15 +82,16 @@ namespace Sakura::Graphics::Vk
     public:
         // Implements: See GraphicsObjects/GraphicsPipelineVk.cpp
         virtual std::unique_ptr<GraphicsPipeline> CreateGraphicsPipeline(
-            const GraphicsPipelineCreateInfo& info) const override final;
+            const GraphicsPipelineCreateInfo& info,
+            const RenderProgress& progress) const override final;
     public:
         // Implements: See ResourceObjects/ResourceViewVk.cpp
         virtual std::unique_ptr<ResourceView> ViewIntoImage(
             const GpuResource&, const ViewCreateInfo&) const override final;
     public:
     // Implements: See GraphicsObjects/RenderPassVk.cpp
-        virtual std::unique_ptr<RenderPass> CreateRenderPass(
-            const RenderPassCreateInfo& rpInfo) const override final;
+        virtual std::unique_ptr<RenderProgress> CreateRenderProgress(
+            const RenderProgressCreateInfo& rpInfo) const override final;
 
     private:
          /**

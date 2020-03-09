@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 11:41:23
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-08 19:16:09
+ * @LastEditTime: 2020-03-09 11:23:19
  */
 #pragma once
 #include <cinttypes>
@@ -137,10 +137,7 @@ namespace Sakura
             LogicOpSet = 15
         };
 
-        /**
-         * @description:  Common formats of DXGI_FORMAT and VkFormat
-         */
-        enum PixelFormat 
+        enum Format 
         {   
             UNKNOWN,
             R64G64B64A64_UINT,

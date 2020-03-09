@@ -22,13 +22,13 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:35:59
- * @LastEditTime: 2020-03-07 23:28:21
+ * @LastEditTime: 2020-03-09 11:25:10
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "../Flags/CommonFeatures.h"
-#include "../Flags/PixelFormat.h"
+#include "../Flags/Format.h"
 
 namespace Sakura::Graphics
 {
@@ -55,14 +55,14 @@ namespace Sakura::Graphics
     }
     struct ViewCreateInfo
     {
-        PixelFormat format;
+        Format format;
         ResourceViewType viewType;
     };
     
     SInterface ResourceView
     {
         virtual ~ResourceView(){}
-        const PixelFormat GetPixelFormat(void) const {return pixelFormat;}
+        const Format GetFormat(void) const {return format;}
         const ResourceViewType GetViewType(void) const  
         {
             return viewType;
@@ -74,7 +74,7 @@ namespace Sakura::Graphics
             const CGD& _device, const ResourceViewType vt)
             :device(_device), viewType(vt){}
     protected:
-        PixelFormat pixelFormat;
+        Format format;
         ResourceViewType viewType;
         const CGD& device;
     };

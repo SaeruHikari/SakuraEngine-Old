@@ -22,12 +22,12 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-04 21:41:05
- * @LastEditTime: 2020-03-08 22:28:56
+ * @LastEditTime: 2020-03-09 11:24:54
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
-#include "../Flags/PixelFormat.h"
+#include "../Flags/Format.h"
 #include "../Flags/CommonFeatures.h"
 #include <memory>
 #include <vector>
@@ -52,7 +52,7 @@ namespace Sakura::Graphics
             }
         virtual ~SwapChain() {}
         virtual Extent2D GetExtent() const = 0;
-        const PixelFormat GetPixelFormat() const {return swapChainImageFormat;};
+        const Format GetPixelFormat() const {return swapChainImageFormat;};
         GpuResource* GetSwapChainImage(std::size_t frameIndex)
         {
             return swapChainImages[frameIndex].get();
@@ -66,7 +66,7 @@ namespace Sakura::Graphics
         std::vector<std::unique_ptr<GpuResource>> swapChainImages;
         std::vector<std::unique_ptr<ResourceView>> resourceViews;
     protected:
-        PixelFormat swapChainImageFormat;
+        Format swapChainImageFormat;
         const CGD& device;
     };
 }

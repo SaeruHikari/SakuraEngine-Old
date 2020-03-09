@@ -22,14 +22,13 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 11:13:03
- * @LastEditTime: 2020-03-08 23:59:33
+ * @LastEditTime: 2020-03-09 12:32:25
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
 #include "../ResourceObjects/ShaderVk.h"
 #include "../../GraphicsCommon/Flags/GraphicsPipelineStates.h"
-#include "PixelFormatVk.h"
-
+#include "FormatVk.h"
 
 namespace Sakura::Graphics::Vk
 {
@@ -121,6 +120,23 @@ namespace Sakura::Graphics::Vk
         tran.primitiveRestartEnable = info.primitiveRestartEnable == VK_TRUE;
         tran.topo = Transfer(info.topology);
         return tran;
+    }
+
+    sinline static VkPipelineVertexInputStateCreateInfo Transfer(
+        const VertexInputStateCreateInfo& vertInfo)
+    {
+        VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
+        vertexInputInfo.sType = 
+            VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        vertexInputInfo.vertexBindingDescriptionCount 
+            = vertInfo.vertexBindingDescriptions.size();
+        vertexInputInfo.pVertexBindingDescriptions
+            = (const VkVertexInputBindingDescription*)(vertInfo.vertexAttributeDescriptions.data());
+        vertexInputInfo.vertexAttributeDescriptionCount 
+            = vertInfo.vertexAttributeDescriptions.size();
+        vertexInputInfo.pVertexAttributeDescriptions
+            = (const VkVertexInputAttributeDescription*)(vertInfo.vertexAttributeDescriptions.data());
+        return vertexInputInfo;
     }
 
     sinline static VkRect2D Transfer(Rect2D rect2D)
@@ -248,22 +264,6 @@ namespace Sakura::Graphics::Vk
         return dynamicState;
     }
 
-    sinline static VkPipelineLayoutCreateInfo Transfer(
-        const PipelineLayoutCreateInfo& info)
-    {
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
-        pipelineLayoutInfo.sType = 
-            VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.pSetLayouts = nullptr;
-        pipelineLayoutInfo.setLayoutCount = 0;
-        pipelineLayoutInfo.pushConstantRangeCount = 0;
-        pipelineLayoutInfo.pPushConstantRanges = nullptr;
-        //pipelineLayoutInfo.pSetLayouts = info.pSetLayouts.data(); 
-        //pipelineLayoutInfo.pPushConstantRanges 
-        //    = info.pPushConstantRanges.data(); 
-        return pipelineLayoutInfo;
-    }
-
     sinline static VkDescriptorSetLayout Transfer(const DescriptorSetLayout layout)
     {
         VkDescriptorSetLayout res = {};
@@ -275,5 +275,4 @@ namespace Sakura::Graphics::Vk
         VkPushConstantRange res = {};
         return res;
     }
-
 }

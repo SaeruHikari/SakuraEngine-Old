@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:04:52
- * @LastEditTime: 2020-03-08 21:51:00
+ * @LastEditTime: 2020-03-09 13:01:49
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/GraphicsPipeline.h"
@@ -32,6 +32,7 @@ using namespace Sakura::Graphics;
 namespace Sakura::Graphics::Vk
 {
     class CGD_Vk;
+    class RenderProgressVk;
 }
 
 namespace Sakura::Graphics::Vk
@@ -41,12 +42,13 @@ namespace Sakura::Graphics::Vk
         friend class CGD_Vk;
         virtual ~GraphicsPipelineVk() override final;
     public:
-        void AddRenderPass();
+        
     protected:
         GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
-            const CGD_Vk& cgd);
+            const RenderProgressVk& prog, const CGD_Vk& cgd);
     protected:
         VkPipelineLayout pipelineLayout;
+        VkPipeline graphicsPipeline;
         const CGD_Vk& cgd;
     };
 }

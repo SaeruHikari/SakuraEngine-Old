@@ -24,7 +24,7 @@ add_library(CGD_Vulkan
     ResourceObjects/ShaderVk.cpp
     GraphicsObjects/SwapChainVk.cpp
     GraphicsObjects/GraphicsPipelineVk.cpp
-    GraphicsObjects/RenderPassVk.cpp
+    GraphicsObjects/RenderProgressVk.cpp
     ${SpecificTimerImpl} 
 )
 

@@ -5,12 +5,12 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 12:36:02
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-08 19:09:35
+ * @LastEditTime: 2020-03-09 11:26:01
  */
 #pragma once
 #include "vulkan/vulkan.h"
 #include "SakuraEngine/Core/EngineUtils/log.h"
-#include "../../GraphicsCommon/Flags/PixelFormat.h"
+#include "../../GraphicsCommon/Flags/Format.h"
 
 #define FORMAT_MAPPER() \
     VK_FORMAT_MAPPING(UNKNOWN, VK_FORMAT_UNDEFINED); \
@@ -397,11 +397,11 @@
             VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM);
 
 #define VK_FORMAT_MAPPING(format, vkformat) \
-{case PixelFormat::format: \
+{case Format::format: \
 return VkFormat::vkformat;}
 
 #define VK_NON_DEF(format)\
-{case PixelFormat::format: \
+{case Format::format: \
 std::string val##format = "Vulkan Format not supported: "; \
 std::string fmt##format = #format; \
 Sakura::log::warn(val##format + fmt##format); \
@@ -419,7 +419,7 @@ namespace Sakura::Graphics::Vk
     {   
         return VkLogicOp(op);
     }
-    static VkFormat Transfer(const Sakura::Graphics::PixelFormat format)
+    static VkFormat Transfer(const Sakura::Graphics::Format format)
     {
         switch (format)
         {
@@ -434,7 +434,7 @@ namespace Sakura::Graphics::Vk
 #undef VK_NON_DEF
 #define VK_FORMAT_MAPPING(format, vkformat) \
 case VkFormat::vkformat:\
-return PixelFormat::format; 
+return Format::format; 
 #define VK_NON_DEF(format)  
 
 namespace Sakura::Graphics::Vk
@@ -447,13 +447,13 @@ namespace Sakura::Graphics::Vk
     {
         return LogicOp(op);
     }
-    static Sakura::Graphics::PixelFormat Transfer(const VkFormat format)
+    static Sakura::Graphics::Format Transfer(const VkFormat format)
     {
         switch (format)
         {
             FORMAT_MAPPER()
         default:
-            return Sakura::Graphics::PixelFormat::UNKNOWN;
+            return Sakura::Graphics::Format::UNKNOWN;
         }
     }
 }
