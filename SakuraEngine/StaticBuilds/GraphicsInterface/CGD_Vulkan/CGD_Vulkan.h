@@ -87,7 +87,7 @@ namespace Sakura::Graphics::Vk
     public:
         // Implements: See ResourceObjects/ResourceViewVk.cpp
         virtual std::unique_ptr<ResourceView> ViewIntoImage(
-            const GpuResource&, const ViewCreateInfo&) const override final;
+            const GpuResource&, const ResourceViewCreateInfo&) const override final;
     public:
     // Implements: See GraphicsObjects/RenderPassVk.cpp
         virtual std::unique_ptr<RenderProgress> CreateRenderProgress(

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:57:40
- * @LastEditTime: 2020-03-09 13:11:10
+ * @LastEditTime: 2020-03-09 15:38:54
  */
 #include "ResourceViewVk.h"
 #include "GpuResourceVk.h"
@@ -40,7 +40,7 @@ void ResourceViewVkImage::Detach()
 }
 
 void ResourceViewVkImage::Attach(
-    const GpuResource& resource, const ViewCreateInfo& info)
+    const GpuResource& resource, const ResourceViewCreateInfo& info)
 {
     Detach();
     CGD_Vk& vkdevice = (CGD_Vk&)device;
@@ -55,10 +55,14 @@ void ResourceViewVkImage::Attach(
     viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
     viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
     viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    viewCreateInfo.subresourceRange.baseMipLevel = 0;
-    viewCreateInfo.subresourceRange.levelCount = 1;
-    viewCreateInfo.subresourceRange.baseArrayLayer = 0;
-    viewCreateInfo.subresourceRange.layerCount = 1;
+    viewCreateInfo.subresourceRange.baseMipLevel 
+        = info.subResource.texture2D.baseMipLevel;
+    viewCreateInfo.subresourceRange.levelCount 
+        = info.subResource.texture2D.mipLevels;
+    viewCreateInfo.subresourceRange.baseArrayLayer 
+        = info.subResource.texture2D.baseArrayLayer;
+    viewCreateInfo.subresourceRange.layerCount 
+        = info.subResource.texture2D.layerCount;
     if (vkCreateImageView(vkdevice.GetCGDEntity().device, &viewCreateInfo, 
         nullptr, &vkImgView) != VK_SUCCESS) 
     {
@@ -80,7 +84,7 @@ ResourceViewVkImage::ResourceViewVkImage(
 }
 
 std::unique_ptr<ResourceView> CGD_Vk::ViewIntoImage(
-    const GpuResource& resource, const ViewCreateInfo& info) const
+    const GpuResource& resource, const ResourceViewCreateInfo& info) const
 {
     auto res = 
         std::make_unique<ResourceViewVkImage>(*this);

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:35:59
- * @LastEditTime: 2020-03-09 11:25:10
+ * @LastEditTime: 2020-03-09 15:55:39
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -53,10 +53,27 @@ namespace Sakura::Graphics
     {
         return type <= IMAGE_VIEW_TYPE_CUBE_ARRAY;
     }
-    struct ViewCreateInfo
+    
+    struct ResourceViewCreateInfo
     {
+        struct Tex2DInfo
+        {
+            uint16 baseMipLevel = 0;
+            uint16 mipLevels = 1;
+            uint16 baseArrayLayer = 0;
+            uint16 layerCount = 1;
+        };
+        struct Tex3DInfo
+        {
+
+        };
         Format format;
         ResourceViewType viewType;
+        union SubResource
+        {
+            Tex2DInfo texture2D;
+            Tex3DInfo texture3D;
+        } subResource;
     };
     
     SInterface ResourceView
@@ -67,16 +84,25 @@ namespace Sakura::Graphics
         {
             return viewType;
         }
-        virtual void Attach(const GpuResource&, const ViewCreateInfo&) = 0;
+        virtual void Attach(const GpuResource&, const ResourceViewCreateInfo&) = 0;
         virtual void Detach() = 0;
     protected:
-        ResourceView(
-            const CGD& _device, const ResourceViewType vt)
+        ResourceView(const CGD& _device, const ResourceViewType vt)
             :device(_device), viewType(vt){}
     protected:
         Format format;
         ResourceViewType viewType;
         const CGD& device;
+    };
+
+    struct RenderTargetViewCreateInfo
+    {
+        
+    };
+
+    SInterface RenderTargetView
+    {
+
     };
 
     SInterface VertexBufferView

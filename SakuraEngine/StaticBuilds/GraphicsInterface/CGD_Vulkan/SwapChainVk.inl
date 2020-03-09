@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-09 13:35:27
+ * @LastEditTime: 2020-03-09 15:39:21
  */
 
 // Swap Chain Support Details
@@ -173,7 +173,7 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
         &imageCount, chainImages.data());
     
     // Create Image Views
-    ViewCreateInfo vinfo;
+    ResourceViewCreateInfo vinfo = {};
     vinfo.format = Transfer(surfaceFormat.format);
     vinfo.viewType = IMAGE_VIEW_TYPE_2D;
     auto res = std::make_unique<Sakura::Graphics::Vk::SwapChainVk>(

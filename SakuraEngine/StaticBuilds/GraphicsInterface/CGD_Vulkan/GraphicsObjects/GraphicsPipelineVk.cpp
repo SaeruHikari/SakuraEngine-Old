@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:06:12
- * @LastEditTime: 2020-03-09 13:10:13
+ * @LastEditTime: 2020-03-09 16:31:57
  */
 #include "GraphicsPipelineVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -111,4 +111,10 @@ std::unique_ptr<GraphicsPipeline> CGD_Vk::CreateGraphicsPipeline(
     const RenderProgressVk& prog = (const RenderProgressVk&)progress;
     auto* vkPipeline = new GraphicsPipelineVk(info, prog, *this);
     return std::move(std::unique_ptr<GraphicsPipeline>(vkPipeline));
+}
+
+std::unique_ptr<RenderTargetView> GraphicsPipelineVk::ViewIntoRenderTarget(
+    const GpuResource&, const ResourceView&) const
+{
+    
 }

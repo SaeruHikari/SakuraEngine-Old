@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:04:52
- * @LastEditTime: 2020-03-09 13:01:49
+ * @LastEditTime: 2020-03-09 16:26:45
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/GraphicsPipeline.h"
@@ -42,7 +42,8 @@ namespace Sakura::Graphics::Vk
         friend class CGD_Vk;
         virtual ~GraphicsPipelineVk() override final;
     public:
-        
+        virtual std::unique_ptr<RenderTargetView> ViewIntoRenderTarget(
+            const GpuResource&, const ResourceView&) const override final;
     protected:
         GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
             const RenderProgressVk& prog, const CGD_Vk& cgd);

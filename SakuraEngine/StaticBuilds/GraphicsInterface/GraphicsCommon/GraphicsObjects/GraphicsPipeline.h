@@ -22,28 +22,22 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 23:25:42
- * @LastEditTime: 2020-03-09 13:47:18
+ * @LastEditTime: 2020-03-09 16:27:36
  */
 #pragma once
 #include "../Flags/GraphicsPipelineStates.h"
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
+#include "../ResourceObjects/ResourceViews.h"
 
 namespace Sakura::Graphics
 {
-    SInterface Attachments
-    {
-        virtual ~Attachments() = default;
-        std::vector<ResourceView*> renderTargets;
-        uint32 width;
-        uint32 height;
-    };
-
     SInterface GraphicsPipeline
     {
         virtual ~GraphicsPipeline() = default;
     public:
-        virtual void Attach(const Attachments& attachments) = 0;
+        virtual std::unique_ptr<RenderTargetView> ViewIntoRenderTarget(
+            const GpuResource& resource, const ResourceView& srv) const = 0;
     protected:
         GraphicsPipeline() = default;
     };

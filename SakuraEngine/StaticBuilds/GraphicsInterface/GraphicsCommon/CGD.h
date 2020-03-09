@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-09 12:53:32
+ * @LastEditTime: 2020-03-09 15:38:34
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -40,7 +40,7 @@ namespace Sakura::Graphics
     SInterface SwapChain;
     SInterface ResourceView;
     SInterface GpuResource;
-    struct ViewCreateInfo;
+    struct ResourceViewCreateInfo;
 }
 
 namespace Sakura::Graphics
@@ -83,11 +83,11 @@ namespace Sakura::Graphics
             const RenderProgress& progress) const = 0;
 
         virtual std::unique_ptr<ResourceView>
-            ViewIntoImage(const GpuResource&, const ViewCreateInfo&) const = 0;
+            ViewIntoImage(const GpuResource&, const ResourceViewCreateInfo&) const = 0;
 
         template<ResourceType type>
         std::unique_ptr<ResourceView> ViewIntoResource(
-            const GpuResource& resource, const ViewCreateInfo& info) const
+            const GpuResource& resource, const ResourceViewCreateInfo& info) const
         {
             if constexpr (type == ResourceType::Texture2D)
                 return std::move(ViewIntoImage(resource, info));
