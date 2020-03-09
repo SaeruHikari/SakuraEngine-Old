@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-08 16:31:03
+ * @LastEditTime: 2020-03-09 22:38:58
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -106,6 +106,12 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
 void CGD_Vk::Destroy()
 {
     CGD_Vk::debug_info("CGD_Vk: Destroy");
+    for(auto&& iter : contextPools)
+    { 
+        for(auto i = 0u; i < iter.size(); i++)
+            iter[i].reset();
+        iter.clear();
+    }
     if(entityVk.validate)
         DestroyDebugUtilsMessengerEXT(entityVk.instance,
             entityVk.debugMessenger, nullptr);
@@ -176,17 +182,7 @@ void CGD_Vk::createVkInstance(uint pCount, const char** pName)
     if (vkCreateInstance(&createInfo, nullptr, &entityVk.instance) != VK_SUCCESS) 
         Sakura::log::error("Vulkan: failed to create instance!");
 }
-
-struct QueueFamilyIndices
-{
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> presentFamily;
-    bool isComplete() 
-    {
-        return graphicsFamily.has_value() && presentFamily.has_value();
-    }
-};
-
+using QueueFamilyIndices = CGD_Vk::QueueFamilyIndices;
 QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phy_device,
     VkSurfaceKHR surface) 
 {
@@ -280,7 +276,7 @@ void CGD_Vk::pickPhysicalDevice(VkSurfaceKHR surface)
             std::to_string(deviceCount) + " Physical Devices support");
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(entityVk.instance, &deviceCount, devices.data());
-
+    
     for (const auto& phy_device : devices) {
         if (isDeviceSuitable(phy_device, surface, entityVk)) 
         {
@@ -298,6 +294,7 @@ void CGD_Vk::pickPhysicalDevice(VkSurfaceKHR surface)
     vkGetPhysicalDeviceProperties(entityVk.physicalDevice, &deviceProperties);
     CGD_Vk::debug_info("Vulkan: physical device "
         + std::string(deviceProperties.deviceName));
+    queueFamilyIndices = findQueueFamilies(entityVk.physicalDevice, surface);
 }
 
 std::unique_ptr<Sakura::Graphics::CommandQueue>

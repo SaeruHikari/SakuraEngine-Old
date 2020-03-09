@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-09 21:22:27
+ * @LastEditTime: 2020-03-10 00:41:39
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -79,7 +79,9 @@ namespace Sakura::Graphics::Vk
         virtual std::unique_ptr<GraphicsPipeline> CreateGraphicsPipeline(
             const GraphicsPipelineCreateInfo& info,
             const RenderProgress& progress) const override final;
-    public:
+        virtual void BindGraphicsPipeline(
+            const GraphicsPipeline* gp) override final;
+    public: 
         // Implements: See ResourceObjects/ResourceViewVk.cpp
         virtual std::unique_ptr<ResourceView> ViewIntoImage(
             const GpuResource&, const ResourceViewCreateInfo&) const override final;
@@ -89,8 +91,10 @@ namespace Sakura::Graphics::Vk
             const RenderProgressCreateInfo& rpInfo) const override final;
     public:
     // Implements: See CommandObjects/CommandContextVk.cpp
-        virtual CommandContext& AllocateContext(
+        virtual CommandContext* AllocateContext(
             ECommandType type, bool bTransiant = true) override final;
+        virtual void FreeContext(CommandContext* context) override final;
+        virtual void FreeAllContexts(ECommandType typeToDestroy) override final;
     private:
          /**
          * @description: Initial Vulkan Device
@@ -100,7 +104,27 @@ namespace Sakura::Graphics::Vk
         void setupDebugMessenger();
         void createVkInstance(uint pCount, const char** pName);
         void pickPhysicalDevice(VkSurfaceKHR surface);
+    public:
+        struct QueueFamilyIndices
+        {
+            std::optional<uint32_t> graphicsFamily;
+            std::optional<uint32_t> presentFamily;
+            bool isComplete() 
+            {
+                return graphicsFamily.has_value() && presentFamily.has_value();
+            }
+        };
+        const QueueFamilyIndices& GetQueueFamily() const
+        {
+            return queueFamilyIndices;
+        };
+        const GraphicsPipeline* GetActiveGP() const
+        {
+            return activeGP;
+        }
     private:
+        const GraphicsPipeline* activeGP = nullptr;
+        QueueFamilyIndices queueFamilyIndices;
         CGDEntityVk entityVk;
     };
     

@@ -64,6 +64,38 @@ namespace Sakura::log
     #endif
     }
 
+    template<typename... Ts>
+    void info_l(const char* logger, Ts... params)
+    {
+        spdlog::get(logger)->info(params...);
+    }
+    template<typename... Ts>
+    void info_l(spdlog::logger* logger, Ts... params)
+    {
+         logger->info(params...);
+    }
+    template<typename... Ts>
+    void warn_l(const char* logger, Ts... params)
+    {
+        spdlog::get(logger)->warn(params...);
+    }
+    template<typename... Ts>
+    void warn_l(spdlog::logger* logger, Ts... params)
+    {
+         logger->warn(params...);
+    }
+    template<typename... Ts>
+    void error_l(const char* logger, Ts... params)
+    {
+        spdlog::get(logger)->error(params...);
+    }
+    template<typename... Ts>
+    void error_l(spdlog::logger* logger, Ts... params)
+    {
+         logger->error(params...);
+    }
+
+
     template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,
      typename... Ts>
     void debug_warn_l(spdlog::logger* logger, Ts... params)
@@ -230,4 +262,19 @@ public:\
 	{\
 		Sakura::log::debug_error_l<buildVar>(get_logger(), params...);\
 	}\
+    template<typename... Ts>\
+    inline static void error(Ts... params)\
+    {\
+        Sakura::log::error_l(get_logger(), params...);\
+    }\
+    template<typename... Ts>\
+    inline static void info(Ts... params)\
+    {\
+        Sakura::log::info_l(get_logger(), params...);\
+    }\
+    template<typename... Ts>\
+    inline static void warn(Ts... params)\
+    {\
+        Sakura::log::warn_l(get_logger(), params...);\
+    }\
 public:

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-09 21:16:33
+ * @LastEditTime: 2020-03-09 23:15:31
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -82,18 +82,24 @@ namespace Sakura::Graphics
         virtual std::unique_ptr<GraphicsPipeline> CreateGraphicsPipeline(
             const GraphicsPipelineCreateInfo& info,
             const RenderProgress& progress) const = 0;
+            
+        virtual void BindGraphicsPipeline(const GraphicsPipeline* gp) = 0;
 
-        virtual CommandContext& AllocateContext(
+        // Create & Destroy Command Contexts
+        virtual CommandContext* AllocateContext(
             ECommandType type, bool bTransiant = true) = 0;
+        virtual void FreeContext(CommandContext* context) = 0;
+        virtual void FreeAllContexts(ECommandType typeToDestroy) = 0;
 
         virtual std::unique_ptr<ResourceView> ViewIntoImage(
             const GpuResource&, const ResourceViewCreateInfo&) const = 0;
             
     protected:
-        std::vector<std::unique_ptr<CommandContext>> sm_ContextPools[4];
+        std::vector<std::unique_ptr<CommandContext>> 
+            contextPools[ECommandType::CommandContext_Count];
         std::queue<CommandContext*> 
-            sm_AvailableContexts[ECommandType::CommandContext_Count];
-        std::mutex sm_ContextAllocationMutex;
+            availableContexts[ECommandType::CommandContext_Count];
+        std::mutex contextAllocationMutex;
     public:
         template<ResourceType type>
         std::unique_ptr<ResourceView> ViewIntoResource(

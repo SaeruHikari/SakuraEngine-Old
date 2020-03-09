@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:04:52
- * @LastEditTime: 2020-03-09 20:59:56
+ * @LastEditTime: 2020-03-10 00:43:21
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/GraphicsPipeline.h"
@@ -42,6 +42,7 @@ namespace Sakura::Graphics::Vk
     class GraphicsPipelineVk : SImplements GraphicsPipeline
     {
         friend class CGD_Vk;
+        friend class CommandContextVk;
         virtual ~GraphicsPipelineVk() override final;
     public:
         virtual void SetRenderTargets(const RenderTargetSet& rts) override final;

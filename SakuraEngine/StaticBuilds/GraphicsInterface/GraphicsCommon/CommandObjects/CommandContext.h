@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-09 21:22:48
+ * @LastEditTime: 2020-03-09 22:46:41
  */
 #pragma once
 #include <mutex>
@@ -38,13 +38,19 @@ namespace Sakura::Graphics
     {
         friend SInterface CGD;
     public:
+        virtual ~CommandContext() = default;
+        
         /**
-         * @description: Ends the encoding 
-         * @param {type} 
-         * @return: 
+         * @description: Ends the encoding, close the cmdlist/buffer 
          * @author: SaeruHikari
          */
         virtual void End() = 0;
+
+        /**
+         * @description: Begins the encoding, open the cmdlist/buffer 
+         * @author: SaeruHikari
+         */
+        virtual void Begin() = 0;
 
         sinline ECommandType GetCommandContextType(void)
         {
