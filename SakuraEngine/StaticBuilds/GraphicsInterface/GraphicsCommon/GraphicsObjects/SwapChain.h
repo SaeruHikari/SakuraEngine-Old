@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-04 21:41:05
- * @LastEditTime: 2020-03-09 11:24:54
+ * @LastEditTime: 2020-03-09 20:02:30
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -53,13 +53,13 @@ namespace Sakura::Graphics
         virtual ~SwapChain() {}
         virtual Extent2D GetExtent() const = 0;
         const Format GetPixelFormat() const {return swapChainImageFormat;};
-        GpuResource* GetSwapChainImage(std::size_t frameIndex)
+        const GpuResource& GetSwapChainImage(std::size_t frameIndex) const
         {
-            return swapChainImages[frameIndex].get();
+            return *swapChainImages[frameIndex].get();
         }
-        ResourceView* GetChainImageView(std::size_t frameIndex)
+        const ResourceView& GetChainImageView(std::size_t frameIndex) const
         {
-            return resourceViews[frameIndex].get();
+            return *resourceViews[frameIndex].get();
         }
         uint32 swapChainCount = 2;
     protected:

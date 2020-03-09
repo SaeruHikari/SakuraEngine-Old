@@ -15,9 +15,9 @@ endif(SpecificTimerImpl)
 
 add_library(CGD_Vulkan 
     CGD_Vulkan.cpp  
-    CommandObjects/CommandContext_Vk.cpp 
+    CommandObjects/CommandContextVk.cpp 
     ../CGD/CommandContext.cpp  
-    CommandObjects/CommandQueue_Vk.cpp  
+    CommandObjects/CommandQueueVk.cpp  
     ../CGD/Profiling.cpp
     ResourceObjects/GpuResourceVk.cpp
     ResourceObjects/ResourceViewVk.cpp

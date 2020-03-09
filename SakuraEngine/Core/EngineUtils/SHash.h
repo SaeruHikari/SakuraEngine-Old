@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-01 19:46:34
- * @LastEditTime: 2020-03-02 15:01:28
+ * @LastEditTime: 2020-03-09 20:40:12
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/SDefination.h"
@@ -33,17 +33,17 @@
 namespace Sakura::hash
 {
     using hash_code = uint64;
-    static uint64 hash(const void* buffer, size_t size, uint64 seed)
+    inline static uint64 hash(const void* buffer, size_t size, uint64 seed)
     {
         return XXH64(buffer, size, seed);
     }
 
-    static uint64 hash(const std::string& str, uint64 seed)
+    inline static uint64 hash(const std::string& str, uint64 seed)
     {
         return XXH64(str.c_str(), str.size(), seed);
     }
 
-    static uint64 hash(const std::pmr::string& str, uint64 seed)
+    inline static uint64 hash(const std::pmr::string& str, uint64 seed)
     {
         return XXH64(str.c_str(), str.size(), seed);
     }

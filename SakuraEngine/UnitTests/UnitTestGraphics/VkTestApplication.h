@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-09 17:06:19
+ * @LastEditTime: 2020-03-09 21:00:46
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -76,8 +76,7 @@ private:
         SDL_Vulkan_CreateSurface(win,
             ((Sakura::Graphics::Vk::CGD_Vk*)cgd)->GetVkInstance(), &surface);
         cgd->InitQueueSet(&surface);
-        swapChain = std::move(
-        cgd->CreateSwapChain(width, height, &surface));
+        swapChain = std::move(cgd->CreateSwapChain(width, height, &surface));
 
         //Create Render Progress
         RenderProgressCreateInfo rpinfo = {};
@@ -116,12 +115,10 @@ private:
         GraphicsPipelineCreateInfo info;
         ShaderStageCreateInfo vsStage, fsStage;
         vsStage.stage = StageFlags::VertexStage;
-        vsStage.shader = vertshader.get();
-        vsStage.entry = "main";
-        fsStage.stage = StageFlags::PixelStage;
-        fsStage.shader = fragshader.get();
-        fsStage.entry = "main";
+        vsStage.shader = vertshader.get();vsStage.entry = "main";
         info.shaderStages.push_back(vsStage);
+        fsStage.stage = StageFlags::PixelStage;
+        fsStage.shader = fragshader.get();fsStage.entry = "main";
         info.shaderStages.push_back(fsStage);
         Viewport vp = {};
         vp.height = 720; vp.width = 1280;
@@ -130,6 +127,15 @@ private:
         info.viewportStateCreateInfo.vps.push_back(vp);
         info.viewportStateCreateInfo.scissors.push_back(scissor);
         auto pso = cgd->CreateGraphicsPipeline(info, *prog.get());
+        
+        RenderTarget rt{
+            &swapChain->GetSwapChainImage(0),
+            &swapChain->GetChainImageView(0)};
+            
+        RenderTargetSet rts = {};
+        rts.rtNum = 1;rts.rts = &rt;
+        pso->SetRenderTargets(rts);
+
     }
 
     void mainLoop()

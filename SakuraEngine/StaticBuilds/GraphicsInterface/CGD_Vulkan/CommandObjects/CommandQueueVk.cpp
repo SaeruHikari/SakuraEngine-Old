@@ -22,10 +22,10 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:41:13
- * @LastEditTime: 2020-03-03 11:30:29
+ * @LastEditTime: 2020-03-09 21:20:05
  */
-#include "CommandQueue_Vk.h"
-#include "CommandContext_Vk.h"
+#include "CommandQueueVk.h"
+#include "CommandContextVk.h"
 
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Vk;

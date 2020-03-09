@@ -22,10 +22,12 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:04:52
- * @LastEditTime: 2020-03-09 16:26:45
+ * @LastEditTime: 2020-03-09 20:59:56
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/GraphicsPipeline.h"
+#include <memory_resource>
+#include <unordered_map>
 #include "vulkan/vulkan.h"
 
 using namespace Sakura::Graphics;
@@ -42,12 +44,14 @@ namespace Sakura::Graphics::Vk
         friend class CGD_Vk;
         virtual ~GraphicsPipelineVk() override final;
     public:
-        virtual std::unique_ptr<RenderTargetView> ViewIntoRenderTarget(
-            const GpuResource&, const ResourceView&) const override final;
+        virtual void SetRenderTargets(const RenderTargetSet& rts) override final;
     protected:
+        VkFramebuffer createFrameBuffer(const RenderTargetSet& rts);
         GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
             const RenderProgressVk& prog, const CGD_Vk& cgd);
     protected:
+        std::pmr::unordered_map<uint64, VkFramebuffer> fbs;
+        const RenderProgressVk& progress;
         VkPipelineLayout pipelineLayout;
         VkPipeline graphicsPipeline;
         const CGD_Vk& cgd;

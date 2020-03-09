@@ -22,18 +22,22 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:06:12
- * @LastEditTime: 2020-03-09 16:31:57
+ * @LastEditTime: 2020-03-09 21:02:35
  */
 #include "GraphicsPipelineVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
 #include "RenderProgressVk.h"
+#include "../ResourceObjects/ResourceViewVk.h"
 #include "../CGD_Vulkan.h"
+#include "Core/EngineUtils/SHash.h"
 
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Vk;
 
 GraphicsPipelineVk::~GraphicsPipelineVk()
 {
+    for(auto&& iter : fbs)
+        vkDestroyFramebuffer(cgd.GetCGDEntity().device, iter.second, nullptr);
     vkDestroyPipeline(cgd.GetCGDEntity().device, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(
         cgd.GetCGDEntity().device, pipelineLayout, nullptr);
@@ -41,7 +45,7 @@ GraphicsPipelineVk::~GraphicsPipelineVk()
 
 GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info, 
     const RenderProgressVk& progVk, const CGD_Vk& _cgd)
-        :cgd(_cgd)
+        :cgd(_cgd), progress(progVk)
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -113,8 +117,37 @@ std::unique_ptr<GraphicsPipeline> CGD_Vk::CreateGraphicsPipeline(
     return std::move(std::unique_ptr<GraphicsPipeline>(vkPipeline));
 }
 
-std::unique_ptr<RenderTargetView> GraphicsPipelineVk::ViewIntoRenderTarget(
-    const GpuResource&, const ResourceView&) const
+void GraphicsPipelineVk::SetRenderTargets(const RenderTargetSet& rts)
 {
+    static unsigned long long seed = 1549356486765631;
+    const void* data = (const void*)rts.rts;
+    auto _h = Sakura::hash::hash(data, rts.rtNum * sizeof(RenderTarget*), seed);
+    if(fbs.find(_h) == fbs.end())
+        fbs[_h] = createFrameBuffer(rts);
+    auto fb = fbs[_h];
+}
+
+VkFramebuffer GraphicsPipelineVk::createFrameBuffer(const RenderTargetSet& rts)
+{
+    VkFramebuffer result;
+    VkFramebufferCreateInfo framebufferInfo = {};
+    framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    framebufferInfo.renderPass = progress.renderPass;
+    framebufferInfo.attachmentCount = rts.rtNum;
+    std::vector<VkImageView> images(rts.rtNum);
+    for(auto i = 0u; i < rts.rtNum; i++)
+        images[i] = ((const ResourceViewVkImage*)rts.rts[i].srv)->vkImgView;
+    const VkImageView* attach = (const VkImageView*)images.data();
+    framebufferInfo.pAttachments = attach;
+    framebufferInfo.width = rts.rts[0].resource->GetExtent().width;
+    framebufferInfo.height = rts.rts[0].resource->GetExtent().height;
+    framebufferInfo.layers = 1;
     
+    if (vkCreateFramebuffer(cgd.GetCGDEntity().device, &framebufferInfo,
+            nullptr, &result) != VK_SUCCESS)
+    {
+        Sakura::Graphics::Vk::CGD_Vk::debug_error("failed to create framebuffer!");
+        throw std::runtime_error("failed to create framebuffer!");
+    }
+    return result;
 }

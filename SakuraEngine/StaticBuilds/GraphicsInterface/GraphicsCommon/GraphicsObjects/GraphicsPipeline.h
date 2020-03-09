@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 23:25:42
- * @LastEditTime: 2020-03-09 16:27:36
+ * @LastEditTime: 2020-03-09 20:46:43
  */
 #pragma once
 #include "../Flags/GraphicsPipelineStates.h"
@@ -32,12 +32,21 @@
 
 namespace Sakura::Graphics
 {
+    struct RenderTarget
+    {
+        const GpuResource* resource = nullptr;
+        const ResourceView* srv = nullptr;
+    };
+    struct RenderTargetSet
+    {
+        RenderTarget* rts;
+        uint32 rtNum;
+    };
     SInterface GraphicsPipeline
     {
         virtual ~GraphicsPipeline() = default;
     public:
-        virtual std::unique_ptr<RenderTargetView> ViewIntoRenderTarget(
-            const GpuResource& resource, const ResourceView& srv) const = 0;
+        virtual void SetRenderTargets(const RenderTargetSet& rts) = 0;
     protected:
         GraphicsPipeline() = default;
     };

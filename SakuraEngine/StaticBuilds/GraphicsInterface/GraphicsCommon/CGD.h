@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-09 15:38:34
+ * @LastEditTime: 2020-03-09 21:16:33
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -61,6 +61,7 @@ namespace Sakura::Graphics
 
     SInterface CGD
     {
+        virtual ~CGD() = default;
         virtual void Initialize(CGDInfo info) = 0;
         virtual std::unique_ptr<SwapChain> CreateSwapChain(
             const int width, const int height, 
@@ -82,9 +83,18 @@ namespace Sakura::Graphics
             const GraphicsPipelineCreateInfo& info,
             const RenderProgress& progress) const = 0;
 
-        virtual std::unique_ptr<ResourceView>
-            ViewIntoImage(const GpuResource&, const ResourceViewCreateInfo&) const = 0;
+        virtual CommandContext& AllocateContext(
+            ECommandType type, bool bTransiant = true) = 0;
 
+        virtual std::unique_ptr<ResourceView> ViewIntoImage(
+            const GpuResource&, const ResourceViewCreateInfo&) const = 0;
+            
+    protected:
+        std::vector<std::unique_ptr<CommandContext>> sm_ContextPools[4];
+        std::queue<CommandContext*> 
+            sm_AvailableContexts[ECommandType::CommandContext_Count];
+        std::mutex sm_ContextAllocationMutex;
+    public:
         template<ResourceType type>
         std::unique_ptr<ResourceView> ViewIntoResource(
             const GpuResource& resource, const ResourceViewCreateInfo& info) const

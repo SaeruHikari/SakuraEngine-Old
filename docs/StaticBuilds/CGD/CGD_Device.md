@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 13:54:51
- * @LastEditTime: 2020-03-05 15:49:29
+ * @LastEditTime: 2020-03-09 21:21:37
  -->
 <h1 align="left">CGD设备族</h1>
  
@@ -53,4 +53,3 @@
 此外, CGDEntity还包含了一组设备唯一的[命令族]对象:
 
 - queues: graphicsQueue, computeQueue, copyQueue各一条;
-- contextManager: 用于申请CommandContext。

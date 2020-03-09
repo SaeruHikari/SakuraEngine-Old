@@ -22,11 +22,11 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-09 12:15:02
+ * @LastEditTime: 2020-03-09 21:22:27
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
-#include "CommandObjects/CommandQueue_Vk.h"
+#include "CommandObjects/CommandQueueVk.h"
 #include "GraphicsObjects/SwapChainVk.h"
 #include <iostream>
 
@@ -46,15 +46,10 @@ namespace Sakura::Graphics::Vk
         {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
-        ContextManager* GetContextManager(void)
-        {
-            return contextManager.get();
-        }
         bool validate = false;
         std::unique_ptr<CommandQueue_Vk> graphicsQueue;
         std::unique_ptr<CommandQueue_Vk> computeQueue;
         std::unique_ptr<CommandQueue_Vk> copyQueue;
-        std::unique_ptr<ContextManager> contextManager;
     };
 
     class CGD_Vk : public CGD
@@ -92,7 +87,10 @@ namespace Sakura::Graphics::Vk
     // Implements: See GraphicsObjects/RenderPassVk.cpp
         virtual std::unique_ptr<RenderProgress> CreateRenderProgress(
             const RenderProgressCreateInfo& rpInfo) const override final;
-
+    public:
+    // Implements: See CommandObjects/CommandContextVk.cpp
+        virtual CommandContext& AllocateContext(
+            ECommandType type, bool bTransiant = true) override final;
     private:
          /**
          * @description: Initial Vulkan Device
