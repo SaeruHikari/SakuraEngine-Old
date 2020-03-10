@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-03-01 20:09:10
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-05 17:00:29
+ * @LastEditTime: 2020-03-09 10:52:44
  -->
 [简体中文](./README.md) | [English](./README.en-US.md)
 <h1 align="center">Sakura Engine</h1>
@@ -19,8 +19,10 @@
 - 🌉 跨平台: Win32, Linux, Android(待定)以及IOS(待定)的跨平台基础支持;
 - ⚙️ 模块/插件化: 基于依赖图的模块管理器[SPA](SPA/), 支持静态/动态导出的插件/模块;
 
-# 待实现
+# Coming Soon
 - 🧰 跨图形接口: [CGD](SakuraEngine/StaticBuilds/GraphicsInterface/)(CommonGraphicsDevice)现代图形API([Direct3D12](SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Direct3D12/), [Vulkan](SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/))的上层抽象;
+
+# 待实现
 - 🎨 渲染调度: RenderGraph, 数据驱动可自由配置装载的Pass;
 - 🖼️ 渲染特性: 字体渲染, RayTracing Layer, F+ Pipeline, 粒子...
 - 📂 资产管理: 支持虚拟路径挂载, 资源依赖以及异步读取的资产管理系统;
@@ -28,7 +30,7 @@
 
 
 # 简介
-&emsp;&emsp;SakuraEngine作为我的个人项目, 旨在提供一个易于扩展开发且跨平台的环境, 试验并实现各种游戏引擎技术。
+&emsp;&emsp;SakuraEngine作为我的个人项目, 旨在提供一个易于扩展开发且跨平台的环境, 试验并实现各种游戏引擎技术。[文档](https://saeruhikari.github.io/SakuraEngine/#/)
 
 
 

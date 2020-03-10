@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-04 23:19:27
+ * @LastEditTime: 2020-03-10 14:50:49
  */
 #pragma once
 #include <mutex>
@@ -21,7 +21,8 @@ namespace Sakura::Graphics
 {
     SInterface CommandQueue;
     SInterface CommandContext;
-    SInterface ContextManager;
+    SInterface GraphicsPipeline;
+    struct RenderTargetSet;
 }
 
 namespace Sakura::Graphics
@@ -35,45 +36,28 @@ namespace Sakura::Graphics
         CommandContext_Count = 4
     };
 
-    SInterface ContextManager
-    {
-    public:
-        virtual ~ContextManager() = default;
-        ContextManager(void){}
-        /**
-         * @description: Allocate a command context, Type for d3d12  
-         * and transiant only for vulkan API.  
-         * @param {ECommandType type, bool bTransiant = true} 
-         * @return: Allocated Command Context
-         * @author: SaeruHikari
-         */
-        virtual CommandContext* 
-            AllocateContext(ECommandType type, bool bTransiant = true) = 0;
-        void FreeContext(CommandContext* context);
-        void DestoryAllContexts();
-    protected:
-        std::vector<std::unique_ptr<CommandContext>> sm_ContextPools[4];
-        std::queue<CommandContext*> sm_AvailableContexts[ECommandType::CommandContext_Count];
-        std::mutex sm_ContextAllocationMutex;
-    };
     SInterface CommandContext
     {
-        friend SInterface ContextManager;
+        friend SInterface CGD;
     public:
-        /**
-         * @description: Get a usable context from the manager 
-         * @return: a command context ref
-         * @author: SaeruHikari
-         */
-        static CommandContext& Begin(ContextManager*, const spmr_string& ID = "");
+        virtual ~CommandContext() = default;
         
         /**
-         * @description: Ends the encoding 
-         * @param {type} 
-         * @return: 
+         * @description: Ends the encoding, close the cmdlist/buffer 
          * @author: SaeruHikari
          */
         virtual void End() = 0;
+
+        /**
+         * @description: Begins the encoding, open the cmdlist/buffer 
+         * @author: SaeruHikari
+         */
+        virtual void Begin(GraphicsPipeline* gp) = 0;
+
+        virtual void SetRenderTargets(const RenderTargetSet& rts) = 0;
+        
+        virtual void Draw(uint32 vertexCount, uint32 instanceCount,
+            uint32 firstVertex, uint32 firstInstance) = 0;
 
         sinline ECommandType GetCommandContextType(void)
         {

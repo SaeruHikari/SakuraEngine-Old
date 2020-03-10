@@ -22,14 +22,26 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 12:39:53
+ * @LastEditTime: 2020-03-10 17:19:54
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "CommandObjects/CommandContext.h"
 #include "SakuraEngine/Core/EngineUtils/log.h"
-#include "Format/CommonFeatures.h"
+#include "Flags/CommonFeatures.h"
+#include "ResourceObjects/Shader.h"
+#include "Flags/ResourceFlags.h"
+#include "GraphicsObjects/GraphicsPipeline.h"
+#include "GraphicsObjects/RenderProgress.h"
+
+namespace Sakura::Graphics
+{
+    SInterface SwapChain;
+    SInterface ResourceView;
+    SInterface GpuResource;
+    struct ResourceViewCreateInfo;
+}
 
 namespace Sakura::Graphics
 {
@@ -39,28 +51,60 @@ namespace Sakura::Graphics
         std::vector<const char*> extentionNames;
         PhysicalDeviceFeatures physicalDeviceFeatures;
     };
-    
-    SInterface CGDEntity
-    {
-        ContextManager* GetContextManager(void)
-        {
-            return contextManager.get();
-        }
-        virtual std::string_view GetTargetInterface(void)
-        {
-            static std::pmr::string target = "null";
-            return std::string_view(target);
-        }
-        bool validate = false;
-    protected:
-        std::unique_ptr<CommandQueue> graphicsQueue;
-        std::unique_ptr<ContextManager> contextManager;
-    };
-    
+
     enum class TargetGraphicsInterface : std::uint32_t
     {
         CGD_TARGET_DIRECT3D12,
         CGD_TARGET_VULKAN,
         CGD_TARGET_NUMS
+    };
+
+    SInterface CGD
+    {
+        virtual ~CGD() = default;
+        virtual void Initialize(CGDInfo info) = 0;
+        virtual std::unique_ptr<SwapChain> CreateSwapChain(
+            const int width, const int height, 
+            void* mainSurface) = 0;
+
+        virtual void Present(SwapChain* chain) = 0;
+        virtual void Destroy() = 0;
+
+        virtual std::unique_ptr<Shader> CreateShader(
+            const char*, std::size_t) = 0;
+        virtual const char* CompileShader(const char*, std::size_t) = 0;
+        virtual void InitQueueSet(void* mainSurface) = 0;
+
+        virtual std::unique_ptr<RenderProgress> CreateRenderProgress(
+            const RenderProgressCreateInfo& info) const = 0;
+        
+        virtual std::unique_ptr<GraphicsPipeline> CreateGraphicsPipeline(
+            const GraphicsPipelineCreateInfo& info,
+            const RenderProgress& progress) const = 0;
+            
+        // Create & Destroy Command Contexts
+        virtual CommandContext* AllocateContext(
+            ECommandType type, bool bTransiant = true) = 0;
+        virtual void FreeContext(CommandContext* context) = 0;
+        virtual void FreeAllContexts(ECommandType typeToDestroy) = 0;
+
+        virtual std::unique_ptr<ResourceView> ViewIntoImage(
+            const GpuResource&, const ResourceViewCreateInfo&) const = 0;
+        
+        virtual CommandQueue* GetGraphicsQueue(void) const = 0;
+    protected:
+        std::vector<std::unique_ptr<CommandContext>> 
+            contextPools[ECommandType::CommandContext_Count];
+        std::queue<CommandContext*> 
+            availableContexts[ECommandType::CommandContext_Count];
+        std::mutex contextAllocationMutex;
+    public:
+        template<ResourceType type>
+        std::unique_ptr<ResourceView> ViewIntoResource(
+            const GpuResource& resource, const ResourceViewCreateInfo& info) const
+        {
+            if constexpr (type == ResourceType::Texture2D)
+                return std::move(ViewIntoImage(resource, info));
+        }
     };
 }

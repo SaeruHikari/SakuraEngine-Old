@@ -22,11 +22,12 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:45
- * @LastEditTime: 2020-03-02 15:00:55
+ * @LastEditTime: 2020-03-08 14:28:01
  */
 #include "SPAModules.generated.h"
 #include "../SPA/include/modulemanager.h"
 #include "plugin_main/plugin_main.h"
+#include "../Extern/include/confinfo.h"
 #include <iostream>
 
 int main()
@@ -34,10 +35,15 @@ int main()
     std::cout << "UnitTestSPA" << std::endl;
     auto mng = GetModuleManager();
 #ifndef _WIN32
-    mng->Mount("/home/saeruhikari/Coding/SakuraEngine/build");
+    #ifdef CONFINFO_PLATFORM_MACOS
+        mng->Mount("/Users/saeruhikari/Coding/SakuraEngine/build");
+    #else
+        mng->Mount("/home/saeruhikari/Coding/SakuraEngine/build");
+    #endif
 #elif defined(_WIN32)
     mng->Mount("D:\\Coding\\SakuraEngine\\build");
 #endif
+
     std::cout << "Root: " << mng->GetRoot() << std::endl;
     std::string mainName = "plugin_main";
     mng->MakeModuleGraph(mainName.c_str());

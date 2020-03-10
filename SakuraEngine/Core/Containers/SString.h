@@ -4,8 +4,8 @@
  * @Version: 0.1.0
  * @Author: SaeruHikari
  * @Date: 2020-02-02 17:21:30
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-13 21:53:40
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-03-07 11:10:32
  */
 // Prototype from Star Engine :
 // https://github.com/star-e/StarEngine/blob/master/Star/SMap.h
@@ -18,10 +18,12 @@
 
 namespace Sakura
 {
-    using sstring = std::string;
+    // __c_plus_plus 17+
     using spmr_string = std::pmr::string;
-    using swstring = std::wstring;
     using spmr_wstring = std::pmr::wstring;
+
+    using sstring = std::string;
+    using swstring = std::wstring;
     using sstring_view = std::string_view;
     
     namespace String

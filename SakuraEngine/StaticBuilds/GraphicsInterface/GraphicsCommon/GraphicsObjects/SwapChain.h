@@ -22,17 +22,51 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-04 21:41:05
- * @LastEditTime: 2020-03-05 01:41:57
+ * @LastEditTime: 2020-03-09 20:02:30
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
-#include "../Format/CommonFeatures.h"
+#include "../Flags/Format.h"
+#include "../Flags/CommonFeatures.h"
+#include <memory>
+#include <vector>
+#include "../ResourceObjects/Resource.h"
+#include "../ResourceObjects/ResourceViews.h"
+
+namespace Sakura::Graphics
+{
+    SInterface CGD;
+    struct Extent2D;
+}
 
 namespace Sakura::Graphics
 {
     SInterface SwapChain
     {
-        virtual ~SwapChain() {};
+        SwapChain(const CGD& _device, const uint32 _chainCount)
+            :device(_device), swapChainCount(_chainCount)
+            {
+                swapChainImages.resize(_chainCount);
+                resourceViews.resize(_chainCount);
+            }
+        virtual ~SwapChain() {}
+        virtual Extent2D GetExtent() const = 0;
+        const Format GetPixelFormat() const {return swapChainImageFormat;};
+        const GpuResource& GetSwapChainImage(std::size_t frameIndex) const
+        {
+            return *swapChainImages[frameIndex].get();
+        }
+        const ResourceView& GetChainImageView(std::size_t frameIndex) const
+        {
+            return *resourceViews[frameIndex].get();
+        }
+        uint32 swapChainCount = 2;
+    protected:
+        std::vector<std::unique_ptr<GpuResource>> swapChainImages;
+        std::vector<std::unique_ptr<ResourceView>> resourceViews;
+    protected:
+        Format swapChainImageFormat;
+        const CGD& device;
     };
 }

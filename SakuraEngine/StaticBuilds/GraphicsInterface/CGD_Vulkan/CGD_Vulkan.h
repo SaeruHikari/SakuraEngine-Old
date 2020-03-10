@@ -22,12 +22,12 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 16:45:40
+ * @LastEditTime: 2020-03-10 17:25:48
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
-#include "CommandObjects/CommandQueue_Vk.h"
-#include "GraphicsObjects/SwapChain_Vk.h"
+#include "CommandObjects/CommandQueueVk.h"
+#include "GraphicsObjects/SwapChainVk.h"
 #include <iostream>
 
 
@@ -35,9 +35,8 @@ using namespace Sakura::flags;
 
 namespace Sakura::Graphics::Vk
 {
-    struct CGDEntityVk : public CGDEntity
+    struct CGDEntityVk
     {
-        const auto GetVkInstance(){return instance;}
         Sakura::Graphics::PhysicalDeviceFeatures physicalDeviceFeatures;
         VkInstance instance;
         VkDevice device;
@@ -47,31 +46,83 @@ namespace Sakura::Graphics::Vk
         {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
+        bool validate = false;
+        std::unique_ptr<CommandQueueVk> graphicsQueue;
+        std::unique_ptr<CommandQueueVk> computeQueue;
+        std::unique_ptr<CommandQueueVk> copyQueue;
     };
 
-    class CGD_Vk 
+    class CGD_Vk : public CGD
     {
         DECLARE_LOGGER("CGD_Vk")
     public:
         CGD_Vk() = default;
-        static void Render(CGDEntity& device);   
-        static void Destroy(CGDEntity& device); 
-        static std::unique_ptr<Sakura::Graphics::CommandQueue>
-            InitQueueSet(void* mainSurface, CGDEntity& device);
+        virtual void Destroy() override final; 
+        virtual void InitQueueSet(void* mainSurface) override final;
         // Vulkan functions
-        static void Initialize(CGDInfo info, CGDEntity& device);
-        static std::unique_ptr<Sakura::Graphics::SwapChain>
+        virtual void Initialize(CGDInfo info) override final;
+        virtual std::unique_ptr<Sakura::Graphics::SwapChain>
             CreateSwapChain(const int width, const int height, 
-                CGDEntity& device, void* mainSurface);
+                void* mainSurface) override final;
+        virtual void Present(SwapChain* chain) override final;
+        virtual CommandQueue* GetGraphicsQueue() const override final;
+        const auto GetVkInstance() const {return entityVk.instance;}
+        const CGDEntityVk& GetCGDEntity() const {return entityVk;}
+    public:
+        // Implements: See ResourceObjects/ShaderVk.cpp
+        virtual std::unique_ptr<Shader> CreateShader(
+            const char*, std::size_t) override final;
+        virtual const char* CompileShader(
+            const char*, std::size_t) override final;
+    public:
+        // Implements: See GraphicsObjects/GraphicsPipelineVk.cpp
+        virtual std::unique_ptr<GraphicsPipeline> CreateGraphicsPipeline(
+            const GraphicsPipelineCreateInfo& info,
+            const RenderProgress& progress) const override final;
+    public: 
+        // Implements: See ResourceObjects/ResourceViewVk.cpp
+        virtual std::unique_ptr<ResourceView> ViewIntoImage(
+            const GpuResource&, const ResourceViewCreateInfo&) const override final;
+    public:
+    // Implements: See GraphicsObjects/RenderPassVk.cpp
+        virtual std::unique_ptr<RenderProgress> CreateRenderProgress(
+            const RenderProgressCreateInfo& rpInfo) const override final;
+    public:
+    // Implements: See CommandObjects/CommandContextVk.cpp
+        virtual CommandContext* AllocateContext(
+            ECommandType type, bool bTransiant = true) override final;
+        virtual void FreeContext(CommandContext* context) override final;
+        virtual void FreeAllContexts(ECommandType typeToDestroy) override final;
     private:
          /**
          * @description: Initial Vulkan Device
          * @author: SaeruHikari
          */
-        static void VkInit(CGDInfo info, CGDEntity& device);
-        static void setupDebugMessenger(CGDEntity& device);
-        static void createVkInstance(uint pCount, const char** pName, CGDEntity& device);
-        static void pickPhysicalDevice(VkSurfaceKHR surface, CGDEntity& device);
+        void VkInit(CGDInfo info);
+        void setupDebugMessenger();
+        void createVkInstance(uint pCount, const char** pName);
+        void pickPhysicalDevice(VkSurfaceKHR surface);
+        void createSyncObjects();
+    public:
+        struct QueueFamilyIndices
+        {
+            std::optional<uint32_t> graphicsFamily;
+            std::optional<uint32_t> presentFamily;
+            bool isComplete() 
+            {
+                return graphicsFamily.has_value() && presentFamily.has_value();
+            }
+        };
+        const QueueFamilyIndices& GetQueueFamily() const
+        {
+            return queueFamilyIndices;
+        };
+    private:
+        QueueFamilyIndices queueFamilyIndices;
+        CGDEntityVk entityVk;
+        VkQueue presentQueue;
+        VkSemaphore imageAvailableSemaphore;
+        VkSemaphore renderFinishedSemaphore;
     };
     
     /**

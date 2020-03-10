@@ -22,29 +22,26 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-05 12:41:03
+ * @LastEditTime: 2020-03-10 18:41:34
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
 #include <set>
 #include "Core/EngineUtils/ConsoleDesk.h"
+#include "ResourceObjects/GpuResourceVk.h"
+#include "ResourceObjects/ResourceViewVk.h"
 #include "SakuraEngine/Core/Core.h"
 #include "vulkan/vulkan.hpp"
 
 using namespace Sakura::Graphics::Vk;
 using namespace Sakura::Graphics;
 
-void CGD_Vk::Initialize(Sakura::Graphics::CGDInfo info, CGDEntity& device)
+void CGD_Vk::Initialize(Sakura::Graphics::CGDInfo info)
 {
     CGD_Vk::debug_info("CGD_Vk: Initialize");  
-    VkInit(info, device);    
+    VkInit(info);    
     if(info.enableDebugLayer)
-        setupDebugMessenger(device);
-}
-
-void CGD_Vk::Render(CGDEntity& device)
-{
-    CGD_Vk::debug_info("CGD_Vk: Render");
+        setupDebugMessenger();
 }
 
 void populateDebugMessengerCreateInfo(
@@ -76,15 +73,14 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
         return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
-void CGD_Vk::setupDebugMessenger(CGDEntity& device)
+void CGD_Vk::setupDebugMessenger()
 {
-    if(!device.validate)
+    if(!entityVk.validate)
         return;
-    CGDEntityVk& vkdevice = (CGDEntityVk&)(device);
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(createInfo);
-    if (CreateDebugUtilsMessengerEXT(vkdevice.instance, &createInfo,
-            nullptr, &vkdevice.debugMessenger) != VK_SUCCESS) 
+    if (CreateDebugUtilsMessengerEXT(entityVk.instance, &createInfo,
+            nullptr, &entityVk.debugMessenger) != VK_SUCCESS) 
     {
         Sakura::log::error("failed to set up debug messenger!");
         throw std::runtime_error("failed to set up debug messenger!");
@@ -101,37 +97,105 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
         func(instance, debugMessenger, pAllocator);
 }
 
-void CGD_Vk::Destroy(CGDEntity& device)
+void CGD_Vk::Destroy()
 {
     CGD_Vk::debug_info("CGD_Vk: Destroy");
-    CGDEntityVk& vkdevice = (CGDEntityVk&)(device);
-    if(vkdevice.validate)
-        DestroyDebugUtilsMessengerEXT(vkdevice.instance,
-            vkdevice.debugMessenger, nullptr);
-    vkDestroyDevice(vkdevice.device, nullptr);
-    vkDestroyInstance(vkdevice.instance, nullptr);
+    for(auto&& iter : contextPools)
+    { 
+        for(auto i = 0u; i < iter.size(); i++)
+            iter[i].reset();
+        iter.clear();
+    }
+    if(entityVk.validate)
+        DestroyDebugUtilsMessengerEXT(entityVk.instance,
+            entityVk.debugMessenger, nullptr);
+    vkDestroyDevice(entityVk.device, nullptr);
+    vkDestroyInstance(entityVk.instance, nullptr);
 }
 
-void CGD_Vk::VkInit(Sakura::Graphics::CGDInfo info, CGDEntity& device)
+void CGD_Vk::VkInit(Sakura::Graphics::CGDInfo info)
 {
-    CGDEntityVk& vkdevice = (CGDEntityVk&)(device);
     uint32 extensionCount = (uint32)VkEnumInstanceExtensions().size();
     if(extensionCount < 0)
-        CGD_Vk::debug_error
+        CGD_Vk::error
             ("0 Vulkan extensions supported, check your platform/device!");
     else if(extensionCount < info.extentionNames.size())
-        CGD_Vk::debug_error
+        CGD_Vk::error
             ("Do not support so many Vulkan extensions, check your CGDInfo");
-    vkdevice.validate = info.enableDebugLayer;
+    entityVk.validate = info.enableDebugLayer;
     createVkInstance(static_cast<uint>(info.extentionNames.size()),
-        info.extentionNames.data(), device);
-    vkdevice.physicalDeviceFeatures = info.physicalDeviceFeatures;
+        info.extentionNames.data());
+    entityVk.physicalDeviceFeatures = info.physicalDeviceFeatures;
 }
 
-void CGD_Vk::createVkInstance(uint pCount, const char** pName, CGDEntity& device)
+void CGD_Vk::Present(SwapChain* chain)
 {
-    CGDEntityVk& vkdevice = (CGDEntityVk&)(device);
-    if(vkdevice.validate && !VkCheckValidationLayerSupport())
+    /* Initialize semaphores */
+    VkSemaphore* waitSemaphorse = &imageAvailableSemaphore;
+    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    VkSemaphore* signalSemaphores = &renderFinishedSemaphore;
+    SwapChainVk* vkChain = (SwapChainVk*)chain;
+    auto graphcicsQueue = entityVk.graphicsQueue->vkQueue;
+    /* Submit signal semaphore to graphics queue */
+    VkSubmitInfo submitInfo;
+    {
+        submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.pNext                = nullptr;
+        submitInfo.waitSemaphoreCount   = 1;
+        submitInfo.pWaitSemaphores      = waitSemaphorse;
+        submitInfo.pWaitDstStageMask    = waitStages;
+        submitInfo.commandBufferCount   = 0;
+        submitInfo.pCommandBuffers      = nullptr;
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores    = signalSemaphores;
+    }
+    if(vkQueueSubmit(graphcicsQueue,
+        1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    {
+        Sakura::log::error("Vulkan: failed to submit fence queue!");
+        throw std::runtime_error("Vulkan: failed to submit fence queue!");
+    }
+
+    /* Present result on screen */
+    VkSwapchainKHR* swapChains = &vkChain->swapChain;
+
+    VkPresentInfoKHR presentInfo;
+    {
+        presentInfo.sType               = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.pNext               = nullptr;
+        presentInfo.waitSemaphoreCount  = 1;
+        presentInfo.pWaitSemaphores     = signalSemaphores;
+        presentInfo.swapchainCount      = 1;
+        presentInfo.pSwapchains         = swapChains;
+        presentInfo.pImageIndices       = &vkChain->presentImageIndex;
+        presentInfo.pResults            = nullptr;
+    }
+    // !!!!!!! LAYOUT BUG NEED FIXING
+    if(vkQueuePresentKHR(presentQueue, &presentInfo) != VK_SUCCESS)
+    {
+        Sakura::log::error("Vulkan: failed to present Vulkan graphics queue!");
+        throw std::runtime_error("Vulkan:failed to present Vulkan graphics queue!");
+    }
+
+    /* Get image index for next presentation */
+    vkAcquireNextImageKHR(
+        entityVk.device,
+        vkChain->swapChain,
+        UINT64_MAX,
+        imageAvailableSemaphore,
+        VK_NULL_HANDLE,
+        &vkChain->presentImageIndex
+    );
+}
+
+CommandQueue* CGD_Vk::GetGraphicsQueue() const
+{
+    return entityVk.graphicsQueue.get();
+}
+
+void CGD_Vk::createVkInstance(uint pCount, const char** pName)
+{
+    if(entityVk.validate && !VkCheckValidationLayerSupport())
     {
         CGD_Vk::debug_error(
             "Vulkan: validation layers requested, \
@@ -153,7 +217,7 @@ void CGD_Vk::createVkInstance(uint pCount, const char** pName, CGDEntity& device
 
     // Validation Layer
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
-    if (vkdevice.validate) 
+    if (entityVk.validate) 
     {
         CGD_Vk::debug_info(
             "Vulkan: Enable Validation Layer!");
@@ -174,23 +238,10 @@ void CGD_Vk::createVkInstance(uint pCount, const char** pName, CGDEntity& device
     createInfo.enabledExtensionCount = pCount;
     createInfo.ppEnabledExtensionNames = pName;
 
-    if (vkCreateInstance(&createInfo, nullptr, &vkdevice.instance) != VK_SUCCESS) 
+    if (vkCreateInstance(&createInfo, nullptr, &entityVk.instance) != VK_SUCCESS) 
         Sakura::log::error("Vulkan: failed to create instance!");
-    else
-        CGD_Vk::debug_info(
-            "Vulkan: create instance succeed!");
 }
-
-struct QueueFamilyIndices
-{
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> presentFamily;
-    bool isComplete() 
-    {
-        return graphicsFamily.has_value() && presentFamily.has_value();
-    }
-};
-
+using QueueFamilyIndices = CGD_Vk::QueueFamilyIndices;
 QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phy_device,
     VkSurfaceKHR surface) 
 {
@@ -248,7 +299,7 @@ VkPhysicalDeviceFeatures getDeviceFeatureVk(
 }
 
 #define _CGD_VK_IMPLEMENTATION_
-#include "SwapChain_Vk.inl"
+#include "SwapChainVk.inl"
 
 bool isDeviceSuitable(VkPhysicalDevice phy_device, 
         VkSurfaceKHR surface, CGDEntityVk& vkdevice) 
@@ -269,11 +320,10 @@ bool isDeviceSuitable(VkPhysicalDevice phy_device,
             && extensionsSupported && swapChainAdequate;
 }
 
-void CGD_Vk::pickPhysicalDevice(VkSurfaceKHR surface, CGDEntity& device)
+void CGD_Vk::pickPhysicalDevice(VkSurfaceKHR surface)
 {
-    CGDEntityVk& vkdevice = (CGDEntityVk&)(device);
     uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(vkdevice.instance, &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(entityVk.instance, &deviceCount, nullptr);
     if (deviceCount == 0) 
     {
         Sakura::log::error("Vulkan: failed to find GPUs with Vulkan support!");
@@ -284,38 +334,55 @@ void CGD_Vk::pickPhysicalDevice(VkSurfaceKHR surface, CGDEntity& device)
         CGD_Vk::debug_info("Vulkan: "+ 
             std::to_string(deviceCount) + " Physical Devices support");
     std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(vkdevice.instance, &deviceCount, devices.data());
-
+    vkEnumeratePhysicalDevices(entityVk.instance, &deviceCount, devices.data());
+    
     for (const auto& phy_device : devices) {
-        if (isDeviceSuitable(phy_device, surface, vkdevice)) 
+        if (isDeviceSuitable(phy_device, surface, entityVk)) 
         {
-            vkdevice.physicalDevice = phy_device;
+            entityVk.physicalDevice = phy_device;
             break;
         }
     }
-    if (vkdevice.physicalDevice == VK_NULL_HANDLE)
+    if (entityVk.physicalDevice == VK_NULL_HANDLE)
     {
         Sakura::log::error("Vulkan: failed to find a suitable GPU!");
         throw std::runtime_error("failed to find a suitable GPU!");
         return;
     }
     VkPhysicalDeviceProperties deviceProperties;
-    vkGetPhysicalDeviceProperties(vkdevice.physicalDevice, &deviceProperties);
+    vkGetPhysicalDeviceProperties(entityVk.physicalDevice, &deviceProperties);
     CGD_Vk::debug_info("Vulkan: physical device "
         + std::string(deviceProperties.deviceName));
+    queueFamilyIndices = findQueueFamilies(entityVk.physicalDevice, surface);
 }
 
-std::unique_ptr<Sakura::Graphics::CommandQueue>
-    CGD_Vk::InitQueueSet(void* mainSurface, CGDEntity& device)
+ void CGD_Vk::createSyncObjects() 
+ {
+    VkSemaphoreCreateInfo semaphoreInfo = {};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    VkFenceCreateInfo fenceInfo = {};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = 0;
+
+    for (size_t i = 0; i < 3; i++) {
+        if (vkCreateSemaphore(entityVk.device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
+            vkCreateSemaphore(entityVk.device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create synchronization objects for a frame!");
+        }
+    }
+}
+
+void CGD_Vk::InitQueueSet(void* mainSurface)
 {
     // Type re-generation
-    CGDEntityVk& vkdevice = (CGDEntityVk&)(device);
     VkSurfaceKHR surface = *(VkSurfaceKHR*)mainSurface;
 
     // Queue Family Find
-    pickPhysicalDevice(surface, device);
+    pickPhysicalDevice(surface);
     QueueFamilyIndices indices = 
-        findQueueFamilies(vkdevice.physicalDevice, surface);
+        findQueueFamilies(entityVk.physicalDevice, surface);
     
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies 
@@ -332,9 +399,8 @@ std::unique_ptr<Sakura::Graphics::CommandQueue>
         queueCreateInfos.push_back(queueCreateInfo);
     }
     VkPhysicalDeviceFeatures deviceFeature = 
-        getDeviceFeatureVk(vkdevice.physicalDeviceFeatures);
+        getDeviceFeatureVk(entityVk.physicalDeviceFeatures);
     
-
     // Create Logical Device
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -343,10 +409,10 @@ std::unique_ptr<Sakura::Graphics::CommandQueue>
         static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pEnabledFeatures = &deviceFeature;
     createInfo.enabledExtensionCount = 
-        static_cast<uint32_t>(vkdevice.deviceExtensions.size());
-    createInfo.ppEnabledExtensionNames = vkdevice.deviceExtensions.data();
+        static_cast<uint32_t>(entityVk.deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = entityVk.deviceExtensions.data();
 
-    if (vkdevice.validate) 
+    if (entityVk.validate) 
     {
         createInfo.enabledLayerCount = 
             static_cast<uint32_t>(validationLayers.size());
@@ -354,23 +420,19 @@ std::unique_ptr<Sakura::Graphics::CommandQueue>
     } 
     else
         createInfo.enabledLayerCount = 0;
-    if (vkCreateDevice(vkdevice.physicalDevice, 
-        &createInfo, nullptr, &vkdevice.device) != VK_SUCCESS) 
+    if (vkCreateDevice(entityVk.physicalDevice, 
+        &createInfo, nullptr, &entityVk.device) != VK_SUCCESS) 
     {
         Sakura::log::error("Vulkan: failed to create logical device!");
         throw std::runtime_error("Vulkan: failed to create logical device!");
     }
-    else
-        CGD_Vk::debug_info("Vulkan: Create logical device");
     
     // Create Queue
-    auto graphicsQueue = std::make_unique<CommandQueue_Vk>();
-    vkGetDeviceQueue(vkdevice.device, indices.graphicsFamily.value(),
-        0, &graphicsQueue->VkQueue);
-    auto presentQueue = std::make_unique<CommandQueue_Vk>();
-    vkGetDeviceQueue(vkdevice.device, indices.presentFamily.value(),
-        0, &presentQueue->VkQueue);
-
-    vkdevice.graphicsQueue = std::move(graphicsQueue);
-    return std::move(presentQueue);
+    auto graphicsQueue = new CommandQueueVk(*this);
+    vkGetDeviceQueue(entityVk.device, indices.graphicsFamily.value(),
+        0, &graphicsQueue->vkQueue);
+    vkGetDeviceQueue(entityVk.device, indices.presentFamily.value(),
+        0, &presentQueue);
+    entityVk.graphicsQueue = 
+        std::move(std::unique_ptr<CommandQueueVk>(graphicsQueue));
 }

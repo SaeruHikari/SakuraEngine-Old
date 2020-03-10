@@ -17,6 +17,5 @@ endif(UNIX)
 
 add_library(EngineUtils ${IMPL_FILES} ${COMMON_IMPL_FILES})
 
-target_link_libraries(EngineUtils 
-xxhash
-spdlog::spdlog spdlog::spdlog_header_only)
+target_link_libraries(EngineUtils PRIVATE xxhash)
+#

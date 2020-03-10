@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-04 23:19:48
+ * @LastEditTime: 2020-03-09 21:22:10
  */
 #include "../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../GraphicsCommon/CGD.h"
@@ -30,26 +30,10 @@
 
 namespace Sakura::Graphics
 {
-    void ContextManager::FreeContext(CommandContext* context)
-    {
-        ASSERT_RUNTIME(context != nullptr);
-        std::lock_guard<std::mutex> LockGurad(sm_ContextAllocationMutex);
-        sm_AvailableContexts[context->m_Type].push(context);
-    }
-
-    void ContextManager::DestoryAllContexts(void)
-    {
-        for(auto i = 0u; i < 4; i++)
-            sm_ContextPools[i].clear();
-    }
-
-    CommandContext& CommandContext::Begin(ContextManager* mng, const spmr_string& ID)
-    {
-        CommandContext* NewContext = 
-            mng->AllocateContext(CommandContext_Graphics);
-        NewContext->m_ID = ID;
-        if(ID.length() > 0)
-            Profiling::BeginBlock(ID, *NewContext);
-        return *NewContext;
-    }
+    //void ContextManager::FreeContext(CommandContext* context)
+    //{
+    //    ASSERT_RUNTIME(context != nullptr);
+    //    std::lock_guard<std::mutex> LockGurad(sm_ContextAllocationMutex);
+    //    sm_AvailableContexts[context->m_Type].push(context);
+    //}
 }

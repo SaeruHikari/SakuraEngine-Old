@@ -3,7 +3,6 @@ include_directories( ${PROJECT_SOURCE_DIR}/GraphicsInterface/Vulkan)
 include_directories( ${PROJECT_SOURCE_DIR}/GraphicsInterface/GraphicsCommon)
 
 add_library(CGD 
-SHARED
 CGD.cpp 
 ../GraphicsCommon/CGD.h)
 

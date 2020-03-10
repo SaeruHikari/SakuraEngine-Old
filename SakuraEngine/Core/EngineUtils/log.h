@@ -1,12 +1,3 @@
-/*
- * @This File is Part of Sakura by SaeruHikari: 
- * @Description: Copyright SaeruHikari
- * @Version: 0.1.0
- * @Autor: SaeruHikari
- * @Date: 2020-02-13 16:32:13
- * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-04 18:33:47
- */
 #pragma once
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
@@ -72,6 +63,38 @@ namespace Sakura::log
         }
     #endif
     }
+
+    template<typename... Ts>
+    void info_l(const char* logger, Ts... params)
+    {
+        spdlog::get(logger)->info(params...);
+    }
+    template<typename... Ts>
+    void info_l(spdlog::logger* logger, Ts... params)
+    {
+         logger->info(params...);
+    }
+    template<typename... Ts>
+    void warn_l(const char* logger, Ts... params)
+    {
+        spdlog::get(logger)->warn(params...);
+    }
+    template<typename... Ts>
+    void warn_l(spdlog::logger* logger, Ts... params)
+    {
+         logger->warn(params...);
+    }
+    template<typename... Ts>
+    void error_l(const char* logger, Ts... params)
+    {
+        spdlog::get(logger)->error(params...);
+    }
+    template<typename... Ts>
+    void error_l(spdlog::logger* logger, Ts... params)
+    {
+         logger->error(params...);
+    }
+
 
     template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,
      typename... Ts>
@@ -221,24 +244,37 @@ public:\
         static auto logger = Sakura::log::regist_logger(name);\
         return logger.get();\
     }\
-	template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
+	template<Sakura::flags::BuildVar buildVar = Sakura::flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
 		typename... Ts>\
 	inline static void debug_warn(Ts... params)\
 	{\
 		Sakura::log::debug_warn_l<buildVar>(get_logger(), params...);\
 	}\
-    template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
+    template<Sakura::flags::BuildVar buildVar = Sakura::flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
 		typename... Ts>\
 	inline static void debug_info(Ts... params)\
 	{\
 		Sakura::log::debug_info_l<buildVar>(get_logger(), params...);\
 	}\
-	template<Sakura::flags::BuildVar buildVar = flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
+	template<Sakura::flags::BuildVar buildVar = Sakura::flags::BuildVar::DEBUG_GAME_AND_EDITOR,\
 		typename... Ts>\
 	inline static void debug_error(Ts... params)\
 	{\
 		Sakura::log::debug_error_l<buildVar>(get_logger(), params...);\
 	}\
+    template<typename... Ts>\
+    inline static void error(Ts... params)\
+    {\
+        Sakura::log::error_l(get_logger(), params...);\
+    }\
+    template<typename... Ts>\
+    inline static void info(Ts... params)\
+    {\
+        Sakura::log::info_l(get_logger(), params...);\
+    }\
+    template<typename... Ts>\
+    inline static void warn(Ts... params)\
+    {\
+        Sakura::log::warn_l(get_logger(), params...);\
+    }\
 public:
-
-
