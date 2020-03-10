@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-10 18:07:43
+ * @LastEditTime: 2020-03-10 21:29:05
  */
 
 // Swap Chain Support Details
@@ -196,15 +196,6 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
     res->swapChainCount = imageCount;
 
     createSyncObjects();
-    /* Get image index for next presentation */
-    vkAcquireNextImageKHR(
-        entityVk.device,
-        swapChain,
-        UINT64_MAX,
-        imageAvailableSemaphore,
-        VK_NULL_HANDLE,
-        &res->presentImageIndex
-    );
     return std::move(res);
 }
 #endif

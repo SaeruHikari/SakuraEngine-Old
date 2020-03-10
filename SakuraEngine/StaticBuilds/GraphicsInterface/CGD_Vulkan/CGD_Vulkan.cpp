@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-10 18:41:34
+ * @LastEditTime: 2020-03-10 22:08:27
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -97,15 +97,21 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
         func(instance, debugMessenger, pAllocator);
 }
 
+void CGD_Vk::DestroyCommandObjects()
+{
+    CGD_Vk::debug_info("CGD_Vk: Destroy Command Objects");
+    for(auto j = 0 ; j < 4; j++)
+    { 
+        for(auto i = 0u; i < contextPools[j].size(); i++)
+            contextPools[j][i].reset();
+        contextPools[j].clear();
+    }
+}
+
 void CGD_Vk::Destroy()
 {
     CGD_Vk::debug_info("CGD_Vk: Destroy");
-    for(auto&& iter : contextPools)
-    { 
-        for(auto i = 0u; i < iter.size(); i++)
-            iter[i].reset();
-        iter.clear();
-    }
+    vkDestroySemaphore(entityVk.device, renderFinishedSemaphore, nullptr);
     if(entityVk.validate)
         DestroyDebugUtilsMessengerEXT(entityVk.instance,
             entityVk.debugMessenger, nullptr);
@@ -130,11 +136,12 @@ void CGD_Vk::VkInit(Sakura::Graphics::CGDInfo info)
 
 void CGD_Vk::Present(SwapChain* chain)
 {
+    SwapChainVk* vkChain = (SwapChainVk*)chain;
     /* Initialize semaphores */
-    VkSemaphore* waitSemaphorse = &imageAvailableSemaphore;
+    VkSemaphore* waitSemaphorse = 
+        &vkChain->imageAvailableSemaphores[vkChain->currentFrame];
     VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
     VkSemaphore* signalSemaphores = &renderFinishedSemaphore;
-    SwapChainVk* vkChain = (SwapChainVk*)chain;
     auto graphcicsQueue = entityVk.graphicsQueue->vkQueue;
     /* Submit signal semaphore to graphics queue */
     VkSubmitInfo submitInfo;
@@ -170,19 +177,20 @@ void CGD_Vk::Present(SwapChain* chain)
         presentInfo.pImageIndices       = &vkChain->presentImageIndex;
         presentInfo.pResults            = nullptr;
     }
-    // !!!!!!! LAYOUT BUG NEED FIXING
+    
     if(vkQueuePresentKHR(presentQueue, &presentInfo) != VK_SUCCESS)
     {
         Sakura::log::error("Vulkan: failed to present Vulkan graphics queue!");
         throw std::runtime_error("Vulkan:failed to present Vulkan graphics queue!");
     }
-
+    vkChain->lastFrame = vkChain->currentFrame;
+    vkChain->currentFrame = (vkChain->currentFrame + 1) % vkChain->swapChainCount;
     /* Get image index for next presentation */
     vkAcquireNextImageKHR(
         entityVk.device,
         vkChain->swapChain,
         UINT64_MAX,
-        imageAvailableSemaphore,
+        vkChain->imageAvailableSemaphores[vkChain->currentFrame],
         VK_NULL_HANDLE,
         &vkChain->presentImageIndex
     );
@@ -365,12 +373,9 @@ void CGD_Vk::pickPhysicalDevice(VkSurfaceKHR surface)
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = 0;
 
-    for (size_t i = 0; i < 3; i++) {
-        if (vkCreateSemaphore(entityVk.device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
-            vkCreateSemaphore(entityVk.device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to create synchronization objects for a frame!");
-        }
+    if (vkCreateSemaphore(entityVk.device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create synchronization objects for a frame!");
     }
 }
 

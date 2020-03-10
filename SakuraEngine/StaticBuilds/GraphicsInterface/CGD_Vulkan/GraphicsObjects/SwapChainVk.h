@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 01:29:37
- * @LastEditTime: 2020-03-10 17:14:31
+ * @LastEditTime: 2020-03-10 21:33:58
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
@@ -40,11 +40,8 @@ namespace Sakura::Graphics::Vk
     {
         friend class CGD_Vk;
         SwapChainVk(const VkSwapchainKHR _chain, 
-            const CGD& _device,const uint32 _chainCount)
-            :swapChain(_chain), SwapChain(_device, _chainCount)
-        {
-            
-        }
+            const CGD_Vk& _device,const uint32 _chainCount);
+        
         virtual ~SwapChainVk() override final;
         virtual Extent2D GetExtent() const override final;
         inline VkFormat GetVkPixelFormat() 
@@ -54,5 +51,6 @@ namespace Sakura::Graphics::Vk
         uint32 presentImageIndex = 0;
         VkSwapchainKHR swapChain;
         VkExtent2D swapChainExtent;
+        std::vector<VkSemaphore> imageAvailableSemaphores;
     };
 }

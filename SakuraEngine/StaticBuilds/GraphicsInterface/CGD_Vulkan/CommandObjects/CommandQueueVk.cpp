@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:41:13
- * @LastEditTime: 2020-03-10 18:29:21
+ * @LastEditTime: 2020-03-10 23:08:49
  */
 #include "CommandQueueVk.h"
 #include "CommandContextVk.h"
@@ -55,6 +55,7 @@ void CommandQueueVk::Submit(CommandContext* commandContext,
         submitInfo.signalSemaphoreCount = 0;
         submitInfo.pSignalSemaphores    = nullptr;
     }
+    // Ensure unbusy before submitting.
     vkWaitForFences(cgd.GetCGDEntity().device,
         1, &cmdVk->recordingFence, VK_TRUE, UINT64_MAX);
     vkResetFences(cgd.GetCGDEntity().device, 1, &cmdVk->recordingFence);

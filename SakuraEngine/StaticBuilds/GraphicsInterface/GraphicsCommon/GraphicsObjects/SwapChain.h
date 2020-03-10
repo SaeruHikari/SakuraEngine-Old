@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-04 21:41:05
- * @LastEditTime: 2020-03-09 20:02:30
+ * @LastEditTime: 2020-03-10 21:26:11
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -62,7 +62,17 @@ namespace Sakura::Graphics
             return *resourceViews[frameIndex].get();
         }
         uint32 swapChainCount = 2;
+        inline uint32 GetCurrentFrame()
+        {
+            return currentFrame;
+        }
+        inline uint32 GetLastFrame()
+        {
+            return lastFrame;
+        }
     protected:
+        uint32 lastFrame = 0;
+        uint32 currentFrame = 0;
         std::vector<std::unique_ptr<GpuResource>> swapChainImages;
         std::vector<std::unique_ptr<ResourceView>> resourceViews;
     protected:

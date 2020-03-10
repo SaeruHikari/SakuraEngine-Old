@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:49:22
- * @LastEditTime: 2020-03-08 22:30:33
+ * @LastEditTime: 2020-03-10 21:45:01
  */
 #include "SwapChainVk.h"
 #include "../ResourceObjects/GpuResourceVk.h"
@@ -32,10 +32,42 @@
 using namespace Sakura::Graphics::Vk;
 using namespace Sakura;
 
+SwapChainVk::SwapChainVk(const VkSwapchainKHR _chain, 
+    const CGD_Vk& _device,const uint32 _chainCount)
+    :swapChain(_chain), SwapChain(_device, _chainCount)
+{
+    VkSemaphoreCreateInfo semaphoreInfo = {};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    imageAvailableSemaphores.resize(_chainCount);
+    for(auto i = 0; i < swapChainCount; i++)
+    {
+        if (vkCreateSemaphore(_device.GetCGDEntity().device,
+            &semaphoreInfo,
+            nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS)
+        {
+            Sakura::log::error("Vulkan: failed to create VkSemaphore for swapchain!");
+            throw std::runtime_error("failed to create VkSemaphore for swapchain!");
+        }
+    }
+    vkAcquireNextImageKHR(
+        _device.GetCGDEntity().device,
+        swapChain,
+        UINT64_MAX,
+        imageAvailableSemaphores[0],
+        VK_NULL_HANDLE,
+        &presentImageIndex
+    );
+}
+
 SwapChainVk::~SwapChainVk()
 {
     CGD_Vk& vkdevice = (CGD_Vk&)(device);
     vkDestroySwapchainKHR(vkdevice.GetCGDEntity().device, swapChain, nullptr);
+    for(auto i = 0u; i < imageAvailableSemaphores.size(); i++)
+    {
+        vkDestroySemaphore(vkdevice.GetCGDEntity().device, 
+            imageAvailableSemaphores[i], nullptr);
+    }
 }
 
 Extent2D SwapChainVk::GetExtent() const

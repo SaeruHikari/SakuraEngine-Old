@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-10 18:40:43
+ * @LastEditTime: 2020-03-10 23:06:32
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -63,20 +63,8 @@ public:
     }
 
 private:
-    void initVulkan()
+    void createPSO()
     {
-        // Create Devices
-        Sakura::Graphics::CGDInfo cgd_info;
-        cgd = new Sakura::Graphics::Vk::CGD_Vk();
-        cgd_info.enableDebugLayer = true;
-        cgd_info.extentionNames = VkSDL_GetInstanceExtensions(win,
-            cgd_info.enableDebugLayer);
-        cgd->Initialize(cgd_info);
-        SDL_Vulkan_CreateSurface(win,
-            ((Sakura::Graphics::Vk::CGD_Vk*)cgd)->GetVkInstance(), &surface);
-        cgd->InitQueueSet(&surface);
-        swapChain = std::move(cgd->CreateSwapChain(width, height, &surface));
-
         //Create Render Progress
         RenderProgressCreateInfo rpinfo = {};
         AttachmentDescription colorAttachment;
@@ -88,7 +76,7 @@ private:
         rpinfo.subProcs.push_back(subprog);
         prog = std::move(cgd->CreateRenderProgress(rpinfo));
 
-        // Create PSO
+         // Create PSO
 #if defined(CONFINFO_PLATFORM_LINUX) 
 #elif defined(CONFINFO_PLATFORM_MACOS)
         Sakura::fs::file vs_f
@@ -126,37 +114,56 @@ private:
         info.viewportStateCreateInfo.vps.push_back(vp);
         info.viewportStateCreateInfo.scissors.push_back(scissor);
         Pipeline = std::move(cgd->CreateGraphicsPipeline(info, *prog.get()));
-        
-        for(auto i = 0; i < swapChain->swapChainCount; i ++)
-        {
-            RenderTarget rt{&swapChain->GetSwapChainImage(i),
-                &swapChain->GetChainImageView(i)};
-            RenderTargetSet rts{&rt, 1};
-            cmdContexts[i] = 
-                cgd->AllocateContext(ECommandType::CommandContext_Graphics);
-            cmdContexts[i]->Begin(Pipeline.get());
-            cmdContexts[i]->SetRenderTargets(rts);
-            cmdContexts[i]->Draw(3, 1, 0, 0);
-            cmdContexts[i]->End();
-        }
+    }
+    
+    void initVulkan()
+    {
+        // Create Devices
+        Sakura::Graphics::CGDInfo cgd_info;
+        cgd = std::make_unique<Sakura::Graphics::Vk::CGD_Vk>();
+        cgd_info.enableDebugLayer = true;
+        cgd_info.extentionNames = VkSDL_GetInstanceExtensions(win,
+            cgd_info.enableDebugLayer);
+            
+        cgd->Initialize(cgd_info);
+        SDL_Vulkan_CreateSurface(win,
+            ((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
+            &surface);
+        cgd->InitQueueSet(&surface);
+        swapChain = std::move(cgd->CreateSwapChain(width, height, &surface));
+
+        createPSO();
     }
 
     void mainLoop()
     {
-        static uint currentFrame = 0;
-        cgd->GetGraphicsQueue()->Submit(cmdContexts[currentFrame]);
         cgd->Present(swapChain.get());
-        currentFrame = (currentFrame + 1) % swapChain->swapChainCount;
+        auto frameCount = swapChain->GetLastFrame();
+        RenderTarget rt{&swapChain->GetSwapChainImage(frameCount),
+            &swapChain->GetChainImageView(frameCount)};
+        RenderTargetSet rts{&rt, 1};
+
+        cmdContexts[frameCount] = 
+            cgd->AllocateContext(ECommandType::CommandContext_Graphics);
+        cmdContexts[frameCount]->Begin(Pipeline.get());
+        cmdContexts[frameCount]->SetRenderTargets(rts);
+        cmdContexts[frameCount]->Draw(3, 1, 0, 0);
+        cmdContexts[frameCount]->End();
+        std::cout << cgd->contextNum() << std::endl;
+        cgd->GetGraphicsQueue()->Submit(cmdContexts[frameCount]);
+        cgd->FreeContext(cmdContexts[frameCount]);
     }
 
     void cleanUp()
     {
-        Pipeline.reset();
+        cgd->DestroyCommandObjects();
         vertshader.reset();
         fragshader.reset();
+        Pipeline.reset();
         swapChain.reset();
-        vkDestroySurfaceKHR(((Sakura::Graphics::Vk::CGD_Vk*)cgd)->GetVkInstance(),
+        vkDestroySurfaceKHR(((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
             surface, nullptr);
+        prog.reset();
         cgd->Destroy();
 	    SDL_DestroyWindow(win);
         SDL_Quit();
@@ -169,7 +176,7 @@ private:
     
     const int width = 1280;
     const int height = 720;
-    Sakura::Graphics::CGD* cgd;
+    std::unique_ptr<Sakura::Graphics::CGD> cgd;
     std::unique_ptr<Shader> vertshader;
     std::unique_ptr<Shader> fragshader;
     CommandContext* cmdContexts[3];

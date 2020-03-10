@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-10 17:25:48
+ * @LastEditTime: 2020-03-10 22:43:35
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -58,6 +58,7 @@ namespace Sakura::Graphics::Vk
     public:
         CGD_Vk() = default;
         virtual void Destroy() override final; 
+        virtual void DestroyCommandObjects() override final;
         virtual void InitQueueSet(void* mainSurface) override final;
         // Vulkan functions
         virtual void Initialize(CGDInfo info) override final;
@@ -121,7 +122,6 @@ namespace Sakura::Graphics::Vk
         QueueFamilyIndices queueFamilyIndices;
         CGDEntityVk entityVk;
         VkQueue presentQueue;
-        VkSemaphore imageAvailableSemaphore;
         VkSemaphore renderFinishedSemaphore;
     };
     

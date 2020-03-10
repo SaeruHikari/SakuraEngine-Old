@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-10 18:29:09
+ * @LastEditTime: 2020-03-10 22:55:59
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -23,8 +23,12 @@ CommandContext* CGD_Vk::AllocateContext(ECommandType type, bool bTransiant)
     if(!availableContexts[type].empty())
     {
         auto res = availableContexts[type].front();
-        availableContexts[type].pop();
-        return res;
+        if(vkGetFenceStatus(entityVk.device, 
+            ((CommandContextVk*)res)->recordingFence) == VK_SUCCESS)
+        {
+            availableContexts[type].pop();
+            return res;
+        }
     }
     CommandContext* newContext = new CommandContextVk(*this, type, bTransiant);
     auto result = std::unique_ptr<CommandContext>(newContext);
@@ -45,6 +49,7 @@ void CGD_Vk::FreeAllContexts(ECommandType type)
 void CGD_Vk::FreeContext(CommandContext* context)
 {
     std::lock_guard<std::mutex> LockGurad(contextAllocationMutex);
+    auto vkContext = (CommandContextVk*)context;
     availableContexts[context->GetCommandContextType()].push(context);
 }
 
@@ -91,6 +96,8 @@ CommandContextVk::CommandContextVk(const CGD_Vk& _cgd,
 
 CommandContextVk::~CommandContextVk()
 {
+    vkWaitForFences(cgd.GetCGDEntity().device,
+        1, &recordingFence, VK_TRUE, UINT64_MAX);
     vkDestroyFence(cgd.GetCGDEntity().device, recordingFence, nullptr);
     vkDestroyCommandPool(cgd.GetCGDEntity().device, commandPool, nullptr);
 }
@@ -100,6 +107,8 @@ void CommandContextVk::Begin(GraphicsPipeline* gp)
     vkGp = (GraphicsPipelineVk*)gp;
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    vkResetCommandPool(cgd.GetCGDEntity().device,
+        commandPool, VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT); 
     if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) 
     {
         CGD_Vk::error("Vulkan: failed to begin recording command buffer!");
