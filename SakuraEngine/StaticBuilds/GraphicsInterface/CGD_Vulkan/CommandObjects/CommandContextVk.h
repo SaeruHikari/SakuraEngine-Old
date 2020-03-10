@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:38:49
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-09 22:45:45
+ * @LastEditTime: 2020-03-10 11:22:46
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
@@ -19,8 +19,10 @@ namespace Sakura::Graphics::Vk
 
         virtual ~CommandContextVk() override final;
     public:
-        virtual void Begin() override final;
+        virtual void Begin(const GraphicsPipeline* gp) override final;
         virtual void End() override final;
+        virtual void Draw(uint32 vertexCount, uint32 instanceCount,
+            uint32 firstVertex, uint32 firstInstance) override final;
     protected:
         CommandContextVk(const CGD_Vk& _cgd, ECommandType type,
             bool bTransiant = false);

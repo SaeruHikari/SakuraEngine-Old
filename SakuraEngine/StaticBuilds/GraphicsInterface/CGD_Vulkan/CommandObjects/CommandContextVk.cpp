@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-10 01:00:46
+ * @LastEditTime: 2020-03-10 11:25:16
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -83,7 +83,7 @@ CommandContextVk::~CommandContextVk()
     vkDestroyCommandPool(cgd.GetCGDEntity().device, commandPool, nullptr);
 }
 
-void CommandContextVk::Begin()
+void CommandContextVk::Begin(const GraphicsPipeline* gp)
 {
     VkCommandBufferBeginInfo beginInfo = {};
     VkClearValue clearColor;
@@ -93,15 +93,21 @@ void CommandContextVk::Begin()
         CGD_Vk::error("Vulkan: failed to begin recording command buffer!");
         throw std::runtime_error("failed to begin recording command buffer!");
     }
-    auto gp = (GraphicsPipelineVk*)cgd.GetActiveGP();
-    if(gp == nullptr || gp->graphicsPipeline == VK_NULL_HANDLE)
+    auto vkgp = (const GraphicsPipelineVk*)gp;
+    if(vkgp->graphicsPipeline == VK_NULL_HANDLE)
     {
-        CGD_Vk::error("CGD: please set Pipeline first!");
-        throw std::runtime_error("CGD: please set Pipeline first!");
+        CGD_Vk::error("CGD: please bind VkPipeline first!");
+        throw std::runtime_error("CGD: please bind VkPipeline first!");
     }
     vkCmdBindPipeline(commandBuffer,
-        VK_PIPELINE_BIND_POINT_GRAPHICS, gp->graphicsPipeline);
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+        VK_PIPELINE_BIND_POINT_GRAPHICS, vkgp->graphicsPipeline);
+}
+
+void CommandContextVk::Draw(uint32 vertexCount, uint32 instanceCount,
+    uint32 firstVertex, uint32 firstInstance)
+{
+    vkCmdDraw(commandBuffer, vertexCount,
+        instanceCount, firstVertex, firstInstance);
 }
 
 void CommandContextVk::End()

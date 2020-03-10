@@ -21,41 +21,19 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-03 10:41:13
- * @LastEditTime: 2020-03-10 12:18:41
+ * @Date: 2020-03-10 11:52:58
+ * @LastEditTime: 2020-03-10 11:54:24
  */
-#include "CommandQueueVk.h"
-#include "CommandContextVk.h"
-#include "../CGD_Vulkan.h"
+#pragma once
+#include "../../GraphicsCommon/GraphicsObjects/Fence.h"
 
-using namespace Sakura::Graphics;
-using namespace Sakura::Graphics::Vk;
-
-CommandQueue_Vk::CommandQueue_Vk(const CGD_Vk& _cgd)
-    :cgd(_cgd)
+namespace Sakura::Graphics::Vk
 {
-    VkSemaphoreCreateInfo semaphoreInfo = {};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    if (vkCreateSemaphore(_cgd.GetCGDEntity().device, &semaphoreInfo,
-        nullptr, &semaphore) != VK_SUCCESS)
+    struct FenceVk : SImplements Fence
     {
-        CGD_Vk::error("Vulkan: failed to create semaphore for queue!");
-        throw std::runtime_error("Vulkan: failed to create semaphore for queue!");
-    } 
-}
-
-void CommandQueue_Vk::Submit(CommandContext* commandContext,
-    Fence* fence, Fence* fenceToWait)
-{
-    
-}
-
-bool CommandQueue_Vk::WaitFence(Fence* fence, std::uint64_t timeout)
-{
-    return true;
-}
-
-void CommandQueue_Vk::WaitIdle()
-{
-    
+        virtual ~FenceVk() override final
+        {}
+    protected:  
+        FenceVk(){}
+    };
 }

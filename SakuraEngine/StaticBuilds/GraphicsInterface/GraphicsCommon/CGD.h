@@ -83,8 +83,6 @@ namespace Sakura::Graphics
             const GraphicsPipelineCreateInfo& info,
             const RenderProgress& progress) const = 0;
             
-        virtual void BindGraphicsPipeline(const GraphicsPipeline* gp) = 0;
-
         // Create & Destroy Command Contexts
         virtual CommandContext* AllocateContext(
             ECommandType type, bool bTransiant = true) = 0;

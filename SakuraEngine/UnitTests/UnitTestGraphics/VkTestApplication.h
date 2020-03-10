@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-10 01:04:41
+ * @LastEditTime: 2020-03-10 11:32:19
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -127,18 +127,17 @@ private:
         info.viewportStateCreateInfo.vps.push_back(vp);
         info.viewportStateCreateInfo.scissors.push_back(scissor);
         Pipeline = std::move(cgd->CreateGraphicsPipeline(info, *prog.get()));
-        cgd->BindGraphicsPipeline(Pipeline.get());
         
+        RenderTarget rt{&swapChain->GetSwapChainImage(0),
+            &swapChain->GetChainImageView(0)};
+        RenderTargetSet rts{&rt, 1};
+        Pipeline->SetRenderTargets(rts);
         auto cmdContext = 
             cgd->AllocateContext(ECommandType::CommandContext_Graphics);
-        cmdContext->Begin();
-
-        RenderTarget rt{
-            &swapChain->GetSwapChainImage(0),
-            &swapChain->GetChainImageView(0)};
-        RenderTargetSet rts = {};
-        rts.rtNum = 1;rts.rts = &rt;
-        Pipeline->SetRenderTargets(rts);
+        cmdContext->Begin(Pipeline.get());
+        cmdContext->Draw(3, 1, 0, 0);
+        
+        cmdContext->End();
     }
 
     void mainLoop()

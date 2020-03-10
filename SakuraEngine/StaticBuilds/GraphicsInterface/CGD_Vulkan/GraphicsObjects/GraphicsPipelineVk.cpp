@@ -117,10 +117,6 @@ std::unique_ptr<GraphicsPipeline> CGD_Vk::CreateGraphicsPipeline(
     return std::move(std::unique_ptr<GraphicsPipeline>(vkPipeline));
 }
 
-void CGD_Vk::BindGraphicsPipeline(const GraphicsPipeline* gp)
-{   
-    activeGP = gp;
-}
 
 void GraphicsPipelineVk::SetRenderTargets(const RenderTargetSet& rts)
 {

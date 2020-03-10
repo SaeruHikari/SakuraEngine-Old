@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:35:59
- * @LastEditTime: 2020-03-09 15:55:39
+ * @LastEditTime: 2020-03-10 11:13:40
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -95,18 +95,13 @@ namespace Sakura::Graphics
         const CGD& device;
     };
 
-    struct RenderTargetViewCreateInfo
-    {
-        
-    };
-
-    SInterface RenderTargetView
-    {
-
-    };
-
     SInterface VertexBufferView
     {
         
+    };
+
+    SInterface IndexBufferView
+    {   
+
     };
 }

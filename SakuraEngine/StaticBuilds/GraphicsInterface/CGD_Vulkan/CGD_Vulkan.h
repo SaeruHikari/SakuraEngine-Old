@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-10 00:41:39
+ * @LastEditTime: 2020-03-10 11:10:15
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -79,8 +79,6 @@ namespace Sakura::Graphics::Vk
         virtual std::unique_ptr<GraphicsPipeline> CreateGraphicsPipeline(
             const GraphicsPipelineCreateInfo& info,
             const RenderProgress& progress) const override final;
-        virtual void BindGraphicsPipeline(
-            const GraphicsPipeline* gp) override final;
     public: 
         // Implements: See ResourceObjects/ResourceViewVk.cpp
         virtual std::unique_ptr<ResourceView> ViewIntoImage(
@@ -118,12 +116,7 @@ namespace Sakura::Graphics::Vk
         {
             return queueFamilyIndices;
         };
-        const GraphicsPipeline* GetActiveGP() const
-        {
-            return activeGP;
-        }
     private:
-        const GraphicsPipeline* activeGP = nullptr;
         QueueFamilyIndices queueFamilyIndices;
         CGDEntityVk entityVk;
     };

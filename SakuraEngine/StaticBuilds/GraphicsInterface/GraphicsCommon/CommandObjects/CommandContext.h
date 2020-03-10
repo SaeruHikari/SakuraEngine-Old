@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-09 22:46:41
+ * @LastEditTime: 2020-03-10 11:23:41
  */
 #pragma once
 #include <mutex>
@@ -21,6 +21,7 @@ namespace Sakura::Graphics
 {
     SInterface CommandQueue;
     SInterface CommandContext;
+    SInterface GraphicsPipeline;
 }
 
 namespace Sakura::Graphics
@@ -50,7 +51,10 @@ namespace Sakura::Graphics
          * @description: Begins the encoding, open the cmdlist/buffer 
          * @author: SaeruHikari
          */
-        virtual void Begin() = 0;
+        virtual void Begin(const GraphicsPipeline* gp) = 0;
+
+        virtual void Draw(uint32 vertexCount, uint32 instanceCount,
+            uint32 firstVertex, uint32 firstInstance) = 0;
 
         sinline ECommandType GetCommandContextType(void)
         {
