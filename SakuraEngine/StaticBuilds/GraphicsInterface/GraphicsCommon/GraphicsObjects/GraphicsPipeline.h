@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 23:25:42
- * @LastEditTime: 2020-03-09 20:46:43
+ * @LastEditTime: 2020-03-10 14:42:43
  */
 #pragma once
 #include "../Flags/GraphicsPipelineStates.h"
@@ -45,8 +45,6 @@ namespace Sakura::Graphics
     SInterface GraphicsPipeline
     {
         virtual ~GraphicsPipeline() = default;
-    public:
-        virtual void SetRenderTargets(const RenderTargetSet& rts) = 0;
     protected:
         GraphicsPipeline() = default;
     };

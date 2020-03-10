@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:39:51
- * @LastEditTime: 2020-03-10 12:19:43
+ * @LastEditTime: 2020-03-10 17:49:05
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandQueue.h"
@@ -31,18 +31,19 @@
 
 namespace Sakura::Graphics::Vk
 {
-    class CommandQueue_Vk : SImplements CommandQueue
+    class CommandQueueVk : SImplements CommandQueue
     {
         friend class CGD_Vk;
+        friend class CommandQueueVk;
+        friend class CommandContextVk;
     protected:
-        CommandQueue_Vk(const CGD_Vk& _cgd);
+        CommandQueueVk(const CGD_Vk& _cgd);
     public:
         virtual void Submit(CommandContext* commandContext,
             Fence* fence = nullptr, Fence* fenceToWait = nullptr) override final;
         virtual bool WaitFence(Fence* fence, std::uint64_t timeout) override final;
         virtual void WaitIdle() override final;
     private:
-        VkSemaphore semaphore = VK_NULL_HANDLE;
         VkQueue vkQueue = VK_NULL_HANDLE;
         const CGD_Vk& cgd;
     };

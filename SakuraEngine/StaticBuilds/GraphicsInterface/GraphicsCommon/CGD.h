@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-09 23:15:31
+ * @LastEditTime: 2020-03-10 17:19:54
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -67,14 +67,13 @@ namespace Sakura::Graphics
             const int width, const int height, 
             void* mainSurface) = 0;
 
-        virtual void Render() = 0;
+        virtual void Present(SwapChain* chain) = 0;
         virtual void Destroy() = 0;
 
         virtual std::unique_ptr<Shader> CreateShader(
             const char*, std::size_t) = 0;
         virtual const char* CompileShader(const char*, std::size_t) = 0;
-        virtual std::unique_ptr<CommandQueue> InitQueueSet(
-            void* mainSurface) = 0;
+        virtual void InitQueueSet(void* mainSurface) = 0;
 
         virtual std::unique_ptr<RenderProgress> CreateRenderProgress(
             const RenderProgressCreateInfo& info) const = 0;
@@ -91,7 +90,8 @@ namespace Sakura::Graphics
 
         virtual std::unique_ptr<ResourceView> ViewIntoImage(
             const GpuResource&, const ResourceViewCreateInfo&) const = 0;
-            
+        
+        virtual CommandQueue* GetGraphicsQueue(void) const = 0;
     protected:
         std::vector<std::unique_ptr<CommandContext>> 
             contextPools[ECommandType::CommandContext_Count];

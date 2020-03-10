@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 23:24:08
- * @LastEditTime: 2020-03-09 12:20:00
+ * @LastEditTime: 2020-03-10 14:31:00
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/RenderProgress.h"
@@ -108,6 +108,7 @@ namespace Sakura::Graphics::Vk
     {
         friend class CGD_Vk;
         friend class GraphicsPipelineVk;
+        friend class CommandContextVk;
     public:
         virtual ~RenderProgressVk();
     protected:

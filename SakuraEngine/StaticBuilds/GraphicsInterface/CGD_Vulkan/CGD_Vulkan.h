@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-10 11:10:15
+ * @LastEditTime: 2020-03-10 17:25:48
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -47,9 +47,9 @@ namespace Sakura::Graphics::Vk
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
         bool validate = false;
-        std::unique_ptr<CommandQueue_Vk> graphicsQueue;
-        std::unique_ptr<CommandQueue_Vk> computeQueue;
-        std::unique_ptr<CommandQueue_Vk> copyQueue;
+        std::unique_ptr<CommandQueueVk> graphicsQueue;
+        std::unique_ptr<CommandQueueVk> computeQueue;
+        std::unique_ptr<CommandQueueVk> copyQueue;
     };
 
     class CGD_Vk : public CGD
@@ -57,15 +57,15 @@ namespace Sakura::Graphics::Vk
         DECLARE_LOGGER("CGD_Vk")
     public:
         CGD_Vk() = default;
-        virtual void Render() override final;   
         virtual void Destroy() override final; 
-        virtual std::unique_ptr<Sakura::Graphics::CommandQueue>
-            InitQueueSet(void* mainSurface) override final;
+        virtual void InitQueueSet(void* mainSurface) override final;
         // Vulkan functions
         virtual void Initialize(CGDInfo info) override final;
         virtual std::unique_ptr<Sakura::Graphics::SwapChain>
             CreateSwapChain(const int width, const int height, 
                 void* mainSurface) override final;
+        virtual void Present(SwapChain* chain) override final;
+        virtual CommandQueue* GetGraphicsQueue() const override final;
         const auto GetVkInstance() const {return entityVk.instance;}
         const CGDEntityVk& GetCGDEntity() const {return entityVk;}
     public:
@@ -102,6 +102,7 @@ namespace Sakura::Graphics::Vk
         void setupDebugMessenger();
         void createVkInstance(uint pCount, const char** pName);
         void pickPhysicalDevice(VkSurfaceKHR surface);
+        void createSyncObjects();
     public:
         struct QueueFamilyIndices
         {
@@ -119,6 +120,9 @@ namespace Sakura::Graphics::Vk
     private:
         QueueFamilyIndices queueFamilyIndices;
         CGDEntityVk entityVk;
+        VkQueue presentQueue;
+        VkSemaphore imageAvailableSemaphore;
+        VkSemaphore renderFinishedSemaphore;
     };
     
     /**

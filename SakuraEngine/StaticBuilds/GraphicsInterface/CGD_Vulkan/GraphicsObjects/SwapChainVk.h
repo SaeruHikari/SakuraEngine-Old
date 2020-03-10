@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 01:29:37
- * @LastEditTime: 2020-03-09 11:24:13
+ * @LastEditTime: 2020-03-10 17:14:31
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
@@ -51,6 +51,7 @@ namespace Sakura::Graphics::Vk
         {
             return Transfer(swapChainImageFormat);
         }
+        uint32 presentImageIndex = 0;
         VkSwapchainKHR swapChain;
         VkExtent2D swapChainExtent;
     };

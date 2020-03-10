@@ -22,40 +22,56 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:41:13
- * @LastEditTime: 2020-03-10 12:18:41
+ * @LastEditTime: 2020-03-10 18:29:21
  */
 #include "CommandQueueVk.h"
 #include "CommandContextVk.h"
 #include "../CGD_Vulkan.h"
+#include "../GraphicsObjects/FenceVk.h"
 
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Vk;
 
-CommandQueue_Vk::CommandQueue_Vk(const CGD_Vk& _cgd)
+CommandQueueVk::CommandQueueVk(const CGD_Vk& _cgd)
     :cgd(_cgd)
 {
-    VkSemaphoreCreateInfo semaphoreInfo = {};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    if (vkCreateSemaphore(_cgd.GetCGDEntity().device, &semaphoreInfo,
-        nullptr, &semaphore) != VK_SUCCESS)
-    {
-        CGD_Vk::error("Vulkan: failed to create semaphore for queue!");
-        throw std::runtime_error("Vulkan: failed to create semaphore for queue!");
-    } 
+
 }
 
-void CommandQueue_Vk::Submit(CommandContext* commandContext,
+void CommandQueueVk::Submit(CommandContext* commandContext,
     Fence* fence, Fence* fenceToWait)
 {
-    
+    FenceVk* vkFc = (FenceVk*)fence;
+    CommandContextVk* cmdVk = (CommandContextVk*)commandContext;
+    VkSubmitInfo submitInfo;
+    {
+        submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.pNext                = nullptr;
+        submitInfo.waitSemaphoreCount   = 0;
+        submitInfo.pWaitSemaphores      = nullptr;
+        submitInfo.pWaitDstStageMask    = 0;
+        submitInfo.commandBufferCount   = 1;
+        submitInfo.pCommandBuffers      = &cmdVk->commandBuffer;
+        submitInfo.signalSemaphoreCount = 0;
+        submitInfo.pSignalSemaphores    = nullptr;
+    }
+    vkWaitForFences(cgd.GetCGDEntity().device,
+        1, &cmdVk->recordingFence, VK_TRUE, UINT64_MAX);
+    vkResetFences(cgd.GetCGDEntity().device, 1, &cmdVk->recordingFence);
+    if (vkQueueSubmit(vkQueue, 1,
+            &submitInfo, cmdVk->recordingFence) != VK_SUCCESS) 
+    {
+        CGD_Vk::error("failed to submit draw command buffer!");
+        throw std::runtime_error("failed to submit draw command buffer!");
+    }
 }
 
-bool CommandQueue_Vk::WaitFence(Fence* fence, std::uint64_t timeout)
+bool CommandQueueVk::WaitFence(Fence* fence, std::uint64_t timeout)
 {
     return true;
 }
 
-void CommandQueue_Vk::WaitIdle()
+void CommandQueueVk::WaitIdle()
 {
     
 }

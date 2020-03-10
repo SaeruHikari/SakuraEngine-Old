@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-10 11:32:19
+ * @LastEditTime: 2020-03-10 18:14:36
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -57,7 +57,6 @@ public:
                 if (evt.type == SDL_QUIT)
                     run = 0;
             }
-            run = 0;
             mainLoop();
         }
         cleanUp();
@@ -87,7 +86,7 @@ private:
         subprog.colorAttachments.push_back(colorAttachmentRef);
         rpinfo.attachments.push_back(colorAttachment);
         rpinfo.subProcs.push_back(subprog);
-        auto prog = cgd->CreateRenderProgress(rpinfo);
+        prog = std::move(cgd->CreateRenderProgress(rpinfo));
 
         // Create PSO
 #if defined(CONFINFO_PLATFORM_LINUX) 
@@ -128,21 +127,26 @@ private:
         info.viewportStateCreateInfo.scissors.push_back(scissor);
         Pipeline = std::move(cgd->CreateGraphicsPipeline(info, *prog.get()));
         
-        RenderTarget rt{&swapChain->GetSwapChainImage(0),
-            &swapChain->GetChainImageView(0)};
-        RenderTargetSet rts{&rt, 1};
-        Pipeline->SetRenderTargets(rts);
-        auto cmdContext = 
-            cgd->AllocateContext(ECommandType::CommandContext_Graphics);
-        cmdContext->Begin(Pipeline.get());
-        cmdContext->Draw(3, 1, 0, 0);
-        
-        cmdContext->End();
+        for(auto i = 0; i < 2; i ++)
+        {
+            RenderTarget rt{&swapChain->GetSwapChainImage(i),
+                &swapChain->GetChainImageView(i)};
+            RenderTargetSet rts{&rt, 1};
+            cmdContexts[i] = 
+                cgd->AllocateContext(ECommandType::CommandContext_Graphics);
+            cmdContexts[i]->Begin(Pipeline.get());
+            cmdContexts[i]->SetRenderTargets(rts);
+            cmdContexts[i]->Draw(3, 1, 0, 0);
+            cmdContexts[i]->End();
+        }
     }
 
     void mainLoop()
     {
-        cgd->Render();
+        static uint currentFrame = 0;
+        cgd->GetGraphicsQueue()->Submit(cmdContexts[currentFrame]);
+        cgd->Present(swapChain.get());
+        currentFrame = (currentFrame + 1) % 2;
     }
 
     void cleanUp()
@@ -168,8 +172,10 @@ private:
     Sakura::Graphics::CGD* cgd;
     std::unique_ptr<Shader> vertshader;
     std::unique_ptr<Shader> fragshader;
+    CommandContext* cmdContexts[2];
     std::unique_ptr<Sakura::Graphics::SwapChain> swapChain;
     std::unique_ptr<GraphicsPipeline> Pipeline;
+    std::unique_ptr<RenderProgress> prog;
     VkSurfaceKHR surface;
     SDL_Window* win = nullptr;
 };

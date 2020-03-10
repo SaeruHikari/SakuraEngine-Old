@@ -22,12 +22,13 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:04:52
- * @LastEditTime: 2020-03-10 00:43:21
+ * @LastEditTime: 2020-03-10 14:52:42
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/GraphicsPipeline.h"
 #include <memory_resource>
 #include <unordered_map>
+#include "RenderProgressVk.h"
 #include "vulkan/vulkan.h"
 
 using namespace Sakura::Graphics;
@@ -44,10 +45,10 @@ namespace Sakura::Graphics::Vk
         friend class CGD_Vk;
         friend class CommandContextVk;
         virtual ~GraphicsPipelineVk() override final;
-    public:
-        virtual void SetRenderTargets(const RenderTargetSet& rts) override final;
     protected:
+        VkFramebuffer FindFrameBuffer(const RenderTargetSet& rts);
         VkFramebuffer createFrameBuffer(const RenderTargetSet& rts);
+        
         GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
             const RenderProgressVk& prog, const CGD_Vk& cgd);
     protected:

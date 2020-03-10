@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:06:12
- * @LastEditTime: 2020-03-09 23:16:11
+ * @LastEditTime: 2020-03-10 14:52:34
  */
 #include "GraphicsPipelineVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -118,7 +118,7 @@ std::unique_ptr<GraphicsPipeline> CGD_Vk::CreateGraphicsPipeline(
 }
 
 
-void GraphicsPipelineVk::SetRenderTargets(const RenderTargetSet& rts)
+VkFramebuffer GraphicsPipelineVk::FindFrameBuffer(const RenderTargetSet& rts)
 {
     static unsigned long long seed = 1549356486765631;
     const void* data = (const void*)rts.rts;
@@ -126,6 +126,7 @@ void GraphicsPipelineVk::SetRenderTargets(const RenderTargetSet& rts)
     if(fbs.find(_h) == fbs.end())
         fbs[_h] = createFrameBuffer(rts);
     auto fb = fbs[_h];
+    return fb;
 }
 
 VkFramebuffer GraphicsPipelineVk::createFrameBuffer(const RenderTargetSet& rts)

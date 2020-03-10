@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-09 22:38:58
+ * @LastEditTime: 2020-03-10 18:37:46
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -43,12 +43,6 @@ void CGD_Vk::Initialize(Sakura::Graphics::CGDInfo info)
     if(info.enableDebugLayer)
         setupDebugMessenger();
 }
-
-void CGD_Vk::Render()
-{
-    CGD_Vk::debug_info("CGD_Vk: Render");
-}
-
 
 void populateDebugMessengerCreateInfo(
     VkDebugUtilsMessengerCreateInfoEXT& createInfo) 
@@ -123,15 +117,80 @@ void CGD_Vk::VkInit(Sakura::Graphics::CGDInfo info)
 {
     uint32 extensionCount = (uint32)VkEnumInstanceExtensions().size();
     if(extensionCount < 0)
-        CGD_Vk::debug_error
+        CGD_Vk::error
             ("0 Vulkan extensions supported, check your platform/device!");
     else if(extensionCount < info.extentionNames.size())
-        CGD_Vk::debug_error
+        CGD_Vk::error
             ("Do not support so many Vulkan extensions, check your CGDInfo");
     entityVk.validate = info.enableDebugLayer;
     createVkInstance(static_cast<uint>(info.extentionNames.size()),
         info.extentionNames.data());
     entityVk.physicalDeviceFeatures = info.physicalDeviceFeatures;
+}
+
+void CGD_Vk::Present(SwapChain* chain)
+{
+    /* Initialize semaphores */
+    VkSemaphore* waitSemaphorse = &imageAvailableSemaphore;
+    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    VkSemaphore* signalSemaphores = &renderFinishedSemaphore;
+    SwapChainVk* vkChain = (SwapChainVk*)chain;
+    auto graphcicsQueue = entityVk.graphicsQueue->vkQueue;
+    /* Submit signal semaphore to graphics queue */
+    VkSubmitInfo submitInfo;
+    {
+        submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.pNext                = nullptr;
+        submitInfo.waitSemaphoreCount   = 1;
+        submitInfo.pWaitSemaphores      = waitSemaphorse;
+        submitInfo.pWaitDstStageMask    = waitStages;
+        submitInfo.commandBufferCount   = 0;
+        submitInfo.pCommandBuffers      = nullptr;
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores    = signalSemaphores;
+    }
+    if(vkQueueSubmit(graphcicsQueue,
+        1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    {
+        Sakura::log::error("Vulkan: failed to submit fence queue!");
+        throw std::runtime_error("Vulkan: failed to submit fence queue!");
+    }
+
+    /* Present result on screen */
+    VkSwapchainKHR* swapChains = &vkChain->swapChain;
+
+    VkPresentInfoKHR presentInfo;
+    {
+        presentInfo.sType               = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.pNext               = nullptr;
+        presentInfo.waitSemaphoreCount  = 1;
+        presentInfo.pWaitSemaphores     = signalSemaphores;
+        presentInfo.swapchainCount      = 1;
+        presentInfo.pSwapchains         = swapChains;
+        presentInfo.pImageIndices       = &vkChain->presentImageIndex;
+        presentInfo.pResults            = nullptr;
+    }
+    // !!!!!!! LAYOUT BUG NEED FIXING
+    if(vkQueuePresentKHR(presentQueue, &presentInfo) != VK_SUCCESS)
+    {
+        Sakura::log::error("Vulkan: failed to present Vulkan graphics queue!");
+        throw std::runtime_error("Vulkan:failed to present Vulkan graphics queue!");
+    }
+
+    /* Get image index for next presentation */
+    vkAcquireNextImageKHR(
+        entityVk.device,
+        vkChain->swapChain,
+        UINT64_MAX,
+        imageAvailableSemaphore,
+        VK_NULL_HANDLE,
+        &vkChain->presentImageIndex
+    );
+}
+
+CommandQueue* CGD_Vk::GetGraphicsQueue() const
+{
+    return entityVk.graphicsQueue.get();
 }
 
 void CGD_Vk::createVkInstance(uint pCount, const char** pName)
@@ -297,8 +356,25 @@ void CGD_Vk::pickPhysicalDevice(VkSurfaceKHR surface)
     queueFamilyIndices = findQueueFamilies(entityVk.physicalDevice, surface);
 }
 
-std::unique_ptr<Sakura::Graphics::CommandQueue>
-    CGD_Vk::InitQueueSet(void* mainSurface)
+ void CGD_Vk::createSyncObjects() 
+ {
+    VkSemaphoreCreateInfo semaphoreInfo = {};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    VkFenceCreateInfo fenceInfo = {};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = 0;
+
+    for (size_t i = 0; i < 2; i++) {
+        if (vkCreateSemaphore(entityVk.device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
+            vkCreateSemaphore(entityVk.device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create synchronization objects for a frame!");
+        }
+    }
+}
+
+void CGD_Vk::InitQueueSet(void* mainSurface)
 {
     // Type re-generation
     VkSurfaceKHR surface = *(VkSurfaceKHR*)mainSurface;
@@ -352,13 +428,11 @@ std::unique_ptr<Sakura::Graphics::CommandQueue>
     }
     
     // Create Queue
-    auto graphicsQueue = std::make_unique<CommandQueue_Vk>();
+    auto graphicsQueue = new CommandQueueVk(*this);
     vkGetDeviceQueue(entityVk.device, indices.graphicsFamily.value(),
         0, &graphicsQueue->vkQueue);
-    auto presentQueue = std::make_unique<CommandQueue_Vk>();
     vkGetDeviceQueue(entityVk.device, indices.presentFamily.value(),
-        0, &presentQueue->vkQueue);
-
-    entityVk.graphicsQueue = std::move(graphicsQueue);
-    return std::move(presentQueue);
+        0, &presentQueue);
+    entityVk.graphicsQueue = 
+        std::move(std::unique_ptr<CommandQueueVk>(graphicsQueue));
 }
