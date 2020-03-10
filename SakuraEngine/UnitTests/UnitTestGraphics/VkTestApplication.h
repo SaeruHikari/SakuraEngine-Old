@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-10 18:14:36
+ * @LastEditTime: 2020-03-10 18:40:43
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -127,7 +127,7 @@ private:
         info.viewportStateCreateInfo.scissors.push_back(scissor);
         Pipeline = std::move(cgd->CreateGraphicsPipeline(info, *prog.get()));
         
-        for(auto i = 0; i < 2; i ++)
+        for(auto i = 0; i < swapChain->swapChainCount; i ++)
         {
             RenderTarget rt{&swapChain->GetSwapChainImage(i),
                 &swapChain->GetChainImageView(i)};
@@ -146,7 +146,7 @@ private:
         static uint currentFrame = 0;
         cgd->GetGraphicsQueue()->Submit(cmdContexts[currentFrame]);
         cgd->Present(swapChain.get());
-        currentFrame = (currentFrame + 1) % 2;
+        currentFrame = (currentFrame + 1) % swapChain->swapChainCount;
     }
 
     void cleanUp()
@@ -172,7 +172,7 @@ private:
     Sakura::Graphics::CGD* cgd;
     std::unique_ptr<Shader> vertshader;
     std::unique_ptr<Shader> fragshader;
-    CommandContext* cmdContexts[2];
+    CommandContext* cmdContexts[3];
     std::unique_ptr<Sakura::Graphics::SwapChain> swapChain;
     std::unique_ptr<GraphicsPipeline> Pipeline;
     std::unique_ptr<RenderProgress> prog;

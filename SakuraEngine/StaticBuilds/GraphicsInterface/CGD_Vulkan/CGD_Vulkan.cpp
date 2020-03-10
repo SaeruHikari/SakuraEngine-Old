@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-10 18:37:46
+ * @LastEditTime: 2020-03-10 18:41:34
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -365,7 +365,7 @@ void CGD_Vk::pickPhysicalDevice(VkSurfaceKHR surface)
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = 0;
 
-    for (size_t i = 0; i < 2; i++) {
+    for (size_t i = 0; i < 3; i++) {
         if (vkCreateSemaphore(entityVk.device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
             vkCreateSemaphore(entityVk.device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS)
         {
