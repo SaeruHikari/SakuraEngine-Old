@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-10 22:44:40
+ * @LastEditTime: 2020-03-11 00:54:36
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -99,7 +99,6 @@ namespace Sakura::Graphics
         const uint64 contextNum() const {return contextPools[0].size();}
 
     protected:
-    
         std::vector<std::unique_ptr<CommandContext>> 
             contextPools[ECommandType::CommandContext_Count];
         std::queue<CommandContext*> 

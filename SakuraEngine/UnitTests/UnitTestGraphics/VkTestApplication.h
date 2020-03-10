@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-10 23:06:32
+ * @LastEditTime: 2020-03-11 01:36:23
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -38,6 +38,8 @@ extern "C"
 #include "Extern/include/SDL2Tools/SDL2Vk.hpp"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Flags/FormatVk.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Flags/GraphicsPipelineStatesVk.h"
+#include "SakuraEngine/StaticBuilds/TaskSystem/TaskSystem.h"
+#include <thread>
 using namespace Sakura;
 
 class VkTestApplication
@@ -135,6 +137,26 @@ private:
         createPSO();
     }
 
+    CommandContext* drawTriangle(RenderTargetSet& rts)
+    {
+        auto context = 
+            cgd->AllocateContext(ECommandType::CommandContext_Graphics);
+        context->Begin(Pipeline.get());
+        context->SetRenderTargets(rts);
+        context->Draw(3, 1, 0, 0);
+        context->End();
+        return context;
+    }
+    
+    void SubmitAndFree(uint32 count, CommandContext** toSub, CommandQueue* queue)
+    {
+        for(auto i = 0; i < count; i++)
+        {
+            queue->Submit(toSub[i]);
+            cgd->FreeContext(toSub[i]);
+        }
+    }
+
     void mainLoop()
     {
         cgd->Present(swapChain.get());
@@ -143,15 +165,33 @@ private:
             &swapChain->GetChainImageView(frameCount)};
         RenderTargetSet rts{&rt, 1};
 
-        cmdContexts[frameCount] = 
-            cgd->AllocateContext(ECommandType::CommandContext_Graphics);
-        cmdContexts[frameCount]->Begin(Pipeline.get());
-        cmdContexts[frameCount]->SetRenderTargets(rts);
-        cmdContexts[frameCount]->Draw(3, 1, 0, 0);
-        cmdContexts[frameCount]->End();
-        std::cout << cgd->contextNum() << std::endl;
-        cgd->GetGraphicsQueue()->Submit(cmdContexts[frameCount]);
-        cgd->FreeContext(cmdContexts[frameCount]);
+        SYSTEMTIME t;
+        GetLocalTime(&t);
+        auto mil = t.wSecond * 1000 + t.wMilliseconds;
+        
+        Sakura::TaskSystem::Executor executor;
+        Sakura::TaskSystem::Taskflow taskflow;
+        CommandContext* contexts[4];
+
+        auto [A, B, C, D, E] = taskflow.emplace(
+            [&] () { contexts[0] = drawTriangle(rts);},               
+            [&] () { contexts[1] = drawTriangle(rts);},               
+            [&] () { contexts[2] = drawTriangle(rts);},               
+            [&] () { contexts[3] = drawTriangle(rts);},               
+            [&] () { SubmitAndFree(4, contexts, cgd->GetGraphicsQueue()); }                
+        );            
+
+        A.precede(B);  
+        A.precede(C); 
+        B.precede(D);  
+        C.precede(D);  
+        D.precede(E);                                                 
+        executor.run(taskflow).wait();
+
+        GetLocalTime(&t);
+        mil = t.wMilliseconds + t.wSecond * 1000 - mil;
+
+        std::cout << cgd->contextNum() << "time ms: " << mil << std::endl;
     }
 
     void cleanUp()
@@ -179,7 +219,6 @@ private:
     std::unique_ptr<Sakura::Graphics::CGD> cgd;
     std::unique_ptr<Shader> vertshader;
     std::unique_ptr<Shader> fragshader;
-    CommandContext* cmdContexts[3];
     std::unique_ptr<Sakura::Graphics::SwapChain> swapChain;
     std::unique_ptr<GraphicsPipeline> Pipeline;
     std::unique_ptr<RenderProgress> prog;

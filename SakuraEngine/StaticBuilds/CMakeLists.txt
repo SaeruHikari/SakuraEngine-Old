@@ -1,1 +1,2 @@
 add_subdirectory(GraphicsInterface)
+add_subdirectory(TaskSystem)
