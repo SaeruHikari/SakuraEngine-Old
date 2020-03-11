@@ -42,18 +42,13 @@ file (
     src/*.cpp
     src/*.h
 )
-file( 
-    GLOB_RECURSE
-    includes
-    include/*.h
-)
+
 include_directories(include)
 
 add_library(
     SPA 
     SHARED
     ${sources}
-    ${includes}
     ${whereami_files}
 )
 

@@ -1,6 +1,6 @@
 add_library(CGD_Direct3D12 
-CGD_Direct3D12.h
-CGD_Direct3D12.cpp 
-CommandContext_Dx12.cpp)
+STATIC
+CGDDx12_All.cpp
+)
 
 target_link_libraries(CGD_Direct3D12 Core)

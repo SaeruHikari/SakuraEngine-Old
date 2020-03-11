@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-11 01:36:23
+ * @LastEditTime: 2020-03-11 08:09:33
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -211,7 +211,7 @@ private:
 
     void createWindow()
     {
-        win = VkSDL_CreateWindow("Vk Window", width, height);
+        win = VkSDL_CreateWindow("SakuraEngine Window: CGD Vulkan", width, height);
     }
     
     const int width = 1280;

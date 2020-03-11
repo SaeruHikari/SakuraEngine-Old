@@ -5,9 +5,10 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 14:36:44
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-05 17:16:15
+ * @LastEditTime: 2020-03-11 08:39:08
  */
 #pragma once
+#include "SakuraPlatformFlag.h"
 
 namespace Sakura::flags
 {

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-10 22:08:27
+ * @LastEditTime: 2020-03-11 08:44:17
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -31,7 +31,6 @@
 #include "ResourceObjects/GpuResourceVk.h"
 #include "ResourceObjects/ResourceViewVk.h"
 #include "SakuraEngine/Core/Core.h"
-#include "vulkan/vulkan.hpp"
 
 using namespace Sakura::Graphics::Vk;
 using namespace Sakura::Graphics;
