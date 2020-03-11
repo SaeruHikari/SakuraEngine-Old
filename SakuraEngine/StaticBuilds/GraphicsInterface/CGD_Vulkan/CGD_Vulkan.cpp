@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-11 08:44:17
+ * @LastEditTime: 2020-03-11 14:32:10
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -110,7 +110,6 @@ void CGD_Vk::DestroyCommandObjects()
 void CGD_Vk::Destroy()
 {
     CGD_Vk::debug_info("CGD_Vk: Destroy");
-    vkDestroySemaphore(entityVk.device, renderFinishedSemaphore, nullptr);
     if(entityVk.validate)
         DestroyDebugUtilsMessengerEXT(entityVk.instance,
             entityVk.debugMessenger, nullptr);
@@ -140,7 +139,8 @@ void CGD_Vk::Present(SwapChain* chain)
     VkSemaphore* waitSemaphorse = 
         &vkChain->imageAvailableSemaphores[vkChain->currentFrame];
     VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-    VkSemaphore* signalSemaphores = &renderFinishedSemaphore;
+    VkSemaphore* signalSemaphores =
+        &vkChain->renderFinishedSemaphores[vkChain->currentFrame];
     auto graphcicsQueue = entityVk.graphicsQueue->vkQueue;
     /* Submit signal semaphore to graphics queue */
     VkSubmitInfo submitInfo;
@@ -155,8 +155,16 @@ void CGD_Vk::Present(SwapChain* chain)
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores    = signalSemaphores;
     }
-    if(vkQueueSubmit(graphcicsQueue,
-        1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+
+    // Ensure unbusy before submitting.
+    vkWaitForFences(GetCGDEntity().device,
+        1, &vkChain->frameSubmitFences[vkChain->currentFrame],
+        VK_TRUE, UINT64_MAX);
+    vkResetFences(GetCGDEntity().device, 1,
+        &vkChain->frameSubmitFences[vkChain->currentFrame]);
+    
+    if(vkQueueSubmit(graphcicsQueue, 1, &submitInfo,
+        vkChain->frameSubmitFences[vkChain->currentFrame]) != VK_SUCCESS)
     {
         Sakura::log::error("Vulkan: failed to submit fence queue!");
         throw std::runtime_error("Vulkan: failed to submit fence queue!");
@@ -198,6 +206,41 @@ void CGD_Vk::Present(SwapChain* chain)
 CommandQueue* CGD_Vk::GetGraphicsQueue() const
 {
     return entityVk.graphicsQueue.get();
+}
+
+CommandQueue* CGD_Vk::GetComputeQueue() const
+{
+    return entityVk.computeQueue.get();
+}
+
+CommandQueue* CGD_Vk::GetCopyQueue() const
+{
+    return entityVk.copyQueue.get();
+}
+
+std::unique_ptr<CommandQueue> CGD_Vk::AllocQueue(ECommandType type) const 
+{
+    auto graphicsQueue = new CommandQueueVk(*this);
+    uint32 family; 
+    switch (type)
+    {
+    case ECommandType::CommandContext_Compute:
+        family = queueFamilyIndices.computeFamily.value();
+        break;
+    case ECommandType::CommandContext_Copy:
+        family = queueFamilyIndices.copyFamily.value();
+        break;
+    case ECommandType::CommandContext_Graphics:
+        family = queueFamilyIndices.graphicsFamily.value();
+        break;
+    default:
+        CGD_Vk::error("AllocQueue: type not supported!");
+        break;
+    }
+    vkGetDeviceQueue(entityVk.device,
+        family,
+        0, &graphicsQueue->vkQueue);
+    return std::move(std::unique_ptr<CommandQueue>(graphicsQueue)); 
 }
 
 void CGD_Vk::createVkInstance(uint pCount, const char** pName)
@@ -361,21 +404,6 @@ void CGD_Vk::pickPhysicalDevice(VkSurfaceKHR surface)
     CGD_Vk::debug_info("Vulkan: physical device "
         + std::string(deviceProperties.deviceName));
     queueFamilyIndices = findQueueFamilies(entityVk.physicalDevice, surface);
-}
-
- void CGD_Vk::createSyncObjects() 
- {
-    VkSemaphoreCreateInfo semaphoreInfo = {};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-    VkFenceCreateInfo fenceInfo = {};
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceInfo.flags = 0;
-
-    if (vkCreateSemaphore(entityVk.device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create synchronization objects for a frame!");
-    }
 }
 
 void CGD_Vk::InitQueueSet(void* mainSurface)

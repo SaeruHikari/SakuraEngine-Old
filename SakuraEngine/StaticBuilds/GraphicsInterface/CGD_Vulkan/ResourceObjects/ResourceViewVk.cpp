@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:57:40
- * @LastEditTime: 2020-03-09 15:38:54
+ * @LastEditTime: 2020-03-11 11:44:20
  */
 #include "ResourceViewVk.h"
 #include "GpuResourceVk.h"
@@ -56,13 +56,13 @@ void ResourceViewVkImage::Attach(
     viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
     viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     viewCreateInfo.subresourceRange.baseMipLevel 
-        = info.subResource.texture2D.baseMipLevel;
+        = info.view.texture2D.baseMipLevel;
     viewCreateInfo.subresourceRange.levelCount 
-        = info.subResource.texture2D.mipLevels;
+        = info.view.texture2D.mipLevels;
     viewCreateInfo.subresourceRange.baseArrayLayer 
-        = info.subResource.texture2D.baseArrayLayer;
+        = info.view.texture2D.baseArrayLayer;
     viewCreateInfo.subresourceRange.layerCount 
-        = info.subResource.texture2D.layerCount;
+        = info.view.texture2D.layerCount;
     if (vkCreateImageView(vkdevice.GetCGDEntity().device, &viewCreateInfo, 
         nullptr, &vkImgView) != VK_SUCCESS) 
     {

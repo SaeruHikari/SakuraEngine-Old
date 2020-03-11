@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 01:29:37
- * @LastEditTime: 2020-03-10 21:33:58
+ * @LastEditTime: 2020-03-11 14:26:10
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
@@ -52,5 +52,7 @@ namespace Sakura::Graphics::Vk
         VkSwapchainKHR swapChain;
         VkExtent2D swapChainExtent;
         std::vector<VkSemaphore> imageAvailableSemaphores;
+        std::vector<VkSemaphore> renderFinishedSemaphores;
+        std::vector<VkFence> frameSubmitFences;
     };
 }

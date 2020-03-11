@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:49:22
- * @LastEditTime: 2020-03-10 21:45:01
+ * @LastEditTime: 2020-03-11 14:34:25
  */
 #include "SwapChainVk.h"
 #include "../ResourceObjects/GpuResourceVk.h"
@@ -39,11 +39,27 @@ SwapChainVk::SwapChainVk(const VkSwapchainKHR _chain,
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     imageAvailableSemaphores.resize(_chainCount);
+    renderFinishedSemaphores.resize(_chainCount);
+    frameSubmitFences.resize(_chainCount);
+    VkFenceCreateInfo fenceInfo = {};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    for(auto i = 0; i < swapChainCount; i++)
+        if(vkCreateFence(_device.GetCGDEntity().device, &fenceInfo,
+            nullptr, &frameSubmitFences[i]) != VK_SUCCESS)
+        {        
+            CGD_Vk::error("failed to create fence for swapchain!");
+            throw std::runtime_error("failed to create fence forswapchain!");
+        }
     for(auto i = 0; i < swapChainCount; i++)
     {
         if (vkCreateSemaphore(_device.GetCGDEntity().device,
             &semaphoreInfo,
-            nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS)
+            nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS
+            ||
+            vkCreateSemaphore(_device.GetCGDEntity().device,
+            &semaphoreInfo,
+            nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS)
         {
             Sakura::log::error("Vulkan: failed to create VkSemaphore for swapchain!");
             throw std::runtime_error("failed to create VkSemaphore for swapchain!");
@@ -65,8 +81,13 @@ SwapChainVk::~SwapChainVk()
     vkDestroySwapchainKHR(vkdevice.GetCGDEntity().device, swapChain, nullptr);
     for(auto i = 0u; i < imageAvailableSemaphores.size(); i++)
     {
+        vkWaitForFences(vkdevice.GetCGDEntity().device,
+            1, &frameSubmitFences[i], VK_TRUE, UINT64_MAX);
+        vkDestroyFence(vkdevice.GetCGDEntity().device, frameSubmitFences[i], nullptr);
         vkDestroySemaphore(vkdevice.GetCGDEntity().device, 
             imageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(vkdevice.GetCGDEntity().device, 
+            renderFinishedSemaphores[i], nullptr);
     }
 }
 

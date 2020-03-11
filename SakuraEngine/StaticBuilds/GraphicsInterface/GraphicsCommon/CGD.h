@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-11 00:54:36
+ * @LastEditTime: 2020-03-11 10:44:09
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -94,6 +94,9 @@ namespace Sakura::Graphics
             const GpuResource&, const ResourceViewCreateInfo&) const = 0;
         
         virtual CommandQueue* GetGraphicsQueue(void) const = 0;
+        virtual CommandQueue* GetComputeQueue(void) const = 0;
+        virtual CommandQueue* GetCopyQueue(void) const = 0;
+        virtual std::unique_ptr<CommandQueue> AllocQueue(ECommandType type) const = 0;
 
     public:
         const uint64 contextNum() const {return contextPools[0].size();}

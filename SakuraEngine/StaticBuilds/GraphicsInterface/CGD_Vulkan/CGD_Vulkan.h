@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-10 22:43:35
+ * @LastEditTime: 2020-03-11 14:20:50
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -67,6 +67,10 @@ namespace Sakura::Graphics::Vk
                 void* mainSurface) override final;
         virtual void Present(SwapChain* chain) override final;
         virtual CommandQueue* GetGraphicsQueue() const override final;
+        virtual CommandQueue* GetComputeQueue() const override final;
+        virtual CommandQueue* GetCopyQueue() const override final;
+        virtual std::unique_ptr<CommandQueue> 
+            AllocQueue(ECommandType type) const override final;
         const auto GetVkInstance() const {return entityVk.instance;}
         const CGDEntityVk& GetCGDEntity() const {return entityVk;}
     public:
@@ -103,12 +107,13 @@ namespace Sakura::Graphics::Vk
         void setupDebugMessenger();
         void createVkInstance(uint pCount, const char** pName);
         void pickPhysicalDevice(VkSurfaceKHR surface);
-        void createSyncObjects();
     public:
         struct QueueFamilyIndices
         {
             std::optional<uint32_t> graphicsFamily;
             std::optional<uint32_t> presentFamily;
+            std::optional<uint32_t> computeFamily;
+            std::optional<uint32_t> copyFamily;
             bool isComplete() 
             {
                 return graphicsFamily.has_value() && presentFamily.has_value();
@@ -122,7 +127,6 @@ namespace Sakura::Graphics::Vk
         QueueFamilyIndices queueFamilyIndices;
         CGDEntityVk entityVk;
         VkQueue presentQueue;
-        VkSemaphore renderFinishedSemaphore;
     };
     
     /**

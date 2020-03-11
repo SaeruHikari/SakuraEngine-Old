@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-10 21:29:05
+ * @LastEditTime: 2020-03-11 14:35:32
  */
 
 // Swap Chain Support Details
@@ -195,7 +195,6 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
     res->swapChainExtent = extent;
     res->swapChainCount = imageCount;
 
-    createSyncObjects();
     return std::move(res);
 }
 #endif

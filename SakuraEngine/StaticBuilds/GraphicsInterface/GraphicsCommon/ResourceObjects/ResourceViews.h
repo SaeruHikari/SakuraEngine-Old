@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:35:59
- * @LastEditTime: 2020-03-10 11:13:40
+ * @LastEditTime: 2020-03-11 11:46:33
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -67,13 +67,18 @@ namespace Sakura::Graphics
         {
 
         };
+        struct BufferInfo
+        {
+
+        };
         Format format;
         ResourceViewType viewType;
-        union SubResource
+        union View
         {
             Tex2DInfo texture2D;
             Tex3DInfo texture3D;
-        } subResource;
+            BufferInfo buffer;
+        } view;
     };
     
     SInterface ResourceView
