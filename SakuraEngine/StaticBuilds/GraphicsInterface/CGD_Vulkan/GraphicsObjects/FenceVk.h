@@ -51,6 +51,7 @@ namespace Sakura::Graphics::Vk
     protected:  
 		FenceVk(const CGD_Vk& _cgd);
     protected:
+        uint64 targetVal = 0;
         VkSemaphore timelineSemaphore;
         const CGD_Vk& cgd;
     };

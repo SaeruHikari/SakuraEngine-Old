@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-11 20:52:05
- * @LastEditTime: 2020-03-12 13:53:27
+ * @LastEditTime: 2020-03-12 21:11:16
  */
 #include "FenceVk.h"
 #include "../CGD_Vulkan.h"
@@ -31,7 +31,7 @@ using namespace Sakura::Graphics::Vk;
 
 FenceVk::~FenceVk()
 {
-
+	vkDestroySemaphore(cgd.GetCGDEntity().device, timelineSemaphore, nullptr);
 }
     
 void FenceVk::Reset(void)
@@ -68,7 +68,7 @@ std::unique_ptr<Fence> CGD_Vk::AllocFence(void)
     return std::unique_ptr<Fence>(result);
 }
 
-void CGD_Vk::Wait(Fence* toWait, uint64 until)
+void CGD_Vk::Wait(Fence* toWait, uint64 until) const
 {
 	FenceVk* fcVk = (FenceVk*)toWait;
 	const uint64_t waitValue = until;
@@ -80,6 +80,5 @@ void CGD_Vk::Wait(Fence* toWait, uint64 until)
 	waitInfo.semaphoreCount = 1;
 	waitInfo.pSemaphores = &fcVk->timelineSemaphore;
 	waitInfo.pValues = &waitValue;
-    //entityVk.m_loader.vkWaitSemaphoresKHR
     vkWaitSemaphores(entityVk.device, &waitInfo, UINT64_MAX);
 }

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:39:51
- * @LastEditTime: 2020-03-11 22:57:45
+ * @LastEditTime: 2020-03-12 21:19:27
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandQueue.h"
@@ -36,12 +36,13 @@ namespace Sakura::Graphics::Vk
         friend class CGD_Vk;
         friend class CommandQueueVk;
         friend class CommandContextVk;
+        friend class FenceVk;
     protected:
         CommandQueueVk(const CGD_Vk& _cgd);
     public:
         virtual void Submit(CommandContext* commandContext) override final;
-        virtual bool Submit(Fence* fence,
-            uint64 completedValue) override final;
+        virtual void Submit(Fence* fence, uint64 completedValue) override final;
+        virtual void Wait(Fence* fence, uint64 until) override final;
         virtual void WaitIdle() override final;
     private:
         VkQueue vkQueue = VK_NULL_HANDLE;

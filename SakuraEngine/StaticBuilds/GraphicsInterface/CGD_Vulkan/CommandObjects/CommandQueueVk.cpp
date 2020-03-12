@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:41:13
- * @LastEditTime: 2020-03-12 13:52:17
+ * @LastEditTime: 2020-03-12 21:28:26
  */
 #include "CommandQueueVk.h"
 #include "CommandContextVk.h"
@@ -66,13 +66,13 @@ void CommandQueueVk::Submit(CommandContext* commandContext)
     }
 }
 
-bool CommandQueueVk::Submit(Fence* fence, uint64 completedValue)
+void CommandQueueVk::Submit(Fence* fence, uint64 completedValue)
 {
     auto FcVk = (FenceVk*)fence;
 	const uint64_t waitValue = 0; // Wait until semaphore value is >= 2
 	const uint64_t signalValue = completedValue; // Set semaphore value to 3
-
-	VkTimelineSemaphoreSubmitInfo timelineInfo;
+    FcVk->targetVal = completedValue;
+    VkTimelineSemaphoreSubmitInfo timelineInfo;
 	timelineInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
 	timelineInfo.pNext = NULL;
 	timelineInfo.waitSemaphoreValueCount = 1;
@@ -95,7 +95,39 @@ bool CommandQueueVk::Submit(Fence* fence, uint64 completedValue)
 		CGD_Vk::error("failed to submit timeline semaphores!");
 		throw std::runtime_error("failed to submit timeline semaphores!");
     }
-    return true;
+}
+
+void CommandQueueVk::Wait(Fence* fence, uint64 until)
+{
+     auto FcVk = (FenceVk*)fence;
+     const uint64_t waitValue = until; 
+
+    VkTimelineSemaphoreSubmitInfo timelineInfo;
+	timelineInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+	timelineInfo.pNext = NULL;
+	timelineInfo.waitSemaphoreValueCount = 1;
+	timelineInfo.pWaitSemaphoreValues = &waitValue;
+	timelineInfo.signalSemaphoreValueCount = 1;
+	timelineInfo.pSignalSemaphoreValues = &waitValue;
+
+	VkSubmitInfo submitInfo;
+    const VkPipelineStageFlags wat = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = &timelineInfo;
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = &FcVk->timelineSemaphore;
+    submitInfo.pWaitDstStageMask = &wat;
+	submitInfo.signalSemaphoreCount = 0;
+	//submitInfo.pSignalSemaphores = &FcVk->timelineSemaphore;
+	submitInfo.commandBufferCount = 0;
+	submitInfo.pCommandBuffers = VK_NULL_HANDLE;
+
+    if (vkQueueSubmit(vkQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    {
+		CGD_Vk::error("failed to submit timeline semaphores!");
+		throw std::runtime_error("failed to submit timeline semaphores!");
+    }
 }
 
 void CommandQueueVk::WaitIdle()

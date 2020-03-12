@@ -105,7 +105,7 @@ namespace Sakura::Graphics::Vk
     public:
     // Implements: See GraphicsObjects/FenceVk.cpp
         virtual std::unique_ptr<Fence> AllocFence(void) override final;
-        virtual void Wait(Fence* toWait, uint64 until) override final;
+        virtual void Wait(Fence* toWait, uint64 until) const override final;
     private:
          /**
          * @description: Initial Vulkan Device

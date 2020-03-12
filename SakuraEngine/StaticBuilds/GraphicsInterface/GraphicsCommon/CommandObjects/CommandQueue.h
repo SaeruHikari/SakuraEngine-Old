@@ -21,7 +21,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-02 18:44:11
- * @LastEditTime: 2020-03-11 22:57:58
+ * @LastEditTime: 2020-03-12 21:19:37
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
@@ -44,7 +44,8 @@ namespace Sakura::Graphics
     SInterface CommandQueue
     {
         virtual void Submit(CommandContext* commandContext) = 0;
-        virtual bool Submit(Fence* fence, uint64 completedValue) = 0;
+        virtual void Submit(Fence* fence, uint64 completedValue) = 0;
+        virtual void Wait(Fence* fence, uint64 until) = 0;
         virtual void WaitIdle() = 0;
     protected:
         CommandQueue() = default;

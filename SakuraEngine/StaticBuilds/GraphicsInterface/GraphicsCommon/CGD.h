@@ -100,7 +100,7 @@ namespace Sakura::Graphics
         virtual std::unique_ptr<CommandQueue> AllocQueue(ECommandType type) const = 0;
 
 
-        virtual void Wait(Fence* toWait, uint64 until) = 0;
+        virtual void Wait(Fence* toWait, uint64 until) const = 0;
         virtual std::unique_ptr<Fence> AllocFence(void) = 0;
     public:
         const uint64 contextNum() const {return contextPools[0].size();}

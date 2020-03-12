@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-12 14:44:06
+ * @LastEditTime: 2020-03-12 21:24:11
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -191,7 +191,6 @@ private:
     void cleanUp()
     {
         cgd->DestroyCommandObjects();
-        fence.reset();
         vertshader.reset();
         fragshader.reset();
         Pipeline.reset();
@@ -199,6 +198,7 @@ private:
         vkDestroySurfaceKHR(((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
             surface, nullptr);
         prog.reset();
+		fence.reset();
         cgd->Destroy();
 	    SDL_DestroyWindow(win);
         SDL_Quit();
