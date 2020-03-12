@@ -22,12 +22,13 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-11 14:20:50
+ * @LastEditTime: 2020-03-12 14:44:41
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
 #include "CommandObjects/CommandQueueVk.h"
 #include "GraphicsObjects/SwapChainVk.h"
+#include "vulkan/vulkan.hpp"
 #include <iostream>
 
 
@@ -44,15 +45,18 @@ namespace Sakura::Graphics::Vk
         VkDebugUtilsMessengerEXT debugMessenger;
         const std::vector<const char*> deviceExtensions = 
         {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+            VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME
         };
         bool validate = false;
         std::unique_ptr<CommandQueueVk> graphicsQueue;
         std::unique_ptr<CommandQueueVk> computeQueue;
         std::unique_ptr<CommandQueueVk> copyQueue;
+        bool bTripleBuffering = false;
+        vk::DispatchLoaderDynamic m_loader;
     };
 
-    class CGD_Vk : public CGD
+    class CGD_Vk final : public CGD
     {
         DECLARE_LOGGER("CGD_Vk")
     public:
@@ -98,6 +102,10 @@ namespace Sakura::Graphics::Vk
             ECommandType type, bool bTransiant = true) override final;
         virtual void FreeContext(CommandContext* context) override final;
         virtual void FreeAllContexts(ECommandType typeToDestroy) override final;
+    public:
+    // Implements: See GraphicsObjects/FenceVk.cpp
+        virtual std::unique_ptr<Fence> AllocFence(void) override final;
+        virtual void Wait(Fence* toWait, uint64 until) override final;
     private:
          /**
          * @description: Initial Vulkan Device
@@ -145,7 +153,7 @@ namespace Sakura::Graphics::Vk
     
     inline static const std::vector<const char*> validationLayers =
     {
-        "VK_LAYER_KHRONOS_validation"
+		"VK_LAYER_KHRONOS_validation"
     };
 
     static bool VkCheckValidationLayerSupport()

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:06:12
- * @LastEditTime: 2020-03-10 14:52:34
+ * @LastEditTime: 2020-03-11 22:09:04
  */
 #include "GraphicsPipelineVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -50,9 +50,9 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount 
-        = info.pipelineLayoutInfo.setLayouts.size();
+        = (uint32)info.pipelineLayoutInfo.setLayouts.size();
     pipelineLayoutInfo.pushConstantRangeCount 
-        = info.pipelineLayoutInfo.pushConstantRanges.size();
+        = (uint32)info.pipelineLayoutInfo.pushConstantRanges.size();
 
     if (vkCreatePipelineLayout(cgd.GetCGDEntity().device,
         &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
@@ -63,7 +63,7 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
 
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = info.shaderStages.size();
+    pipelineInfo.stageCount = (uint32)info.shaderStages.size();
     std::vector<VkPipelineShaderStageCreateInfo> pStages(info.shaderStages.size()); 
     for(auto i = 0; i < info.shaderStages.size(); i++)
         pStages[i] = Transfer(info.shaderStages[i]);
@@ -88,7 +88,7 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     colorBlending.logicOpEnable = 
         info.colorBlendStateCreateInfo.logicOpEnable ? VK_TRUE : VK_FALSE;
     colorBlending.logicOp = VK_LOGIC_OP_COPY;
-    colorBlending.attachmentCount = attachmentStates.size();
+    colorBlending.attachmentCount = (uint32)attachmentStates.size();
     colorBlending.pAttachments = attachmentStates.data();
     colorBlending.blendConstants[0] = info.colorBlendStateCreateInfo.blendConstants[0];
     colorBlending.blendConstants[1] = info.colorBlendStateCreateInfo.blendConstants[0];

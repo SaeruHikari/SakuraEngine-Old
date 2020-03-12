@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:37:46
- * @LastEditTime: 2020-03-09 15:38:25
+ * @LastEditTime: 2020-03-11 20:10:13
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/SInterface.h"
@@ -39,7 +39,7 @@ namespace Sakura::Graphics::Vk
 {
     using namespace Sakura::Graphics;
 
-    struct ResourceViewVkImage : public ResourceView
+    struct ResourceViewVkImage final : public ResourceView
     {
         ResourceViewVkImage(const CGD_Vk&);
         virtual ~ResourceViewVkImage() override final;

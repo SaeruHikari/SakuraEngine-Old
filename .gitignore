@@ -10,3 +10,4 @@
 /.VSCodeCounter
 *meta.h
 *.generated.h
+*/out

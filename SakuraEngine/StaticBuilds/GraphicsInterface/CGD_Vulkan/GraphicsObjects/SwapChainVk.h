@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 01:29:37
- * @LastEditTime: 2020-03-11 14:26:10
+ * @LastEditTime: 2020-03-11 20:10:50
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
@@ -36,7 +36,7 @@ namespace Sakura::Graphics
 
 namespace Sakura::Graphics::Vk
 {
-    struct SwapChainVk : public Sakura::Graphics::SwapChain
+    struct SwapChainVk final : public Sakura::Graphics::SwapChain
     {
         friend class CGD_Vk;
         SwapChainVk(const VkSwapchainKHR _chain, 

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-11 14:11:56
+ * @LastEditTime: 2020-03-12 14:44:06
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -39,8 +39,10 @@ extern "C"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Flags/FormatVk.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Flags/GraphicsPipelineStatesVk.h"
 #include "SakuraEngine/StaticBuilds/TaskSystem/TaskSystem.h"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/GraphicsObjects/FenceVk.h"
 #include <thread>
 using namespace Sakura;
+using namespace Sakura::Graphics::Vk;
 
 class VkTestApplication
 {
@@ -126,13 +128,19 @@ private:
         cgd_info.enableDebugLayer = true;
         cgd_info.extentionNames = VkSDL_GetInstanceExtensions(win,
             cgd_info.enableDebugLayer);
-            
+        cgd_info.extentionNames.push_back
+            (VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        cgd_info.extentionNames.push_back
+            ("VK_KHR_get_physical_device_properties2");
+    
         cgd->Initialize(cgd_info);
         SDL_Vulkan_CreateSurface(win,
             ((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
             &surface);
         cgd->InitQueueSet(&surface);
         swapChain = std::move(cgd->CreateSwapChain(width, height, &surface));
+
+        fence = std::move(cgd->AllocFence());
 
         createPSO();
     }
@@ -148,18 +156,16 @@ private:
         return context;
     }
     
-    void SubmitAndFree(uint32 count, CommandContext** toSub, CommandQueue* queue)
+    void SubmitAndFree(CommandContext* toSub, CommandQueue* queue)
     {
-        for(auto i = 0; i < count; i++)
-        {
-            queue->Submit(toSub[i]);
-            cgd->FreeContext(toSub[i]);
-        }
+        queue->Submit(toSub);
+        cgd->FreeContext(toSub);
     }
 
     void mainLoop()
     {
         cgd->Present(swapChain.get());
+
         auto frameCount = swapChain->GetLastFrame();
         RenderTarget rt{&swapChain->GetSwapChainImage(frameCount),
             &swapChain->GetChainImageView(frameCount)};
@@ -168,35 +174,24 @@ private:
         SYSTEMTIME t;
         GetLocalTime(&t);
         auto mil = t.wSecond * 1000 + t.wMilliseconds;
-        
-        Sakura::TaskSystem::Executor executor;
-        Sakura::TaskSystem::Taskflow taskflow;
-        CommandContext* contexts[4];
 
-        auto [A, B, C, D, E] = taskflow.emplace(
-            [&] () { contexts[0] = drawTriangle(rts);},               
-            [&] () { contexts[1] = drawTriangle(rts);},               
-            [&] () { contexts[2] = drawTriangle(rts);},               
-            [&] () { contexts[3] = drawTriangle(rts);},               
-            [&] () { SubmitAndFree(4, contexts, cgd->GetGraphicsQueue()); }                
-        );            
-
-        A.precede(B);  
-        A.precede(C); 
-        B.precede(D);  
-        C.precede(D);  
-        D.precede(E);                                                 
-        executor.run(taskflow).wait();
+        auto drawTri = drawTriangle(rts);
 
         GetLocalTime(&t);
         mil = t.wMilliseconds + t.wSecond * 1000 - mil;
-
         std::cout << cgd->contextNum() << "time ms: " << mil << std::endl;
+         
+        SubmitAndFree(drawTri, cgd->GetGraphicsQueue()); 
+        static uint64 fenceVal = 1;
+        cgd->GetGraphicsQueue()->Submit(fence.get(), fenceVal);
+        cgd->Wait(fence.get(), fenceVal);
+        fenceVal++;
     }
 
     void cleanUp()
     {
         cgd->DestroyCommandObjects();
+        fence.reset();
         vertshader.reset();
         fragshader.reset();
         Pipeline.reset();
@@ -217,6 +212,7 @@ private:
     const int width = 1280;
     const int height = 720;
     std::unique_ptr<Sakura::Graphics::CGD> cgd;
+    std::unique_ptr<Fence> fence;
     std::unique_ptr<Shader> vertshader;
     std::unique_ptr<Shader> fragshader;
     std::unique_ptr<Sakura::Graphics::SwapChain> swapChain;

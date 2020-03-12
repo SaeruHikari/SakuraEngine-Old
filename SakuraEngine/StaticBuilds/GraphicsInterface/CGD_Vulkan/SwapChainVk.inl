@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-11 14:35:32
+ * @LastEditTime: 2020-03-11 22:09:30
  */
 
 // Swap Chain Support Details
@@ -92,7 +92,7 @@ inline VkExtent2D chooseSwapExtent(const int width, const int height,
         return capabilities.currentExtent;
     else 
     {
-        VkExtent2D actualExtent = {width, height};
+        VkExtent2D actualExtent = {(uint32)width, (uint32)height};
 
         actualExtent.width =
             std::max(capabilities.minImageExtent.width, 
@@ -121,10 +121,16 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
     VkExtent2D extent = chooseSwapExtent(width, height,
         swapChainSupport.capabilities);
 
-    uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+    uint32_t imageCount = 
+        entityVk.bTripleBuffering ? 3 : 2;
     if (swapChainSupport.capabilities.maxImageCount > 0 
         && imageCount > swapChainSupport.capabilities.maxImageCount)
         imageCount = swapChainSupport.capabilities.maxImageCount;
+    if(entityVk.bTripleBuffering && (imageCount == 2))
+    {
+        CGD_Vk::error("Can't enable triplebuffering, device not supported!");
+        entityVk.bTripleBuffering = false;
+    }
 
     VkSwapchainCreateInfoKHR createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;

@@ -22,18 +22,36 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-10 11:52:58
- * @LastEditTime: 2020-03-10 11:54:24
+ * @LastEditTime: 2020-03-12 13:50:51
  */
 #pragma once
+#include <vector>
 #include "../../GraphicsCommon/GraphicsObjects/Fence.h"
+#include "vulkan/vulkan.h"
+#include <deque>
 
 namespace Sakura::Graphics::Vk
 {
-    struct FenceVk : SImplements Fence
+    class CGD_Vk;
+}
+
+namespace Sakura::Graphics::Vk
+{
+    /**
+     * @description: Fence: wait GPU at CPU
+     * @author: SaeruHikari
+     */
+    struct FenceVk final : SImplements Fence
     {
-        virtual ~FenceVk() override final
-        {}
+        friend class CGD_Vk;
+        friend class CommandQueueVk;
+        virtual ~FenceVk() override final;
+        virtual void Reset(void) override final;
+        virtual uint64 GetCompletedValue() const override final;
     protected:  
-        FenceVk(){}
+		FenceVk(const CGD_Vk& _cgd);
+    protected:
+        VkSemaphore timelineSemaphore;
+        const CGD_Vk& cgd;
     };
 }

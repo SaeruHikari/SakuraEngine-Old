@@ -4,19 +4,30 @@ add_subdirectory(Flags)
 add_subdirectory(ResourceObjects)
 
 include_directories(${Vulkan_INCLUDES})
-
+ 
 find_file(SpecificTimerImpl GpuTimer.cpp *GpuTimer*.cpp 
     PATHS ${CMAKE_CURRENT_SOURCE_DIR})
-
+     
 if(SpecificTimerImpl)
 else(SpecificTimerImpl)
-set(SpecificTimerImpl ../CGD/GpuTimer.cpp)
+set(SpecificTimerImpl ../CGD/GpuTimer.cpp) 
 endif(SpecificTimerImpl)
 
-add_library(CGD_Vulkan 
+add_library(CGD_Vulkan  
     STATIC    
-    CGDVk_All.cpp
-    ${SpecificTimerImpl} 
+    CGD_Vulkan.cpp
+    CommandObjects/CommandContextVk.cpp
+    ../CGD/CommandContext.cpp
+    CommandObjects/CommandQueueVk.cpp
+    ../CGD/Profiling.cpp 
+    ResourceObjects/GpuResourceVk.cpp
+    ResourceObjects/ResourceViewVk.cpp
+    ResourceObjects/ShaderVk.cpp
+    GraphicsObjects/SwapChainVk.cpp
+    GraphicsObjects/GraphicsPipelineVk.cpp
+    GraphicsObjects/RenderProgressVk.cpp
+    GraphicsObjects/FenceVk.cpp
+    ${SpecificTimerImpl}  
 )
 
-target_link_libraries(CGD_Vulkan Core ${Vulkan_LIBRARY})
+target_link_libraries(CGD_Vulkan Core Vulkan::Vulkan)

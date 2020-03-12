@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-09 00:45:42
- * @LastEditTime: 2020-03-09 12:16:44
+ * @LastEditTime: 2020-03-11 22:08:00
  */
 #include "RenderProgressVk.h"
 #include "../CGD_Vulkan.h"
@@ -42,7 +42,7 @@ RenderProgressVk::RenderProgressVk(
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.pNext = nullptr;
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = info.attachments.size();
+    renderPassInfo.attachmentCount = (uint32)info.attachments.size();
     VkAttachmentDescription* colorAttachments
         = new VkAttachmentDescription[info.attachments.size()];
     for(auto i = 0u; i < info.attachments.size(); i++)
@@ -51,7 +51,7 @@ RenderProgressVk::RenderProgressVk(
     }
     renderPassInfo.pAttachments = colorAttachments;
 
-    renderPassInfo.subpassCount = info.subProcs.size();
+    renderPassInfo.subpassCount = (uint32)info.subProcs.size();
     VkSubpassDescription* subpasses 
         = new VkSubpassDescription[info.subProcs.size()];
     for(auto i = 0u; i < info.subProcs.size(); i++)
@@ -60,7 +60,7 @@ RenderProgressVk::RenderProgressVk(
     }
     renderPassInfo.pSubpasses = subpasses;
 
-    renderPassInfo.dependencyCount = info.dependencies.size();
+    renderPassInfo.dependencyCount = (uint32)info.dependencies.size();
     VkSubpassDependency* deps = 
         new VkSubpassDependency[info.dependencies.size()];
     for(auto i = 0u; i < info.dependencies.size(); i++)

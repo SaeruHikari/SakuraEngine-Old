@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 14:36:44
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-11 08:39:08
+ * @LastEditTime: 2020-03-11 22:10:02
  */
 #pragma once
 #include "SakuraPlatformFlag.h"
@@ -17,7 +17,7 @@ namespace Sakura::flags
         DEBUG_EDITOR = 1,
         DEBUG_GAME = 2,
         DEBUG_GAME_AND_EDITOR = 3,
-        RELEASE = 0x111111111
+        RELEASE = 0x11111111
     };
 
     template<Sakura::flags::BuildVar buildVar>

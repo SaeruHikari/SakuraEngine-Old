@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 23:24:08
- * @LastEditTime: 2020-03-10 14:31:00
+ * @LastEditTime: 2020-03-11 22:08:40
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/RenderProgress.h"
@@ -81,12 +81,12 @@ namespace Sakura::Graphics::Vk
         VkSubpassDescription subpass = {};
         subpass.pipelineBindPoint = Transfer(desc.pipelineBindPoint);
         
-        subpass.colorAttachmentCount = desc.colorAttachments.size();
+        subpass.colorAttachmentCount = (uint32)desc.colorAttachments.size();
         subpass.pColorAttachments = 
             desc.colorAttachments.size() == 0 ? nullptr :
             (const VkAttachmentReference*)desc.colorAttachments.data();
 
-        subpass.inputAttachmentCount = desc.inputAttachments.size();
+        subpass.inputAttachmentCount = (uint32)desc.inputAttachments.size();
         subpass.pInputAttachments = 
             desc.inputAttachments.size() == 0 ? nullptr :
             (const VkAttachmentReference*)desc.inputAttachments.data();
@@ -98,13 +98,13 @@ namespace Sakura::Graphics::Vk
             desc.depthStencilAttachment.size() == 0 ? nullptr : 
             (const VkAttachmentReference*)desc.depthStencilAttachment.data();
 
-        subpass.preserveAttachmentCount = desc.preserveAttachments.size();
+        subpass.preserveAttachmentCount = (uint32)desc.preserveAttachments.size();
         subpass.pPreserveAttachments = desc.preserveAttachments.size() == 0 ?
             nullptr : desc.preserveAttachments.data();
         return subpass;
     }
 
-    class RenderProgressVk : SImplements RenderProgress
+    class RenderProgressVk final : SImplements RenderProgress
     {
         friend class CGD_Vk;
         friend class GraphicsPipelineVk;

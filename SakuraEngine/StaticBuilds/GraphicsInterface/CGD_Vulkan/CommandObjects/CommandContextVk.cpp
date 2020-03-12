@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-11 10:54:00
+ * @LastEditTime: 2020-03-12 00:32:27
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -13,6 +13,11 @@
 #include "Core/EngineUtils/log.h"
 #include "../GraphicsObjects/GraphicsPipelineVk.h"
 #include "../CommandObjects/CommandQueueVk.h"
+#include <set>
+
+#ifndef PROFILING_POOL
+#define PROFILING_POOL 
+#endif
 
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Vk;
@@ -20,6 +25,14 @@ using namespace Sakura::Graphics::Vk;
 CommandContext* CGD_Vk::AllocateContext(ECommandType type, bool bTransiant)
 {
     std::lock_guard<std::mutex> LockGurad(contextAllocationMutex);
+#ifdef PROFILING_POOL
+    for (auto i = 0; i < contextPools[type].size(); i++)
+    {
+        std::cout << "context no." << i << ": " << 
+            ((vkGetFenceStatus(entityVk.device,
+            ((CommandContextVk*)contextPools[type][i].get())->recordingFence) == VK_SUCCESS) ? "free    " : "executing    ") << std::endl;
+    }
+#endif
     if(!availableContexts[type].empty())
     {
         auto res = availableContexts[type].front();

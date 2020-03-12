@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 20:43:34
- * @LastEditTime: 2020-03-06 23:01:26
+ * @LastEditTime: 2020-03-11 20:10:32
  */
 #pragma once
 #include "../../GraphicsCommon/ResourceObjects/Shader.h"
@@ -47,7 +47,7 @@ namespace Sakura::Graphics::Vk
 		return StageFlags(info);
 	}
 
-    struct ShaderVk : public Shader
+    struct ShaderVk final : public Shader
     {
         ShaderVk(const VkDevice& _device)
             : device(_device){}

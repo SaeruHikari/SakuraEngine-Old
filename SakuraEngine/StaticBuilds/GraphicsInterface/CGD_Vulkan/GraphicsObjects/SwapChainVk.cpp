@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:49:22
- * @LastEditTime: 2020-03-11 14:34:25
+ * @LastEditTime: 2020-03-11 22:09:46
  */
 #include "SwapChainVk.h"
 #include "../ResourceObjects/GpuResourceVk.h"
@@ -44,14 +44,14 @@ SwapChainVk::SwapChainVk(const VkSwapchainKHR _chain,
     VkFenceCreateInfo fenceInfo = {};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-    for(auto i = 0; i < swapChainCount; i++)
+    for(auto i = 0u; i < swapChainCount; i++)
         if(vkCreateFence(_device.GetCGDEntity().device, &fenceInfo,
             nullptr, &frameSubmitFences[i]) != VK_SUCCESS)
         {        
             CGD_Vk::error("failed to create fence for swapchain!");
             throw std::runtime_error("failed to create fence forswapchain!");
         }
-    for(auto i = 0; i < swapChainCount; i++)
+    for(auto i = 0u; i < swapChainCount; i++)
     {
         if (vkCreateSemaphore(_device.GetCGDEntity().device,
             &semaphoreInfo,

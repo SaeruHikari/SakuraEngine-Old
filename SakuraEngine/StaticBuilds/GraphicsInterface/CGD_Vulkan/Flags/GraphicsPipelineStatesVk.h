@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 11:13:03
- * @LastEditTime: 2020-03-09 12:32:25
+ * @LastEditTime: 2020-03-11 22:08:22
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
@@ -129,11 +129,11 @@ namespace Sakura::Graphics::Vk
         vertexInputInfo.sType = 
             VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInputInfo.vertexBindingDescriptionCount 
-            = vertInfo.vertexBindingDescriptions.size();
+            = (uint32)vertInfo.vertexBindingDescriptions.size();
         vertexInputInfo.pVertexBindingDescriptions
             = (const VkVertexInputBindingDescription*)(vertInfo.vertexAttributeDescriptions.data());
         vertexInputInfo.vertexAttributeDescriptionCount 
-            = vertInfo.vertexAttributeDescriptions.size();
+            = (uint32)vertInfo.vertexAttributeDescriptions.size();
         vertexInputInfo.pVertexAttributeDescriptions
             = (const VkVertexInputAttributeDescription*)(vertInfo.vertexAttributeDescriptions.data());
         return vertexInputInfo;
@@ -170,9 +170,9 @@ namespace Sakura::Graphics::Vk
 		VkPipelineViewportStateCreateInfo viewportState = {};
 		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewportState.pScissors = (const VkRect2D*)info.scissors.data();
-        viewportState.scissorCount = info.scissors.size();
+        viewportState.scissorCount = (uint32)info.scissors.size();
         viewportState.pViewports = (const VkViewport*)info.vps.data();
-        viewportState.viewportCount = info.vps.size();
+        viewportState.viewportCount = (uint32)info.vps.size();
         return viewportState;
     }
 
@@ -260,7 +260,7 @@ namespace Sakura::Graphics::Vk
         dynamicState.pDynamicStates 
             = (const VkDynamicState*)dynamicCreateInfo.dynamicStates.data();
         dynamicState.dynamicStateCount 
-            = dynamicCreateInfo.dynamicStates.size();
+            = (uint32)dynamicCreateInfo.dynamicStates.size();
         return dynamicState;
     }
 

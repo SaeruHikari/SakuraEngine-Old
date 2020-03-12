@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 18:01:43
- * @LastEditTime: 2020-03-09 13:23:33
+ * @LastEditTime: 2020-03-11 20:10:23
  */
 #pragma once
 #include "vulkan/vulkan.h"
@@ -30,11 +30,7 @@
 
 namespace Sakura::Graphics::Vk
 {
-    struct GpuResourceVk : public GpuResource
-    {
-
-    };
-    struct GpuResourceVkImage : public GpuResource
+    struct GpuResourceVkImage final : public GpuResource
     {
         friend class CGD_Vk;
         GpuResourceVkImage(const VkImage& img, Extent2D _extent)
