@@ -6,7 +6,7 @@
 ## 综述
 &emsp;&emsp;时值软工开课, 我的个人项目也正在架构构建阶段。为了完成作业, 这两周终于抽空捧起经典著作《人月神话》读了读。此书我早已入手, 奈何当初积累不足, 草草作读后觉得有如哲学圣论, 便搁置一旁了。
 
-&emsp;&emsp;时隔一年半, 在有了相对量的软件开发经验积累后, 再度翻开此书, 终于豁然明朗。那么谨写此篇文章, 既是为了提交作业, 也是为了重构后的Sakura作序。本文也将会收录到[Sakura的文档页](https://saeruhikari.github.io/SakuraEngine/#/)中。
+&emsp;&emsp;时隔一年半, 在有了相对量的软件开发经验积累后, 再度翻开此书, 终于豁然明朗。那么谨写此篇文章, 既是为了提交作业, 也是为了重构后的Sakura作序。本文也将会收录到[Sakura的文档页](https://saeruhikari.github.io/SakuraEngine/#/DevTools/SPA/NoSilverBullet_Sakura.md)中。
 
 **后注: 最好阅览html或在线文档, 因为markdown导出pdf后图片被压缩, 排版也不令人满意。**
 
