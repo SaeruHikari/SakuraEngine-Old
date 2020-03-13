@@ -58,8 +58,19 @@ public:
             SDL_Event evt;
             while (SDL_PollEvent(&evt))
             {
-                if (evt.type == SDL_QUIT)
-                    run = 0;
+                switch (evt.type)
+                {
+                case SDL_QUIT:
+                    run = 0; break;
+                case SDL_WINDOWEVENT:
+					if (evt.window.event == SDL_WINDOWEVENT_RESIZED)
+                    {
+						std::cout << "MESSAGE:Resizing window...\n";
+                        ResizeWindow(evt.window.data1, evt.window.data2);
+					}
+                default:
+                    break;
+                }
             }
             mainLoop();
         }
@@ -67,57 +78,75 @@ public:
     }
 
 private:
-    void createPSO()
+    void createShader()
     {
-        //Create Render Progress
-        RenderProgressCreateInfo rpinfo = {};
-        AttachmentDescription colorAttachment;
-        colorAttachment.format = swapChain->GetPixelFormat();
-        AttachmentReference colorAttachmentRef = {};
-        SubprogressDescription subprog = {};
-        subprog.colorAttachments.push_back(colorAttachmentRef);
-        rpinfo.attachments.push_back(colorAttachment);
-        rpinfo.subProcs.push_back(subprog);
-        prog = std::move(cgd->CreateRenderProgress(rpinfo));
-
-         // Create PSO
+		// Create PSO
 #if defined(CONFINFO_PLATFORM_LINUX) 
 #elif defined(CONFINFO_PLATFORM_MACOS)
-        Sakura::fs::file vs_f
-("/Users/saeruhikari/Coding/SakuraEngine/SakuraEngine/UnitTests/UnitTestGraphics/vert.spv",
-        'r');
-        Sakura::fs::file fs_f
-("/Users/saeruhikari/Coding/SakuraEngine/SakuraEngine/UnitTests/UnitTestGraphics/frag.spv",
-        'r');
+		Sakura::fs::file vs_f
+		("/Users/saeruhikari/Coding/SakuraEngine/SakuraEngine/UnitTests/UnitTestGraphics/vert.spv",
+			'r');
+		Sakura::fs::file fs_f
+		("/Users/saeruhikari/Coding/SakuraEngine/SakuraEngine/UnitTests/UnitTestGraphics/frag.spv",
+			'r');
 #elif defined(CONFINFO_PLATFORM_WIN32)
-        Sakura::fs::file vs_f
-("D:\\Coding\\SakuraEngine\\SakuraEngine\\UnitTests\\UnitTestGraphics\\vert.spv",
-        'r');
-        Sakura::fs::file fs_f
-("D:\\Coding\\SakuraEngine\\SakuraEngine\\UnitTests\\UnitTestGraphics\\frag.spv",
-        'r');
+		Sakura::fs::file vs_f
+		("D:\\Coding\\SakuraEngine\\SakuraEngine\\UnitTests\\UnitTestGraphics\\vert.spv",
+			'r');
+		Sakura::fs::file fs_f
+		("D:\\Coding\\SakuraEngine\\SakuraEngine\\UnitTests\\UnitTestGraphics\\frag.spv",
+			'r');
 #endif
-        std::vector<char> vs_bytes(vs_f.size());
-        std::vector<char> fs_bytes(fs_f.size());
-        vs_f.read(vs_bytes.data(), vs_bytes.size());
-        fs_f.read(fs_bytes.data(), fs_bytes.size());
-        vertshader = cgd->CreateShader(vs_bytes.data(), vs_bytes.size());
-        fragshader = cgd->CreateShader(fs_bytes.data(), fs_bytes.size());
-        GraphicsPipelineCreateInfo info;
-        ShaderStageCreateInfo vsStage, fsStage;
-        vsStage.stage = StageFlags::VertexStage;
-        vsStage.shader = vertshader.get();vsStage.entry = "main";
-        info.shaderStages.push_back(vsStage);
-        fsStage.stage = StageFlags::PixelStage;
-        fsStage.shader = fragshader.get();fsStage.entry = "main";
-        info.shaderStages.push_back(fsStage);
-        Viewport vp = {};
-        vp.height = 720; vp.width = 1280;
-        Rect2D scissor = {};
-        scissor.extent = swapChain->GetExtent();
-        info.viewportStateCreateInfo.vps.push_back(vp);
-        info.viewportStateCreateInfo.scissors.push_back(scissor);
-        Pipeline = std::move(cgd->CreateGraphicsPipeline(info, *prog.get()));
+		std::vector<char> vs_bytes(vs_f.size());
+		std::vector<char> fs_bytes(fs_f.size());
+		vs_f.read(vs_bytes.data(), vs_bytes.size());
+		fs_f.read(fs_bytes.data(), fs_bytes.size());
+		vertshader = cgd->CreateShader(vs_bytes.data(), vs_bytes.size());
+		fragshader = cgd->CreateShader(fs_bytes.data(), fs_bytes.size());
+    }
+
+    void ResizeWindow(uint32 width, uint32 height)
+    {
+        cgd->GetGraphicsQueue()->WaitIdle();
+		GraphicsPipelineCreateInfo info;
+		ShaderStageCreateInfo vsStage, fsStage;
+		vsStage.stage = StageFlags::VertexStage;
+		vsStage.shader = vertshader.get(); vsStage.entry = "main";
+		info.shaderStages.push_back(vsStage);
+		fsStage.stage = StageFlags::PixelStage;
+		fsStage.shader = fragshader.get(); fsStage.entry = "main";
+		info.shaderStages.push_back(fsStage);
+
+        // recreate swapchain
+        swapChain.reset();
+        swapChain = std::move(cgd->CreateSwapChain(width, height, &surface));
+		Viewport vp = {};
+		vp.height = height; vp.width = width;
+		Rect2D scissor = {};
+		scissor.extent = swapChain->GetExtent();
+
+		//Create Render Progress
+		RenderProgressCreateInfo rpinfo = {};
+		AttachmentDescription colorAttachment;
+		colorAttachment.format = swapChain->GetPixelFormat();
+		AttachmentReference colorAttachmentRef = {};
+		SubprogressDescription subprog = {};
+		subprog.colorAttachments.push_back(colorAttachmentRef);
+		rpinfo.attachments.push_back(colorAttachment);
+		rpinfo.subProcs.push_back(subprog);
+        prog.reset();
+		prog = std::move(cgd->CreateRenderProgress(rpinfo));
+
+		info.viewportStateCreateInfo.vps.push_back(vp);
+		info.viewportStateCreateInfo.scissors.push_back(scissor);
+        Pipeline.reset();
+		Pipeline = std::move(cgd->CreateGraphicsPipeline(info, *prog.get()));
+    }
+
+    void createPSO()
+    {
+        createShader();
+		ResizeWindow(1280, 720);
     }
     
     void initVulkan()
@@ -138,8 +167,6 @@ private:
             ((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
             &surface);
         cgd->InitQueueSet(&surface);
-        swapChain = std::move(cgd->CreateSwapChain(width, height, &surface));
-
         fence = std::move(cgd->AllocFence());
 
         createPSO();
@@ -182,10 +209,10 @@ private:
         std::cout << cgd->contextNum() << "time ms: " << mil << std::endl;
          
         SubmitAndFree(drawTri, cgd->GetGraphicsQueue()); 
-        static uint64 fenceVal = 1;
+        static uint64 fenceVal = 0;
+		cgd->Wait(fence.get(), fenceVal);
+		fenceVal++;
         cgd->GetGraphicsQueue()->Submit(fence.get(), fenceVal);
-        cgd->Wait(fence.get(), fenceVal);
-        fenceVal++;
     }
 
     void cleanUp()
@@ -206,11 +233,10 @@ private:
 
     void createWindow()
     {
-        win = VkSDL_CreateWindow("SakuraEngine Window: CGD Vulkan", width, height);
+        win = VkSDL_CreateWindow("SakuraEngine Window: CGD Vulkan", 1280, 720);
+        
     }
-    
-    const int width = 1280;
-    const int height = 720;
+
     std::unique_ptr<Sakura::Graphics::CGD> cgd;
     std::unique_ptr<Fence> fence;
     std::unique_ptr<Shader> vertshader;

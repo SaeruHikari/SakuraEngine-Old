@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:41:13
- * @LastEditTime: 2020-03-12 21:28:26
+ * @LastEditTime: 2020-03-13 11:11:51
  */
 #include "CommandQueueVk.h"
 #include "CommandContextVk.h"
@@ -109,7 +109,7 @@ void CommandQueueVk::Wait(Fence* fence, uint64 until)
 	timelineInfo.pWaitSemaphoreValues = &waitValue;
 	timelineInfo.signalSemaphoreValueCount = 1;
 	timelineInfo.pSignalSemaphoreValues = &waitValue;
-
+    
 	VkSubmitInfo submitInfo;
     const VkPipelineStageFlags wat = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 

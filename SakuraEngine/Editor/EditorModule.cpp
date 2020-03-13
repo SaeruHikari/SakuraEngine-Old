@@ -9,7 +9,7 @@
  */
 #include "EditorModule.h"
 #include "SakuraEngine/Core/Core.h"
-#include "SakuraEngine/UnitTests/UnitTestGraphics/VkTestApplication.h"
+#include "SakuraEngine/UnitTests/UnitTestGraphics/VkTestApplication.hpp"
 
 void EditorModule::OnLoad()
 {

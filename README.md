@@ -5,12 +5,13 @@
  * @Autor: SaeruHikari
  * @Date: 2020-03-01 20:09:10
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-09 10:52:44
+ * @LastEditTime: 2020-03-13 14:35:24
  -->
-[简体中文](./README.md) | [English](./README.en-US.md)
+[简体中文](./README.md) | [English](./README.en-US.md) | [文档](https://saeruhikari.github.io/SakuraEngine/#/)
 <h1 align="center">Sakura Engine</h1>
 <div align="center">
-跨平台的现代游戏引擎
+
+跨平台的现代游戏引擎 
 </div>
 
 ![Sakura-Icon](Icons/Sakura-Icon.jpeg)
@@ -31,8 +32,6 @@
 
 # 简介
 &emsp;&emsp;SakuraEngine作为我的个人项目, 旨在提供一个易于扩展开发且跨平台的环境, 试验并实现各种游戏引擎技术。[文档](https://saeruhikari.github.io/SakuraEngine/#/)
-
-
 
 
 ## 1. Core

@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-03-01 20:09:10
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-05 16:39:55
+ * @LastEditTime: 2020-03-13 14:34:34
  -->
 <h1 align="center">Sakura Engine</h1>
 <div align="center">
@@ -16,8 +16,10 @@
 - 🌉 跨平台: Win32, Linux, Android(待定)以及IOS(待定)的跨平台基础支持;
 - ⚙️ 模块/插件化: 基于依赖图的模块管理器[SPA](DevTools/SPA/SakuraPackageAdminister.md), 支持静态/动态导出的插件/模块;
 
-# 待实现
+# Coming Soon
 - 🧰 跨图形接口: [CGD](Modules/CGD/CGD.md)(CommonGraphicsDevice)现代图形API([Direct3D12](StaticBuilds/CGD/CGD_Direct3D12.md), [Vulkan](StaticBuilds/CGD/CGD_Vulkan.md)的上层抽象;
+
+# 待实现
 - 🎨 渲染调度: RenderGraph, 数据驱动可自由配置装载的Pass;
 - 🖼️ 渲染特性: 字体渲染, RayTracing Layer, F+ Pipeline, 粒子...
 - 📂 资产管理: 支持虚拟路径挂载, 资源依赖以及异步读取的资产管理系统;
@@ -25,7 +27,7 @@
 
 
 # 简介
-&emsp;&emsp;SakuraEngine作为我的个人项目, 旨在提供一个易于扩展开发且跨平台的环境, 试验并实现各种游戏引擎技术。下面对Sakura的核心内容做一些简介, 旨在传递Sakura的核心开发理念。
+&emsp;&emsp;SakuraEngine作为我的个人项目, 旨在提供一个易于扩展开发且跨平台的环境, 试验并实现各种游戏引擎技术。下面对Sakura的核心内容做一些简介, 旨在传递Sakura的[核心开发理念](No Silver Bullet & Sakura.md)。
 
 ## 链接
 &emsp;&emsp;SakuraEngine使用CMake作为默认的构建工具, 但是并不会在CMake中使用过多的奇技淫巧。大部分构建时的特殊需求(如批处理)会使用python脚本完成, 这样会使引擎不强依赖于构建工具。
