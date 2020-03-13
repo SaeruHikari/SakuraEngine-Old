@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-03-01 20:09:10
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-13 14:34:34
+ * @LastEditTime: 2020-03-13 14:40:22
  -->
 <h1 align="center">Sakura Engine</h1>
 <div align="center">
@@ -27,7 +27,7 @@
 
 
 # 简介
-&emsp;&emsp;SakuraEngine作为我的个人项目, 旨在提供一个易于扩展开发且跨平台的环境, 试验并实现各种游戏引擎技术。下面对Sakura的核心内容做一些简介, 旨在传递Sakura的[核心开发理念](No Silver Bullet & Sakura.md)。
+&emsp;&emsp;SakuraEngine作为我的个人项目, 旨在提供一个易于扩展开发且跨平台的环境, 试验并实现各种游戏引擎技术。下面对Sakura的核心内容做一些简介, 旨在传递Sakura的[核心开发理念](DevTools/SPA/No Silver Bullet & Sakura.md)。
 
 ## 链接
 &emsp;&emsp;SakuraEngine使用CMake作为默认的构建工具, 但是并不会在CMake中使用过多的奇技淫巧。大部分构建时的特殊需求(如批处理)会使用python脚本完成, 这样会使引擎不强依赖于构建工具。
