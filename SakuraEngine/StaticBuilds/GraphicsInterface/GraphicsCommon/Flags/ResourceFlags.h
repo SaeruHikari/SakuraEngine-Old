@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 23:50:42
- * @LastEditTime: 2020-03-15 16:44:01
+ * @LastEditTime: 2020-03-16 00:12:31
  */
 #pragma once
 
@@ -82,7 +82,7 @@ namespace Sakura::Graphics
         TransferDst = 0x00000002,
         UniformTexelBuffer = 0x00000004,
         StorageTexelBuffer = 0x00000008,
-        UniformBuffer = 0x00000010,
+        ConstantBuffer = 0x00000010,
         StorageBuffer = 0x00000020,
         IndexBuffer = 0x00000040,
         VertexBuffer = 0x00000080,

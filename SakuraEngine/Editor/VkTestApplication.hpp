@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-15 23:26:48
+ * @LastEditTime: 2020-03-16 00:22:52
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -44,6 +44,25 @@ extern "C"
 using namespace Sakura;
 using namespace Sakura::Graphics::Vk;
 
+#if defined(CONFINFO_PLATFORM_LINUX) 
+#elif defined(CONFINFO_PLATFORM_MACOS)
+    Sakura::fs::file vs_f
+    ("/Users/saeruhikari/Coding/SakuraEngine/SakuraTestProject/shaders/VertexBuffer/HWVert.spv",
+        'r');
+    Sakura::fs::file fs_f
+    ("/Users/saeruhikari/Coding/SakuraEngine/SakuraEngine/UnitTests/UnitTestGraphics/frag.spv",
+        'r');
+#elif defined(CONFINFO_PLATFORM_WIN32)
+    Sakura::fs::file vs_f
+    ("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\VertexBuffer\\HWVert.spv",
+        'r');
+    Sakura::fs::file fs_f
+    ("D:\\Coding\\SakuraEngine\\SakuraEngine\\UnitTests\\UnitTestGraphics\\frag.spv",
+        'r');
+    Sakura::fs::file vs_cbv
+    ("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\CBV\\CBVVert.spv",
+        'r');
+#endif
 struct Vertex
 {
     Sakura::Math::Vector2f pos;
@@ -73,7 +92,6 @@ struct Vertex
         return attributeDescriptions;
     }
 };
-
 const std::vector<Vertex> vertices = {
     {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
     {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
@@ -121,22 +139,6 @@ private:
     void createShader()
     {
 		// Create PSO
-#if defined(CONFINFO_PLATFORM_LINUX) 
-#elif defined(CONFINFO_PLATFORM_MACOS)
-		Sakura::fs::file vs_f
-		("/Users/saeruhikari/Coding/SakuraEngine/SakuraTestProject/shaders/HWVert.spv",
-			'r');
-		Sakura::fs::file fs_f
-		("/Users/saeruhikari/Coding/SakuraEngine/SakuraEngine/UnitTests/UnitTestGraphics/frag.spv",
-			'r');
-#elif defined(CONFINFO_PLATFORM_WIN32)
-		Sakura::fs::file vs_f
-		("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\HWVert.spv",
-			'r');
-		Sakura::fs::file fs_f
-		("D:\\Coding\\SakuraEngine\\SakuraEngine\\UnitTests\\UnitTestGraphics\\frag.spv",
-			'r');
-#endif
 		std::vector<char> vs_bytes(vs_f.size());
 		std::vector<char> fs_bytes(fs_f.size());
 		vs_f.read(vs_bytes.data(), vs_bytes.size());

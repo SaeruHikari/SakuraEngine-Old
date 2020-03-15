@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-15 23:58:04
+ * @LastEditTime: 2020-03-16 00:09:34
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -142,14 +142,7 @@ void CGD_Vk::Present(SwapChain* chain)
 {
     SwapChainVk* vkChain = (SwapChainVk*)chain;
     VkSwapchainKHR* swapChains = &vkChain->swapChain;
-    vkAcquireNextImageKHR(
-        entityVk.device,
-        vkChain->swapChain,
-        0,
-        vkChain->imageAvailableSemaphores[vkChain->currentFrame],
-        VK_NULL_HANDLE,
-        &vkChain->presentImageIndex
-    );
+
     VkPresentInfoKHR info = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
     info.swapchainCount = 1;
     info.pSwapchains = swapChains;
@@ -163,7 +156,15 @@ void CGD_Vk::Present(SwapChain* chain)
         throw std::runtime_error("Vulkan:failed to present Vulkan graphics queue!");
     }
     vkChain->lastFrame = vkChain->currentFrame;
-    vkChain->currentFrame = (vkChain->currentFrame + 1) % vkChain->swapChainCount;
+    vkAcquireNextImageKHR(
+        entityVk.device,
+        vkChain->swapChain,
+        0,
+        vkChain->imageAvailableSemaphores[vkChain->currentFrame],
+        VK_NULL_HANDLE,
+        &vkChain->currentFrame
+    );
+    //vkChain->currentFrame = (vkChain->lastFrame + 1) % vkChain->swapChainCount;
 }
 
 CommandQueue* CGD_Vk::GetGraphicsQueue() const
