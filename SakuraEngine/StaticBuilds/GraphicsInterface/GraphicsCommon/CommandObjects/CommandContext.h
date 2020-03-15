@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-10 14:50:49
+ * @LastEditTime: 2020-03-15 12:16:02
  */
 #pragma once
 #include <mutex>
@@ -23,6 +23,7 @@ namespace Sakura::Graphics
     SInterface CommandContext;
     SInterface GraphicsPipeline;
     struct RenderTargetSet;
+    SInterface GpuResource;
 }
 
 namespace Sakura::Graphics
@@ -58,6 +59,10 @@ namespace Sakura::Graphics
         
         virtual void Draw(uint32 vertexCount, uint32 instanceCount,
             uint32 firstVertex, uint32 firstInstance) = 0;
+
+        virtual void BindVertexBuffers(const GpuResource& vb) = 0;
+
+        //virtual void BindIndexBuffers() = 0;
 
         sinline ECommandType GetCommandContextType(void)
         {

@@ -22,20 +22,23 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:35:59
- * @LastEditTime: 2020-03-11 11:46:33
+ * @LastEditTime: 2020-03-15 09:41:21
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "../Flags/CommonFeatures.h"
 #include "../Flags/Format.h"
+#include "../Flags/GraphicsPipelineStates.h"
 
 namespace Sakura::Graphics
 {
     SInterface CGD;
     SInterface GpuResource;
 }
+
 struct VkImageViewCreateInfo;
+
 namespace Sakura::Graphics
 {
     enum ResourceViewType
@@ -102,7 +105,10 @@ namespace Sakura::Graphics
 
     SInterface VertexBufferView
     {
-        
+        const GpuResource& vb;
+        uint32 stride;
+        uint32 size;
+        VertexInputRate rate = VertexInputRate::VertexInputRateVertex;
     };
 
     SInterface IndexBufferView

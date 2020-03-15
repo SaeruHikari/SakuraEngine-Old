@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:36:56
- * @LastEditTime: 2020-03-09 13:22:54
+ * @LastEditTime: 2020-03-15 12:26:21
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -33,9 +33,29 @@
 
 namespace Sakura::Graphics
 {
+    struct ResourceCreateInfo
+    {
+        uint64 size;
+        ResourceType type = ResourceType::Buffer;
+        union Details
+        {
+            struct Buffer
+            {
+                BufferUsages usage;
+            }buffer;
+            struct Texture
+            {
+
+            }texture;
+        }detail;
+    };
+    
     SInterface GpuResource
     {
         friend SInterface CGD;
+        virtual ~GpuResource() = default;
+        virtual void Map(void** data) = 0;
+        virtual void Unmap() = 0;
         const Extent2D GetExtent() const
         {
             return extent;
@@ -48,7 +68,7 @@ namespace Sakura::Graphics
         {
             extent = _extent;
         }
-    private:
+    protected:
         Extent2D extent;
     };
 }

@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:38:49
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-10 15:30:46
+ * @LastEditTime: 2020-03-15 12:15:38
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
@@ -15,6 +15,7 @@ namespace Sakura::Graphics::Vk
 {
     class GraphicsPipelineVk;
 }
+
 
 namespace Sakura::Graphics::Vk
 {
@@ -32,6 +33,10 @@ namespace Sakura::Graphics::Vk
 
         virtual void Draw(uint32 vertexCount, uint32 instanceCount,
             uint32 firstVertex, uint32 firstInstance) override final;
+
+        virtual void BindVertexBuffers(
+            const Sakura::Graphics::GpuResource& vb) override final;
+        //virtual void BindIndexBuffers() override final;
     protected:
         CommandContextVk(const CGD_Vk& _cgd, ECommandType type,
             bool bTransiant = false);

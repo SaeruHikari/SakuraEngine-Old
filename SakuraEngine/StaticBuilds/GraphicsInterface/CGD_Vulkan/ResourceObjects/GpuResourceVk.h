@@ -22,21 +22,62 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 18:01:43
- * @LastEditTime: 2020-03-11 20:10:23
+ * @LastEditTime: 2020-03-15 12:34:27
  */
 #pragma once
 #include "vulkan/vulkan.h"
 #include "../../GraphicsCommon/ResourceObjects/Resource.h"
+
+using namespace Sakura::Graphics;
 
 namespace Sakura::Graphics::Vk
 {
     struct GpuResourceVkImage final : public GpuResource
     {
         friend class CGD_Vk;
-        GpuResourceVkImage(const VkImage& img, Extent2D _extent)
-            :image(img), GpuResource(_extent){}
+        friend class ResourceViewVkImage;
+        virtual ~GpuResourceVkImage() override final;
+        virtual void Map(void** data) override final;
+        virtual void Unmap() override final;
+    protected:
+        GpuResourceVkImage(const CGD_Vk& _cgd,
+            const VkImage& img, Extent2D _extent)
+            :image(img), cgd(_cgd), GpuResource(_extent){}
         VkImage image;   
+        const CGD_Vk& cgd;
     };
     
+    struct GpuResourceVkBuffer final : public GpuResource
+    {
+        friend class CGD_Vk;
+        friend class CommandContextVk;
+        virtual ~GpuResourceVkBuffer() override final;
+        virtual void Map(void** data) override final;
+        virtual void Unmap() override final;
+    protected:
+        GpuResourceVkBuffer(const CGD_Vk& _cgd, 
+            const VkDeviceMemory& _memory,
+            const VkBuffer& buf, uint32 _length)
+            :buffer(buf), memory(_memory), cgd(_cgd), GpuResource({_length, 1}){}
+        VkBuffer buffer;
+        VkDeviceMemory memory;
+        const CGD_Vk& cgd;
+    };
+
+    /**
+     * @description: Transfer function of VkBufferCreateInfo 
+     * @param: ResourceCreateInfo
+     * @return: VkBufferCreateInfo
+     * @author: SaeruHikari
+     */
+    inline static VkBufferCreateInfo Transfer(ResourceCreateInfo info)
+    {
+        VkBufferCreateInfo bufferInfo = {};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = info.size;
+        bufferInfo.usage = info.detail.buffer.usage;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        return bufferInfo;
+    }   
 } // namespace Sakura::Graphics::Vk
 

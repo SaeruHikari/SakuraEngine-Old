@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-11 22:09:30
+ * @LastEditTime: 2020-03-15 10:43:34
  */
 
 // Swap Chain Support Details
@@ -188,7 +188,7 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
     {
         // Images
         GpuResourceVkImage* _img = 
-            new GpuResourceVkImage(chainImages[i], Transfer(extent));
+            new GpuResourceVkImage(*this, chainImages[i], Transfer(extent));
         // Views
         auto vkView= ViewIntoResource<ResourceType::Texture2D>(
             *_img, vinfo);

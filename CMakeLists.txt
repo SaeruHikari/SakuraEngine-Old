@@ -91,7 +91,7 @@ include_directories(Extern/include/)
 add_subdirectory(Extern)
 add_subdirectory(DependencyGraph)
 add_subdirectory(SPA)
-#add_subdirectory(SPAUnitTest)
+add_subdirectory(SakuraTestProject)
 add_subdirectory(SakuraEngine)
 
 

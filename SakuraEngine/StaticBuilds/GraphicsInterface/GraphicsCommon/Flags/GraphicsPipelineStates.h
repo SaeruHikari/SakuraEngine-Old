@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:47:38
- * @LastEditTime: 2020-03-09 19:10:58
+ * @LastEditTime: 2020-03-15 09:57:08
  */
 #pragma once
 #include <memory_resource>
@@ -63,7 +63,8 @@ namespace Sakura::Graphics
         AccelerationStructureBuildStage = 0x02000000,
         TaskShaderStage = 0x00080000,
         MeshShaderStage = 0x00100000,
-        FragmentDensityProcessStage = 0x00800000
+        FragmentDensityProcessStage = 0x00800000,
+        BUFFER_PIPELINE_STAGE_MAX_ENUM = 0x7FFFFFFF
     };
     using PipelineStageFlag = uint32;
     
@@ -87,7 +88,8 @@ namespace Sakura::Graphics
         PolygonFill = 0,
         PolygonLine = 1,
         PolygonPoint = 2,
-        PolygonFillRectangleNV = 1000153000
+        PolygonFillRectangleNV = 1000153000,
+        POLYGON_MODE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
     };
 
     enum SampleCountFlag

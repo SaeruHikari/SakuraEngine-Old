@@ -3,8 +3,8 @@
  * @Version: Do not edit
  * @Author: SaeruHikari
  * @Date: 2020-02-02 02:12:39
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-13 02:34:46
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-03-13 22:46:27
  */
 #pragma once
 #include <Eigen/Core> 
@@ -30,7 +30,7 @@ namespace Sakura::Math
     using Vector1u = Eigen::Matrix<std::uint32_t, 1, 1>;
     using Vector2u = Eigen::Matrix<std::uint32_t, 2, 1>;
     using Vector3u = Eigen::Matrix<std::uint32_t, 3, 1>;
-    using Vector4u = Eigen::Matrix<uint32, 4, 1>;
+    using Vector4u = Eigen::Matrix<std::uint32_t, 4, 1>;
 
     using Vector1i = Eigen::Matrix<std::int32_t, 1, 1>;
     using Vector2i = Eigen::Matrix<std::int32_t, 2, 1>;

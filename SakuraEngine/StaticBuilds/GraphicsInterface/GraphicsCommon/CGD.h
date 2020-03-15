@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-11 10:44:09
+ * @LastEditTime: 2020-03-15 11:32:50
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -41,6 +41,7 @@ namespace Sakura::Graphics
     SInterface ResourceView;
     SInterface GpuResource;
     SInterface Fence;
+    struct ResourceCreateInfo;
     struct ResourceViewCreateInfo;
 }
 
@@ -97,8 +98,11 @@ namespace Sakura::Graphics
         virtual CommandQueue* GetGraphicsQueue(void) const = 0;
         virtual CommandQueue* GetComputeQueue(void) const = 0;
         virtual CommandQueue* GetCopyQueue(void) const = 0;
+        
         virtual std::unique_ptr<CommandQueue> AllocQueue(ECommandType type) const = 0;
 
+        virtual std::unique_ptr<GpuResource> CreateResource(
+            const ResourceCreateInfo&) const = 0;
 
         virtual void Wait(Fence* toWait, uint64 until) const = 0;
         virtual std::unique_ptr<Fence> AllocFence(void) = 0;

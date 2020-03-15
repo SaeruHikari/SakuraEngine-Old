@@ -22,15 +22,14 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-12 14:44:41
+ * @LastEditTime: 2020-03-15 11:32:59
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
 #include "CommandObjects/CommandQueueVk.h"
 #include "GraphicsObjects/SwapChainVk.h"
-#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan.h"
 #include <iostream>
-
 
 using namespace Sakura::flags;
 
@@ -53,7 +52,6 @@ namespace Sakura::Graphics::Vk
         std::unique_ptr<CommandQueueVk> computeQueue;
         std::unique_ptr<CommandQueueVk> copyQueue;
         bool bTripleBuffering = false;
-        vk::DispatchLoaderDynamic m_loader;
     };
 
     class CGD_Vk final : public CGD
@@ -106,6 +104,10 @@ namespace Sakura::Graphics::Vk
     // Implements: See GraphicsObjects/FenceVk.cpp
         virtual std::unique_ptr<Fence> AllocFence(void) override final;
         virtual void Wait(Fence* toWait, uint64 until) const override final;
+    public:
+    // Implements: See ResourceObjects/GpuResourceVk.cpp
+        virtual std::unique_ptr<GpuResource> CreateResource(
+            const ResourceCreateInfo&) const override final;
     private:
          /**
          * @description: Initial Vulkan Device
@@ -115,6 +117,8 @@ namespace Sakura::Graphics::Vk
         void setupDebugMessenger();
         void createVkInstance(uint pCount, const char** pName);
         void pickPhysicalDevice(VkSurfaceKHR surface);
+        uint32_t findMemoryType(
+            uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
     public:
         struct QueueFamilyIndices
         {

@@ -5,11 +5,11 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-24 13:05:07
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-08 16:20:49
+ * @LastEditTime: 2020-03-15 11:37:42
  */
 #include "EditorModule.h"
 #include "SakuraEngine/Core/Core.h"
-#include "SakuraEngine/UnitTests/UnitTestGraphics/VkTestApplication.hpp"
+#include "VkTestApplication.hpp"
 
 void EditorModule::OnLoad()
 {

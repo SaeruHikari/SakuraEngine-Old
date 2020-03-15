@@ -5,13 +5,13 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-24 13:24:40
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-12 18:14:46
+ * @LastEditTime: 2020-03-13 21:25:41
  */
-
 #include "SakuraEngine/SPAModules.generated.h"//include generated file in the root path
 #include "SPA/include/modulemanager.h"
 #include "SakuraEngine/Core/CoreModule.h"
 #include "SakuraEngine/StaticBuilds/TaskSystem/TaskSystem.h"
+#include "StaticBuilds/PixelOperators/ImageUtils.h"
 #include <iostream>
 #include <thread>
 

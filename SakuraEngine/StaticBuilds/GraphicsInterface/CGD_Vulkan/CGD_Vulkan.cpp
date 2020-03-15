@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-12 14:47:31
+ * @LastEditTime: 2020-03-15 12:45:17
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -31,6 +31,7 @@
 #include "ResourceObjects/GpuResourceVk.h"
 #include "ResourceObjects/ResourceViewVk.h"
 #include "SakuraEngine/Core/Core.h"
+#include "vulkan/vulkan.hpp"
 
 using namespace Sakura::Graphics::Vk;
 using namespace Sakura::Graphics;
@@ -169,7 +170,7 @@ void CGD_Vk::Present(SwapChain* chain)
 
     /* Present result on screen */
     VkSwapchainKHR* swapChains = &vkChain->swapChain;
-    VkPresentInfoKHR presentInfo;
+    VkPresentInfoKHR presentInfo = {};
     {
         presentInfo.sType               = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.pNext               = nullptr;
@@ -278,7 +279,6 @@ void CGD_Vk::createVkInstance(uint pCount, const char** pName)
     createInfo.ppEnabledExtensionNames = pName;
 
     entityVk.instance = vk::createInstance(createInfo);
-    entityVk.m_loader = vk::DispatchLoaderDynamic(entityVk.instance, vkGetInstanceProcAddr);
 }
 using QueueFamilyIndices = CGD_Vk::QueueFamilyIndices;
 QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phy_device,

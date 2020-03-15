@@ -13,21 +13,29 @@ else(SpecificTimerImpl)
 set(SpecificTimerImpl ../CGD/GpuTimer.cpp) 
 endif(SpecificTimerImpl)
 
+if(FALSE)
+add_library(CGD_Vulkan  
+    STATIC  
+    CGDVk_All.cpp
+)
+else()
 add_library(CGD_Vulkan  
     STATIC    
     CGD_Vulkan.cpp
-    CommandObjects/CommandContextVk.cpp
     ../CGD/CommandContext.cpp
-    CommandObjects/CommandQueueVk.cpp
     ../CGD/Profiling.cpp 
+    CommandObjects/CommandContextVk.cpp
+    CommandObjects/CommandQueueVk.cpp
     ResourceObjects/GpuResourceVk.cpp
     ResourceObjects/ResourceViewVk.cpp
     ResourceObjects/ShaderVk.cpp
+    ResourceObjects/VBIBViewVk.cpp
     GraphicsObjects/SwapChainVk.cpp
     GraphicsObjects/GraphicsPipelineVk.cpp
     GraphicsObjects/RenderProgressVk.cpp
     GraphicsObjects/FenceVk.cpp
     ${SpecificTimerImpl}  
 )
+endif()
 
 target_link_libraries(CGD_Vulkan Core Vulkan::Vulkan)

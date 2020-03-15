@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-12 21:24:11
+ * @LastEditTime: 2020-03-15 12:48:13
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -43,6 +43,42 @@ extern "C"
 #include <thread>
 using namespace Sakura;
 using namespace Sakura::Graphics::Vk;
+
+struct Vertex
+{
+    Sakura::Math::Vector2f pos;
+    Sakura::Math::Vector3f color;
+    static VertexInputBindingDescription getBindingDescription() {
+        VertexInputBindingDescription bindingDescription = {};
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(Vertex);
+        bindingDescription.inputRate = VertexInputRate::VertexInputRateVertex;
+
+        return bindingDescription;
+    }
+
+    static std::array<VertexInputAttributeDescription, 2> getAttributeDescriptions() {
+        std::array<VertexInputAttributeDescription, 2> attributeDescriptions = {};
+
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = Format::R32G32_SFLOAT;
+        attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = Format::R32G32B32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+        return attributeDescriptions;
+    }
+};
+
+const std::vector<Vertex> vertices = {
+    {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+};
 
 class VkTestApplication
 {
@@ -90,13 +126,17 @@ private:
 		("/Users/saeruhikari/Coding/SakuraEngine/SakuraEngine/UnitTests/UnitTestGraphics/frag.spv",
 			'r');
 #elif defined(CONFINFO_PLATFORM_WIN32)
-		Sakura::fs::file vs_f
+		//Sakura::fs::file vs_f
+		//("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\HWVert.spv",
+	//		'r');
+        Sakura::fs::file vs_f
 		("D:\\Coding\\SakuraEngine\\SakuraEngine\\UnitTests\\UnitTestGraphics\\vert.spv",
 			'r');
 		Sakura::fs::file fs_f
 		("D:\\Coding\\SakuraEngine\\SakuraEngine\\UnitTests\\UnitTestGraphics\\frag.spv",
 			'r');
 #endif
+
 		std::vector<char> vs_bytes(vs_f.size());
 		std::vector<char> fs_bytes(fs_f.size());
 		vs_f.read(vs_bytes.data(), vs_bytes.size());
@@ -109,6 +149,18 @@ private:
     {
         cgd->GetGraphicsQueue()->WaitIdle();
 		GraphicsPipelineCreateInfo info;
+        // vertex input
+        /*
+        auto bindingDescription = Vertex::getBindingDescription();
+        auto attributeDescriptions = Vertex::getAttributeDescriptions();
+        VertexInputStateCreateInfo vbInfo;
+        vbInfo.vertexBindingDescriptions.resize(1);
+        vbInfo.vertexAttributeDescriptions.resize(attributeDescriptions.size());
+        vbInfo.vertexBindingDescriptions[0] = bindingDescription;
+        vbInfo.vertexAttributeDescriptions[0] = attributeDescriptions[0];
+        vbInfo.vertexAttributeDescriptions[1] = attributeDescriptions[1];
+        info.vertexInputInfo = vbInfo;*/
+        // shaders
 		ShaderStageCreateInfo vsStage, fsStage;
 		vsStage.stage = StageFlags::VertexStage;
 		vsStage.shader = vertshader.get(); vsStage.entry = "main";
@@ -170,6 +222,17 @@ private:
         fence = std::move(cgd->AllocFence());
 
         createPSO();
+/*
+        ResourceCreateInfo bufferInfo;
+        bufferInfo.type = ResourceType::Buffer;
+        bufferInfo.detail.buffer.usage = BufferUsage::VertexBuffer;
+        bufferInfo.size = sizeof(Vertex) * vertices.size();
+        vertexBuffer = std::move(cgd->CreateResource(bufferInfo));
+        
+        void* data;
+        vertexBuffer->Map(&data);
+        memcpy(data, vertices.data(), (size_t)bufferInfo.size);
+        vertexBuffer->Unmap();*/
     }
 
     CommandContext* drawTriangle(RenderTargetSet& rts)
@@ -178,6 +241,7 @@ private:
             cgd->AllocateContext(ECommandType::CommandContext_Graphics);
         context->Begin(Pipeline.get());
         context->SetRenderTargets(rts);
+        //context->BindVertexBuffers(*vertexBuffer.get());
         context->Draw(3, 1, 0, 0);
         context->End();
         return context;
@@ -237,6 +301,7 @@ private:
         
     }
 
+    std::unique_ptr<GpuResource> vertexBuffer;
     std::unique_ptr<Sakura::Graphics::CGD> cgd;
     std::unique_ptr<Fence> fence;
     std::unique_ptr<Shader> vertshader;

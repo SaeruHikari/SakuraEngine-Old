@@ -21,37 +21,53 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-06 00:37:46
- * @LastEditTime: 2020-03-15 09:11:26
+ * @Date: 2020-03-13 18:31:44
+ * @LastEditTime: 2020-03-13 18:36:42
  */
 #pragma once
-#include "SakuraEngine/Core/CoreMinimal/SInterface.h"
-#include "../Flags/TypesVk.h"
-#include "../../GraphicsCommon/ResourceObjects/ResourceViews.h"
-#include "vulkan/vulkan.h"
+#ifdef min
+#undef min
+#endif
 
-namespace Sakura::Graphics::Vk
+/**
+ * @description: TO DO: SIMD optimize
+ * @author: SaeruHikari
+ */
+namespace Sakura::Math
 {
-    class CGD_Vk;
-}
-
-namespace Sakura::Graphics::Vk
-{
-    using namespace Sakura::Graphics;
-
-    struct ResourceViewVkImage final : public ResourceView
+    template<typename T>
+    T __internal__min(T a, T b)
     {
-        ResourceViewVkImage(const CGD_Vk&);
-        virtual ~ResourceViewVkImage() override final;
-        virtual void Detach() override final;
-        virtual void Attach(const GpuResource&, const ResourceViewCreateInfo&) override final;
-        VkImageView vkImgView = VK_NULL_HANDLE;
-    };
-
-    struct VertexBufferViewVk final : public VertexBufferView
+        return (a < b) ? a : b;
+    }
+    
+    template<typename T, typename... Ts>
+    T __internal__min(T a, T b, Ts... ts)
     {
+        return __internal__min(__internal__min(a, b), ts...);
+    }
 
-    private:
-        VkVertexInputBindingDescription bindingDescription;
-    };
+    template<typename... Ts>
+    auto min(Ts... ts)
+    {
+        return __internal__min(ts...); 
+    }
+
+        template<typename T>
+    T __internal__max(T a, T b)
+    {
+        return (a > b) ? a : b;
+    }
+    
+    template<typename T, typename... Ts>
+    T __internal__max(T a, T b, Ts... ts)
+    {
+        return __internal__max(__internal__max(a, b), ts...);
+    }
+
+    template<typename... Ts>
+    auto max(Ts... ts)
+    {
+        return __internal__max(ts...); 
+    }
 }

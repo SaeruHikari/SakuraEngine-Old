@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:06:12
- * @LastEditTime: 2020-03-11 22:09:04
+ * @LastEditTime: 2020-03-15 12:50:36
  */
 #include "GraphicsPipelineVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -68,7 +68,29 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     for(auto i = 0; i < info.shaderStages.size(); i++)
         pStages[i] = Transfer(info.shaderStages[i]);
     pipelineInfo.pStages = pStages.data();
-    auto vertInput = Transfer(info.vertexInputInfo);
+
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
+    vertexInputInfo.sType = 
+        VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInputInfo.vertexBindingDescriptionCount 
+        = (uint32)info.vertexInputInfo.vertexBindingDescriptions.size();
+    vertexInputInfo.pVertexBindingDescriptions
+        = (const VkVertexInputBindingDescription*)(
+            info.vertexInputInfo.vertexBindingDescriptions.data());
+    vertexInputInfo.vertexAttributeDescriptionCount 
+        = (uint32)info.vertexInputInfo.vertexAttributeDescriptions.size();
+    std::vector<VkVertexInputAttributeDescription> attributesDes(vertexInputInfo.vertexAttributeDescriptionCount);
+    for(auto i = 0; i < attributesDes.size(); i++)
+    {
+        auto src = info.vertexInputInfo.vertexAttributeDescriptions;
+        attributesDes[i].binding = src[i].binding;
+        attributesDes[i].format = Transfer(src[i].format);
+        attributesDes[i].offset = src[i].offset;
+        attributesDes[i].location = src[i].location;
+    }
+    vertexInputInfo.pVertexAttributeDescriptions = attributesDes.data();
+
+    auto vertInput = vertexInputInfo;
     auto ia = Transfer(info.inputassembly);
     auto vps = Transfer(info.viewportStateCreateInfo);
     auto raster = Transfer(info.rasterizationStateCreateInfo);

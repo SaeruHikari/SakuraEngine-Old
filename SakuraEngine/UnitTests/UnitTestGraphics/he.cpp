@@ -21,37 +21,41 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-06 00:37:46
- * @LastEditTime: 2020-03-15 09:11:26
+ * @Date: 2020-03-13 21:24:54
+ * @LastEditTime: 2020-03-14 01:48:22
  */
-#pragma once
-#include "SakuraEngine/Core/CoreMinimal/SInterface.h"
-#include "../Flags/TypesVk.h"
-#include "../../GraphicsCommon/ResourceObjects/ResourceViews.h"
-#include "vulkan/vulkan.h"
+#include "SakuraEngine/StaticBuilds/PixelOperators/DigitalImageProcess.h"
+#include <iostream>
+#include <thread>
 
-namespace Sakura::Graphics::Vk
+int main(void)
 {
-    class CGD_Vk;
+    using namespace Sakura::Images;
+    bool gray = true;
+    int width, height, nc; 
+    Image png = LoadFromDisk("D:\\pics\\grey.png", width, height, nc);
+    if(!gray)
+    {
+        RGB2HSI<std::uint8_t>((std::uint8_t*)png.GetData(), width * height, nc);
+        Sakura::Images::WirtePNGToDisk("D:\\pics\\grey_hsi.png",
+                width, height, nc, png.GetData(), 0);
+    }
+
+    
+    auto mapper =
+        HistNormolize<true>(
+            (std::uint8_t*)png.GetData(), width, height, nc, !gray);
+    Sakura::Images::WirtePNGToDisk("D:\\pics\\grey_hsi_he.png",
+        width, height, nc, png.GetData(), 0);
+
+        
+    if(!gray)
+    {
+        HSI2RGB<std::uint8_t>((std::uint8_t*)png.GetData(), width * height, nc);
+            Sakura::Images::WirtePNGToDisk("D:\\pics\\grey_he.png",
+        width, height, nc, png.GetData(), 0);
+    }
+    return 0;
 }
 
-namespace Sakura::Graphics::Vk
-{
-    using namespace Sakura::Graphics;
 
-    struct ResourceViewVkImage final : public ResourceView
-    {
-        ResourceViewVkImage(const CGD_Vk&);
-        virtual ~ResourceViewVkImage() override final;
-        virtual void Detach() override final;
-        virtual void Attach(const GpuResource&, const ResourceViewCreateInfo&) override final;
-        VkImageView vkImgView = VK_NULL_HANDLE;
-    };
-
-    struct VertexBufferViewVk final : public VertexBufferView
-    {
-
-    private:
-        VkVertexInputBindingDescription bindingDescription;
-    };
-}

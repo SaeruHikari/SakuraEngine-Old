@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 11:13:03
- * @LastEditTime: 2020-03-11 22:08:22
+ * @LastEditTime: 2020-03-15 12:50:50
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
@@ -120,23 +120,6 @@ namespace Sakura::Graphics::Vk
         tran.primitiveRestartEnable = info.primitiveRestartEnable == VK_TRUE;
         tran.topo = Transfer(info.topology);
         return tran;
-    }
-
-    sinline static VkPipelineVertexInputStateCreateInfo Transfer(
-        const VertexInputStateCreateInfo& vertInfo)
-    {
-        VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
-        vertexInputInfo.sType = 
-            VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount 
-            = (uint32)vertInfo.vertexBindingDescriptions.size();
-        vertexInputInfo.pVertexBindingDescriptions
-            = (const VkVertexInputBindingDescription*)(vertInfo.vertexAttributeDescriptions.data());
-        vertexInputInfo.vertexAttributeDescriptionCount 
-            = (uint32)vertInfo.vertexAttributeDescriptions.size();
-        vertexInputInfo.pVertexAttributeDescriptions
-            = (const VkVertexInputAttributeDescription*)(vertInfo.vertexAttributeDescriptions.data());
-        return vertexInputInfo;
     }
 
     sinline static VkRect2D Transfer(Rect2D rect2D)

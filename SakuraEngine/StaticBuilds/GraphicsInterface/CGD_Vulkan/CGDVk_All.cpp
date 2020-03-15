@@ -21,37 +21,19 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-06 00:37:46
- * @LastEditTime: 2020-03-15 09:11:26
+ * @Date: 2020-03-15 09:00:54
+ * @LastEditTime: 2020-03-15 09:04:22
  */
-#pragma once
-#include "SakuraEngine/Core/CoreMinimal/SInterface.h"
-#include "../Flags/TypesVk.h"
-#include "../../GraphicsCommon/ResourceObjects/ResourceViews.h"
-#include "vulkan/vulkan.h"
-
-namespace Sakura::Graphics::Vk
-{
-    class CGD_Vk;
-}
-
-namespace Sakura::Graphics::Vk
-{
-    using namespace Sakura::Graphics;
-
-    struct ResourceViewVkImage final : public ResourceView
-    {
-        ResourceViewVkImage(const CGD_Vk&);
-        virtual ~ResourceViewVkImage() override final;
-        virtual void Detach() override final;
-        virtual void Attach(const GpuResource&, const ResourceViewCreateInfo&) override final;
-        VkImageView vkImgView = VK_NULL_HANDLE;
-    };
-
-    struct VertexBufferViewVk final : public VertexBufferView
-    {
-
-    private:
-        VkVertexInputBindingDescription bindingDescription;
-    };
-}
+#include "CGD_Vulkan.cpp"
+#include "../CGD/CommandContext.cpp"
+#include "../CGD/Profiling.cpp"
+#include "CommandObjects/CommandContextVk.cpp"
+#include "CommandObjects/CommandQueueVk.cpp"
+#include "ResourceObjects/GpuResourceVk.cpp"
+#include "ResourceObjects/ShaderVk.cpp"
+#include "ResourceObjects/VBIBViewVk.cpp"
+#include "ResourceObjects/ResourceViewVk.cpp"
+#include "GraphicsObjects/SwapChainVk.cpp"
+#include "GraphicsObjects/GraphicsPipelineVk.cpp"
+#include "GraphicsObjects/RenderProgressVk.cpp"
+#include "GraphicsObjects/FenceVk.cpp"

@@ -25,8 +25,8 @@
             "compilerPath": "C:\\Strawberry\\c\\bin\\gcc.exe",
             "cStandard": "c11",
             "cppStandard": "c++20",
-            "configurationProvider": "vector-of-bool.cmake-tools",
-            "compilerArgs": []
+            "compilerArgs": [],
+            "configurationProvider": "vector-of-bool.cmake-tools"
         },
         {
             "name": "Linux",
