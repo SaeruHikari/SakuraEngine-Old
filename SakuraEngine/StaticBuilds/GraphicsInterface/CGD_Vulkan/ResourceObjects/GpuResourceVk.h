@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 18:01:43
- * @LastEditTime: 2020-03-15 13:42:40
+ * @LastEditTime: 2020-03-15 16:28:52
  */
 #pragma once
 #include "vulkan/vulkan.h"
@@ -63,21 +63,5 @@ namespace Sakura::Graphics::Vk
         VkDeviceMemory memory;
         const CGD_Vk& cgd;
     };
-
-    /**
-     * @description: Transfer function of VkBufferCreateInfo 
-     * @param: ResourceCreateInfo
-     * @return: VkBufferCreateInfo
-     * @author: SaeruHikari
-     */
-    inline static VkBufferCreateInfo Transfer(ResourceCreateInfo info)
-    {
-        VkBufferCreateInfo bufferInfo = {};
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = info.size;
-        bufferInfo.usage = info.detail.buffer.usage;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        return bufferInfo;
-    }   
 } // namespace Sakura::Graphics::Vk
 

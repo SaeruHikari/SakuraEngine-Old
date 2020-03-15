@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 23:50:42
- * @LastEditTime: 2020-03-15 09:57:01
+ * @LastEditTime: 2020-03-15 16:44:01
  */
 #pragma once
 
@@ -61,8 +61,9 @@ namespace Sakura::Graphics
         IMAGE_LAYOUT_BITS_MAX_ENUM = 0x7FFFFFFF
     };
 
-    enum class CPUAccessFlags
+    enum CPUAccessFlags
     {
+        None        = 0,
         Read        = (1 << 0),
         Write       = (1 << 1),
         ReadWrite   = (Read | Write)

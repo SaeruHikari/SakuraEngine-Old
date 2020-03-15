@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:38:49
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-15 12:15:38
+ * @LastEditTime: 2020-03-15 19:31:11
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
@@ -25,11 +25,13 @@ namespace Sakura::Graphics::Vk
         friend class CommandQueueVk;
         virtual ~CommandContextVk() override final;
     public:
-        virtual void Begin(GraphicsPipeline* gp) override final;
+        virtual void Begin() override final;
         virtual void End() override final;
+        virtual void Reset() override final;
+        virtual void EndRenderPass() override final;
 
-        virtual void SetRenderTargets(
-            const RenderTargetSet& rts) override final;
+        virtual void BeginRenderPass(
+            GraphicsPipeline* gp, const RenderTargetSet& rts) override final;
 
         virtual void Draw(uint32 vertexCount, uint32 instanceCount,
             uint32 firstVertex, uint32 firstInstance) override final;
@@ -37,6 +39,10 @@ namespace Sakura::Graphics::Vk
         virtual void BindVertexBuffers(
             const Sakura::Graphics::GpuResource& vb) override final;
         //virtual void BindIndexBuffers() override final;
+        
+        virtual void CopyBuffer(GpuResource& src, GpuResource& dst,
+            const uint64_t srcOffset,
+            const uint64_t dstOffset = 0, const uint64_t size = 0) override final;
     protected:
         CommandContextVk(const CGD_Vk& _cgd, ECommandType type,
             bool bTransiant = false);

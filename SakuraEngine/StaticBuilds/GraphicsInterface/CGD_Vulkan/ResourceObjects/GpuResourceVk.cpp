@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 22:41:33
- * @LastEditTime: 2020-03-15 14:24:35
+ * @LastEditTime: 2020-03-15 18:52:49
  */
 #include "GpuResourceVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -71,7 +71,14 @@ std::unique_ptr<GpuResource> CGD_Vk::CreateResource(
     {
     case ResourceType::Buffer:
         {
-            VkBufferCreateInfo bufferInfo = Transfer(info);
+            VkBufferCreateInfo bufferInfo = {};
+            bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            bufferInfo.size = info.size;
+            bufferInfo.usage = info.detail.buffer.usage;
+            bufferInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
+            bufferInfo.queueFamilyIndexCount = queueFamilyIndices.GetSize();
+            auto indices = queueFamilyIndices.GetIndices();
+            bufferInfo.pQueueFamilyIndices = indices.data();
             if (vkCreateBuffer(
                 entityVk.device, &bufferInfo, nullptr, &vertexBuffer) != VK_SUCCESS) 
             {
@@ -84,10 +91,19 @@ std::unique_ptr<GpuResource> CGD_Vk::CreateResource(
             VkMemoryAllocateInfo allocInfo = {};
             allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
             allocInfo.allocationSize = memRequirement.size;
-            static auto _type = findMemoryType(
-                memRequirement.memoryTypeBits,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | 
-                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+            
+            VkMemoryPropertyFlags prop = 0;
+            if(info.detail.buffer.cpuAccess 
+                && CPUAccessFlags::ReadWrite != CPUAccessFlags::None)
+            {
+                prop |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+                prop |= VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+            }
+            else 
+                prop |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT ;
+            auto _type = findMemoryType(
+                memRequirement.memoryTypeBits, prop);
+                
             allocInfo.memoryTypeIndex = _type;
             if (vkAllocateMemory(
                 entityVk.device, &allocInfo, nullptr, &memory) != VK_SUCCESS) 

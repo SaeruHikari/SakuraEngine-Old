@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:36:56
- * @LastEditTime: 2020-03-15 12:26:21
+ * @LastEditTime: 2020-03-15 16:09:21
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -42,12 +42,14 @@ namespace Sakura::Graphics
             struct Buffer
             {
                 BufferUsages usage;
-            }buffer;
+                CPUAccessFlags cpuAccess;
+            } buffer;
+
             struct Texture
             {
 
-            }texture;
-        }detail;
+            } texture;
+        } detail;
     };
     
     SInterface GpuResource

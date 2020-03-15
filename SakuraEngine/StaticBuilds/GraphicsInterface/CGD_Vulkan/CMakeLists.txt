@@ -13,7 +13,7 @@ else(SpecificTimerImpl)
 set(SpecificTimerImpl ../CGD/GpuTimer.cpp) 
 endif(SpecificTimerImpl)
 
-if(FALSE)
+if(TRUE)
 add_library(CGD_Vulkan  
     STATIC  
     CGDVk_All.cpp

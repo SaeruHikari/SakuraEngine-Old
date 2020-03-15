@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-15 15:03:53
+ * @LastEditTime: 2020-03-15 19:14:32
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -120,7 +120,7 @@ private:
 #if defined(CONFINFO_PLATFORM_LINUX) 
 #elif defined(CONFINFO_PLATFORM_MACOS)
 		Sakura::fs::file vs_f
-		("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\HWVert.spv",
+		("/Users/saeruhikari/Coding/SakuraEngine/SakuraTestProject/shaders/HWVert.spv",
 			'r');
 		Sakura::fs::file fs_f
 		("/Users/saeruhikari/Coding/SakuraEngine/SakuraEngine/UnitTests/UnitTestGraphics/frag.spv",
@@ -133,14 +133,12 @@ private:
 		("D:\\Coding\\SakuraEngine\\SakuraEngine\\UnitTests\\UnitTestGraphics\\frag.spv",
 			'r');
 #endif
-
 		std::vector<char> vs_bytes(vs_f.size());
 		std::vector<char> fs_bytes(fs_f.size());
 		vs_f.read(vs_bytes.data(), vs_bytes.size());
 		fs_f.read(fs_bytes.data(), fs_bytes.size());
 		vertshader = cgd->CreateShader(vs_bytes.data(), vs_bytes.size());
 		fragshader = cgd->CreateShader(fs_bytes.data(), fs_bytes.size());
-
         // shaders
 		vsStage.stage = StageFlags::VertexStage;
 		vsStage.shader = vertshader.get(); vsStage.entry = "main";
@@ -148,7 +146,7 @@ private:
 		fsStage.shader = fragshader.get(); fsStage.entry = "main";
     }
 
-    void createVnInfo()
+    void createVInInfo()
     {
         // vertex input
         auto bindingDescription = Vertex::getBindingDescription();
@@ -180,9 +178,11 @@ private:
 		RenderProgressCreateInfo rpinfo = {};
 		AttachmentDescription colorAttachment;
 		colorAttachment.format = swapChain->GetPixelFormat();
-		AttachmentReference colorAttachmentRef = {};
+		AttachmentReference colorAttachmentRef 
+            = {0, ImageLayout::ColorAttachment};
 		SubprogressDescription subprog = {};
 		subprog.colorAttachments.push_back(colorAttachmentRef);
+        
 		rpinfo.attachments.push_back(colorAttachment);
 		rpinfo.subProcs.push_back(subprog);
         prog.reset();
@@ -198,13 +198,31 @@ private:
     {
         ResourceCreateInfo bufferInfo;
         bufferInfo.type = ResourceType::Buffer;
-        bufferInfo.detail.buffer.usage = BufferUsage::VertexBuffer;
+        bufferInfo.detail.buffer.usage = 
+            BufferUsage::VertexBuffer | BufferUsage::TransferDst;
+        bufferInfo.detail.buffer.cpuAccess = CPUAccessFlags::None;
         bufferInfo.size = sizeof(Vertex) * vertices.size();
         vertexBuffer = std::move(cgd->CreateResource(bufferInfo));
+
+        bufferInfo.detail.buffer.usage = BufferUsage::TransferSrc;
+        bufferInfo.detail.buffer.cpuAccess = CPUAccessFlags::ReadWrite;
+        uploadBuffer = std::move(cgd->CreateResource(bufferInfo));
+
         void* data;
-        vertexBuffer->Map(&data);
+        uploadBuffer->Map(&data);
         memcpy(data, vertices.data(), (size_t)bufferInfo.size);
-        vertexBuffer->Unmap();
+        uploadBuffer->Unmap();
+
+        auto context = 
+            cgd->AllocateContext(ECommandType::CommandContext_Copy);
+        context->Begin();
+        context->CopyBuffer(*uploadBuffer.get(),
+            *vertexBuffer.get(), bufferInfo.size);
+        context->End();
+        
+        cgd->GetCopyQueue()->Submit(context);
+        cgd->FreeContext(context);
+        cgd->GetCopyQueue()->WaitIdle();
     }
 
     void initVulkan()
@@ -225,7 +243,7 @@ private:
         cgd->InitQueueSet(&surface);
         fence = std::move(cgd->AllocFence());
 
-        createVnInfo();
+        createVInInfo();
         createShader();
         ResizeWindow(1280, 720);
         createBuffer();
@@ -235,10 +253,11 @@ private:
     {
         auto context = 
             cgd->AllocateContext(ECommandType::CommandContext_Graphics);
-        context->Begin(Pipeline.get());
-        context->SetRenderTargets(rts);
+        context->Begin();
+        context->BeginRenderPass(Pipeline.get(), rts);
         context->BindVertexBuffers(*vertexBuffer.get());
         context->Draw(3, 1, 0, 0);
+        context->EndRenderPass();
         context->End();
         return context;
     }
@@ -265,7 +284,7 @@ private:
         cgd->GetGraphicsQueue()->Submit(drawTri);
         cgd->FreeContext(drawTri);
 
-        static uint64 fenceVal = 0;
+        static uint64 fenceVal = 1;
         cgd->GetGraphicsQueue()->Submit(fence.get(), fenceVal);
 		cgd->Wait(fence.get(), fenceVal);
 		fenceVal++;
@@ -282,6 +301,7 @@ private:
             surface, nullptr);
         prog.reset();
 		fence.reset();
+        uploadBuffer.reset();
         vertexBuffer.reset();
         cgd->Destroy();
 	    SDL_DestroyWindow(win);
@@ -293,9 +313,9 @@ private:
         win = VkSDL_CreateWindow("SakuraEngine Window: CGD Vulkan", 1280, 720);
     }
 
+    std::unique_ptr<GpuResource> vertexBuffer, uploadBuffer;
     ShaderStageCreateInfo vsStage, fsStage;
     VertexInputStateCreateInfo vbInfo;
-    std::unique_ptr<GpuResource> vertexBuffer;
     std::unique_ptr<Sakura::Graphics::CGD> cgd;
     std::unique_ptr<Fence> fence;
     std::unique_ptr<Shader> vertshader;

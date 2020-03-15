@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-15 14:10:49
+ * @LastEditTime: 2020-03-15 19:32:42
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -36,7 +36,6 @@ CommandContext* CGD_Vk::AllocateContext(ECommandType type, bool bTransiant)
 #endif
     if(!availableContexts[type].empty())
     {
-        std::cout << "WTDF" << std::endl;
         auto res = availableContexts[type].front();
         if(vkGetFenceStatus(entityVk.device, 
             ((CommandContextVk*)res)->recordingFence) == VK_SUCCESS)
@@ -73,7 +72,21 @@ CommandContextVk::CommandContextVk(const CGD_Vk& _cgd,
     : cgd(_cgd)
 {
     auto indices = _cgd.GetQueueFamily().graphicsFamily.value();
-    auto graphicsQueue = _cgd.GetCGDEntity().graphicsQueue->vkQueue;
+    switch (type)
+    {
+    case ECommandType::CommandContext_Graphics:
+        indices = _cgd.GetQueueFamily().graphicsFamily.value();
+        break;
+    case ECommandType::CommandContext_Compute:
+        indices = _cgd.GetQueueFamily().computeFamily.value();
+        break;
+    case ECommandType::CommandContext_Copy:
+        indices = _cgd.GetQueueFamily().copyFamily.value();
+        break;
+    default:
+        break;
+    }
+    this->m_Type = type;
     VkCommandPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = indices;
@@ -117,25 +130,18 @@ CommandContextVk::~CommandContextVk()
     vkDestroyCommandPool(cgd.GetCGDEntity().device, commandPool, nullptr);
 }
 
-void CommandContextVk::Begin(GraphicsPipeline* gp)
+void CommandContextVk::Begin()
 {
-    vkGp = (GraphicsPipelineVk*)gp;
-    VkCommandBufferBeginInfo beginInfo = {};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    bOpen = true;
     vkResetCommandPool(cgd.GetCGDEntity().device,
         commandPool, VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT); 
+    VkCommandBufferBeginInfo beginInfo = {};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) 
     {
         CGD_Vk::error("Vulkan: failed to begin recording command buffer!");
         throw std::runtime_error("failed to begin recording command buffer!");
     }
-    if(vkGp->graphicsPipeline == VK_NULL_HANDLE)
-    {
-        CGD_Vk::error("CGD: please bind VkPipeline first!");
-        throw std::runtime_error("CGD: please bind VkPipeline first!");
-    }
-    vkCmdBindPipeline(commandBuffer,
-        VK_PIPELINE_BIND_POINT_GRAPHICS, vkGp->graphicsPipeline);
 }
 
 void CommandContextVk::BindVertexBuffers(const GpuResource& vb) 
@@ -145,8 +151,17 @@ void CommandContextVk::BindVertexBuffers(const GpuResource& vb)
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, bufs, offsets);
 }
 
-void CommandContextVk::SetRenderTargets(const RenderTargetSet& rts)
+void CommandContextVk::BeginRenderPass(
+    GraphicsPipeline* gp, const RenderTargetSet& rts)
 {
+    vkGp = (GraphicsPipelineVk*)gp;
+    if(vkGp->graphicsPipeline == VK_NULL_HANDLE)
+    {
+        CGD_Vk::error("CGD: please bind VkPipeline first!");
+        throw std::runtime_error("CGD: please bind VkPipeline first!");
+    }
+    vkCmdBindPipeline(commandBuffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS, vkGp->graphicsPipeline);
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = vkGp->progress.renderPass;
@@ -169,9 +184,34 @@ void CommandContextVk::Draw(uint32 vertexCount, uint32 instanceCount,
         instanceCount, firstVertex, firstInstance);
 }
 
-void CommandContextVk::End()
+void CommandContextVk::CopyBuffer(GpuResource& src, GpuResource& dst,
+const uint64_t size, const uint64_t srcOffset, const uint64_t dstOffset)
+{
+    VkBufferCopy copyRegion = {};
+    copyRegion.dstOffset = dstOffset;
+    copyRegion.srcOffset = srcOffset;
+    copyRegion.size = size;
+    vkCmdCopyBuffer(commandBuffer,
+    ((GpuResourceVkBuffer&)src).buffer,
+    ((GpuResourceVkBuffer&)dst).buffer, 1, &copyRegion);
+}
+
+void CommandContextVk::Reset()
+{
+    vkResetCommandPool(cgd.GetCGDEntity().device,
+        commandPool, VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT); 
+    if(bOpen)
+        End();
+}
+
+void CommandContextVk::EndRenderPass()
 {
     vkCmdEndRenderPass(commandBuffer);
+}
+
+void CommandContextVk::End()
+{
+    bOpen = false;
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) 
     {
         CGD_Vk::error("Vulkan: failed to record command buffer!");

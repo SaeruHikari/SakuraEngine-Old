@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-15 15:11:46
+ * @LastEditTime: 2020-03-15 18:46:24
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -295,12 +295,17 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phy_device,
     for (const auto& queueFamily : queueFamilies) 
     {
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        {
             indices.graphicsFamily = i;
-        if(queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
+        }
+        else if(queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
+        {
             indices.computeFamily = i;
-        if(queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
+        }
+        else if(queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
+        {
             indices.copyFamily = i;
-
+        }
         VkBool32 presentSupport = false;
         vkGetPhysicalDeviceSurfaceSupportKHR(phy_device, i, 
             surface, &presentSupport);
@@ -413,7 +418,10 @@ void CGD_Vk::InitQueueSet(void* mainSurface)
     
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies 
-        = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+        = {indices.graphicsFamily.value(),
+           indices.computeFamily.value(),
+           indices.copyFamily.value()
+           };
     
     // Queue Family Check
     float queuePriority = 1.0f;
@@ -442,7 +450,6 @@ void CGD_Vk::InitQueueSet(void* mainSurface)
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.queueCreateInfoCount = 
         static_cast<uint32_t>(queueCreateInfos.size());
-    //createInfo.pEnabledFeatures = &deviceFeature;
     createInfo.enabledExtensionCount = 
         static_cast<uint32_t>(entityVk.deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = entityVk.deviceExtensions.data();
