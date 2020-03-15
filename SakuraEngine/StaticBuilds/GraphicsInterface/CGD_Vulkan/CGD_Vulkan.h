@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-15 20:38:45
+ * @LastEditTime: 2020-03-15 21:41:27
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -53,7 +53,7 @@ namespace Sakura::Graphics::Vk
         std::unique_ptr<CommandQueueVk> computeQueue;
         std::unique_ptr<CommandQueueVk> copyQueue;
         VmaAllocator vmaAllocator;
-        bool bTripleBuffering = false;
+        bool bTripleBuffering = true;
     };
 
     class CGD_Vk final : public CGD

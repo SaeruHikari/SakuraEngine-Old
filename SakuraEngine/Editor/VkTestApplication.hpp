@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-15 19:53:34
+ * @LastEditTime: 2020-03-15 21:45:09
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -75,9 +75,13 @@ struct Vertex
 };
 
 const std::vector<Vertex> vertices = {
-    {{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
-    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{-0.5f, 0.5f}, {1.0f, 0.0f, 1.0f}}
+    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+};
+const std::vector<uint16_t> indices = {
+    0, 1, 2, 2, 3, 0
 };
 
 class VkTestApplication
@@ -196,6 +200,7 @@ private:
  
     void createBuffer()
     {
+        std::unique_ptr<GpuResource> uploadBuffer, uploadBuffer2;
         ResourceCreateInfo bufferInfo;
         bufferInfo.type = ResourceType::Buffer;
         bufferInfo.detail.buffer.usage = 
@@ -207,7 +212,7 @@ private:
         bufferInfo.detail.buffer.usage = BufferUsage::TransferSrc;
         bufferInfo.detail.buffer.cpuAccess = CPUAccessFlags::ReadWrite;
         uploadBuffer = std::move(cgd->CreateResource(bufferInfo));
-
+        
         void* data;
         uploadBuffer->Map(&data);
         memcpy(data, vertices.data(), (size_t)bufferInfo.size);
@@ -218,11 +223,33 @@ private:
         context->Begin();
         context->CopyBuffer(*uploadBuffer.get(),
             *vertexBuffer.get(), bufferInfo.size);
+
+
+        bufferInfo.size = sizeof(uint16_t) * indices.size();
+        uploadBuffer2 = std::move(cgd->CreateResource(bufferInfo));
+
+        bufferInfo.detail.buffer.usage = 
+            BufferUsage::IndexBuffer | BufferUsage::TransferDst;
+        bufferInfo.detail.buffer.cpuAccess = CPUAccessFlags::None;
+        bufferInfo.size = sizeof(uint16_t) * indices.size();
+        indexBuffer = std::move(cgd->CreateResource(bufferInfo));
+
+
+        uploadBuffer2->Map(&data);
+        memcpy(data, indices.data(), (size_t)bufferInfo.size);
+        uploadBuffer2->Unmap();
+
+
+        context->CopyBuffer(*uploadBuffer2.get(),
+            *indexBuffer.get(), bufferInfo.size);
         context->End();
         
         cgd->GetCopyQueue()->Submit(context);
         cgd->FreeContext(context);
         cgd->GetCopyQueue()->WaitIdle();
+
+        uploadBuffer.reset();
+        uploadBuffer2.reset();
     }
 
     void initVulkan()
@@ -256,7 +283,8 @@ private:
         context->Begin();
         context->BeginRenderPass(Pipeline.get(), rts);
         context->BindVertexBuffers(*vertexBuffer.get());
-        context->Draw(3, 1, 0, 0);
+        context->BindIndexBuffers(*indexBuffer.get());
+        context->DrawIndexed(indices.size(), 1);
         context->EndRenderPass();
         context->End();
         return context;
@@ -280,14 +308,14 @@ private:
         GetLocalTime(&t);
         mil = t.wMilliseconds + t.wSecond * 1000 - mil;
         std::cout << cgd->contextNum() << "time ms: " << mil << std::endl;
-         
-        cgd->GetGraphicsQueue()->Submit(drawTri);
-        cgd->FreeContext(drawTri);
-
+        
         static uint64 fenceVal = 1;
-        cgd->GetGraphicsQueue()->Submit(fence.get(), fenceVal);
+        cgd->GetGraphicsQueue()->Submit(drawTri,
+            fence.get(), fenceVal - 1, fenceVal);
 		cgd->Wait(fence.get(), fenceVal);
+        cgd->GetGraphicsQueue()->WaitIdle();
 		fenceVal++;
+        cgd->FreeContext(drawTri);
     }
 
     void cleanUp()
@@ -301,8 +329,8 @@ private:
             surface, nullptr);
         prog.reset();
 		fence.reset();
-        uploadBuffer.reset();
         vertexBuffer.reset();
+        indexBuffer.reset();
         cgd->Destroy();
 	    SDL_DestroyWindow(win);
         SDL_Quit();
@@ -313,7 +341,7 @@ private:
         win = VkSDL_CreateWindow("SakuraEngine Window: CGD Vulkan", 1280, 720);
     }
 
-    std::unique_ptr<GpuResource> vertexBuffer, uploadBuffer;
+    std::unique_ptr<GpuResource> vertexBuffer, indexBuffer;
     ShaderStageCreateInfo vsStage, fsStage;
     VertexInputStateCreateInfo vbInfo;
     std::unique_ptr<Sakura::Graphics::CGD> cgd;

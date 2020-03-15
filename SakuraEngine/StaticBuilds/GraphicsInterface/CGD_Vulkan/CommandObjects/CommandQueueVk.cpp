@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:41:13
- * @LastEditTime: 2020-03-13 11:11:51
+ * @LastEditTime: 2020-03-15 21:45:00
  */
 #include "CommandQueueVk.h"
 #include "CommandContextVk.h"
@@ -38,25 +38,43 @@ CommandQueueVk::CommandQueueVk(const CGD_Vk& _cgd)
 
 }
 
-void CommandQueueVk::Submit(CommandContext* commandContext)
+void CommandQueueVk::Submit(CommandContext* commandContext,
+    Fence* fence, uint64 fromValue, uint64 completedValue)
 {
+    auto FcVk = (FenceVk*)fence;
+	const uint64_t waitValue = fromValue; 
+	const uint64_t signalValue = completedValue;
+    VkTimelineSemaphoreSubmitInfo timelineInfo;
+	timelineInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+	timelineInfo.pNext = NULL;
+    if(fence)
+    {
+        FcVk->targetVal = completedValue;
+        timelineInfo.pWaitSemaphoreValues = &waitValue;
+        timelineInfo.pSignalSemaphoreValues = &signalValue;
+    }
+	timelineInfo.waitSemaphoreValueCount = fence ? 1 : 0;
+	timelineInfo.signalSemaphoreValueCount = fence ? 1 : 0;
+
     CommandContextVk* cmdVk = (CommandContextVk*)commandContext;
     VkSubmitInfo submitInfo;
     {
+        const VkPipelineStageFlags wat = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.pNext                = nullptr;
-        submitInfo.waitSemaphoreCount   = 0;
-        submitInfo.pWaitSemaphores      = nullptr;
-        submitInfo.pWaitDstStageMask    = 0;
+        submitInfo.pNext                = &timelineInfo;
+        submitInfo.waitSemaphoreCount   = fence ? 1 : 0;
+        submitInfo.pWaitSemaphores      = fence ? &FcVk->timelineSemaphore: nullptr;
+        submitInfo.pWaitDstStageMask = &wat;
         submitInfo.commandBufferCount   = 1;
         submitInfo.pCommandBuffers      = &cmdVk->commandBuffer;
-        submitInfo.signalSemaphoreCount = 0;
-        submitInfo.pSignalSemaphores    = nullptr;
+        submitInfo.signalSemaphoreCount = fence ? 1 : 0;
+        submitInfo.pSignalSemaphores    = fence ? &FcVk->timelineSemaphore: nullptr;
     }
     
     // Ensure unbusy before submitting.
     vkWaitForFences(cgd.GetCGDEntity().device,
         1, &cmdVk->recordingFence, VK_TRUE, UINT64_MAX);
+
     vkResetFences(cgd.GetCGDEntity().device, 1, &cmdVk->recordingFence);
     if (vkQueueSubmit(vkQueue, 1,
             &submitInfo, cmdVk->recordingFence) != VK_SUCCESS) 
@@ -119,7 +137,6 @@ void CommandQueueVk::Wait(Fence* fence, uint64 until)
 	submitInfo.pWaitSemaphores = &FcVk->timelineSemaphore;
     submitInfo.pWaitDstStageMask = &wat;
 	submitInfo.signalSemaphoreCount = 0;
-	//submitInfo.pSignalSemaphores = &FcVk->timelineSemaphore;
 	submitInfo.commandBufferCount = 0;
 	submitInfo.pCommandBuffers = VK_NULL_HANDLE;
 

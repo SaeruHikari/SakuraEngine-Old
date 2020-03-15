@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:38:49
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-15 19:31:11
+ * @LastEditTime: 2020-03-15 21:14:38
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
@@ -35,10 +35,14 @@ namespace Sakura::Graphics::Vk
 
         virtual void Draw(uint32 vertexCount, uint32 instanceCount,
             uint32 firstVertex, uint32 firstInstance) override final;
+        virtual void DrawIndexed(const uint32_t indicesCount,
+            const uint32_t instanceCount) override final;
+
 
         virtual void BindVertexBuffers(
             const Sakura::Graphics::GpuResource& vb) override final;
-        //virtual void BindIndexBuffers() override final;
+        virtual void BindIndexBuffers(
+            const Sakura::Graphics::GpuResource& ib) override final;
         
         virtual void CopyBuffer(GpuResource& src, GpuResource& dst,
             const uint64_t srcOffset,

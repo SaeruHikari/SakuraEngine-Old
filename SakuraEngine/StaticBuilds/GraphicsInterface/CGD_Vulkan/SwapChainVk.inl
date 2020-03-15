@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-15 14:22:53
+ * @LastEditTime: 2020-03-15 21:25:44
  */
 
 // Swap Chain Support Details
@@ -67,7 +67,7 @@ inline VkSurfaceFormatKHR chooseSwapSurfaceFormat(
 {
     for (const auto& availableFormat : availableFormats) 
     {
-        if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && 
+        if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && 
             availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
             return availableFormat;
     }

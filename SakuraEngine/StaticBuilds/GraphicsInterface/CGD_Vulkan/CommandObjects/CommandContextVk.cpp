@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-15 19:32:42
+ * @LastEditTime: 2020-03-15 21:16:08
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -151,6 +151,12 @@ void CommandContextVk::BindVertexBuffers(const GpuResource& vb)
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, bufs, offsets);
 }
 
+void CommandContextVk::BindIndexBuffers(const GpuResource& ib)
+{
+    VkBuffer buf = ((const GpuResourceVkBuffer&)ib).buffer;
+    vkCmdBindIndexBuffer(commandBuffer, buf, 0, VK_INDEX_TYPE_UINT16);
+}
+
 void CommandContextVk::BeginRenderPass(
     GraphicsPipeline* gp, const RenderTargetSet& rts)
 {
@@ -182,6 +188,13 @@ void CommandContextVk::Draw(uint32 vertexCount, uint32 instanceCount,
 {
     vkCmdDraw(commandBuffer, vertexCount,
         instanceCount, firstVertex, firstInstance);
+}
+
+void CommandContextVk::DrawIndexed(const uint32_t indicesCount,
+    const uint32_t instanceCount)
+{
+    vkCmdDrawIndexed(commandBuffer, indicesCount,
+        instanceCount, 0, 0, 0);
 }
 
 void CommandContextVk::CopyBuffer(GpuResource& src, GpuResource& dst,
