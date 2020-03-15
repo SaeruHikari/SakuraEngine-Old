@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-15 20:59:24
+ * @LastEditTime: 2020-03-15 23:58:04
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -141,56 +141,7 @@ void CGD_Vk::VkInit(Sakura::Graphics::CGDInfo info)
 void CGD_Vk::Present(SwapChain* chain)
 {
     SwapChainVk* vkChain = (SwapChainVk*)chain;
-    /* Initialize semaphores */
-    VkSemaphore* waitSemaphorse = 
-        &vkChain->imageAvailableSemaphores[vkChain->currentFrame];
-    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-    VkSemaphore* signalSemaphores =
-        &vkChain->renderFinishedSemaphores[vkChain->currentFrame];
-    auto graphcicsQueue = entityVk.graphicsQueue->vkQueue;
-    /* Submit signal semaphore to graphics queue */
-    VkSubmitInfo submitInfo;
-    {
-        submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.pNext                = nullptr;
-        submitInfo.waitSemaphoreCount   = 1;
-        submitInfo.pWaitSemaphores      = waitSemaphorse;
-        submitInfo.pWaitDstStageMask    = waitStages;
-        submitInfo.commandBufferCount   = 0;
-        submitInfo.pCommandBuffers      = nullptr;
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores    = signalSemaphores;
-    }
-
-    if(vkQueueSubmit(graphcicsQueue, 1, &submitInfo,
-        VK_NULL_HANDLE) != VK_SUCCESS)
-    {
-        Sakura::log::error("Vulkan: failed to submit fence queue!");
-        throw std::runtime_error("Vulkan: failed to submit fence queue!");
-    }
-
-    /* Present result on screen */
     VkSwapchainKHR* swapChains = &vkChain->swapChain;
-    VkPresentInfoKHR presentInfo = {};
-    {
-        presentInfo.sType               = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        presentInfo.pNext               = nullptr;
-        presentInfo.waitSemaphoreCount  = 1;
-        presentInfo.pWaitSemaphores     = signalSemaphores;
-        presentInfo.swapchainCount      = 1;
-        presentInfo.pSwapchains         = swapChains;
-        presentInfo.pImageIndices       = &vkChain->presentImageIndex;
-        presentInfo.pResults            = nullptr;
-    }
-    
-    if(vkQueuePresentKHR(presentQueue, &presentInfo) != VK_SUCCESS)
-    {
-        Sakura::log::error("Vulkan: failed to present Vulkan graphics queue!");
-        throw std::runtime_error("Vulkan:failed to present Vulkan graphics queue!");
-    }
-    vkChain->lastFrame = vkChain->currentFrame;
-    vkChain->currentFrame = (vkChain->currentFrame + 1) % vkChain->swapChainCount;
-    /* Get image index for next presentation */
     vkAcquireNextImageKHR(
         entityVk.device,
         vkChain->swapChain,
@@ -199,7 +150,20 @@ void CGD_Vk::Present(SwapChain* chain)
         VK_NULL_HANDLE,
         &vkChain->presentImageIndex
     );
-
+    VkPresentInfoKHR info = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
+    info.swapchainCount = 1;
+    info.pSwapchains = swapChains;
+    info.pImageIndices = &vkChain->lastFrame;
+    info.waitSemaphoreCount = 1;
+    info.pWaitSemaphores 
+        = &vkChain->imageAvailableSemaphores[vkChain->currentFrame];
+    if(vkQueuePresentKHR(presentQueue, &info) != VK_SUCCESS)
+    {
+        Sakura::log::error("Vulkan: failed to present Vulkan graphics queue!");
+        throw std::runtime_error("Vulkan:failed to present Vulkan graphics queue!");
+    }
+    vkChain->lastFrame = vkChain->currentFrame;
+    vkChain->currentFrame = (vkChain->currentFrame + 1) % vkChain->swapChainCount;
 }
 
 CommandQueue* CGD_Vk::GetGraphicsQueue() const
@@ -215,6 +179,14 @@ CommandQueue* CGD_Vk::GetComputeQueue() const
 CommandQueue* CGD_Vk::GetCopyQueue() const
 {
     return entityVk.copyQueue.get();
+}
+
+void CGD_Vk::WaitIdle() const
+{
+    entityVk.graphicsQueue->WaitIdle();
+    entityVk.computeQueue->WaitIdle();
+    entityVk.copyQueue->WaitIdle();
+    vkQueueWaitIdle(presentQueue);
 }
 
 std::unique_ptr<CommandQueue> CGD_Vk::AllocQueue(ECommandType type) const 

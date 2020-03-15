@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-15 21:41:27
+ * @LastEditTime: 2020-03-15 23:27:21
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -106,6 +106,7 @@ namespace Sakura::Graphics::Vk
     // Implements: See GraphicsObjects/FenceVk.cpp
         virtual std::unique_ptr<Fence> AllocFence(void) override final;
         virtual void Wait(Fence* toWait, uint64 until) const override final;
+        virtual void WaitIdle() const override final;
     public:
     // Implements: See ResourceObjects/GpuResourceVk.cpp
         virtual std::unique_ptr<GpuResource> CreateResource(

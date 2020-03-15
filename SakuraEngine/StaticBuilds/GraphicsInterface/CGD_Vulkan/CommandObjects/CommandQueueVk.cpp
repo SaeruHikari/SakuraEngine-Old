@@ -102,7 +102,6 @@ void CommandQueueVk::Submit(Fence* fence, uint64 completedValue)
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.pNext = &timelineInfo;
 	submitInfo.waitSemaphoreCount = 0;
-	//submitInfo.pWaitSemaphores = &FcVk->timelineSemaphore;
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &FcVk->timelineSemaphore;
 	submitInfo.commandBufferCount = 0;

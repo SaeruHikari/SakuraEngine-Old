@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-15 21:45:09
+ * @LastEditTime: 2020-03-15 23:26:48
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -164,7 +164,7 @@ private:
 
     void ResizeWindow(uint32 width, uint32 height)
     {
-        cgd->GetGraphicsQueue()->WaitIdle();
+        cgd->WaitIdle();
 		GraphicsPipelineCreateInfo info;
         info.vertexInputInfo = vbInfo;
         info.shaderStages.push_back(vsStage);
@@ -234,11 +234,10 @@ private:
         bufferInfo.size = sizeof(uint16_t) * indices.size();
         indexBuffer = std::move(cgd->CreateResource(bufferInfo));
 
-
-        uploadBuffer2->Map(&data);
-        memcpy(data, indices.data(), (size_t)bufferInfo.size);
+        void* data2;
+        uploadBuffer2->Map(&data2);
+        memcpy(data2, indices.data(), (size_t)bufferInfo.size);
         uploadBuffer2->Unmap();
-
 
         context->CopyBuffer(*uploadBuffer2.get(),
             *indexBuffer.get(), bufferInfo.size);
@@ -247,9 +246,6 @@ private:
         cgd->GetCopyQueue()->Submit(context);
         cgd->FreeContext(context);
         cgd->GetCopyQueue()->WaitIdle();
-
-        uploadBuffer.reset();
-        uploadBuffer2.reset();
     }
 
     void initVulkan()
@@ -310,8 +306,7 @@ private:
         std::cout << cgd->contextNum() << "time ms: " << mil << std::endl;
         
         static uint64 fenceVal = 1;
-        cgd->GetGraphicsQueue()->Submit(drawTri,
-            fence.get(), fenceVal - 1, fenceVal);
+        cgd->GetGraphicsQueue()->Submit(drawTri, fence.get(), fenceVal - 1, fenceVal);
 		cgd->Wait(fence.get(), fenceVal);
         cgd->GetGraphicsQueue()->WaitIdle();
 		fenceVal++;

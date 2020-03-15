@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-15 11:32:50
+ * @LastEditTime: 2020-03-15 23:27:03
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -105,6 +105,7 @@ namespace Sakura::Graphics
             const ResourceCreateInfo&) const = 0;
 
         virtual void Wait(Fence* toWait, uint64 until) const = 0;
+        virtual void WaitIdle() const = 0;
         virtual std::unique_ptr<Fence> AllocFence(void) = 0;
     public:
         const uint64 contextNum() const {return contextPools[0].size();}
