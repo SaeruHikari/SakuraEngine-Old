@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-15 18:46:59
+ * @LastEditTime: 2020-03-15 20:38:45
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -30,6 +30,7 @@
 #include "GraphicsObjects/SwapChainVk.h"
 #include "vulkan/vulkan.h"
 #include <iostream>
+#include "vk_mem_alloc.h"
 
 using namespace Sakura::flags;
 
@@ -51,6 +52,7 @@ namespace Sakura::Graphics::Vk
         std::unique_ptr<CommandQueueVk> graphicsQueue;
         std::unique_ptr<CommandQueueVk> computeQueue;
         std::unique_ptr<CommandQueueVk> copyQueue;
+        VmaAllocator vmaAllocator;
         bool bTripleBuffering = false;
     };
 
@@ -116,6 +118,7 @@ namespace Sakura::Graphics::Vk
         void VkInit(CGDInfo info);
         void setupDebugMessenger();
         void createVkInstance(uint pCount, const char** pName);
+        void createAllocator();
         void pickPhysicalDevice(VkSurfaceKHR surface);
         uint32_t findMemoryType(
             uint32_t typeFilter, VkMemoryPropertyFlags properties) const;

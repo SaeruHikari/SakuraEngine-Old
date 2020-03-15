@@ -22,11 +22,12 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 18:01:43
- * @LastEditTime: 2020-03-15 16:28:52
+ * @LastEditTime: 2020-03-15 20:54:31
  */
 #pragma once
 #include "vulkan/vulkan.h"
 #include "../../GraphicsCommon/ResourceObjects/Resource.h"
+#include "vk_mem_alloc.h"
 
 using namespace Sakura::Graphics;
 
@@ -56,11 +57,12 @@ namespace Sakura::Graphics::Vk
         virtual void Unmap() override final;
     protected:
         GpuResourceVkBuffer(const CGD_Vk& _cgd, 
-            const VkDeviceMemory& _memory,
+            const VmaAllocation& _alloc,
             const VkBuffer& buf, uint32 _length)
-            :buffer(buf), memory(_memory), cgd(_cgd), GpuResource({_length, 1}){}
+            :buffer(buf), allocation(_alloc),
+            cgd(_cgd), GpuResource({_length, 1}){}
         VkBuffer buffer;
-        VkDeviceMemory memory;
+        VmaAllocation allocation;
         const CGD_Vk& cgd;
     };
 } // namespace Sakura::Graphics::Vk

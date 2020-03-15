@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 #/home/saeruhikari/OpenLib/vcpkg/vcpkg install --triplet x64-linux eigen3 boost gtest spdlog glfw3 SDL2 fmt xxHash SDL2[vulkan]
-set(VCPKG_PKGS eigen3 boost glfw3 SDL2 SDL2[vulkan] fmt xxhash entt cpp-taskflow)
+set(VCPKG_PKGS eigen3 boost glfw3 SDL2 SDL2[vulkan] fmt vulkan-memory-allocator xxhash entt cpp-taskflow)
 
 if(WIN32)
 execute_process(COMMAND 

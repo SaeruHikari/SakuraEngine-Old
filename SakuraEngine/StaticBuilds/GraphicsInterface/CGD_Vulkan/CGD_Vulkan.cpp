@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-15 18:46:24
+ * @LastEditTime: 2020-03-15 20:59:24
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -111,6 +111,7 @@ void CGD_Vk::DestroyCommandObjects()
 void CGD_Vk::Destroy()
 {
     CGD_Vk::debug_info("CGD_Vk: Destroy");
+    vmaDestroyAllocator(entityVk.vmaAllocator);
     if(entityVk.validate)
         DestroyDebugUtilsMessengerEXT(entityVk.instance,
             entityVk.debugMessenger, nullptr);
@@ -487,4 +488,6 @@ void CGD_Vk::InitQueueSet(void* mainSurface)
         = std::move(std::unique_ptr<CommandQueueVk>(computeQueue));
     entityVk.copyQueue 
         = std::move(std::unique_ptr<CommandQueueVk>(copyQueue));
+
+    createAllocator();
 }

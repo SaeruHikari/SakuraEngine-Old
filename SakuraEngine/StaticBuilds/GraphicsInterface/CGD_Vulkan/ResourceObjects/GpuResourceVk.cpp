@@ -22,19 +22,21 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 22:41:33
- * @LastEditTime: 2020-03-15 18:52:49
+ * @LastEditTime: 2020-03-15 21:00:38
  */
 #include "GpuResourceVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
 #include "../CGD_Vulkan.h"
+#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
 
 using namespace Sakura::Graphics::Vk;
 using namespace Sakura;
 
 GpuResourceVkBuffer::~GpuResourceVkBuffer()
 {
-    vkFreeMemory(cgd.GetCGDEntity().device, memory, nullptr);
-    vkDestroyBuffer(cgd.GetCGDEntity().device, buffer, nullptr);
+    vmaDestroyBuffer(cgd.GetCGDEntity().vmaAllocator, buffer, allocation);
+    //vmaDestroyAllocator(cgd.GetCGDEntity().vmaAllocator);
 }
 
 GpuResourceVkImage::~GpuResourceVkImage()
@@ -44,12 +46,14 @@ GpuResourceVkImage::~GpuResourceVkImage()
 
 void GpuResourceVkBuffer::Map(void** data)
 {
-    vkMapMemory(cgd.GetCGDEntity().device, memory, 0, extent.width, 0, data);
+    vmaMapMemory(cgd.GetCGDEntity().vmaAllocator, allocation, data);
+    //vkMapMemory(cgd.GetCGDEntity().device, memory, 0, extent.width, 0, data);
 }
 
 void GpuResourceVkBuffer::Unmap()
 {
-    vkUnmapMemory(cgd.GetCGDEntity().device, memory);
+    vmaUnmapMemory(cgd.GetCGDEntity().vmaAllocator, allocation);
+    //vkUnmapMemory(cgd.GetCGDEntity().device, memory);
 }
 
 void GpuResourceVkImage::Map(void** data)
@@ -60,6 +64,14 @@ void GpuResourceVkImage::Map(void** data)
 void GpuResourceVkImage::Unmap()
 {
     
+}
+
+void CGD_Vk::createAllocator()
+{
+    VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.physicalDevice = entityVk.physicalDevice;
+    allocatorInfo.device = entityVk.device;
+    vmaCreateAllocator(&allocatorInfo, &entityVk.vmaAllocator);
 }
 
 std::unique_ptr<GpuResource> CGD_Vk::CreateResource(
@@ -79,40 +91,30 @@ std::unique_ptr<GpuResource> CGD_Vk::CreateResource(
             bufferInfo.queueFamilyIndexCount = queueFamilyIndices.GetSize();
             auto indices = queueFamilyIndices.GetIndices();
             bufferInfo.pQueueFamilyIndices = indices.data();
-            if (vkCreateBuffer(
-                entityVk.device, &bufferInfo, nullptr, &vertexBuffer) != VK_SUCCESS) 
-            {
-                CGD_Vk::error("Failed to create vertex buffer!");
-                throw std::runtime_error("failed to create vertex buffer!");
-            }
-            VkMemoryRequirements memRequirement;
-            vkGetBufferMemoryRequirements(entityVk.device, vertexBuffer, &memRequirement);
-            
-            VkMemoryAllocateInfo allocInfo = {};
-            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-            allocInfo.allocationSize = memRequirement.size;
-            
+
+            VmaAllocationCreateInfo vmaAllocInfo = {};
             VkMemoryPropertyFlags prop = 0;
             if(info.detail.buffer.cpuAccess 
                 && CPUAccessFlags::ReadWrite != CPUAccessFlags::None)
             {
                 prop |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
                 prop |= VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+                vmaAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
             }
             else 
-                prop |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT ;
-            auto _type = findMemoryType(
-                memRequirement.memoryTypeBits, prop);
-                
-            allocInfo.memoryTypeIndex = _type;
-            if (vkAllocateMemory(
-                entityVk.device, &allocInfo, nullptr, &memory) != VK_SUCCESS) 
             {
-                throw std::runtime_error("failed to allocate vertex buffer memory!");
+                prop |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT ;
+                vmaAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
             }
-            vkBindBufferMemory(entityVk.device, vertexBuffer, memory, 0);
+            vmaAllocInfo.requiredFlags = prop;
+            vmaAllocInfo.pool = VK_NULL_HANDLE;
+            VkBuffer buffer;
+            VmaAllocation allocation;
+            vmaCreateBuffer(entityVk.vmaAllocator, &bufferInfo, &vmaAllocInfo,
+                &buffer, &allocation, nullptr);
+                
             GpuResourceVkBuffer* vkBuf = new GpuResourceVkBuffer(
-                *this, memory, vertexBuffer, info.size);
+                *this, allocation, buffer, info.size);
             return std::move(std::unique_ptr<GpuResource>(vkBuf));
         }
     default:

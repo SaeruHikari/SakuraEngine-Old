@@ -13,6 +13,8 @@ else(SpecificTimerImpl)
 set(SpecificTimerImpl ../CGD/GpuTimer.cpp) 
 endif(SpecificTimerImpl)
 
+find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
+
 if(TRUE)
 add_library(CGD_Vulkan  
     STATIC  
@@ -38,4 +40,6 @@ add_library(CGD_Vulkan
 )
 endif()
 
-target_link_libraries(CGD_Vulkan Core Vulkan::Vulkan)
+target_link_libraries(CGD_Vulkan
+Core Vulkan::Vulkan 
+unofficial::vulkan-memory-allocator::vulkan-memory-allocator)

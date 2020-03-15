@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-15 19:14:32
+ * @LastEditTime: 2020-03-15 19:53:34
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -193,7 +193,7 @@ private:
         Pipeline.reset();
 		Pipeline = std::move(cgd->CreateGraphicsPipeline(info, *prog.get()));
     }
-    
+ 
     void createBuffer()
     {
         ResourceCreateInfo bufferInfo;
