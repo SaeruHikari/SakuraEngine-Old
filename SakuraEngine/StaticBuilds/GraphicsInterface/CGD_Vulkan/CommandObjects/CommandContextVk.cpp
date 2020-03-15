@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-15 12:14:16
+ * @LastEditTime: 2020-03-15 14:10:49
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -36,6 +36,7 @@ CommandContext* CGD_Vk::AllocateContext(ECommandType type, bool bTransiant)
 #endif
     if(!availableContexts[type].empty())
     {
+        std::cout << "WTDF" << std::endl;
         auto res = availableContexts[type].front();
         if(vkGetFenceStatus(entityVk.device, 
             ((CommandContextVk*)res)->recordingFence) == VK_SUCCESS)
@@ -139,8 +140,9 @@ void CommandContextVk::Begin(GraphicsPipeline* gp)
 
 void CommandContextVk::BindVertexBuffers(const GpuResource& vb) 
 {
-    auto vbr = (const GpuResourceVkBuffer&)vb;
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &(vbr.buffer), 0);
+    VkDeviceSize offsets[] = {0};
+    VkBuffer bufs[] = {((const GpuResourceVkBuffer&)vb).buffer};
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, bufs, offsets);
 }
 
 void CommandContextVk::SetRenderTargets(const RenderTargetSet& rts)

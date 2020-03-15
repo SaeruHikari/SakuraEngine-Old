@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-15 12:45:17
+ * @LastEditTime: 2020-03-15 15:11:46
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -292,9 +292,14 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phy_device,
     vkGetPhysicalDeviceQueueFamilyProperties(phy_device, 
         &queueFamilyCount, queueFamilies.data());
     int i = 0;
-    for (const auto& queueFamily : queueFamilies) {
+    for (const auto& queueFamily : queueFamilies) 
+    {
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
             indices.graphicsFamily = i;
+        if(queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
+            indices.computeFamily = i;
+        if(queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
+            indices.copyFamily = i;
 
         VkBool32 presentSupport = false;
         vkGetPhysicalDeviceSurfaceSupportKHR(phy_device, i, 
@@ -459,10 +464,20 @@ void CGD_Vk::InitQueueSet(void* mainSurface)
 
     // Create Queue
     auto graphicsQueue = new CommandQueueVk(*this);
+    auto computeQueue = new CommandQueueVk(*this);
+    auto copyQueue = new CommandQueueVk(*this);
     vkGetDeviceQueue(entityVk.device, indices.graphicsFamily.value(),
         0, &graphicsQueue->vkQueue);
     vkGetDeviceQueue(entityVk.device, indices.presentFamily.value(),
         0, &presentQueue);
+    vkGetDeviceQueue(entityVk.device, indices.computeFamily.value(),
+        0, &computeQueue->vkQueue);
+    vkGetDeviceQueue(entityVk.device, indices.copyFamily.value(),
+        0, &copyQueue->vkQueue);
     entityVk.graphicsQueue = 
         std::move(std::unique_ptr<CommandQueueVk>(graphicsQueue));
+    entityVk.computeQueue
+        = std::move(std::unique_ptr<CommandQueueVk>(computeQueue));
+    entityVk.copyQueue 
+        = std::move(std::unique_ptr<CommandQueueVk>(copyQueue));
 }

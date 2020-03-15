@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:57:40
- * @LastEditTime: 2020-03-11 11:44:20
+ * @LastEditTime: 2020-03-15 13:59:36
  */
 #include "ResourceViewVk.h"
 #include "GpuResourceVk.h"
@@ -44,7 +44,7 @@ void ResourceViewVkImage::Attach(
 {
     Detach();
     CGD_Vk& vkdevice = (CGD_Vk&)device;
-    auto vkres = (GpuResourceVkImage&)resource;
+    auto vkres = (const GpuResourceVkImage&)resource;
     VkImageViewCreateInfo viewCreateInfo = {};
     viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewCreateInfo.viewType = Transfer(info.viewType);
@@ -89,12 +89,11 @@ std::unique_ptr<ResourceView> CGD_Vk::ViewIntoImage(
     auto res = 
         std::make_unique<ResourceViewVkImage>(*this);
     
-    auto vkres = (GpuResourceVkImage&)resource;
     VkImageViewCreateInfo viewCreateInfo = {};
     viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewCreateInfo.viewType = Transfer(info.viewType);
     viewCreateInfo.format = Transfer(info.format);
-    viewCreateInfo.image = vkres.image;
+    viewCreateInfo.image = ((const GpuResourceVkImage&)resource).image;
     viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
     viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
     viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -110,6 +109,5 @@ std::unique_ptr<ResourceView> CGD_Vk::ViewIntoImage(
         Sakura::log::error("failed to create image views!");
         throw std::runtime_error("failed to create image views!");
     }
-
     return std::move(res);
 }

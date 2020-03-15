@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 22:41:33
- * @LastEditTime: 2020-03-15 12:34:01
+ * @LastEditTime: 2020-03-15 14:24:35
  */
 #include "GpuResourceVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -33,6 +33,7 @@ using namespace Sakura;
 
 GpuResourceVkBuffer::~GpuResourceVkBuffer()
 {
+    vkFreeMemory(cgd.GetCGDEntity().device, memory, nullptr);
     vkDestroyBuffer(cgd.GetCGDEntity().device, buffer, nullptr);
 }
 

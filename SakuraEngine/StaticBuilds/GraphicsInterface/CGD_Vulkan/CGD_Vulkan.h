@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-15 11:32:59
+ * @LastEditTime: 2020-03-15 15:10:40
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -128,7 +128,10 @@ namespace Sakura::Graphics::Vk
             std::optional<uint32_t> copyFamily;
             bool isComplete() 
             {
-                return graphicsFamily.has_value() && presentFamily.has_value();
+                return graphicsFamily.has_value() 
+                && presentFamily.has_value()
+                && computeFamily.has_value()
+                && copyFamily.has_value();
             }
         };
         const QueueFamilyIndices& GetQueueFamily() const
