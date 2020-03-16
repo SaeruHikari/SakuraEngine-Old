@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-16 00:09:34
+ * @LastEditTime: 2020-03-16 21:05:06
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -142,6 +142,15 @@ void CGD_Vk::Present(SwapChain* chain)
 {
     SwapChainVk* vkChain = (SwapChainVk*)chain;
     VkSwapchainKHR* swapChains = &vkChain->swapChain;
+    
+    vkAcquireNextImageKHR(
+        entityVk.device,
+        vkChain->swapChain,
+        UINT64_MAX,
+        vkChain->imageAvailableSemaphores[vkChain->lastFrame],
+        VK_NULL_HANDLE,
+        &vkChain->lastFrame
+    );
 
     VkPresentInfoKHR info = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
     info.swapchainCount = 1;
@@ -149,22 +158,14 @@ void CGD_Vk::Present(SwapChain* chain)
     info.pImageIndices = &vkChain->lastFrame;
     info.waitSemaphoreCount = 1;
     info.pWaitSemaphores 
-        = &vkChain->imageAvailableSemaphores[vkChain->currentFrame];
+        = &vkChain->imageAvailableSemaphores[vkChain->lastFrame];
     if(vkQueuePresentKHR(presentQueue, &info) != VK_SUCCESS)
     {
         Sakura::log::error("Vulkan: failed to present Vulkan graphics queue!");
         throw std::runtime_error("Vulkan:failed to present Vulkan graphics queue!");
     }
     vkChain->lastFrame = vkChain->currentFrame;
-    vkAcquireNextImageKHR(
-        entityVk.device,
-        vkChain->swapChain,
-        0,
-        vkChain->imageAvailableSemaphores[vkChain->currentFrame],
-        VK_NULL_HANDLE,
-        &vkChain->currentFrame
-    );
-    //vkChain->currentFrame = (vkChain->lastFrame + 1) % vkChain->swapChainCount;
+    vkChain->currentFrame = (vkChain->lastFrame + 1) % vkChain->swapChainCount;
 }
 
 CommandQueue* CGD_Vk::GetGraphicsQueue() const
@@ -184,10 +185,7 @@ CommandQueue* CGD_Vk::GetCopyQueue() const
 
 void CGD_Vk::WaitIdle() const
 {
-    entityVk.graphicsQueue->WaitIdle();
-    entityVk.computeQueue->WaitIdle();
-    entityVk.copyQueue->WaitIdle();
-    vkQueueWaitIdle(presentQueue);
+    vkDeviceWaitIdle(entityVk.device);
 }
 
 std::unique_ptr<CommandQueue> CGD_Vk::AllocQueue(ECommandType type) const 
@@ -463,4 +461,9 @@ void CGD_Vk::InitQueueSet(void* mainSurface)
         = std::move(std::unique_ptr<CommandQueueVk>(copyQueue));
 
     createAllocator();
+}
+
+const TargetGraphicsInterface CGD_Vk::GetBackEndAPI(void) const
+{
+    return TargetGraphicsInterface::CGD_TARGET_VULKAN;
 }

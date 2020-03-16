@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-16 00:22:52
+ * @LastEditTime: 2020-03-16 21:00:52
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -40,7 +40,8 @@ extern "C"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Flags/GraphicsPipelineStatesVk.h"
 #include "SakuraEngine/StaticBuilds/TaskSystem/TaskSystem.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/GraphicsObjects/FenceVk.h"
-#include <thread>
+#include "SakuraEngine/StaticBuilds/ImGuiProfiler/ImGuiProfiler.hpp"
+
 using namespace Sakura;
 using namespace Sakura::Graphics::Vk;
 
@@ -100,6 +101,12 @@ const std::vector<Vertex> vertices = {
 };
 const std::vector<uint16_t> indices = {
     0, 1, 2, 2, 3, 0
+};
+struct ConstantBuffer
+{
+    Sakura::Math::Matrix4f model;
+    Sakura::Math::Matrix4f view;
+    Sakura::Math::Matrix4f proj;
 };
 
 class VkTestApplication
@@ -267,6 +274,13 @@ private:
             &surface);
         cgd->InitQueueSet(&surface);
         fence = std::move(cgd->AllocFence());
+        
+        //winIm = 
+        //    VkSDL_CreateWindow("ImProfiler Window", 1280, 720);
+        //profiler = std::make_unique<Sakura::Graphics::Im::ImGuiProfiler>(*cgd.get());
+        //auto imWin = profiler->CreateImGuiWindow(winIm, 1280, 720);
+        //profilerWind = 
+        //    std::move(std::unique_ptr<Sakura::Graphics::Im::ImGuiWindow>(imWin));
 
         createVInInfo();
         createShader();
@@ -290,7 +304,30 @@ private:
 
     void mainLoop()
     {
-        cgd->Present(swapChain.get());
+        /*ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplSDL2_NewFrame(winIm);
+        ImGui::NewFrame();
+        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+        {
+            static float f = 0.0f;
+            static int counter = 0;
+
+            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+
+            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+                counter++;
+            ImGui::SameLine();
+            ImGui::Text("counter = %d", counter);
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::End();
+        }
+        ImGui::Render();*/
+        //profiler->ImGuiPresent(profilerWind.get());
 
         auto frameCount = swapChain->GetLastFrame();
         RenderTarget rt{&swapChain->GetSwapChainImage(frameCount),
@@ -308,15 +345,21 @@ private:
         std::cout << cgd->contextNum() << "time ms: " << mil << std::endl;
         
         static uint64 fenceVal = 1;
-        cgd->GetGraphicsQueue()->Submit(drawTri, fence.get(), fenceVal - 1, fenceVal);
-		cgd->Wait(fence.get(), fenceVal);
+		//profiler->ImGuiRender(profilerWind.get());
+        cgd->GetGraphicsQueue()
+            ->Submit(drawTri, fence.get(), fenceVal - 1, fenceVal);
+        cgd->Wait(fence.get(), fenceVal);
         cgd->GetGraphicsQueue()->WaitIdle();
+    
+        cgd->Present(swapChain.get());
+
 		fenceVal++;
         cgd->FreeContext(drawTri);
     }
 
     void cleanUp()
     {
+        cgd->WaitIdle();
         cgd->DestroyCommandObjects();
         vertshader.reset();
         fragshader.reset();
@@ -338,6 +381,8 @@ private:
         win = VkSDL_CreateWindow("SakuraEngine Window: CGD Vulkan", 1280, 720);
     }
 
+    std::unique_ptr<Sakura::Graphics::Im::ImGuiProfiler> profiler;
+    std::unique_ptr<Sakura::Graphics::Im::ImGuiWindow> profilerWind;
     std::unique_ptr<GpuResource> vertexBuffer, indexBuffer;
     ShaderStageCreateInfo vsStage, fsStage;
     VertexInputStateCreateInfo vbInfo;
@@ -350,5 +395,6 @@ private:
     std::unique_ptr<RenderProgress> prog;
     VkSurfaceKHR surface;
     SDL_Window* win = nullptr;
+    SDL_Window* winIm = nullptr;
 };
 

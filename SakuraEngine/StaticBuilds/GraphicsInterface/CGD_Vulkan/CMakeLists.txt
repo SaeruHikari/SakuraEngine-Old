@@ -36,7 +36,6 @@ add_library(CGD_Vulkan
     GraphicsObjects/GraphicsPipelineVk.cpp
     GraphicsObjects/RenderProgressVk.cpp
     GraphicsObjects/FenceVk.cpp
-    ${SpecificTimerImpl}  
 )
 endif()
 

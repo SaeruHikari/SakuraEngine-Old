@@ -21,19 +21,43 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-15 09:00:54
- * @LastEditTime: 2020-03-15 09:04:22
+ * @Date: 2020-03-16 17:22:38
+ * @LastEditTime: 2020-03-16 20:45:45
  */
-#include "CGD_Vulkan.cpp"
-#include "../CGD/CommandContext.cpp"
-#include "../CGD/Profiling.cpp"
-#include "CommandObjects/CommandContextVk.cpp"
-#include "CommandObjects/CommandQueueVk.cpp"
-#include "ResourceObjects/GpuResourceVk.cpp"
-#include "ResourceObjects/ShaderVk.cpp"
-#include "ResourceObjects/VBIBViewVk.cpp"
-#include "ResourceObjects/ResourceViewVk.cpp"
-#include "GraphicsObjects/SwapChainVk.cpp"
-#include "GraphicsObjects/GraphicsPipelineVk.cpp"
-#include "GraphicsObjects/RenderProgressVk.cpp"
-#include "GraphicsObjects/FenceVk.cpp"
+#pragma once
+#include "imgui.h"
+#include "SakuraEngine/StaticBuilds/ImGuiProfiler/imgui/imgui_impl_sdl.h"
+#include "SakuraEngine/StaticBuilds/ImGuiProfiler/imgui/imgui_impl_vulkan.h"
+#include "vulkan/vulkan.h"
+#include <memory>
+extern "C"
+{
+	#include "SDL2/SDL.h"
+	#include "SDL2/SDL_surface.h"
+	#include "SDL2/SDL_vulkan.h"
+	#undef main
+}
+
+namespace Sakura::Graphics::Im::Vk
+{
+    struct VkDevicePack
+    {
+        VkInstance instance;
+        VkPhysicalDevice physicalDevice;
+        VkDevice device;
+        uint32_t graphicsQueueFamily;
+        uint32_t minImageCount;
+        VkQueue graphicsQueue;
+        VkAllocationCallbacks* allocator;
+        VkDescriptorPool descriptorPool;
+        VkPipelineCache pipelineCache = VK_NULL_HANDLE;
+    };
+    [[nodiscard]] ImGui_ImplVulkanH_Window* CreateImGuiWindowVk(
+        const VkDevicePack& devices, VkSurfaceKHR surface, int width, int height);
+    
+    void ImGuiRenderVk(const VkDevicePack& devices, ImGui_ImplVulkanH_Window* wd);
+
+    void ImGuiPresentVk(const VkDevicePack& devices, ImGui_ImplVulkanH_Window* wd);
+
+    void check_vk_result(VkResult err);
+}

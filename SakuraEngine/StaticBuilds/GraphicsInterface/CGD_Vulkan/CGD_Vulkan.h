@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-16 00:07:33
+ * @LastEditTime: 2020-03-16 19:20:51
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -59,6 +59,7 @@ namespace Sakura::Graphics::Vk
     class CGD_Vk final : public CGD
     {
         DECLARE_LOGGER("CGD_Vk")
+        friend struct SwapChainVk;
     public:
         CGD_Vk() = default;
         virtual void Destroy() override final; 
@@ -156,10 +157,11 @@ namespace Sakura::Graphics::Vk
         {
             return queueFamilyIndices;
         };
+        virtual const TargetGraphicsInterface GetBackEndAPI(void) const final override;
     private:
         QueueFamilyIndices queueFamilyIndices;
         CGDEntityVk entityVk;
-        VkQueue presentQueue;
+        VkQueue presentQueue = VK_NULL_HANDLE;
     };
     
     /**

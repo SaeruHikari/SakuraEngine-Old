@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:49:22
- * @LastEditTime: 2020-03-16 00:01:08
+ * @LastEditTime: 2020-03-16 12:38:52
  */
 #include "SwapChainVk.h"
 #include "../ResourceObjects/GpuResourceVk.h"
@@ -53,20 +53,21 @@ SwapChainVk::SwapChainVk(const VkSwapchainKHR _chain,
         _device.GetCGDEntity().device,
         swapChain,
         UINT64_MAX,
-        imageAvailableSemaphores[0],
+        imageAvailableSemaphores[currentFrame],
         VK_NULL_HANDLE,
-        &presentImageIndex
+        &currentFrame
     );
 }
 
 SwapChainVk::~SwapChainVk()
 {
-    vkDestroySwapchainKHR(((CGD_Vk&)device).GetCGDEntity().device,
-        swapChain, nullptr);
-     for(auto i = 0u; i < imageAvailableSemaphores.size(); i++)
+	vkDestroySwapchainKHR(((CGD_Vk&)device).GetCGDEntity().device,
+		swapChain, nullptr);
+    const VkPipelineStageFlags DstMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    for(auto i = 0u; i < imageAvailableSemaphores.size(); i++)
     {
         vkDestroySemaphore(((CGD_Vk&)device).GetCGDEntity().device, 
-            imageAvailableSemaphores[i], nullptr);
+                imageAvailableSemaphores[i], nullptr);
     }
 }
 

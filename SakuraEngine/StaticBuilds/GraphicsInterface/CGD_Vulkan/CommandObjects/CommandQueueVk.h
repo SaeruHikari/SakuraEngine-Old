@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:39:51
- * @LastEditTime: 2020-03-15 21:43:52
+ * @LastEditTime: 2020-03-16 19:35:11
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandQueue.h"
@@ -46,7 +46,6 @@ namespace Sakura::Graphics::Vk
         virtual void Submit(Fence* fence, uint64 completedValue) override final;
         virtual void Wait(Fence* fence, uint64 until) override final;
         virtual void WaitIdle() override final;
-    private:
         VkQueue vkQueue = VK_NULL_HANDLE;
         const CGD_Vk& cgd;
     };

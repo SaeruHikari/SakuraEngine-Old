@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 #/home/saeruhikari/OpenLib/vcpkg/vcpkg install --triplet x64-linux eigen3 boost gtest spdlog glfw3 SDL2 fmt xxHash SDL2[vulkan]
-set(VCPKG_PKGS eigen3 boost glfw3 SDL2 SDL2[vulkan] fmt vulkan-memory-allocator xxhash entt cpp-taskflow)
+set(VCPKG_PKGS eigen3 boost glfw3 SDL2 SDL2[vulkan] imgui imgui[example]
+fmt vulkan-memory-allocator xxhash entt cpp-taskflow)
 
 if(WIN32)
 execute_process(COMMAND 
@@ -24,6 +25,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin)
 
 enable_testing()
+find_package(imgui CONFIG REQUIRED)
 find_package(Cpp-Taskflow CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)

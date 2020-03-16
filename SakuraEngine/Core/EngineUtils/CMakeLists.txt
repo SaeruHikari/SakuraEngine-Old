@@ -4,4 +4,4 @@ add_subdirectory(Common)
 
 add_library(EngineUtils EngineUtil_All.cpp)
 
-target_link_libraries(EngineUtils PRIVATE xxhash)
+target_link_libraries(EngineUtils PUBLIC xxhash SImGui) 
