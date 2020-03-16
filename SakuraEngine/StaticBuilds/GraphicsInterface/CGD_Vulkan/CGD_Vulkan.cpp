@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-16 21:05:06
+ * @LastEditTime: 2020-03-16 22:32:24
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -142,30 +142,29 @@ void CGD_Vk::Present(SwapChain* chain)
 {
     SwapChainVk* vkChain = (SwapChainVk*)chain;
     VkSwapchainKHR* swapChains = &vkChain->swapChain;
-    
     vkAcquireNextImageKHR(
         entityVk.device,
         vkChain->swapChain,
         UINT64_MAX,
-        vkChain->imageAvailableSemaphores[vkChain->lastFrame],
+        vkChain->imageAvailableSemaphores[vkChain->currentFrame],
         VK_NULL_HANDLE,
-        &vkChain->lastFrame
+        &vkChain->presentImageIndex
     );
 
     VkPresentInfoKHR info = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
     info.swapchainCount = 1;
     info.pSwapchains = swapChains;
-    info.pImageIndices = &vkChain->lastFrame;
+    info.pImageIndices = &vkChain->presentImageIndex;
     info.waitSemaphoreCount = 1;
     info.pWaitSemaphores 
-        = &vkChain->imageAvailableSemaphores[vkChain->lastFrame];
+        = &vkChain->imageAvailableSemaphores[vkChain->currentFrame];
     if(vkQueuePresentKHR(presentQueue, &info) != VK_SUCCESS)
     {
         Sakura::log::error("Vulkan: failed to present Vulkan graphics queue!");
         throw std::runtime_error("Vulkan:failed to present Vulkan graphics queue!");
     }
     vkChain->lastFrame = vkChain->currentFrame;
-    vkChain->currentFrame = (vkChain->lastFrame + 1) % vkChain->swapChainCount;
+    vkChain->currentFrame = (vkChain->currentFrame + 1) % vkChain->swapChainCount;
 }
 
 CommandQueue* CGD_Vk::GetGraphicsQueue() const

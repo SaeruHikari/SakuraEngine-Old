@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-15 21:16:08
+ * @LastEditTime: 2020-03-16 22:01:54
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -17,7 +17,7 @@
 #include <set>
 
 #ifndef PROFILING_POOL
-#define PROFILING_POOL 
+//#define PROFILING_POOL 
 #endif
 
 using namespace Sakura::Graphics;

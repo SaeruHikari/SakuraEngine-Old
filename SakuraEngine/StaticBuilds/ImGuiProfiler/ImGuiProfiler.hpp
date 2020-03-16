@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-16 17:02:13
- * @LastEditTime: 2020-03-16 20:53:03
+ * @LastEditTime: 2020-03-17 01:00:33
  */
 #pragma once
 #include "memory_resource"
@@ -120,16 +120,22 @@ namespace Sakura::Graphics::Im
             auto windIm = CreateImGuiWindowVk(pack, surface, width, height);
             if(!init)
             {
+                IMGUI_CHECKVERSION();
                 ImGui::CreateContext();
                 ImGuiIO& io = ImGui::GetIO(); (void)io;
+                io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+                //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+                io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+                io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
                 ImGui::StyleColorsDark();
-                ImGui_ImplSDL2_InitForVulkan(wind);
-                ImGui_ImplVulkan_InitInfo init_info = {};
-                init_info.Instance = pack.instance;
-                init_info.PhysicalDevice = pack.physicalDevice;
-                init_info.Device = pack.device;
-                init_info.QueueFamily = pack.graphicsQueueFamily;
-                init_info.Queue = pack.graphicsQueue;
+                // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+                ImGuiStyle& style = ImGui::GetStyle();
+                if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+                {
+                    style.WindowRounding = 0.0f;
+                    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+                }
+                
                 VkDescriptorPoolSize pool_sizes[] =
                 {
                     { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
@@ -153,6 +159,14 @@ namespace Sakura::Graphics::Im
                 err = vkCreateDescriptorPool(pack.device,
                     &pool_info, pack.allocator, &pack.descriptorPool);
                 check_vk_result(err);
+                
+                ImGui_ImplSDL2_InitForVulkan(wind);
+                ImGui_ImplVulkan_InitInfo init_info = {};
+                init_info.Instance = pack.instance;
+                init_info.PhysicalDevice = pack.physicalDevice;
+                init_info.Device = pack.device;
+                init_info.QueueFamily = pack.graphicsQueueFamily;
+                init_info.Queue = pack.graphicsQueue;
                 init_info.PipelineCache = pack.pipelineCache;
                 init_info.DescriptorPool = pack.descriptorPool;
                 init_info.Allocator = nullptr;

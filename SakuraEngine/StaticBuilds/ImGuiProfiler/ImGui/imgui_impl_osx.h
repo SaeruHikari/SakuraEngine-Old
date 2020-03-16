@@ -7,11 +7,12 @@
 //  [X] Platform: OSX clipboard is supported within core Dear ImGui (no specific code in this back-end).
 // Issues:
 //  [ ] Platform: Keys are all generally very broken. Best using [event keycode] and not [event characters]..
+//  [ ] Platform: Multi-viewport / platform windows.
 
 @class NSEvent;
 @class NSView;
 
 IMGUI_API bool        ImGui_ImplOSX_Init();
 IMGUI_API void        ImGui_ImplOSX_Shutdown();
-IMGUI_API void        ImGui_ImplOSX_NewFrame(NSView *_Nonnull view);
+IMGUI_API void        ImGui_ImplOSX_NewFrame(NSView *_Nullable view);
 IMGUI_API bool        ImGui_ImplOSX_HandleEvent(NSEvent *_Nonnull event, NSView *_Nullable view);

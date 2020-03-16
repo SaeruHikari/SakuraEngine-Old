@@ -21,36 +21,15 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-05 01:29:37
- * @LastEditTime: 2020-03-16 22:16:21
+ * @Date: 2020-03-16 23:14:16
+ * @LastEditTime: 2020-03-16 23:56:57
  */
-#pragma once
-#include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
-#include "../../GraphicsCommon/ResourceObjects/Resource.h"
-#include "../Flags/FormatVk.h"
+#include "imgui_impl_sdl.cpp"
+#include "imgui_impl_vulkan.cpp"
+#include "imgui_demo.cpp"
+#include "imgui_widgets.cpp"
+#include "imgui_draw.cpp"
+#include "imgui.cpp"
+#include "misc/cpp/imgui_stdlib.cpp"
+#include "misc/freetype/imgui_freetype.cpp"
 
-namespace Sakura::Graphics
-{
-    struct Extent2D;
-}
-
-namespace Sakura::Graphics::Vk
-{
-    struct SwapChainVk final : public Sakura::Graphics::SwapChain
-    {
-        friend class CGD_Vk;
-        SwapChainVk(const VkSwapchainKHR _chain, 
-            const CGD_Vk& _device,const uint32 _chainCount);
-        
-        virtual ~SwapChainVk() override final;
-        virtual Extent2D GetExtent() const override final;
-        inline VkFormat GetVkPixelFormat() 
-        {
-            return Transfer(swapChainImageFormat);
-        }
-        VkSwapchainKHR swapChain;
-        VkExtent2D swapChainExtent;
-        std::vector<VkSemaphore> imageAvailableSemaphores;
-        uint32_t presentImageIndex = 0;
-    };
-}

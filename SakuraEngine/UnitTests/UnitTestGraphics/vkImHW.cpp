@@ -7,7 +7,8 @@
 // - Helper ImGui_ImplVulkanH_XXX functions and structures are only used by this example (main.cpp) and by
 //   the back-end itself (imgui_impl_vulkan.cpp), but should PROBABLY NOT be used by your own engine/app code.
 // Read comments in imgui_impl_vulkan.h.
-#include "imgui.h"
+
+#include "SakuraEngine/StaticBuilds/ImGuiProfiler/ImGui/imgui.h"
 #include "SakuraEngine/StaticBuilds/ImGuiProfiler/imgui/imgui_impl_sdl.h"
 #include "SakuraEngine/StaticBuilds/ImGuiProfiler/imgui/imgui_impl_vulkan.h"
 #include <stdio.h>          // printf, fprintf
@@ -320,7 +321,7 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
     wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->ImageCount; // Now we can use the next set of semaphores
 }
 
-int main()
+int main(int, char**)
 {
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
@@ -360,12 +361,24 @@ int main()
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
+    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsClassic();
+
+    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+    ImGuiStyle& style = ImGui::GetStyle();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        style.WindowRounding = 0.0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
 
     // Setup Platform/Renderer bindings
     ImGui_ImplSDL2_InitForVulkan(window);
@@ -510,6 +523,13 @@ int main()
         ImGui::Render();
         memcpy(&wd->ClearValue.color.float32[0], &clear_color, 4 * sizeof(float));
         FrameRender(wd);
+
+        // Update and Render additional Platform Windows
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+        }
 
         FramePresent(wd);
     }

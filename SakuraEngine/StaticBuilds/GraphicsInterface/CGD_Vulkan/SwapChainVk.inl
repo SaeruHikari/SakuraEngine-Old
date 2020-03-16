@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-15 21:25:44
+ * @LastEditTime: 2020-03-16 22:30:34
  */
 
 // Swap Chain Support Details
@@ -170,7 +170,6 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
         Sakura::log::error("failed to create swap chain!");
         throw std::runtime_error("failed to create swap chain!");
     }
-
     // Get SwapChain Images
     vkGetSwapchainImagesKHR(entityVk.device, swapChain,
         &imageCount, nullptr);
