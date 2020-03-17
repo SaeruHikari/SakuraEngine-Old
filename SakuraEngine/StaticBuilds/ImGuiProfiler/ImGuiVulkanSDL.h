@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-16 17:22:38
- * @LastEditTime: 2020-03-17 10:27:49
+ * @LastEditTime: 2020-03-17 11:23:18
  */
 #pragma once
 #include "SakuraEngine/StaticBuilds/ImGuiProfiler/imgui/imgui.h"
@@ -49,7 +49,6 @@ namespace Sakura::Graphics::Im::Vk
         uint32_t minImageCount;
         VkQueue graphicsQueue;
         VkAllocationCallbacks* allocator;
-        VkDescriptorPool descriptorPool;
         VkPipelineCache pipelineCache = VK_NULL_HANDLE;
     };
     [[nodiscard]] ImGui_ImplVulkanH_Window* CreateImGuiWindowVk(

@@ -1,10 +1,7 @@
 message(STATUS "Generating UnitTestGraphics.exe")
 
 add_executable(VkTriangle VkTriangle.cpp)
-add_executable(HE he.cpp)
 add_executable(vkImHW vkImHW.cpp)
-
-target_link_libraries(HE PRIVATE fmt::fmt)
 
 if(WIN32)
 else()

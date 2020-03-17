@@ -22,8 +22,10 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-17 10:59:20
+ * @LastEditTime: 2020-03-17 17:27:38
  */
+#pragma once
+#include "SakuraEngine/StaticBuilds/PixelOperators/DigitalImageProcess.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
 extern "C"
@@ -209,7 +211,7 @@ private:
  
     void createBuffer()
     {
-        std::unique_ptr<GpuResource> uploadBuffer, uploadBuffer2;
+        std::unique_ptr<GpuResource> uploadBuffer;
         ResourceCreateInfo bufferInfo;
         bufferInfo.type = ResourceType::Buffer;
         bufferInfo.detail.buffer.usage = 
@@ -233,7 +235,7 @@ private:
         context->CopyBuffer(*uploadBuffer.get(),
             *vertexBuffer.get(), bufferInfo.size);
 
-
+        std::unique_ptr<GpuResource> uploadBuffer2;
         bufferInfo.size = sizeof(uint16_t) * indices.size();
         uploadBuffer2 = std::move(cgd->CreateResource(bufferInfo));
 
@@ -280,8 +282,8 @@ private:
         ResizeWindow(1280, 720);
         createBuffer();
         
-        //profiler = std::make_unique<Sakura::Graphics::Im::ImGuiProfiler>(*cgd.get());
-        //profiler->ImGuiInitialize(win, swapChain->GetPixelFormat()); 
+        profiler = std::make_unique<Sakura::Graphics::Im::ImGuiProfiler>(*cgd.get());
+        profiler->ImGuiInitialize(win, swapChain->GetPixelFormat()); 
     }
 
     CommandContext* drawTriangle(RenderTargetSet& rts)
@@ -312,9 +314,8 @@ private:
         context->BindVertexBuffers(*vertexBuffer.get());
         context->BindIndexBuffers(*indexBuffer.get());
         context->DrawIndexed(indices.size(), 1);
-
     
-       /* ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplVulkan_NewFrame();
         ImGui_ImplSDL2_NewFrame(win);
         ImGui::NewFrame();
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
@@ -338,17 +339,17 @@ private:
         }
         ImGui::Render();
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(),
-            ((const CommandContextVk*)context)->commandBuffer);*/
+            ((const CommandContextVk*)context)->commandBuffer);
         context->EndRenderPass();
         context->End();
 
         static uint64 fenceVal = 1;
-        //ImGuiIO& io = ImGui::GetIO(); (void)io;
-        /*if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
-        }*/
+        }
 
         cgd->GetGraphicsQueue()
             ->Submit(context, fence.get(), fenceVal - 1, fenceVal);
@@ -356,11 +357,14 @@ private:
         cgd->Wait(fence.get(), fenceVal);
 		fenceVal += 1;
         cgd->Present(swapChain.get());
+
+        cgd->FreeContext(context);
     }
 
     void cleanUp()
     {
         cgd->WaitIdle();
+        profiler.reset();
         cgd->DestroyCommandObjects();
         vertshader.reset();
         fragshader.reset();

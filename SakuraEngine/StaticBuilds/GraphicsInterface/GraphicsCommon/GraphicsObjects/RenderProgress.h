@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 22:05:50
- * @LastEditTime: 2020-03-09 12:02:55
+ * @LastEditTime: 2020-03-17 17:08:01
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -117,8 +117,8 @@ namespace Sakura::Graphics
     {
         uint32 srcSubpass;
         uint32 dstSubpass;
-        PipelineStageFlag srcStageMask;
-        PipelineStageFlag dstStageMask;
+        PipelineStageFlag srcStageMask = ColorAttachmentOutputStage;
+        PipelineStageFlag dstStageMask = ColorAttachmentOutputStage;
         AccessFlag srcAccessMask;
         AccessFlag dstAccessMask;
         DependencyFlag dependencyFlags;

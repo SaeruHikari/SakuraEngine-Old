@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-14 01:30:54
- * @LastEditTime: 2020-03-14 01:36:18
+ * @LastEditTime: 2020-03-17 16:11:19
  */
 #pragma once
 #include "ImageUtils.h"
@@ -34,7 +34,7 @@ namespace Sakura::Images
     void RGB2HSI(channelStride* _src, int pixels = 1, int gap = 4,
         int from = 0, int to = -1)
     {
-        for(auto it = from; it < (to == -1) ? pixels : to; it++)
+        for(auto it = from; it < ((to == -1) ? pixels : to); it++)
         {   
             auto src = _src + gap * it;
             double r = *src;
@@ -48,7 +48,7 @@ namespace Sakura::Images
             auto h = (src + 0);
             auto s = (src + 1);
             auto i = (src + 2);
-            *i = (r + g + b) / 3.f;
+            *i = (channelStride)((r + g + b) / 3.f);
             r /= 255.f;
             g /= 255.f;
             b /= 255.f;
@@ -59,9 +59,9 @@ namespace Sakura::Images
             {
                 _h = 2.f * PI - _h;	
             }
-            *h = 255.f * _h / (2.f * PI); 
+            *h = (channelStride)(255.f * _h / (2.f * PI)); 
             
-            *s = (1 - 3 * min(rn, gn, bn)) * 255.f;
+            *s = (channelStride)((1 - 3 * min(rn, gn, bn)) * 255.f);
         }
     }
     
@@ -69,7 +69,7 @@ namespace Sakura::Images
     void HSI2RGB(channelStride* _src, int pixels = 1,
         int gap = 4, int from = 0, int to = -1)
     {
-        for(auto it = from; it < (to == -1) ? pixels : to; it++)
+        for(auto it = from; it < ((to == -1) ? pixels : to); it++)
         {   
             auto src = _src + gap * it;
             float h = *src;
@@ -87,27 +87,33 @@ namespace Sakura::Images
             // For black, white and grayscale h is NaN. Conversion works incorrectly.
             if(std::isnan(h))
             {
-                *(src + 0) = i * 255.f;
-                *(src + 1) = i * 255.f;
-                *(src + 2) = i * 255.f;
+                *(src + 0) = (channelStride)(i * 255.f);
+                *(src + 1) = (channelStride)(i * 255.f);
+                *(src + 2) = (channelStride)(i * 255.f);
             }
             else if(h < 2 * PI / 3)
             {
                 double y = i * (1 + (s * cos(h)) / (cos(PI / 3 - h)));
                 double z = 3 * i - (x + y);
-                *b = x * 255.f; *r = y * 255.f; *g = z * 255.f;
+                *b = (channelStride)(x * 255.f);
+                *r = (channelStride)(y * 255.f);
+                *g = (channelStride)(z * 255.f);
             }
             else if(h < 4 * PI / 3)
             {
                 double y = i * (1 + (s * cos(h - 2 * PI / 3)) / (cos(PI / 3 - (h  - 2 * PI / 3))));
                 double z = 3 * i - (x + y);
-                *r = x * 255.f; *g = y * 255.f; *b = z * 255.f;
+                *r = (channelStride)(x * 255.f);
+                *g = (channelStride)(y * 255.f);
+                *b = (channelStride)(z * 255.f);
             }
             else
             {
                 double y = i * (1 + (s * cos(h - 4 * PI / 3)) / (cos(PI / 3 - (h  - 4 * PI / 3))));
                 double z = 3 * i - (x + y);
-                *r = z * 255.f; *g = x * 255.f; *b = y * 255.f;
+                *r = (channelStride)(z * 255.f);
+                *g = (channelStride)(x * 255.f);
+                *b = (channelStride)(y * 255.f);
             }
         }
     }
@@ -117,8 +123,11 @@ namespace Sakura::Images
         bool hsi = true)
     {
         std::map<channelStride, std::size_t, std::less<>> hist;
+        std::map<channelStride, float, std::less<>> pc;
+        std::map<channelStride, float, std::less<>> dstpc;
         std::map<channelStride, float, std::less<>> pct;
         std::map<channelStride, channelStride, std::less<>> mapper;
+        // 统计频数
         for (auto i = 0; i < height; i++) 
             for (auto j = 0; j < width; j++)
             {
@@ -128,18 +137,23 @@ namespace Sakura::Images
                     hist.find(GrayIndex) == hist.end() 
                     ? 1 : hist[GrayIndex] + 1;
             }
+        // 计算频率
         for (auto& iter : hist)
             pct[iter.first] = (float)iter.second / (float)(width * height);
+        pc = pct;
         float last = 0;
+        // 计算加权
         for (auto& iter : pct)
         {
             auto rate = iter.second;
             pct[iter.first] += last;
             last += rate;
         }
+        // 均衡化
         for (auto&& iter : pct)
             mapper[iter.first] = (channelStride)(255.0 * iter.second + 0.5);
         
+        // 将结果覆盖到目标源
         if constexpr (bOverride)
         {
             if(hsi)
@@ -158,9 +172,86 @@ namespace Sakura::Images
                     {
                         auto srcval = mat[(i * width + j) * gap];
                         for(auto w = 0; w < gap; w++)
-                            *(mat + (i * width + j) * gap + w) = mapper[srcval];
+                            *(mat + (i * width + j) * gap + w) 
+                                = (w==3 ? 255 : mapper[srcval]);
                     }
         }
-        return mapper;
+        for(auto& iter : pc)
+        {
+            auto dstVal = mapper[iter.first];
+            if(dstpc.find(dstVal) == dstpc.end())
+                dstpc[dstVal] = iter.second;
+            else 
+                dstpc[dstVal] += iter.second;
+        }
+        return std::tuple(hist, pc, dstpc, mapper);
     } 
+
+    template<bool bOverride = true, typename channelStride = Sakura::Math::Unorm>
+    auto HistSpecify(channelStride* mat, 
+        std::map<channelStride, float, std::less<>> dstPct,
+        int width, int height, int gap = 4, bool hsi = true)
+    {
+        auto mappers = HistNormolize(mat, width, height, gap, hsi);
+        std::map<channelStride, channelStride> Lut;
+        // 遍历均衡化后src的灰度频率表, 按频率映射到目标LUT上
+        auto srcPct = std::get<2>(mappers);
+        for(auto& iters : srcPct)
+        {
+            float sub = 9999999;
+            channelStride dst = iters.first;
+            for(auto& iterd : dstPct)
+            {
+                auto temp = std::abs(iterd.second - iters.second);
+                if(temp < sub)
+                {
+                    sub = temp;
+                    dst = iterd.first;
+                }
+            }
+            // 记录Lut
+            Lut[iters.first] = dst; 
+        }
+        // 将结果覆盖到目标源
+        if constexpr (bOverride)
+        {
+            if(hsi)
+            {
+                for (auto i = 0; i < height; i++) 
+                    for (auto j = 0; j < width; j++)
+                    {
+                        int IOffset = (gap == 1) ? 0 : 2;
+                        auto srcval = mat[(i * width + j) * gap + IOffset];
+                        *(mat + (i * width + j) * gap + IOffset) 
+                            = Lut[srcval];
+                    }
+            }
+            else
+                for (auto i = 0; i < height; i++) 
+                    for (auto j = 0; j < width; j++)
+                    {
+                        auto srcval = mat[(i * width + j) * gap];
+                        for(auto w = 0; w < gap; w++)
+                            *(mat + (i * width + j) * gap + w) =
+                                (w==3 ? 255 : Lut[srcval]);
+                    }
+        }
+        std::map<channelStride, std::size_t, std::less<>> hist;
+        std::map<channelStride, float, std::less<>> pct;
+        // 统计频数
+        for (auto i = 0; i < height; i++) 
+            for (auto j = 0; j < width; j++)
+            {
+                int IOffset = (gap == 1) ? 0 : 2;
+                channelStride GrayIndex = mat[(i * width + j) * gap + IOffset];
+                hist[GrayIndex] = 
+                    hist.find(GrayIndex) == hist.end() 
+                    ? 1 : hist[GrayIndex] + 1;
+            }
+        // 计算频率
+        for (auto& iter : hist)
+            pct[iter.first] = (float)iter.second / (float)(width * height);
+
+        return pct;
+    }
 }

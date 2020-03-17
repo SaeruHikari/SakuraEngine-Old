@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 20:05:47
- * @LastEditTime: 2020-03-02 15:02:05
+ * @LastEditTime: 2020-03-17 12:26:06
  */
 #pragma once
 extern "C"
@@ -32,9 +32,10 @@ extern "C"
 	#include "SDL2/SDL_vulkan.h"
 	#undef main
 }
+#include "SakuraEngine/Core/Core.h"
 #include "SakuraEngine/Core/EngineUtils/log.h"
 #include "vulkan/vulkan.h"
-
+using namespace Sakura;
 std::vector<const char*> VkSDL_GetInstanceExtensions(SDL_Window* win, 
     bool bOpenValidateLayer = false)
 {

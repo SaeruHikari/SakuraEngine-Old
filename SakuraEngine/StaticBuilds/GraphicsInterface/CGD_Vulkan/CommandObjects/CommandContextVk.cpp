@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-16 22:01:54
+ * @LastEditTime: 2020-03-17 11:31:07
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -26,6 +26,7 @@ using namespace Sakura::Graphics::Vk;
 CommandContext* CGD_Vk::AllocateContext(ECommandType type, bool bTransiant)
 {
     std::lock_guard<std::mutex> LockGurad(contextAllocationMutex);
+    static int overflow = 0;
 #ifdef PROFILING_POOL
     for (auto i = 0; i < contextPools[type].size(); i++)
     {
@@ -41,8 +42,15 @@ CommandContext* CGD_Vk::AllocateContext(ECommandType type, bool bTransiant)
             ((CommandContextVk*)res)->recordingFence) == VK_SUCCESS)
         {
             availableContexts[type].pop();
+            overflow = (overflow < 0) ? 0 : overflow - 1;
             return res;
         }
+    }
+    overflow++;
+    if(overflow > 1000)
+    {
+        overflow = 0;
+        CGD_Vk::warn("CGD Warning: Context pool overflow! Did you free your context after using?");
     }
     CommandContext* newContext = new CommandContextVk(*this, type, bTransiant);
     auto result = std::unique_ptr<CommandContext>(newContext);

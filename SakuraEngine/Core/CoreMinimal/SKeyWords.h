@@ -4,13 +4,12 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 14:17:20
- * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-23 23:49:49
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-03-17 12:48:43
  */
 #pragma once
 #include <string>
 #include <stdint.h>
-using namespace std;
 
 namespace Sakura
 {
@@ -27,6 +26,7 @@ namespace Sakura
     using int64 = int64_t;
     using size_t = size_t;
     using atom = size_t;
+}
 
 #ifndef sinline
     #if MSVC
@@ -35,7 +35,6 @@ namespace Sakura
         #define sinline inline
     #endif
 #endif
-}
 
 #define snoexcept noexcept
 

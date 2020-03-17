@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:39:51
- * @LastEditTime: 2020-03-16 19:35:11
+ * @LastEditTime: 2020-03-17 12:28:19
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandQueue.h"
@@ -36,7 +36,7 @@ namespace Sakura::Graphics::Vk
         friend class CGD_Vk;
         friend class CommandQueueVk;
         friend class CommandContextVk;
-        friend class FenceVk;
+        friend struct FenceVk;
     protected:
         CommandQueueVk(const CGD_Vk& _cgd);
     public:
