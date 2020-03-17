@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:38:49
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-15 21:14:38
+ * @LastEditTime: 2020-03-17 10:08:34
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
@@ -47,6 +47,7 @@ namespace Sakura::Graphics::Vk
         virtual void CopyBuffer(GpuResource& src, GpuResource& dst,
             const uint64_t srcOffset,
             const uint64_t dstOffset = 0, const uint64_t size = 0) override final;
+        VkCommandBuffer commandBuffer;
     protected:
         CommandContextVk(const CGD_Vk& _cgd, ECommandType type,
             bool bTransiant = false);
@@ -54,7 +55,6 @@ namespace Sakura::Graphics::Vk
         const CGD_Vk& cgd;
         GraphicsPipelineVk* vkGp = nullptr;
         VkCommandPool commandPool;
-        VkCommandBuffer commandBuffer;
         VkFence recordingFence = VK_NULL_HANDLE;
     };
 } // namespace Sakura::Graphics

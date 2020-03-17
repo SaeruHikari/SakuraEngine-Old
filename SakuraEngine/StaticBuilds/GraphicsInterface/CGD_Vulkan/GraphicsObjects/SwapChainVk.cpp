@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:49:22
- * @LastEditTime: 2020-03-16 22:32:13
+ * @LastEditTime: 2020-03-17 11:12:09
  */
 #include "SwapChainVk.h"
 #include "../ResourceObjects/GpuResourceVk.h"
@@ -49,6 +49,14 @@ SwapChainVk::SwapChainVk(const VkSwapchainKHR _chain,
             throw std::runtime_error("failed to create VkSemaphore for swapchain!");
         }
     }
+    vkAcquireNextImageKHR(
+        _device.GetCGDEntity().device,
+        swapChain,
+        UINT64_MAX,
+        imageAvailableSemaphores[0],
+        VK_NULL_HANDLE,
+        &currentPresent
+    );
 }
 
 SwapChainVk::~SwapChainVk()

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-16 17:02:13
- * @LastEditTime: 2020-03-17 01:00:33
+ * @LastEditTime: 2020-03-17 10:48:17
  */
 #pragma once
 #include "memory_resource"
@@ -30,6 +30,7 @@
 #include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
 #include "ImGuiVulkanSDL.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CommandObjects/CommandContextVk.h"
 #include "SakuraEngine/Core/Core.h"
 
 using namespace Sakura::Graphics;
@@ -64,6 +65,7 @@ namespace Sakura::Graphics::Im
         ImGuiWindow* CreateImGuiWindow(SDL_Window* wind, int width, int height);
         void ImGuiRender(ImGuiWindow* wd);
         void ImGuiPresent(ImGuiWindow* wd);
+        void ImGuiInitialize(SDL_Window* wd, Format fmt);
     private:
         inline VkDevicePack GetVkDevicePack()
         {
@@ -135,7 +137,6 @@ namespace Sakura::Graphics::Im
                     style.WindowRounding = 0.0f;
                     style.Colors[ImGuiCol_WindowBg].w = 1.0f;
                 }
-                
                 VkDescriptorPoolSize pool_sizes[] =
                 {
                     { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
@@ -223,6 +224,105 @@ namespace Sakura::Graphics::Im
         {
             auto vkwd = (ImGuiWindowVk*)wd;
             ImGuiRenderVk(GetVkDevicePack(), vkwd->wind);
+            return;
+        }
+        default:
+            ImGuiProfiler::error("ImGui Not supported now!");
+            return;
+        }
+    }
+
+    void ImGuiProfiler::ImGuiInitialize(SDL_Window* wind, Format fmt)
+    {
+        VkDevicePack pack = GetVkDevicePack();
+        switch (backend)
+        {
+        case TargetGraphicsInterface::CGD_TARGET_VULKAN:
+        {
+            IMGUI_CHECKVERSION();
+            ImGui::CreateContext();
+            ImGuiIO& io = ImGui::GetIO(); (void)io;
+            io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+            //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+            io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+            io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+            ImGui::StyleColorsDark();
+            // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+            ImGuiStyle& style = ImGui::GetStyle();
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+            {
+                style.WindowRounding = 0.0f;
+                style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+            }
+            
+            VkDescriptorPoolSize pool_sizes[] =
+            {
+                { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+                { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+                { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+                { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+                { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+                { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+                { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+                { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+                { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+                { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+                { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+            };
+            VkDescriptorPoolCreateInfo pool_info = {};
+            pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+            pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+            pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
+            pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
+            pool_info.pPoolSizes = pool_sizes;
+            auto err = vkCreateDescriptorPool(pack.device,
+                &pool_info, pack.allocator, &pack.descriptorPool);
+            check_vk_result(err);
+            
+            ImGui_ImplSDL2_InitForVulkan(wind);
+            ImGui_ImplVulkan_InitInfo init_info = {};
+            init_info.Instance = pack.instance;
+            init_info.PhysicalDevice = pack.physicalDevice;
+            init_info.Device = pack.device;
+            init_info.QueueFamily = pack.graphicsQueueFamily;
+            init_info.Queue = pack.graphicsQueue;
+            init_info.PipelineCache = pack.pipelineCache;
+            init_info.DescriptorPool = pack.descriptorPool;
+            init_info.Allocator = nullptr;
+            init_info.MinImageCount = pack.minImageCount;
+            init_info.ImageCount = 2;
+            init_info.CheckVkResultFn = check_vk_result;
+            auto RenderPass = ImGuiCreateRenderPass(pack, Transfer(fmt));
+            ImGui_ImplVulkan_Init(&init_info, RenderPass);
+            {
+                // Use any command queue
+                auto ctx =
+                    ((CGD&)gfxDevice).AllocateContext(ECommandType::CommandContext_Graphics);
+                VkCommandBuffer command_buffer =
+                    ((const CommandContextVk*)ctx)->commandBuffer;
+                VkCommandBufferBeginInfo begin_info = {};
+                begin_info.sType =
+                    VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                begin_info.flags |=
+                    VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+                err = vkBeginCommandBuffer(command_buffer, &begin_info);
+                check_vk_result(err);
+
+                ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
+
+                VkSubmitInfo end_info = {};
+                end_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                end_info.commandBufferCount = 1;
+                end_info.pCommandBuffers = &command_buffer;
+                err = vkEndCommandBuffer(command_buffer);
+                check_vk_result(err);
+                err = vkQueueSubmit(pack.graphicsQueue, 1, &end_info, VK_NULL_HANDLE);
+                check_vk_result(err);
+
+                err = vkDeviceWaitIdle(pack.device);
+                check_vk_result(err);
+                ImGui_ImplVulkan_DestroyFontUploadObjects();
+            }
             return;
         }
         default:

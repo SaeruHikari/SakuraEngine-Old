@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-16 17:22:38
- * @LastEditTime: 2020-03-17 00:26:35
+ * @LastEditTime: 2020-03-17 10:27:49
  */
 #pragma once
 #include "SakuraEngine/StaticBuilds/ImGuiProfiler/imgui/imgui.h"
@@ -60,4 +60,6 @@ namespace Sakura::Graphics::Im::Vk
     void ImGuiPresentVk(const VkDevicePack& devices, ImGui_ImplVulkanH_Window* wd);
 
     void check_vk_result(VkResult err);
+
+    VkRenderPass ImGuiCreateRenderPass(const VkDevicePack& devices, VkFormat fmt);
 }

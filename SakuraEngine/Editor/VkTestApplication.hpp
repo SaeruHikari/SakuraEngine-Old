@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-17 00:55:47
+ * @LastEditTime: 2020-03-17 10:59:20
  */
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -136,7 +136,6 @@ public:
                 default:
                     break;
                 }
-                SDL_UpdateWindowSurface(winIm);
             }
             mainLoop();
         }
@@ -276,23 +275,13 @@ private:
         cgd->InitQueueSet(&surface);
         fence = std::move(cgd->AllocFence());
         
-        winIm = SDL_CreateWindow("ImProfiler Window",
-            SDL_WINDOWPOS_UNDEFINED,           // initial x position
-            SDL_WINDOWPOS_UNDEFINED,           // initial y position
-            640,                               // width, in pixels
-            480,                               // height, in pixels
-            SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN |
-            SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
-
-        profiler = std::make_unique<Sakura::Graphics::Im::ImGuiProfiler>(*cgd.get());
-        auto imWin = profiler->CreateImGuiWindow(winIm, 1280, 720);
-        profilerWind = 
-            std::move(std::unique_ptr<Sakura::Graphics::Im::ImGuiWindow>(imWin));
-
         createVInInfo();
         createShader();
         ResizeWindow(1280, 720);
         createBuffer();
+        
+        //profiler = std::make_unique<Sakura::Graphics::Im::ImGuiProfiler>(*cgd.get());
+        //profiler->ImGuiInitialize(win, swapChain->GetPixelFormat()); 
     }
 
     CommandContext* drawTriangle(RenderTargetSet& rts)
@@ -316,9 +305,16 @@ private:
             &swapChain->GetChainImageView(frameCount)};
         RenderTargetSet rts{&rt, 1};
 
-        auto drawTri = drawTriangle(rts);
+        auto context = 
+            cgd->AllocateContext(ECommandType::CommandContext_Graphics);
+        context->Begin();
+        context->BeginRenderPass(Pipeline.get(), rts);
+        context->BindVertexBuffers(*vertexBuffer.get());
+        context->BindIndexBuffers(*indexBuffer.get());
+        context->DrawIndexed(indices.size(), 1);
+
     
-        ImGui_ImplVulkan_NewFrame();
+       /* ImGui_ImplVulkan_NewFrame();
         ImGui_ImplSDL2_NewFrame(win);
         ImGui::NewFrame();
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
@@ -341,28 +337,25 @@ private:
             ImGui::End();
         }
         ImGui::Render();
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(),
+            ((const CommandContextVk*)context)->commandBuffer);*/
+        context->EndRenderPass();
+        context->End();
 
         static uint64 fenceVal = 1;
-        
-		profiler->ImGuiRender(profilerWind.get());
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-        // Update and Render additional Platform Windows
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        //ImGuiIO& io = ImGui::GetIO(); (void)io;
+        /*if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
-        }
+        }*/
+
         cgd->GetGraphicsQueue()
-            ->Submit(drawTri, fence.get(), fenceVal - 1, fenceVal);
+            ->Submit(context, fence.get(), fenceVal - 1, fenceVal);
         cgd->GetGraphicsQueue()->WaitIdle();
         cgd->Wait(fence.get(), fenceVal);
-    
+		fenceVal += 1;
         cgd->Present(swapChain.get());
-        profiler->ImGuiPresent(profilerWind.get());
-
-		fenceVal++;
-        
-        cgd->FreeContext(drawTri);
     }
 
     void cleanUp()
@@ -390,7 +383,6 @@ private:
     }
 
     std::unique_ptr<Sakura::Graphics::Im::ImGuiProfiler> profiler;
-    std::unique_ptr<Sakura::Graphics::Im::ImGuiWindow> profilerWind;
     std::unique_ptr<GpuResource> vertexBuffer, indexBuffer;
     ShaderStageCreateInfo vsStage, fsStage;
     VertexInputStateCreateInfo vbInfo;
@@ -403,6 +395,5 @@ private:
     std::unique_ptr<RenderProgress> prog;
     VkSurfaceKHR surface;
     SDL_Window* win = nullptr;
-    SDL_Window* winIm = nullptr;
 };
 
