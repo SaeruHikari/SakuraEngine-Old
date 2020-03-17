@@ -21,30 +21,37 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-03 10:39:51
- * @LastEditTime: 2020-03-17 17:37:51
+ * @Date: 2020-03-17 22:31:04
+ * @LastEditTime: 2020-03-17 22:31:52
  */
 #pragma once
-#include "../../GraphicsCommon/CommandObjects/CommandQueue.h"
-#include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
-#include <vulkan/vulkan.h>
+#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/SDefination.h"
 
-namespace Sakura::Graphics::Vk
+namespace Sakura::Graphics
 {
-    class CommandQueueVk : SImplements CommandQueue
+    enum RootParameterType
     {
-        friend class CGD_Vk;
-        friend class CommandQueueVk;
-        friend class CommandContextVk;
-        friend struct FenceVk;
-    protected:
-        CommandQueueVk(const CGD_Vk& _cgd);
-    public:
-        virtual void Submit(CommandContext* commandContext) override final;
-        virtual void Submit(Fence* fence, uint64 completedValue) override final;
-        virtual void Wait(Fence* fence, uint64 until) override final;
-        virtual void WaitIdle() override final;
-        VkQueue vkQueue = VK_NULL_HANDLE;
-        const CGD_Vk& cgd;
+        DescriptorTable = 0,
+        RootDescriptor = 1,
+        RootConstants = 2,
+        RootParameterTypeCount
     };
-}
+    struct RootParameter
+    {
+        RootParameterType type;
+        union Param
+        {
+            struct DescriptorTable
+            {
+                uint32_t descriporNum;
+                uint32_t registerSlot;
+            } table;
+        };
+    };
+    struct RootSignature
+    {
+        std::vector<RootParameter> paramSlots;
+    };
+} // namespace Sakura::Graphics
+

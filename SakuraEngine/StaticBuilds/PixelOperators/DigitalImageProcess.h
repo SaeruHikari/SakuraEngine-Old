@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-14 01:30:54
- * @LastEditTime: 2020-03-17 16:11:19
+ * @LastEditTime: 2020-03-17 18:06:56
  */
 #pragma once
 #include "ImageUtils.h"
@@ -196,6 +196,28 @@ namespace Sakura::Images
         std::map<channelStride, channelStride> Lut;
         // 遍历均衡化后src的灰度频率表, 按频率映射到目标LUT上
         auto srcPct = std::get<2>(mappers);
+        float d = 0;
+        float dd = 0;
+        for(auto& iter : srcPct)
+        {
+            if(d == 0)
+                d = iter.second;
+            else
+            {
+                srcPct[iter.first] += d;
+                d = srcPct[iter.first];
+            }
+        }
+        for(auto& iter : dstPct)
+        {
+            if(dd == 0)
+                dd = iter.second;
+            else
+            {
+                dstPct[iter.first] += dd;
+                dd = dstPct[iter.first];
+            }
+        }
         for(auto& iters : srcPct)
         {
             float sub = 9999999;

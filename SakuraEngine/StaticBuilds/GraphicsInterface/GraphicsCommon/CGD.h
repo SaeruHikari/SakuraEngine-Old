@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-16 17:18:49
+ * @LastEditTime: 2020-03-17 22:40:57
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -108,6 +108,8 @@ namespace Sakura::Graphics
         virtual void Wait(Fence* toWait, uint64 until) const = 0;
         virtual void WaitIdle() const = 0;
         virtual std::unique_ptr<Fence> AllocFence(void) = 0;
+
+        //virtual void BindCBV();
 
         virtual const TargetGraphicsInterface GetBackEndAPI(void) const = 0;
     public:

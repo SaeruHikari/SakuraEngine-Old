@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-17 17:27:38
+ * @LastEditTime: 2020-03-17 23:42:04
  */
 #pragma once
 #include "SakuraEngine/StaticBuilds/PixelOperators/DigitalImageProcess.h"
@@ -66,6 +66,7 @@ using namespace Sakura::Graphics::Vk;
     ("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\CBV\\CBVVert.spv",
         'r');
 #endif
+
 struct Vertex
 {
     Sakura::Math::Vector2f pos;
@@ -104,7 +105,8 @@ const std::vector<Vertex> vertices = {
 const std::vector<uint16_t> indices = {
     0, 1, 2, 2, 3, 0
 };
-struct ConstantBuffer
+
+struct UniformBuffer
 {
     Sakura::Math::Matrix4f model;
     Sakura::Math::Matrix4f view;
@@ -147,7 +149,7 @@ public:
 private:
     void createShader()
     {
-		// Create PSO
+		// Create PSO vs_cbv
 		std::vector<char> vs_bytes(vs_f.size());
 		std::vector<char> fs_bytes(fs_f.size());
 		vs_f.read(vs_bytes.data(), vs_bytes.size());
@@ -257,6 +259,19 @@ private:
         cgd->GetCopyQueue()->Submit(context);
         cgd->FreeContext(context);
         cgd->GetCopyQueue()->WaitIdle();
+
+        constantBuffers.resize(swapChain->GetSwapChainCount());
+        ResourceCreateInfo cbufferInfo;
+        cbufferInfo.type = ResourceType::Buffer;
+        cbufferInfo.detail.buffer.usage = 
+            BufferUsage::ConstantBuffer;
+        cbufferInfo.detail.buffer.cpuAccess 
+            = CPUAccessFlags::ReadWrite;
+        cbufferInfo.size = sizeof(UniformBuffer);
+        for(auto i = 0u; i < constantBuffers.size(); i++)
+        {
+            constantBuffers[i] = std::move(cgd->CreateResource(cbufferInfo));
+        }
     }
 
     void initVulkan()
@@ -286,18 +301,24 @@ private:
         profiler->ImGuiInitialize(win, swapChain->GetPixelFormat()); 
     }
 
-    CommandContext* drawTriangle(RenderTargetSet& rts)
+    void updateUniformBUffer(uint32_t frameCount)
     {
-        auto context = 
-            cgd->AllocateContext(ECommandType::CommandContext_Graphics);
-        context->Begin();
-        context->BeginRenderPass(Pipeline.get(), rts);
-        context->BindVertexBuffers(*vertexBuffer.get());
-        context->BindIndexBuffers(*indexBuffer.get());
-        context->DrawIndexed(indices.size(), 1);
-        context->EndRenderPass();
-        context->End();
-        return context;
+        using namespace Sakura::Math;
+        static auto startTime = std::chrono::high_resolution_clock::now();
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+        UniformBuffer ubo = {};
+        ubo.model.setIdentity();
+        //Matrix4f::
+        //ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        //ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
+        ubo.proj(1, 1) *= -1;
+
+        void* data;
+        constantBuffers[frameCount]->Map(&data);
+            memcpy(data, &ubo, sizeof(ubo));
+        constantBuffers[frameCount]->Unmap();
     }
 
     void mainLoop()
@@ -322,18 +343,7 @@ private:
         {
             static float f = 0.0f;
             static int counter = 0;
-
             ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
@@ -351,8 +361,8 @@ private:
             ImGui::RenderPlatformWindowsDefault();
         }
 
-        cgd->GetGraphicsQueue()
-            ->Submit(context, fence.get(), fenceVal - 1, fenceVal);
+        cgd->GetGraphicsQueue()->Submit(context);
+        cgd->GetGraphicsQueue()->Submit(fence.get(), fenceVal);
         cgd->GetGraphicsQueue()->WaitIdle();
         cgd->Wait(fence.get(), fenceVal);
 		fenceVal += 1;
@@ -366,6 +376,8 @@ private:
         cgd->WaitIdle();
         profiler.reset();
         cgd->DestroyCommandObjects();
+        for(auto i = 0; i < constantBuffers.size(); i++)
+            constantBuffers[i].reset();
         vertshader.reset();
         fragshader.reset();
         Pipeline.reset();
@@ -386,6 +398,7 @@ private:
         win = VkSDL_CreateWindow("SakuraEngine Window: CGD Vulkan", 1280, 720);
     }
 
+    std::vector<std::unique_ptr<GpuResource>> constantBuffers;
     std::unique_ptr<Sakura::Graphics::Im::ImGuiProfiler> profiler;
     std::unique_ptr<GpuResource> vertexBuffer, indexBuffer;
     ShaderStageCreateInfo vsStage, fsStage;

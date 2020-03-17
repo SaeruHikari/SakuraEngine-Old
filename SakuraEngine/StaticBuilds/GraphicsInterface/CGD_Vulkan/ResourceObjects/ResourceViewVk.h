@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:37:46
- * @LastEditTime: 2020-03-15 09:11:26
+ * @LastEditTime: 2020-03-17 23:37:00
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/SInterface.h"
@@ -48,10 +48,4 @@ namespace Sakura::Graphics::Vk
         VkImageView vkImgView = VK_NULL_HANDLE;
     };
 
-    struct VertexBufferViewVk final : public VertexBufferView
-    {
-
-    private:
-        VkVertexInputBindingDescription bindingDescription;
-    };
 }

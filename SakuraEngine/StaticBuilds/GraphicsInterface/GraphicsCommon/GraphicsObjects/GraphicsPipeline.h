@@ -22,13 +22,14 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 23:25:42
- * @LastEditTime: 2020-03-10 14:42:43
+ * @LastEditTime: 2020-03-17 22:32:07
  */
 #pragma once
 #include "../Flags/GraphicsPipelineStates.h"
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "../ResourceObjects/ResourceViews.h"
+#include "RootSignature.h"
 
 namespace Sakura::Graphics
 {
