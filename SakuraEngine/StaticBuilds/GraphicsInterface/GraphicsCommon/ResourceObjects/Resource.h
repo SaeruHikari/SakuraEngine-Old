@@ -22,10 +22,10 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:36:56
- * @LastEditTime: 2020-03-18 15:32:55
+ * @LastEditTime: 2020-03-18 18:54:05
  */
 #pragma once
-#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/sinterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "../Flags/ResourceFlags.h"
 #include "../Flags/CommonFeatures.h"
@@ -52,9 +52,9 @@ namespace Sakura::Graphics
         } detail;
     };
     
-    SInterface GpuResource
+    sinterface GpuResource
     {
-        friend SInterface CGD;
+        friend sinterface CGD;
         virtual ~GpuResource() = default;
         virtual void Map(void** data) = 0;
         virtual void Unmap() = 0;
@@ -62,7 +62,7 @@ namespace Sakura::Graphics
         {
             return extent;
         }
-        //virtual const ResourceViewType GetDefaultView() const = 0;
+        virtual const ResourceViewType GetDefaultView() const = 0;
     protected:
         GpuResource() = default;
         GpuResource(Extent2D _extent)

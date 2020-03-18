@@ -104,7 +104,7 @@ namespace Sakura::Graphics::Vk
         return subpass;
     }
 
-    class RenderPassVk final : SImplements RenderPass
+    class RenderPassVk final : simplements RenderPass
     {
         friend class CGD_Vk;
         friend class GraphicsPipelineVk;

@@ -14,7 +14,7 @@
 // UUID
 #include "SUUID.h"
 // Interfaces
-#include "SInterface.h"
+#include "sinterface.h"
 // Assert
 #include "SAssert.h"
 

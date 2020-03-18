@@ -31,7 +31,7 @@
 
 namespace Sakura::Graphics::Vk
 {
-    class CommandQueueVk : SImplements CommandQueue
+    class CommandQueueVk : simplements CommandQueue
     {
         friend class CGD_Vk;
         friend class CommandQueueVk;

@@ -21,7 +21,7 @@
 - ⚙️ 模块/插件化: 基于依赖图的模块管理器[SPA](SPA/), 支持静态/动态导出的插件/模块;
 
 # Coming Soon
-- 🧰 跨图形接口: [CGD](SakuraEngine/StaticBuilds/GraphicsInterface/)(CommonGraphicsDevice)现代图形API([Direct3D12](SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Direct3D12/), [Vulkan](SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/))的上层抽象;
+- 🧰 跨图形接口: [CGD](SakuraEngine/StaticBuilds/Graphicsinterface/)(CommonGraphicsDevice)现代图形API([Direct3D12](SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Direct3D12/), [Vulkan](SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/))的上层抽象;
 
 # 待实现
 - 🎨 渲染调度: RenderGraph, 数据驱动可自由配置装载的Pass;
@@ -52,7 +52,7 @@
 &emsp;&emsp;为了降低引擎中的状态熵(即将状态向模块聚合, 再向少部分源文件聚合), SakuraEngine会提供很多静态构建的库来为模块提供功能, 同时用很少的源承载状态并于静态包链接。为了更深地了解这种思想, 您可以到[模块文档页](https://saeruhikari.github.io/SakuraEngine/#/Modules/)下进行了解。
 
 ### CGD(Comman Graphics Device)
-&emsp;&emsp;[CGD](SakuraEngine/StaticBuilds/GraphicsInterface/)是一个现代图形API的抽象层。为了追求性能, CGD会彻底放弃对旧图形API的支持(D3D11/lower, OpenGL等)。
+&emsp;&emsp;[CGD](SakuraEngine/StaticBuilds/Graphicsinterface/)是一个现代图形API的抽象层。为了追求性能, CGD会彻底放弃对旧图形API的支持(D3D11/lower, OpenGL等)。
 
 &emsp;&emsp;CGD仅仅是一层图形接口的抽象, 它的任务是跟进图形接口的特性, 并提供检查以及通用调用接口。引擎将会提供一个专门的模块调度CGD, 在此基础上进行渲染编程, 而非直接调度CGD进行渲染特性的实现。
 

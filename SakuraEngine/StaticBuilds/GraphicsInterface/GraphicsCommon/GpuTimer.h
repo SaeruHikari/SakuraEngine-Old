@@ -8,12 +8,12 @@
  * @LastEditTime : 2020-02-12 12:31:10
  */
 #pragma once
-#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/sinterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 
 namespace Sakura::Graphics
 {
-    SInterface CommandContext;
+    sinterface CommandContext;
 }    
 
 namespace Sakura::Graphics::GpuTimeManager

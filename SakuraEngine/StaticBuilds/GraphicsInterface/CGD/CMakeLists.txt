@@ -1,6 +1,6 @@
-include_directories( ${PROJECT_SOURCE_DIR}/GraphicsInterface/CGD_Direct3D12)
-include_directories( ${PROJECT_SOURCE_DIR}/GraphicsInterface/Vulkan)
-include_directories( ${PROJECT_SOURCE_DIR}/GraphicsInterface/GraphicsCommon)
+include_directories( ${PROJECT_SOURCE_DIR}/Graphicsinterface/CGD_Direct3D12)
+include_directories( ${PROJECT_SOURCE_DIR}/Graphicsinterface/Vulkan)
+include_directories( ${PROJECT_SOURCE_DIR}/Graphicsinterface/GraphicsCommon)
 
 add_library(CGD 
 CGD.cpp 

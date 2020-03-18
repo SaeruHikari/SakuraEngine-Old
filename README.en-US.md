@@ -33,10 +33,10 @@ A Cross-Platform Mordern Game Engine.
   * Script
     * Mono?
     * Auto-Binding / Binding Machine
-  * Graphics: [CGD](SakuraEngine/GraphicsInterface) 🚧
+  * Graphics: [CGD](SakuraEngine/Graphicsinterface) 🚧
     * GraphicsUtils
       * GraphicsProfiling(GpuTimer...) 🚧
-    * TargetGraphicsInterface 🚧
+    * TargetGraphicsinterface 🚧
       * Vulkan 🚧
       * D3D12 🚧
       * Metal

@@ -41,7 +41,7 @@ namespace Sakura::Graphics::Vk
      * @description: Fence: wait GPU at CPU
      * @author: SaeruHikari
      */
-    struct FenceVk final : SImplements Fence
+    struct FenceVk final : simplements Fence
     {
         friend class CGD_Vk;
         friend class CommandQueueVk;

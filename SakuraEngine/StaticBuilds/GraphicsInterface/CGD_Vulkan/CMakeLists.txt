@@ -15,7 +15,7 @@ endif(SpecificTimerImpl)
 
 find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
 
-if(FALSE)
+if(TRUE)
 add_library(CGD_Vulkan  
     STATIC  
     CGDVk_All.cpp

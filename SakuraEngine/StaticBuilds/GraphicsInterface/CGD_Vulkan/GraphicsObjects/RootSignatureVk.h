@@ -22,13 +22,14 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:13:31
- * @LastEditTime: 2020-03-18 17:01:10
+ * @LastEditTime: 2020-03-18 19:54:52
  */
 #pragma once
 #include <vector>
 #include <memory_resource>
 #include "../../GraphicsCommon/GraphicsObjects/RootSignature.h"
 #include "vulkan/vulkan.h"
+#include "SakuraEngine/Core/EngineUtils/log.h"
 
 namespace Sakura::Graphics::Vk
 {
@@ -37,31 +38,54 @@ namespace Sakura::Graphics::Vk
 
 namespace Sakura::Graphics::Vk
 {
-    class RootSignatureVk final : SImplements Sakura::Graphics::RootSignature
+    class RootSignatureVk final : simplements Sakura::Graphics::RootSignature
     {
         friend class CGD_Vk;
     public:
         virtual ~RootSignatureVk() override final;
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+        std::vector<VkDescriptorPool> pools;
         virtual [[nodiscard]] RootArgument* CreateArgument(uint32_t slot,
-            const RootArgumentCreateInfo& info) const override final;
+            const SignatureSlotType type) const override final;
+        virtual const size_t GetSlotNum(void) const override final;
     protected:
         RootSignatureVk(const CGD_Vk& _cgd, const RootSignatureCreateInfo& info);
         const CGD_Vk& cgd;
     };
 
-    class RootArgumentVk final : SImplements Sakura::Graphics::RootArgument
+    class RootArgumentVk final : simplements Sakura::Graphics::RootArgument
     {
         friend class CGD_Vk;
         friend class RootSignatureVk;
     public:
         VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
         virtual ~RootArgumentVk() override final;
-        virtual const RootArgumentType GetType(void) const override final;
+        virtual const SignatureSlotType GetType(void) const override final;
+        virtual void UpdateArgument(
+            const RootArgumentAttachment& attachment) override final;
     protected:
-        RootArgumentType type;
+        SignatureSlotType type;
         RootArgumentVk(const CGD_Vk& _cgd, const VkDescriptorSetLayout& layout, 
-            const RootArgumentCreateInfo& info, VkDescriptorPool pool);
+            const SignatureSlotType type, VkDescriptorPool pool);
         const CGD_Vk& cgd; 
     };
+
+    inline static const VkDescriptorType Transfer(const SignatureSlotType in)
+    {
+        if(in != InlineUniformBlockExt || in != AccelerationStructureNv)
+            return ((VkDescriptorType)in);
+        else 
+        {
+            switch (in)
+            {
+            case SignatureSlotType::InlineUniformBlockExt:
+                return VkDescriptorType::VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT;
+            case SignatureSlotType::AccelerationStructureNv:
+                return VkDescriptorType::VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV;            
+            default:
+                Sakura::log::error("Vulkan: Failed to transfer SlotType to VkDescriptorType!");
+            }
+        }
+        return VkDescriptorType::VK_DESCRIPTOR_TYPE_END_RANGE;
+    }
 }

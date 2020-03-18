@@ -462,7 +462,7 @@ void CGD_Vk::InitQueueSet(void* mainSurface)
     createAllocator();
 }
 
-const TargetGraphicsInterface CGD_Vk::GetBackEndAPI(void) const
+const TargetGraphicsinterface CGD_Vk::GetBackEndAPI(void) const
 {
-    return TargetGraphicsInterface::CGD_TARGET_VULKAN;
+    return TargetGraphicsinterface::CGD_TARGET_VULKAN;
 }

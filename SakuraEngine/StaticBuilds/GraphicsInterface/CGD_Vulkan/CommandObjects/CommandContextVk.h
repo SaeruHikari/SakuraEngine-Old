@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:38:49
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-17 10:08:34
+ * @LastEditTime: 2020-03-18 19:37:01
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
@@ -19,7 +19,7 @@ namespace Sakura::Graphics::Vk
 
 namespace Sakura::Graphics::Vk
 {
-    class CommandContextVk : SImplements CommandContext
+    class CommandContextVk : simplements CommandContext
     {
         friend class CGD_Vk;
         friend class CommandQueueVk;
@@ -43,7 +43,10 @@ namespace Sakura::Graphics::Vk
             const Sakura::Graphics::GpuResource& vb) override final;
         virtual void BindIndexBuffers(
             const Sakura::Graphics::GpuResource& ib) override final;
-        
+
+        virtual void BindRootArguments(const PipelineBindPoint bindPoint,
+            const RootArgument** arguments, uint32_t argumentNum) override final;
+
         virtual void CopyBuffer(GpuResource& src, GpuResource& dst,
             const uint64_t srcOffset,
             const uint64_t dstOffset = 0, const uint64_t size = 0) override final;

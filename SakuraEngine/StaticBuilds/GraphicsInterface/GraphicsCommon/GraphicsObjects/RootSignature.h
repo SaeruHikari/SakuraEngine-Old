@@ -22,17 +22,17 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-17 22:31:04
- * @LastEditTime: 2020-03-18 16:57:18
+ * @LastEditTime: 2020-03-18 20:08:13
  */
 #pragma once
-#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/sinterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include <vector>
 #include "../ResourceObjects/Shader.h"
 
 namespace Sakura::Graphics
 {
-    SInterface GpuResource;
+    sinterface GpuResource;
 }
 
 namespace Sakura::Graphics
@@ -50,50 +50,55 @@ namespace Sakura::Graphics
         UniformBufferDynamicSlot = 8,
         StorageBufferDynamicSlot = 9,
         InputAttachmentSlot = 10,
-        InlineUniformBlockExt = 1000138000,
-        AccelerationStructureNv = 1000165000
+        InlineUniformBlockExt = 11,//11
+        AccelerationStructureNv = 12,//12
+        SignatureSlotTypeCount = 13,
+        VK_DESCRIPTOR_TYPE_MAX_ENUM = 0x7FFFFFFF
     };
+
     struct SignatureSlot
     {
         SignatureSlotType type;
         ShaderStages stageFlags;
     };
+
     struct RootSignatureCreateInfo
     {
         const SignatureSlot* paramSlots = nullptr;
         uint32_t paramSlotNum = 0;
     };
-
-    enum RootArgumentType
-    {
-        UniformBuffer
-    };
     
-    struct RootArgumentCreateInfo
+    struct RootArgumentAttachment
     {
         struct UniformBufferInfo
         {
             uint32 offset = 0;
             uint32 range = 0;
-            const GpuResource& buffer; 
+            const GpuResource* buffer = nullptr; 
         };
-        RootArgumentType rootArgType;
+        SignatureSlotType rootArgType = SignatureSlotType::UniformBufferSlot;
+        uint32_t dstBinding = 0;
+        uint32 dstArrayElement = 0;
+        uint32 descriptorCount = 1;
         union Information
         {
             UniformBufferInfo uniformBuffer;
         } info;
     };
-    SInterface RootArgument
+    
+    sinterface RootArgument
     {
         virtual ~RootArgument(){};
-        virtual const RootArgumentType GetType(void) const = 0;
+        virtual const SignatureSlotType GetType(void) const = 0;
+        virtual void UpdateArgument(const RootArgumentAttachment& attachment) = 0;
     };
 
-    SInterface RootSignature
+    sinterface RootSignature
     {
         virtual ~RootSignature(){};
         virtual [[nodiscard]] RootArgument* CreateArgument(
-            uint32_t slot, const RootArgumentCreateInfo& info) const = 0;
+            uint32_t slot, const SignatureSlotType type) const = 0;
+        virtual const size_t GetSlotNum(void) const = 0;
     };
 } // namespace Sakura::Graphics
 

@@ -40,7 +40,7 @@ namespace Sakura::Graphics::Vk
 
 namespace Sakura::Graphics::Vk
 {
-    class GraphicsPipelineVk final : SImplements GraphicsPipeline
+    class GraphicsPipelineVk final : simplements GraphicsPipeline
     {
         friend class CGD_Vk;
         friend class CommandContextVk;

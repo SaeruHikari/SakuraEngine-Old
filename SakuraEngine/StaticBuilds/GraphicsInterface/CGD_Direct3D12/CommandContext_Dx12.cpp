@@ -7,7 +7,7 @@
  * @LastEditors: Please set LastEditors
  * @LastEditTime: 2020-03-05 14:06:31
  */
-#include "StaticBuilds/GraphicsInterface/GraphicsCommon/CommandObjects/CommandContext.h"
+#include "StaticBuilds/Graphicsinterface/GraphicsCommon/CommandObjects/CommandContext.h"
 #include "Core/EngineUtils/ConsoleDesk.h"
 
 namespace Sakura::Graphics

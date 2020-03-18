@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:57:40
- * @LastEditTime: 2020-03-18 15:29:32
+ * @LastEditTime: 2020-03-18 18:55:25
  */
 #include "ResourceViewVk.h"
 #include "GpuResourceVk.h"
@@ -108,3 +108,4 @@ ResourceView* CGD_Vk::ViewIntoImage(
     }
     return res;
 }
+

@@ -1,4 +1,4 @@
-add_subdirectory(GraphicsInterface)
+add_subdirectory(Graphicsinterface)
 add_subdirectory(TaskSystem)
 add_subdirectory(PixelOperators)
 add_subdirectory(ImGuiProfiler)

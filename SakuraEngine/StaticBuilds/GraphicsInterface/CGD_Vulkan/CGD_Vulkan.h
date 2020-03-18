@@ -161,7 +161,7 @@ namespace Sakura::Graphics::Vk
         {
             return queueFamilyIndices;
         };
-        virtual const TargetGraphicsInterface GetBackEndAPI(void) const final override;
+        virtual const TargetGraphicsinterface GetBackEndAPI(void) const final override;
     private:
         QueueFamilyIndices queueFamilyIndices;
         CGDEntityVk entityVk;

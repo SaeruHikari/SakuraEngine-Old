@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-17 11:31:07
+ * @LastEditTime: 2020-03-18 19:28:37
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -13,6 +13,7 @@
 #include "Core/EngineUtils/log.h"
 #include "../GraphicsObjects/GraphicsPipelineVk.h"
 #include "../CommandObjects/CommandQueueVk.h"
+#include "../GraphicsObjects/RootSignatureVk.h"
 #include "../ResourceObjects/GpuResourceVk.h"
 #include <set>
 
@@ -189,6 +190,19 @@ void CommandContextVk::BeginRenderPass(
     renderPassInfo.pClearValues = &clearColor;
     vkCmdBeginRenderPass(commandBuffer, 
         &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void CommandContextVk::BindRootArguments(const PipelineBindPoint bindPoint,
+    const RootArgument** arguments, uint32_t argumentNum)
+{
+    std::vector<VkDescriptorSet> descriptorSets(argumentNum);
+    for(auto i = 0; i < argumentNum; i++)
+    {
+        descriptorSets[i] = 
+            (((const RootArgumentVk**)arguments)[i])->descriptorSet;
+    }
+    vkCmdBindDescriptorSets(commandBuffer, Transfer(bindPoint),
+        vkGp->pipelineLayout, 0, argumentNum, descriptorSets.data(), 0, nullptr);
 }
 
 void CommandContextVk::Draw(uint32 vertexCount, uint32 instanceCount,

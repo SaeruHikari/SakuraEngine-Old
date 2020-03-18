@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 22:41:33
- * @LastEditTime: 2020-03-18 15:18:56
+ * @LastEditTime: 2020-03-18 18:57:16
  */
 #include "GpuResourceVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -137,4 +137,14 @@ uint32_t CGD_Vk::findMemoryType(
     }
     CGD_Vk::error("failed to find suitable memory type!");
     throw std::runtime_error("failed to find suitable memory type!");
+}
+
+const ResourceViewType GpuResourceVkBuffer::GetDefaultView() const
+{
+    return ResourceViewType::Buffer;    
+}
+
+const ResourceViewType GpuResourceVkImage::GetDefaultView() const
+{
+    return ResourceViewType::ImageView2D;    
 }

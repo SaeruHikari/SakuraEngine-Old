@@ -25,12 +25,12 @@
  * @LastEditTime: 2020-03-18 08:10:13
  */
 #pragma once
-#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/sinterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 
 namespace Sakura::Graphics
 {
-    SInterface Shader
+    sinterface Shader
     {
         virtual ~Shader(){}
     };

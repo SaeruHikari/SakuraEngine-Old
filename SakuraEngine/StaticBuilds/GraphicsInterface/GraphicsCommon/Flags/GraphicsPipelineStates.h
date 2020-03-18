@@ -22,14 +22,15 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:47:38
- * @LastEditTime: 2020-03-18 09:44:00
+ * @LastEditTime: 2020-03-18 19:53:34
  */
 #pragma once
 #include <memory_resource>
-#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/sinterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "Core/Containers/SString.h"
 #include "../ResourceObjects/Shader.h"
+#include "../GraphicsObjects/RootSignature.h"
 #include "Format.h"
 
 using namespace Sakura;
@@ -278,11 +279,6 @@ namespace Sakura::Graphics
         uint32_t dynamicStateCount;
     };
 
-    struct DescriptorSetLayout
-    {
-
-    };
-
     struct PushConstantRange
     {
 
@@ -294,8 +290,7 @@ namespace Sakura::Graphics
      */
     struct PipelineLayoutCreateInfo
     {
-        const DescriptorSetLayout* setLayouts = nullptr;
-        uint32_t setLayoutCount = 0;
+        const RootSignature* setLayouts = nullptr;
         const PushConstantRange* pushConstantRanges;
         uint32_t pushConstantRangeCount = 0;
     };

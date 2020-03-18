@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:06:12
- * @LastEditTime: 2020-03-18 10:48:20
+ * @LastEditTime: 2020-03-18 20:00:41
  */
 #include "GraphicsPipelineVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -30,6 +30,7 @@
 #include "../ResourceObjects/ResourceViewVk.h"
 #include "../CGD_Vulkan.h"
 #include "Core/EngineUtils/SHash.h"
+#include "RootSignatureVk.h"
 
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Vk;
@@ -49,18 +50,21 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount 
-        = info.pipelineLayoutInfo.setLayoutCount;
+    if(info.pipelineLayoutInfo.setLayouts)
+    {
+        pipelineLayoutInfo.setLayoutCount 
+            = info.pipelineLayoutInfo.setLayouts->GetSlotNum();
+        pipelineLayoutInfo.pSetLayouts 
+            = ((const RootSignatureVk*)info.pipelineLayoutInfo.setLayouts)->descriptorSetLayouts.data();
+    }
     pipelineLayoutInfo.pushConstantRangeCount 
         = info.pipelineLayoutInfo.pushConstantRangeCount;
-
     if (vkCreatePipelineLayout(cgd.GetCGDEntity().device,
         &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
     {
         Sakura::Graphics::Vk::CGD_Vk::debug_error("failed to create pipeline layout!");
         throw std::runtime_error("failed to create pipeline layout!");
     }
-
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = (uint32)info.shaderStageCount;

@@ -25,7 +25,7 @@
  * @LastEditTime: 2020-03-18 10:45:17
  */
 #pragma once
-#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/sinterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "../Flags/Format.h"
 #include "../Flags/GraphicsPipelineStates.h"
@@ -41,7 +41,7 @@ namespace Sakura::Graphics
 
 namespace Sakura::Graphics
 {
-    SInterface RenderPass
+    sinterface RenderPass
     {
         virtual ~RenderPass() = default;
     protected:

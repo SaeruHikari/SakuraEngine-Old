@@ -9,12 +9,12 @@
  */
 #pragma once
 #include "Core/CoreMinimal/SKeyWords.h"
-#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/sinterface.h"
 #include "SWindow.h"
 
 namespace Sakura
 {
-    SInterface SApplication
+    sinterface SApplication
     {
         virtual bool Initialize(void) = 0;
         virtual int Run(void) = 0;

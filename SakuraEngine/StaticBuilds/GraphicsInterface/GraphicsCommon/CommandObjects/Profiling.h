@@ -8,17 +8,17 @@
  * @LastEditTime : 2020-02-12 12:31:20
  */
 #pragma once
-#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/sinterface.h"
 #include "Core/Containers/SString.h"
 
 namespace Sakura::Graphics
 {
-    SInterface CommandContext;
+    sinterface CommandContext;
 }
 
 namespace Sakura::Graphics
 {
-    SInterface DebugLayer
+    sinterface DebugLayer
     {
     public:
         virtual void Enable() = 0;

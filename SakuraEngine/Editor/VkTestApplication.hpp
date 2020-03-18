@@ -22,12 +22,12 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-18 16:46:21
+ * @LastEditTime: 2020-03-18 20:08:02
  */
 #pragma once
 #include "SakuraEngine/StaticBuilds/PixelOperators/DigitalImageProcess.h"
-#include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
-#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
+#include "SakuraEngine/StaticBuilds/Graphicsinterface/GraphicsCommon/CGD.h"
+#include "SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/CGD_Vulkan.h"
 extern "C"
 {
 	#include "SDL2/SDL.h"
@@ -38,10 +38,10 @@ extern "C"
 #include "SakuraEngine/Core/Core.h"
 #include "vulkan/vulkan.h"
 #include "Extern/include/SDL2Tools/SDL2Vk.hpp"
-#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Flags/FormatVk.h"
-#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/Flags/GraphicsPipelineStatesVk.h"
+#include "SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/Flags/FormatVk.h"
+#include "SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/Flags/GraphicsPipelineStatesVk.h"
 #include "SakuraEngine/StaticBuilds/TaskSystem/TaskSystem.h"
-#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/GraphicsObjects/FenceVk.h"
+#include "SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/GraphicsObjects/FenceVk.h"
 #include "SakuraEngine/StaticBuilds/ImGuiProfiler/ImGuiProfiler.hpp"
 
 using namespace Sakura;
@@ -150,9 +150,9 @@ private:
     void createShader()
     {
 		// Create PSO vs_cbv
-		std::vector<char> vs_bytes(vs_f.size());
+		std::vector<char> vs_bytes(vs_cbv.size());
 		std::vector<char> fs_bytes(fs_f.size());
-		vs_f.read(vs_bytes.data(), vs_bytes.size());
+		vs_cbv.read(vs_bytes.data(), vs_bytes.size());
 		fs_f.read(fs_bytes.data(), fs_bytes.size());
 		vertshader = cgd->CreateShader(vs_bytes.data(), vs_bytes.size());
 		fragshader = cgd->CreateShader(fs_bytes.data(), fs_bytes.size());
@@ -170,7 +170,7 @@ private:
         std::vector<ShaderStageCreateInfo> infos{vsStage, fsStage};
 		info.shaderStages = infos.data();
         info.shaderStageCount = infos.size();
-
+        info.pipelineLayoutInfo.setLayouts = rootSignature.get();
         // recreate swapchain
         swapChain.reset(cgd->CreateSwapChain(width, height, &surface));
 		Viewport vp = {};
@@ -282,6 +282,9 @@ private:
         info.paramSlotNum = slots.size();
         info.paramSlots = slots.data();
         rootSignature.reset(cgd->CreateRootSignature(info));
+        cbvArgument.reset(
+            rootSignature->CreateArgument(0, SignatureSlotType::UniformBufferSlot));
+
     }
 
     void initVulkan()
@@ -303,14 +306,14 @@ private:
         fence.reset(cgd->AllocFence());
         
         createShader();
+        createRootSignature();
         ResizeWindow(1280, 720);
         createBuffer();
-        createRootSignature();
         profiler = std::make_unique<Sakura::Graphics::Im::ImGuiProfiler>(*cgd.get());
         profiler->ImGuiInitialize(win, swapChain->GetPixelFormat()); 
     }
 
-    void updateUniformBUffer(uint32_t frameCount)
+    void updateUniformBuffer(uint32_t frameCount)
     {
         using namespace Sakura::Math;
         static auto startTime = std::chrono::high_resolution_clock::now();
@@ -328,6 +331,12 @@ private:
         constantBuffers[frameCount]->Map(&data);
             memcpy(data, &ubo, sizeof(ubo));
         constantBuffers[frameCount]->Unmap();
+
+        RootArgumentAttachment attachment = {};
+        attachment.info.uniformBuffer.offset = 0;
+        attachment.info.uniformBuffer.range = sizeof(UniformBufferObject);
+        attachment.info.uniformBuffer.buffer = constantBuffers[frameCount].get();
+        cbvArgument->UpdateArgument(attachment);
     }
 
     void mainLoop()
@@ -336,13 +345,16 @@ private:
         RenderTarget rt{&swapChain->GetSwapChainImage(frameCount),
             &swapChain->GetChainImageView(frameCount)};
         RenderTargetSet rts{&rt, 1};
-
+        updateUniformBuffer(frameCount);
         auto context = 
             cgd->AllocateContext(ECommandType::CommandContext_Graphics);
         context->Begin();
         context->BeginRenderPass(Pipeline.get(), rts);
         context->BindVertexBuffers(*vertexBuffer.get());
         context->BindIndexBuffers(*indexBuffer.get());
+        const auto* arg = cbvArgument.get();
+        context->BindRootArguments(PipelineBindPoint::BindPointGraphics,
+            &arg, 1);
         context->DrawIndexed(indices.size(), 1);
     
         ImGui_ImplVulkan_NewFrame();
@@ -408,6 +420,7 @@ private:
         win = VkSDL_CreateWindow("SakuraEngine Window: CGD Vulkan", 1280, 720);
     }
 
+    std::unique_ptr<RootArgument> cbvArgument;
     std::unique_ptr<RootSignature> rootSignature;
     std::vector<std::unique_ptr<GpuResource>> constantBuffers;
     std::unique_ptr<Sakura::Graphics::Im::ImGuiProfiler> profiler;

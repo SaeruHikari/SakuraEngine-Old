@@ -28,8 +28,8 @@
 
 namespace Sakura::Graphics
 {
-    SInterface CommandContext;
-    SInterface Fence;
+    sinterface CommandContext;
+    sinterface Fence;
 }
 
 namespace Sakura::Graphics
@@ -41,7 +41,7 @@ namespace Sakura::Graphics
         COMMAND_QUEUE_COPY
     };
 
-    SInterface CommandQueue
+    sinterface CommandQueue
     {
         virtual void Submit(CommandContext* commandContext) = 0;
         virtual void Submit(Fence* fence, uint64 completedValue) = 0;

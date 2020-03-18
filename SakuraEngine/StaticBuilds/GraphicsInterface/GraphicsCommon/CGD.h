@@ -25,7 +25,7 @@
  * @LastEditTime: 2020-03-18 11:23:09
  */
 #pragma once
-#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/sinterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "CommandObjects/CommandContext.h"
 #include "SakuraEngine/Core/EngineUtils/log.h"
@@ -38,10 +38,10 @@
 
 namespace Sakura::Graphics
 {
-    SInterface SwapChain;
-    SInterface ResourceView;
-    SInterface GpuResource;
-    SInterface Fence;
+    sinterface SwapChain;
+    sinterface ResourceView;
+    sinterface GpuResource;
+    sinterface Fence;
     struct ResourceCreateInfo;
     struct ResourceViewCreateInfo;
 }
@@ -55,7 +55,7 @@ namespace Sakura::Graphics
         PhysicalDeviceFeatures physicalDeviceFeatures;
     };
 
-    enum TargetGraphicsInterface 
+    enum TargetGraphicsinterface 
     {
         CGD_TARGET_DIRECT3D12,
         CGD_TARGET_VULKAN,
@@ -63,7 +63,7 @@ namespace Sakura::Graphics
         CGD_TARGET_NUMS
     };
 
-    SInterface CGD
+    sinterface CGD
     {
         virtual ~CGD() = default;
         virtual void Initialize(CGDInfo info) = 0;
@@ -112,7 +112,7 @@ namespace Sakura::Graphics
         virtual [[nodiscard]] RootSignature*
             CreateRootSignature(const RootSignatureCreateInfo& sigInfo) const  = 0;
 
-        virtual const TargetGraphicsInterface GetBackEndAPI(void) const = 0;
+        virtual const TargetGraphicsinterface GetBackEndAPI(void) const = 0;
     public:
         const uint64 contextNum() const {return contextPools[0].size();}
 

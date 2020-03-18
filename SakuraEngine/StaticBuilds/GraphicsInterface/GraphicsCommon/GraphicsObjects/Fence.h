@@ -25,12 +25,12 @@
  * @LastEditTime: 2020-03-11 21:48:05
  */
 #pragma once
-#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/sinterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 
 namespace Sakura::Graphics
 {
-    SInterface Fence
+    sinterface Fence
     {
         virtual ~Fence() = default;
         virtual void Reset(void) = 0;

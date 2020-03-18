@@ -26,7 +26,7 @@
  */
 #pragma once
 #include "../Flags/GraphicsPipelineStates.h"
-#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/sinterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "../ResourceObjects/ResourceViews.h"
 #include "RootSignature.h"
@@ -43,7 +43,7 @@ namespace Sakura::Graphics
         RenderTarget* rts;
         uint32 rtNum;
     };
-    SInterface GraphicsPipeline
+    sinterface GraphicsPipeline
     {
         virtual ~GraphicsPipeline() = default;
     protected:

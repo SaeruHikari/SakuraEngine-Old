@@ -25,7 +25,7 @@
  * @LastEditTime: 2020-03-18 15:30:04
  */
 #pragma once
-#include "SakuraEngine/Core/CoreMinimal/SInterface.h"
+#include "SakuraEngine/Core/CoreMinimal/sinterface.h"
 #include "../Flags/TypesVk.h"
 #include "../../GraphicsCommon/ResourceObjects/ResourceViews.h"
 #include "vulkan/vulkan.h"

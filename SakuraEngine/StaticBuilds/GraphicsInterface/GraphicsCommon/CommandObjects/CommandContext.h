@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-15 21:12:43
+ * @LastEditTime: 2020-03-18 19:37:10
  */
 #pragma once
 #include <mutex>
@@ -13,17 +13,19 @@
 #include <memory>
 #include <queue>
 #include "Core/Containers/SString.h"
-#include "Core/CoreMinimal/SInterface.h"
+#include "Core/CoreMinimal/sinterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include "Core/CoreMinimal/SAssert.h"
+#include "../GraphicsObjects/RenderPass.h"
 
 namespace Sakura::Graphics
 {
-    SInterface CommandQueue;
-    SInterface CommandContext;
-    SInterface GraphicsPipeline;
+    sinterface CommandQueue;
+    sinterface CommandContext;
+    sinterface GraphicsPipeline;
     struct RenderTargetSet;
-    SInterface GpuResource;
+    sinterface GpuResource;
+    sinterface RootArgument;
 }
 
 namespace Sakura::Graphics
@@ -37,9 +39,9 @@ namespace Sakura::Graphics
         CommandContext_Count = 4
     };
 
-    SInterface CommandContext
+    sinterface CommandContext
     {
-        friend SInterface CGD;
+        friend sinterface CGD;
     public:
         virtual ~CommandContext() = default;
         
@@ -80,11 +82,12 @@ namespace Sakura::Graphics
 
         virtual void BindIndexBuffers(const GpuResource& ib) = 0;
 
+        virtual void BindRootArguments(const PipelineBindPoint bindPoint,
+            const RootArgument** arguments, uint32_t argumentNum) = 0;
+
         virtual void CopyBuffer(GpuResource& src, GpuResource& dst,
             const uint64_t srcOffset,
             const uint64_t dstOffset = 0, const uint64_t size = 0) = 0;
-
-        //virtual void BindIndexBuffers() = 0;
 
         sinline ECommandType GetCommandContextType(void)
         {

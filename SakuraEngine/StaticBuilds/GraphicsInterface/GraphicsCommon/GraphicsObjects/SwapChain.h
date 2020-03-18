@@ -25,7 +25,7 @@
  * @LastEditTime: 2020-03-17 22:45:45
  */
 #pragma once
-#include "SakuraEngine/Core/CoreMinimal/SInterface.h"
+#include "SakuraEngine/Core/CoreMinimal/sinterface.h"
 #include "SakuraEngine/Core/CoreMinimal/SDefination.h"
 #include "../Flags/Format.h"
 #include "../Flags/CommonFeatures.h"
@@ -36,13 +36,13 @@
 
 namespace Sakura::Graphics
 {
-    SInterface CGD;
+    sinterface CGD;
     struct Extent2D;
 }
 
 namespace Sakura::Graphics
 {
-    SInterface SwapChain
+    sinterface SwapChain
     {
         SwapChain(const CGD& _device, const uint32 _chainCount)
             :device(_device), swapChainCount(_chainCount)

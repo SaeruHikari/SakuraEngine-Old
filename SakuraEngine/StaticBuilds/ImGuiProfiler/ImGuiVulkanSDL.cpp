@@ -25,7 +25,7 @@
  * @LastEditTime: 2020-03-17 10:50:06
  */
 #include "ImGuiVulkanSDL.h"
-#include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/CGD.h"
+#include "SakuraEngine/StaticBuilds/Graphicsinterface/GraphicsCommon/CGD.h"
 
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Im::Vk;

@@ -29,8 +29,8 @@
 #include <string>
 #include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
 #include "ImGuiVulkanSDL.h"
-#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CGD_Vulkan.h"
-#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/CommandObjects/CommandContextVk.h"
+#include "SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/CGD_Vulkan.h"
+#include "SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/CommandObjects/CommandContextVk.h"
 #include "SakuraEngine/Core/Core.h"
 
 using namespace Sakura::Graphics;
@@ -40,7 +40,7 @@ using namespace Sakura::Graphics::Im::Vk;
 
 namespace Sakura::Graphics::Im
 {
-    SInterface ImGuiWindow
+    sinterface ImGuiWindow
     {
         ImGuiWindow(const Sakura::Graphics::CGD& _gfxDevice)
             :gfxDevice(_gfxDevice){}
@@ -76,7 +76,7 @@ namespace Sakura::Graphics::Im
     private:
         inline VkDevicePack GetVkDevicePack()
         {
-            if(backend != TargetGraphicsInterface::CGD_TARGET_VULKAN)
+            if(backend != TargetGraphicsinterface::CGD_TARGET_VULKAN)
                 ImGuiProfiler::error("ImGuiProfiler: Not Vk backend, can not Get VkDevice Pack!");
             VkDevicePack pack; 
             auto&& entity = ((const CGD_Vk&)gfxDevice).GetCGDEntity();
@@ -92,11 +92,11 @@ namespace Sakura::Graphics::Im
     public:
         VkDescriptorPool descriptorPool;
         VkRenderPass RenderPass;
-        TargetGraphicsInterface backend;
+        TargetGraphicsinterface backend;
         const Sakura::Graphics::CGD& gfxDevice;
     };
     
-    struct ImGuiWindowVk : SImplements ImGuiWindow
+    struct ImGuiWindowVk : simplements ImGuiWindow
     {
         ImGuiWindowVk(const Sakura::Graphics::CGD& _gfxDevice, 
             ImGui_ImplVulkanH_Window* _wind)
@@ -116,7 +116,7 @@ namespace Sakura::Graphics::Im
     {
         switch (backend)
         {
-        case TargetGraphicsInterface::CGD_TARGET_VULKAN:
+        case TargetGraphicsinterface::CGD_TARGET_VULKAN:
         {
             auto vkwd = (ImGuiWindowVk*)wd;
             ImGuiRenderVk(GetVkDevicePack(), vkwd->wind);
@@ -133,7 +133,7 @@ namespace Sakura::Graphics::Im
         VkDevicePack pack = GetVkDevicePack();
         switch (backend)
         {
-        case TargetGraphicsInterface::CGD_TARGET_VULKAN:
+        case TargetGraphicsinterface::CGD_TARGET_VULKAN:
         {
             IMGUI_CHECKVERSION();
             ImGui::CreateContext();
@@ -232,7 +232,7 @@ namespace Sakura::Graphics::Im
     {
         switch (backend)
         {
-        case TargetGraphicsInterface::CGD_TARGET_VULKAN:
+        case TargetGraphicsinterface::CGD_TARGET_VULKAN:
         {
             auto vkwd = (ImGuiWindowVk*)wd;
             ImGuiPresentVk(GetVkDevicePack(), vkwd->wind);
@@ -273,7 +273,7 @@ namespace Sakura::Graphics::Im
     {
         switch (backend)
         {
-        case TargetGraphicsInterface::CGD_TARGET_VULKAN:
+        case TargetGraphicsinterface::CGD_TARGET_VULKAN:
         {
             static bool init = false;
             VkDevicePack pack = GetVkDevicePack();

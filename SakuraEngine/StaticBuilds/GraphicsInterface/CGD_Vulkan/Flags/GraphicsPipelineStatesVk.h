@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 11:13:03
- * @LastEditTime: 2020-03-18 09:40:46
+ * @LastEditTime: 2020-03-18 19:42:29
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
@@ -245,12 +245,6 @@ namespace Sakura::Graphics::Vk
         dynamicState.dynamicStateCount 
             = (uint32)dynamicCreateInfo.dynamicStateCount;
         return dynamicState;
-    }
-
-    sinline static VkDescriptorSetLayout Transfer(const DescriptorSetLayout layout)
-    {
-        VkDescriptorSetLayout res = {};
-        return res;
     }
 
     sinline static VkPushConstantRange Transfer(const PushConstantRange range)
