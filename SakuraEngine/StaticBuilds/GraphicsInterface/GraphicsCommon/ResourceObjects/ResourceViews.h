@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:35:59
- * @LastEditTime: 2020-03-15 09:41:21
+ * @LastEditTime: 2020-03-18 09:04:25
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -43,18 +43,19 @@ namespace Sakura::Graphics
 {
     enum ResourceViewType
     {
-        IMAGE_VIEW_TYPE_1D,
-        IMAGE_VIEW_TYPE_2D,
-        IMAGE_VIEW_TYPE_3D,
-        IMAGE_VIEW_TYPE_CUBE,
-        IMAGE_VIEW_TYPE_1D_ARRAY,
-        IMAGE_VIEW_TYPE_2D_ARRAY,
-        IMAGE_VIEW_TYPE_CUBE_ARRAY,
-        IMAGE_VIEW_TYPES_COUNT
+        ImageView1D,
+        ImageView2D,
+        ImageView3D,
+        ImageViewCube,
+        ImageView1DArray,
+        ImageView2DArray,
+        ImageViewCubeArray,
+        ImageViewTypesCount,
+        BufferView
     };
     inline static bool isImageView(const ResourceViewType type)
     {
-        return type <= IMAGE_VIEW_TYPE_CUBE_ARRAY;
+        return type <= ImageViewCubeArray;
     }
     
     struct ResourceViewCreateInfo

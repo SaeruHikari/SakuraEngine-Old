@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-11 20:52:05
- * @LastEditTime: 2020-03-12 21:11:16
+ * @LastEditTime: 2020-03-18 10:41:15
  */
 #include "FenceVk.h"
 #include "../CGD_Vulkan.h"
@@ -62,10 +62,9 @@ FenceVk::FenceVk(const CGD_Vk& _cgd)
         &timelineSemaphore);
 }
 
-std::unique_ptr<Fence> CGD_Vk::AllocFence(void)
+[[nodiscard]] Fence* CGD_Vk::AllocFence(void)
 {
-    Fence* result = new FenceVk(*this);
-    return std::unique_ptr<Fence>(result);
+    return new FenceVk(*this);
 }
 
 void CGD_Vk::Wait(Fence* toWait, uint64 until) const

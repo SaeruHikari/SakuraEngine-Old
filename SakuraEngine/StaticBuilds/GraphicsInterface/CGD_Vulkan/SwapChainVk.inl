@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-16 22:30:34
+ * @LastEditTime: 2020-03-18 10:38:30
  */
 
 // Swap Chain Support Details
@@ -106,8 +106,8 @@ inline VkExtent2D chooseSwapExtent(const int width, const int height,
 }
 
 #ifdef _CGD_VK_IMPLEMENTATION_
-std::unique_ptr<Sakura::Graphics::SwapChain>
-    CGD_Vk::CreateSwapChain(const int width, const int height, void* mainSurface)
+Sakura::Graphics::SwapChain* CGD_Vk::CreateSwapChain(
+    const int width, const int height, void* mainSurface)
 {
     VkSurfaceKHR surface = *(VkSurfaceKHR*)mainSurface;
     auto physicalDevice = entityVk.physicalDevice;
@@ -180,9 +180,8 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
     // Create Image Views
     ResourceViewCreateInfo vinfo = {};
     vinfo.format = Transfer(surfaceFormat.format);
-    vinfo.viewType = IMAGE_VIEW_TYPE_2D;
-    auto res = std::make_unique<Sakura::Graphics::Vk::SwapChainVk>(
-            swapChain, *this, imageCount);
+    vinfo.viewType = ImageView2D;
+    auto res = new Sakura::Graphics::Vk::SwapChainVk(swapChain, *this, imageCount);
     for(auto i = 0u; i < imageCount; i++)
     {
         // Images
@@ -194,12 +193,12 @@ std::unique_ptr<Sakura::Graphics::SwapChain>
         auto vkView= ViewIntoResource<ResourceType::Texture2D>(
             *res->swapChainImages[i], vinfo);
 
-        res->resourceViews[i] = std::move(vkView);
+        res->resourceViews[i].reset(vkView);
     }
     res->swapChainImageFormat = Transfer(surfaceFormat.format);
     res->swapChainExtent = extent;
     res->swapChainCount = imageCount;
 
-    return std::move(res);
+    return res;
 }
 #endif

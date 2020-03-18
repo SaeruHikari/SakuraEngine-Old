@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 18:07:10
- * @LastEditTime: 2020-03-07 23:59:56
+ * @LastEditTime: 2020-03-18 09:04:48
  */
 /*
  * @CopyRight: MIT License
@@ -56,13 +56,13 @@
 #include "vulkan/vulkan.h"
 
 #define VIEW_TYPE_MAPPER() \
-VK_VIEW_TYPE_MAPPING(IMAGE_VIEW_TYPE_1D, VK_IMAGE_VIEW_TYPE_1D); \
-VK_VIEW_TYPE_MAPPING(IMAGE_VIEW_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D); \
-VK_VIEW_TYPE_MAPPING(IMAGE_VIEW_TYPE_3D, VK_IMAGE_VIEW_TYPE_3D); \
-VK_VIEW_TYPE_MAPPING(IMAGE_VIEW_TYPE_CUBE, VK_IMAGE_VIEW_TYPE_CUBE); \
-VK_VIEW_TYPE_MAPPING(IMAGE_VIEW_TYPE_1D_ARRAY, VK_IMAGE_VIEW_TYPE_1D_ARRAY); \
-VK_VIEW_TYPE_MAPPING(IMAGE_VIEW_TYPE_2D_ARRAY, VK_IMAGE_VIEW_TYPE_2D_ARRAY); \
-VK_VIEW_TYPE_MAPPING(IMAGE_VIEW_TYPE_CUBE_ARRAY, VK_IMAGE_VIEW_TYPE_CUBE_ARRAY); 
+VK_VIEW_TYPE_MAPPING(ImageView1D, VK_IMAGE_VIEW_TYPE_1D); \
+VK_VIEW_TYPE_MAPPING(ImageView2D, VK_IMAGE_VIEW_TYPE_2D); \
+VK_VIEW_TYPE_MAPPING(ImageView3D, VK_IMAGE_VIEW_TYPE_3D); \
+VK_VIEW_TYPE_MAPPING(ImageViewCube, VK_IMAGE_VIEW_TYPE_CUBE); \
+VK_VIEW_TYPE_MAPPING(ImageView1DArray, VK_IMAGE_VIEW_TYPE_1D_ARRAY); \
+VK_VIEW_TYPE_MAPPING(ImageView2DArray, VK_IMAGE_VIEW_TYPE_2D_ARRAY); \
+VK_VIEW_TYPE_MAPPING(ImageViewCubeArray, VK_IMAGE_VIEW_TYPE_CUBE_ARRAY); 
 
 
 #define VK_VIEW_TYPE_MAPPING(format, vkformat) \
@@ -78,8 +78,8 @@ namespace Sakura::Graphics::Vk
         {
             VIEW_TYPE_MAPPER()
         default:
-            Sakura::log::error("No valid Vk View Type found!");
-            return ResourceViewType::IMAGE_VIEW_TYPES_COUNT;
+            Sakura::log::error("No valid Vk Image View Type found!");
+            return ResourceViewType::ImageViewTypesCount;
         }
     }
 

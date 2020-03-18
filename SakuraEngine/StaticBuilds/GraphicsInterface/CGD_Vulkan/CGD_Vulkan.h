@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-16 19:20:51
+ * @LastEditTime: 2020-03-18 10:49:20
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -67,14 +67,14 @@ namespace Sakura::Graphics::Vk
         virtual void InitQueueSet(void* mainSurface) override final;
         // Vulkan functions
         virtual void Initialize(CGDInfo info) override final;
-        virtual std::unique_ptr<Sakura::Graphics::SwapChain>
+        virtual [[nodiscard]] Sakura::Graphics::SwapChain*
             CreateSwapChain(const int width, const int height, 
                 void* mainSurface) override final;
         virtual void Present(SwapChain* chain) override final;
         virtual CommandQueue* GetGraphicsQueue() const override final;
         virtual CommandQueue* GetComputeQueue() const override final;
         virtual CommandQueue* GetCopyQueue() const override final;
-        virtual std::unique_ptr<CommandQueue> 
+        virtual [[nodiscard]] CommandQueue*
             AllocQueue(ECommandType type) const override final;
         const auto GetVkInstance() const {return entityVk.instance;}
         const CGDEntityVk& GetCGDEntity() const {return entityVk;}
@@ -86,17 +86,17 @@ namespace Sakura::Graphics::Vk
             const char*, std::size_t) override final;
     public:
         // Implements: See GraphicsObjects/GraphicsPipelineVk.cpp
-        virtual std::unique_ptr<GraphicsPipeline> CreateGraphicsPipeline(
+        virtual [[nodiscard]] GraphicsPipeline* CreateGraphicsPipeline(
             const GraphicsPipelineCreateInfo& info,
-            const RenderProgress& progress) const override final;
+            const RenderPass& progress) const override final;
     public: 
         // Implements: See ResourceObjects/ResourceViewVk.cpp
-        virtual std::unique_ptr<ResourceView> ViewIntoImage(
+        virtual [[nodiscard]] ResourceView* ViewIntoImage(
             const GpuResource&, const ResourceViewCreateInfo&) const override final;
     public:
     // Implements: See GraphicsObjects/RenderPassVk.cpp
-        virtual std::unique_ptr<RenderProgress> CreateRenderProgress(
-            const RenderProgressCreateInfo& rpInfo) const override final;
+        virtual [[nodiscard]] RenderPass* CreateRenderPass(
+            const RenderPassCreateInfo& rpInfo) const override final;
     public:
     // Implements: See CommandObjects/CommandContextVk.cpp
         virtual CommandContext* AllocateContext(
@@ -105,13 +105,17 @@ namespace Sakura::Graphics::Vk
         virtual void FreeAllContexts(ECommandType typeToDestroy) override final;
     public:
     // Implements: See GraphicsObjects/FenceVk.cpp
-        virtual std::unique_ptr<Fence> AllocFence(void) override final;
+        virtual [[nodiscard]] Fence* AllocFence(void) override final;
         virtual void Wait(Fence* toWait, uint64 until) const override final;
         virtual void WaitIdle() const override final;
     public:
     // Implements: See ResourceObjects/GpuResourceVk.cpp
-        virtual std::unique_ptr<GpuResource> CreateResource(
+        virtual [[nodiscard]] GpuResource* CreateResource(
             const ResourceCreateInfo&) const override final;
+    public:
+    // Implements: See GraphicsObjects/RootSignatureVk.cpp
+        virtual [[nodiscard]] RootSignature* CreateRootSignature(
+           const RootSignatureCreateInfo& sigInfo) const override final;
     private:
          /**
          * @description: Initial Vulkan Device

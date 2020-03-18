@@ -22,21 +22,21 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-09 00:45:42
- * @LastEditTime: 2020-03-11 22:08:00
+ * @LastEditTime: 2020-03-18 10:44:19
  */
-#include "RenderProgressVk.h"
+#include "RenderPassVk.h"
 #include "../CGD_Vulkan.h"
 
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Vk;
 
-RenderProgressVk::~RenderProgressVk()
+RenderPassVk::~RenderPassVk()
 {
     vkDestroyRenderPass(cgd.GetCGDEntity().device, renderPass, nullptr);
 }
 
-RenderProgressVk::RenderProgressVk(
-    const RenderProgressCreateInfo& info, const CGD_Vk& _cgd)
+RenderPassVk::RenderPassVk(
+    const RenderPassCreateInfo& info, const CGD_Vk& _cgd)
         :cgd(_cgd)
 {
     VkRenderPassCreateInfo renderPassInfo = {};
@@ -82,9 +82,9 @@ RenderProgressVk::RenderProgressVk(
     delete[] deps;
 }
 
-std::unique_ptr<RenderProgress> CGD_Vk::CreateRenderProgress(
-    const RenderProgressCreateInfo& rpInfo) const
+RenderPass* CGD_Vk::CreateRenderPass(
+    const RenderPassCreateInfo& rpInfo) const
 {
-    auto res = new RenderProgressVk(rpInfo, *this);
-    return std::move(std::unique_ptr<RenderProgressVk>(res));
+    auto res = new RenderPassVk(rpInfo, *this);
+    return res;
 }

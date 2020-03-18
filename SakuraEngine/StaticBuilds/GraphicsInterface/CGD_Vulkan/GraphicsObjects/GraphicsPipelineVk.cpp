@@ -22,11 +22,11 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:06:12
- * @LastEditTime: 2020-03-15 12:50:36
+ * @LastEditTime: 2020-03-18 10:48:20
  */
 #include "GraphicsPipelineVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
-#include "RenderProgressVk.h"
+#include "RenderPassVk.h"
 #include "../ResourceObjects/ResourceViewVk.h"
 #include "../CGD_Vulkan.h"
 #include "Core/EngineUtils/SHash.h"
@@ -44,15 +44,15 @@ GraphicsPipelineVk::~GraphicsPipelineVk()
 }
 
 GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info, 
-    const RenderProgressVk& progVk, const CGD_Vk& _cgd)
+    const RenderPassVk& progVk, const CGD_Vk& _cgd)
         :cgd(_cgd), progress(progVk)
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount 
-        = (uint32)info.pipelineLayoutInfo.setLayouts.size();
+        = info.pipelineLayoutInfo.setLayoutCount;
     pipelineLayoutInfo.pushConstantRangeCount 
-        = (uint32)info.pipelineLayoutInfo.pushConstantRanges.size();
+        = info.pipelineLayoutInfo.pushConstantRangeCount;
 
     if (vkCreatePipelineLayout(cgd.GetCGDEntity().device,
         &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
@@ -63,9 +63,9 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
 
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = (uint32)info.shaderStages.size();
-    std::vector<VkPipelineShaderStageCreateInfo> pStages(info.shaderStages.size()); 
-    for(auto i = 0; i < info.shaderStages.size(); i++)
+    pipelineInfo.stageCount = (uint32)info.shaderStageCount;
+    std::vector<VkPipelineShaderStageCreateInfo> pStages(info.shaderStageCount); 
+    for(auto i = 0; i < pipelineInfo.stageCount; i++)
         pStages[i] = Transfer(info.shaderStages[i]);
     pipelineInfo.pStages = pStages.data();
 
@@ -73,12 +73,12 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     vertexInputInfo.sType = 
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexBindingDescriptionCount 
-        = (uint32)info.vertexInputInfo.vertexBindingDescriptions.size();
+        = info.vertexInputInfo.vertexBindingDescriptionCount;
     vertexInputInfo.pVertexBindingDescriptions
-        = (const VkVertexInputBindingDescription*)(
-            info.vertexInputInfo.vertexBindingDescriptions.data());
+        = (const VkVertexInputBindingDescription*)
+        (info.vertexInputInfo.vertexBindingDescriptions);
     vertexInputInfo.vertexAttributeDescriptionCount 
-        = (uint32)info.vertexInputInfo.vertexAttributeDescriptions.size();
+        = info.vertexInputInfo.vertexAttributeDescriptionCount;
     std::vector<VkVertexInputAttributeDescription> attributesDes(vertexInputInfo.vertexAttributeDescriptionCount);
     for(auto i = 0; i < attributesDes.size(); i++)
     {
@@ -101,7 +101,7 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     pipelineInfo.pRasterizationState = &raster;
     pipelineInfo.pMultisampleState = &ms;
     std::vector<VkPipelineColorBlendAttachmentState> 
-        attachmentStates(info.colorBlendStateCreateInfo.colorBlendAttachment.size());
+        attachmentStates(info.colorBlendStateCreateInfo.colorBlendAttachmentCount);
     for(auto i = 0u; i < attachmentStates.size(); i++)
         attachmentStates[i] = Transfer(info.colorBlendStateCreateInfo.colorBlendAttachment[i]);
     VkPipelineColorBlendStateCreateInfo colorBlending = {};
@@ -130,13 +130,13 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     }
 }
 
-std::unique_ptr<GraphicsPipeline> CGD_Vk::CreateGraphicsPipeline(
+GraphicsPipeline* CGD_Vk::CreateGraphicsPipeline(
     const GraphicsPipelineCreateInfo& info,
-    const RenderProgress& progress) const
+    const RenderPass& progress) const
 {
-    const RenderProgressVk& prog = (const RenderProgressVk&)progress;
+    const RenderPassVk& prog = (const RenderPassVk&)progress;
     auto* vkPipeline = new GraphicsPipelineVk(info, prog, *this);
-    return std::move(std::unique_ptr<GraphicsPipeline>(vkPipeline));
+    return vkPipeline;
 }
 
 

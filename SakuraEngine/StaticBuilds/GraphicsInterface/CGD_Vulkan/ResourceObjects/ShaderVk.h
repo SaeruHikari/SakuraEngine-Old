@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 20:43:34
- * @LastEditTime: 2020-03-11 20:10:32
+ * @LastEditTime: 2020-03-18 08:12:27
  */
 #pragma once
 #include "../../GraphicsCommon/ResourceObjects/Shader.h"
@@ -35,16 +35,16 @@ namespace Sakura::Graphics::Vk
     inline static bool CheckAvailable(ShaderType type){return true;}
     inline static bool CheckAvailable(ShaderSourceType type){return true;}
     inline static bool CheckAvailable(ShaderCompileFlags flags){return true;}
-    inline static bool CheckAvailable(StageFlags flags){return true;}
+    inline static bool CheckAvailable(ShaderStageFlags flags){return true;}
 
-	sinline static VkShaderStageFlagBits Transfer(StageFlags info)
+	sinline static VkShaderStageFlagBits Transfer(ShaderStageFlags info)
 	{
         return VkShaderStageFlagBits(info);
 	}
 
-	sinline static StageFlags Transfer(VkShaderStageFlagBits info)
+	sinline static ShaderStageFlags Transfer(VkShaderStageFlagBits info)
 	{
-		return StageFlags(info);
+		return ShaderStageFlags(info);
 	}
 
     struct ShaderVk final : public Shader

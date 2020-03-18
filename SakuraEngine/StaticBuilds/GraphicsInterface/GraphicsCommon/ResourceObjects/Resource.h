@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:36:56
- * @LastEditTime: 2020-03-15 16:09:21
+ * @LastEditTime: 2020-03-18 09:05:42
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -58,6 +58,7 @@ namespace Sakura::Graphics
         virtual ~GpuResource() = default;
         virtual void Map(void** data) = 0;
         virtual void Unmap() = 0;
+        //virtual const ResourceViewType GetDefaultView() const = 0;
         const Extent2D GetExtent() const
         {
             return extent;

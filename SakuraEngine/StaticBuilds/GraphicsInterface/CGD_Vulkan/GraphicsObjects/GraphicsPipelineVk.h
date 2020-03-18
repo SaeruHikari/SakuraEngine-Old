@@ -22,20 +22,20 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:04:52
- * @LastEditTime: 2020-03-10 14:52:42
+ * @LastEditTime: 2020-03-18 10:48:49
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/GraphicsPipeline.h"
 #include <memory_resource>
 #include <unordered_map>
-#include "RenderProgressVk.h"
+#include "RenderPassVk.h"
 #include "vulkan/vulkan.h"
 
 using namespace Sakura::Graphics;
 namespace Sakura::Graphics::Vk
 {
     class CGD_Vk;
-    class RenderProgressVk;
+    class RenderPassVk;
 }
 
 namespace Sakura::Graphics::Vk
@@ -50,10 +50,10 @@ namespace Sakura::Graphics::Vk
         VkFramebuffer createFrameBuffer(const RenderTargetSet& rts);
         
         GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
-            const RenderProgressVk& prog, const CGD_Vk& cgd);
+            const RenderPassVk& prog, const CGD_Vk& cgd);
     protected:
         std::pmr::unordered_map<uint64, VkFramebuffer> fbs;
-        const RenderProgressVk& progress;
+        const RenderPassVk& progress;
         VkPipelineLayout pipelineLayout;
         VkPipeline graphicsPipeline;
         const CGD_Vk& cgd;

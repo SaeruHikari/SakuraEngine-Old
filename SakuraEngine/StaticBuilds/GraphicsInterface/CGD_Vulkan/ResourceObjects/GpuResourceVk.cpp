@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 22:41:33
- * @LastEditTime: 2020-03-15 21:00:38
+ * @LastEditTime: 2020-03-18 10:00:28
  */
 #include "GpuResourceVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -47,13 +47,11 @@ GpuResourceVkImage::~GpuResourceVkImage()
 void GpuResourceVkBuffer::Map(void** data)
 {
     vmaMapMemory(cgd.GetCGDEntity().vmaAllocator, allocation, data);
-    //vkMapMemory(cgd.GetCGDEntity().device, memory, 0, extent.width, 0, data);
 }
 
 void GpuResourceVkBuffer::Unmap()
 {
     vmaUnmapMemory(cgd.GetCGDEntity().vmaAllocator, allocation);
-    //vkUnmapMemory(cgd.GetCGDEntity().device, memory);
 }
 
 void GpuResourceVkImage::Map(void** data)
@@ -74,8 +72,7 @@ void CGD_Vk::createAllocator()
     vmaCreateAllocator(&allocatorInfo, &entityVk.vmaAllocator);
 }
 
-std::unique_ptr<GpuResource> CGD_Vk::CreateResource(
-    const ResourceCreateInfo& info) const
+GpuResource* CGD_Vk::CreateResource(const ResourceCreateInfo& info) const
 {
     VkBuffer vertexBuffer = VK_NULL_HANDLE;
     VkDeviceMemory memory = VK_NULL_HANDLE;
@@ -115,12 +112,13 @@ std::unique_ptr<GpuResource> CGD_Vk::CreateResource(
                 
             GpuResourceVkBuffer* vkBuf = new GpuResourceVkBuffer(
                 *this, allocation, buffer, info.size);
-            return std::move(std::unique_ptr<GpuResource>(vkBuf));
+            return vkBuf;
         }
     default:
         CGD_Vk::error("CreateBuffer: Resource type not supported!");
         break;
     }
+    return nullptr;
 }
 
 uint32_t CGD_Vk::findMemoryType(

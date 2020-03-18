@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:57:40
- * @LastEditTime: 2020-03-15 13:59:36
+ * @LastEditTime: 2020-03-18 10:10:27
  */
 #include "ResourceViewVk.h"
 #include "GpuResourceVk.h"
@@ -78,17 +78,15 @@ ResourceViewVkImage::~ResourceViewVkImage()
 
 ResourceViewVkImage::ResourceViewVkImage(
     const CGD_Vk& _device)
-    :ResourceView(_device, ResourceViewType::IMAGE_VIEW_TYPE_2D)
+    :ResourceView(_device, ResourceViewType::ImageView2D)
 {
    
 }
 
-std::unique_ptr<ResourceView> CGD_Vk::ViewIntoImage(
+ResourceView* CGD_Vk::ViewIntoImage(
     const GpuResource& resource, const ResourceViewCreateInfo& info) const
 {
-    auto res = 
-        std::make_unique<ResourceViewVkImage>(*this);
-    
+    auto res = new ResourceViewVkImage(*this);
     VkImageViewCreateInfo viewCreateInfo = {};
     viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewCreateInfo.viewType = Transfer(info.viewType);
@@ -109,5 +107,5 @@ std::unique_ptr<ResourceView> CGD_Vk::ViewIntoImage(
         Sakura::log::error("failed to create image views!");
         throw std::runtime_error("failed to create image views!");
     }
-    return std::move(res);
+    return res;
 }

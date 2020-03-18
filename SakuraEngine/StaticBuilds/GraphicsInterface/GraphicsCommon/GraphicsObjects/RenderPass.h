@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 22:05:50
- * @LastEditTime: 2020-03-17 17:08:01
+ * @LastEditTime: 2020-03-18 10:45:17
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -36,16 +36,16 @@ namespace Sakura::Graphics
     struct AttachmentDescription;
     struct AttachmentReference;
     struct SubpassDescription;
-    struct RenderProgressCreateInfo;
+    struct RenderPassCreateInfo;
 }
 
 namespace Sakura::Graphics
 {
-    SInterface RenderProgress
+    SInterface RenderPass
     {
-        virtual ~RenderProgress() = default;
+        virtual ~RenderPass() = default;
     protected:
-        RenderProgress() = default;
+        RenderPass() = default;
     };
 
     enum AttachmentLoadOp
@@ -124,7 +124,7 @@ namespace Sakura::Graphics
         DependencyFlag dependencyFlags;
     };
     
-    struct RenderProgressCreateInfo
+    struct RenderPassCreateInfo
     {
         std::vector<AttachmentDescription> attachments;
         std::vector<SubprogressDescription> subProcs;

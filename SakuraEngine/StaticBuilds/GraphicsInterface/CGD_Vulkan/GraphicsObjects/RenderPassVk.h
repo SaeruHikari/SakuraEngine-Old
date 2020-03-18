@@ -22,10 +22,10 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 23:24:08
- * @LastEditTime: 2020-03-11 22:08:40
+ * @LastEditTime: 2020-03-18 10:44:40
  */
 #pragma once
-#include "../../GraphicsCommon/GraphicsObjects/RenderProgress.h"
+#include "../../GraphicsCommon/GraphicsObjects/RenderPass.h"
 #include "../Flags/FormatVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
 #include "vulkan/vulkan.h"
@@ -104,16 +104,16 @@ namespace Sakura::Graphics::Vk
         return subpass;
     }
 
-    class RenderProgressVk final : SImplements RenderProgress
+    class RenderPassVk final : SImplements RenderPass
     {
         friend class CGD_Vk;
         friend class GraphicsPipelineVk;
         friend class CommandContextVk;
     public:
-        virtual ~RenderProgressVk();
+        virtual ~RenderPassVk();
     protected:
-        RenderProgressVk(
-            const RenderProgressCreateInfo& info, const CGD_Vk& _cgd);
+        RenderPassVk(
+            const RenderPassCreateInfo& info, const CGD_Vk& _cgd);
         VkRenderPass renderPass;
         const CGD_Vk& cgd;
     };

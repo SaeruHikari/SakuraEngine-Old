@@ -22,36 +22,36 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-17 22:31:04
- * @LastEditTime: 2020-03-17 22:31:52
+ * @LastEditTime: 2020-03-18 09:22:47
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
 #include "Core/CoreMinimal/SDefination.h"
+#include <vector>
+#include "../ResourceObjects/Shader.h"
 
 namespace Sakura::Graphics
 {
-    enum RootParameterType
+    enum SignatureSlotType
     {
         DescriptorTable = 0,
         RootDescriptor = 1,
         RootConstants = 2,
-        RootParameterTypeCount
+        SignatureSlotTypeCount
     };
-    struct RootParameter
+    struct SignatureSlot
     {
-        RootParameterType type;
-        union Param
-        {
-            struct DescriptorTable
-            {
-                uint32_t descriporNum;
-                uint32_t registerSlot;
-            } table;
-        };
+        SignatureSlotType type;
+        ShaderStages stageFlags;
     };
-    struct RootSignature
+    struct RootSignatureCreateInfo
     {
-        std::vector<RootParameter> paramSlots;
+        const SignatureSlot* paramSlots;
+        const uint32_t paramSlotNum;
+    };
+    SInterface RootSignature
+    {
+        
     };
 } // namespace Sakura::Graphics
 

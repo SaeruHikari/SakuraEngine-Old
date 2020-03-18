@@ -21,20 +21,18 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-15 09:00:54
- * @LastEditTime: 2020-03-18 10:49:35
+ * @Date: 2020-03-18 09:13:31
+ * @LastEditTime: 2020-03-18 09:15:22
  */
-#include "CGD_Vulkan.cpp"
-#include "../CGD/CommandContext.cpp"
-#include "../CGD/Profiling.cpp"
-#include "CommandObjects/CommandContextVk.cpp"
-#include "CommandObjects/CommandQueueVk.cpp"
-#include "ResourceObjects/GpuResourceVk.cpp"
-#include "ResourceObjects/ShaderVk.cpp"
-#include "ResourceObjects/VBIBViewVk.cpp"
-#include "ResourceObjects/ResourceViewVk.cpp"
-#include "GraphicsObjects/SwapChainVk.cpp"
-#include "GraphicsObjects/GraphicsPipelineVk.cpp"
-#include "GraphicsObjects/RenderPassVk.cpp"
-#include "GraphicsObjects/RootSignatureVk.cpp"
-#include "GraphicsObjects/FenceVk.cpp"
+#pragma once
+#include "../../GraphicsCommon/GraphicsObjects/RootSignature.h"
+#include "vulkan/vulkan.h"
+
+namespace Sakura::Graphics::Vk
+{
+    class RootSignatureVk : SImplements Sakura::Graphics::RootSignature
+    {
+
+        VkDescriptorSetLayout descriptorLayout;
+    };
+}

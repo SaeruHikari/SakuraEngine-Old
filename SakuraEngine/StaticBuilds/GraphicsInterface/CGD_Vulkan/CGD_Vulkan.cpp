@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-17 11:11:48
+ * @LastEditTime: 2020-03-18 09:58:52
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -187,9 +187,9 @@ void CGD_Vk::WaitIdle() const
     vkDeviceWaitIdle(entityVk.device);
 }
 
-std::unique_ptr<CommandQueue> CGD_Vk::AllocQueue(ECommandType type) const 
+CommandQueue* CGD_Vk::AllocQueue(ECommandType type) const 
 {
-    auto graphicsQueue = new CommandQueueVk(*this);
+    auto newQueue = new CommandQueueVk(*this);
     uint32 family; 
     switch (type)
     {
@@ -208,8 +208,8 @@ std::unique_ptr<CommandQueue> CGD_Vk::AllocQueue(ECommandType type) const
     }
     vkGetDeviceQueue(entityVk.device,
         family,
-        0, &graphicsQueue->vkQueue);
-    return std::move(std::unique_ptr<CommandQueue>(graphicsQueue)); 
+        0, &newQueue->vkQueue);
+    return newQueue; 
 }
 
 void CGD_Vk::createVkInstance(uint pCount, const char** pName)

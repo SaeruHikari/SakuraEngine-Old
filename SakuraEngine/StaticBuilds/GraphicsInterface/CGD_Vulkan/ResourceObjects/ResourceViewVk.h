@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:37:46
- * @LastEditTime: 2020-03-17 23:37:00
+ * @LastEditTime: 2020-03-18 08:05:52
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/SInterface.h"
@@ -47,5 +47,4 @@ namespace Sakura::Graphics::Vk
         virtual void Attach(const GpuResource&, const ResourceViewCreateInfo&) override final;
         VkImageView vkImgView = VK_NULL_HANDLE;
     };
-
 }

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:47:38
- * @LastEditTime: 2020-03-15 09:57:08
+ * @LastEditTime: 2020-03-18 09:44:00
  */
 #pragma once
 #include <memory_resource>
@@ -194,16 +194,18 @@ namespace Sakura::Graphics
 
     struct VertexInputStateCreateInfo 
     {
-        std::vector<VertexInputBindingDescription> 
-            vertexBindingDescriptions;
-        std::vector<VertexInputAttributeDescription> 
-            vertexAttributeDescriptions;
+        const VertexInputBindingDescription* vertexBindingDescriptions;
+        uint32_t vertexBindingDescriptionCount = 0;
+        const VertexInputAttributeDescription* vertexAttributeDescriptions;
+        uint32_t vertexAttributeDescriptionCount = 0;
     };
 
     struct ViewportStateCreateInfo
     {
-        std::vector<Viewport> vps;
-        std::vector<Rect2D> scissors;
+        const Viewport* vps = nullptr;
+        uint32_t vpCount = 0;
+        const Rect2D* scissors;
+        uint32_t scissorCount = 0;
     };
     
     struct DepthStencilStateCreateInfo
@@ -218,7 +220,7 @@ namespace Sakura::Graphics
 
     struct ShaderStageCreateInfo
     {
-        StageFlags stage;
+        ShaderStageFlags stage;
         Shader* shader = nullptr;
         spmr_string entry;
     };
@@ -265,14 +267,15 @@ namespace Sakura::Graphics
     {
         bool logicOpEnable = false;
         LogicOp logicOp = LogicOp::LogicOpCopy;
-        std::vector<ColorBlendAttachmentState> colorBlendAttachment 
-            = {defaultAttachment};
+        const ColorBlendAttachmentState* colorBlendAttachment = &defaultAttachment;
+        uint32_t colorBlendAttachmentCount = 1;
         float blendConstants[4] = {0.f, 0.f, 0.f, 0.f};
     };
 
     struct DynamicStateCreateInfo
     {
-        std::vector<DynamicState> dynamicStates;
+        const DynamicState* dynamicStates;
+        uint32_t dynamicStateCount;
     };
 
     struct DescriptorSetLayout
@@ -291,8 +294,10 @@ namespace Sakura::Graphics
      */
     struct PipelineLayoutCreateInfo
     {
-        std::vector<DescriptorSetLayout> setLayouts;
-        std::vector<PushConstantRange> pushConstantRanges;
+        const DescriptorSetLayout* setLayouts = nullptr;
+        uint32_t setLayoutCount = 0;
+        const PushConstantRange* pushConstantRanges;
+        uint32_t pushConstantRangeCount = 0;
     };
 
     /**
@@ -310,6 +315,7 @@ namespace Sakura::Graphics
         DynamicStateCreateInfo dynamicStateCreateInfo;
         ColorBlendStateCreateInfo colorBlendStateCreateInfo;
         PipelineLayoutCreateInfo pipelineLayoutInfo;
-        std::pmr::vector<ShaderStageCreateInfo> shaderStages;
+        const ShaderStageCreateInfo* shaderStages = nullptr;
+        uint32_t shaderStageCount = 0;
     };
 }

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:50:13
- * @LastEditTime: 2020-03-06 23:03:54
+ * @LastEditTime: 2020-03-18 08:10:13
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -68,7 +68,7 @@ namespace Sakura::Graphics
         WarnError   = (1 << 4) //!< Warnings are treated as errors.
     };
 
-    enum StageFlags
+    enum ShaderStageFlags
     {
         VertexStage         = 0x00000001,
         HullStage           = 0x00000002,
@@ -83,5 +83,5 @@ namespace Sakura::Graphics
         RayMiss             = 0x00000800,
         MeshStage           = 0x00000080,
     };
-
+    using ShaderStages = uint32_t;
 }

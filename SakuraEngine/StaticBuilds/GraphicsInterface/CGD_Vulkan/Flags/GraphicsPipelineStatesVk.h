@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 11:13:03
- * @LastEditTime: 2020-03-15 12:50:50
+ * @LastEditTime: 2020-03-18 09:40:46
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
@@ -152,10 +152,10 @@ namespace Sakura::Graphics::Vk
     {
 		VkPipelineViewportStateCreateInfo viewportState = {};
 		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-        viewportState.pScissors = (const VkRect2D*)info.scissors.data();
-        viewportState.scissorCount = (uint32)info.scissors.size();
-        viewportState.pViewports = (const VkViewport*)info.vps.data();
-        viewportState.viewportCount = (uint32)info.vps.size();
+        viewportState.pScissors = (const VkRect2D*)info.scissors;
+        viewportState.scissorCount = info.scissorCount;
+        viewportState.pViewports = (const VkViewport*)info.vps;
+        viewportState.viewportCount = info.vpCount;
         return viewportState;
     }
 
@@ -241,9 +241,9 @@ namespace Sakura::Graphics::Vk
         dynamicState.sType = 
             VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         dynamicState.pDynamicStates 
-            = (const VkDynamicState*)dynamicCreateInfo.dynamicStates.data();
+            = (const VkDynamicState*)dynamicCreateInfo.dynamicStates;
         dynamicState.dynamicStateCount 
-            = (uint32)dynamicCreateInfo.dynamicStates.size();
+            = (uint32)dynamicCreateInfo.dynamicStateCount;
         return dynamicState;
     }
 

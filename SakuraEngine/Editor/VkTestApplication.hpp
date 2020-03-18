@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-17 23:42:04
+ * @LastEditTime: 2020-03-18 10:50:59
  */
 #pragma once
 #include "SakuraEngine/StaticBuilds/PixelOperators/DigitalImageProcess.h"
@@ -157,42 +157,29 @@ private:
 		vertshader = cgd->CreateShader(vs_bytes.data(), vs_bytes.size());
 		fragshader = cgd->CreateShader(fs_bytes.data(), fs_bytes.size());
         // shaders
-		vsStage.stage = StageFlags::VertexStage;
+		vsStage.stage = ShaderStageFlags::VertexStage;
 		vsStage.shader = vertshader.get(); vsStage.entry = "main";
-		fsStage.stage = StageFlags::PixelStage;
+		fsStage.stage = ShaderStageFlags::PixelStage;
 		fsStage.shader = fragshader.get(); fsStage.entry = "main";
-    }
-
-    void createVInInfo()
-    {
-        // vertex input
-        auto bindingDescription = Vertex::getBindingDescription();
-        auto attributeDescriptions = Vertex::getAttributeDescriptions();
-        vbInfo.vertexBindingDescriptions.resize(1);
-        vbInfo.vertexAttributeDescriptions.resize(attributeDescriptions.size());
-        vbInfo.vertexBindingDescriptions[0] = bindingDescription;
-        vbInfo.vertexAttributeDescriptions[0] = attributeDescriptions[0];
-        vbInfo.vertexAttributeDescriptions[1] = attributeDescriptions[1];
     }
 
     void ResizeWindow(uint32 width, uint32 height)
     {
         cgd->WaitIdle();
 		GraphicsPipelineCreateInfo info;
-        info.vertexInputInfo = vbInfo;
-        info.shaderStages.push_back(vsStage);
-		info.shaderStages.push_back(fsStage);
+        std::vector<ShaderStageCreateInfo> infos{vsStage, fsStage};
+		info.shaderStages = infos.data();
+        info.shaderStageCount = infos.size();
 
         // recreate swapchain
-        swapChain.reset();
-        swapChain = std::move(cgd->CreateSwapChain(width, height, &surface));
+        swapChain.reset(cgd->CreateSwapChain(width, height, &surface));
 		Viewport vp = {};
 		vp.height = height; vp.width = width;
 		Rect2D scissor = {};
 		scissor.extent = swapChain->GetExtent();
         
 		//Create Render Progress
-		RenderProgressCreateInfo rpinfo = {};
+		RenderPassCreateInfo rpinfo = {};
 		AttachmentDescription colorAttachment;
 		colorAttachment.format = swapChain->GetPixelFormat();
 		AttachmentReference colorAttachmentRef 
@@ -202,13 +189,25 @@ private:
         
 		rpinfo.attachments.push_back(colorAttachment);
 		rpinfo.subProcs.push_back(subprog);
-        prog.reset();
-		prog = std::move(cgd->CreateRenderProgress(rpinfo));
+		prog.reset(cgd->CreateRenderPass(rpinfo));
 
-		info.viewportStateCreateInfo.vps.push_back(vp);
-		info.viewportStateCreateInfo.scissors.push_back(scissor);
-        Pipeline.reset();
-		Pipeline = std::move(cgd->CreateGraphicsPipeline(info, *prog.get()));
+         // vertex input
+        auto bindingDescription = Vertex::getBindingDescription();
+        auto attributeDescriptions = Vertex::getAttributeDescriptions();
+        std::vector<VertexInputBindingDescription>
+            vertexBindingDescriptions{bindingDescription};
+        std::vector<VertexInputAttributeDescription> 
+            vertexAttributeDescriptions{attributeDescriptions[0], attributeDescriptions[1]};
+        vbInfo.vertexAttributeDescriptions = vertexAttributeDescriptions.data();
+        vbInfo.vertexAttributeDescriptionCount = (uint32)vertexAttributeDescriptions.size();
+        vbInfo.vertexBindingDescriptions = vertexBindingDescriptions.data();
+        vbInfo.vertexBindingDescriptionCount = (uint32)vertexBindingDescriptions.size();
+        info.vertexInputInfo = vbInfo;
+		info.viewportStateCreateInfo.vps = &vp;
+		info.viewportStateCreateInfo.vpCount = 1;
+		info.viewportStateCreateInfo.scissors = &scissor;
+		info.viewportStateCreateInfo.scissorCount = 1;
+		Pipeline.reset(cgd->CreateGraphicsPipeline(info, *prog.get()));
     }
  
     void createBuffer()
@@ -220,11 +219,11 @@ private:
             BufferUsage::VertexBuffer | BufferUsage::TransferDst;
         bufferInfo.detail.buffer.cpuAccess = CPUAccessFlags::None;
         bufferInfo.size = sizeof(Vertex) * vertices.size();
-        vertexBuffer = std::move(cgd->CreateResource(bufferInfo));
+        vertexBuffer.reset(cgd->CreateResource(bufferInfo));
 
         bufferInfo.detail.buffer.usage = BufferUsage::TransferSrc;
         bufferInfo.detail.buffer.cpuAccess = CPUAccessFlags::ReadWrite;
-        uploadBuffer = std::move(cgd->CreateResource(bufferInfo));
+        uploadBuffer.reset(cgd->CreateResource(bufferInfo));
         
         void* data;
         uploadBuffer->Map(&data);
@@ -239,13 +238,13 @@ private:
 
         std::unique_ptr<GpuResource> uploadBuffer2;
         bufferInfo.size = sizeof(uint16_t) * indices.size();
-        uploadBuffer2 = std::move(cgd->CreateResource(bufferInfo));
+        uploadBuffer2.reset(cgd->CreateResource(bufferInfo));
 
         bufferInfo.detail.buffer.usage = 
             BufferUsage::IndexBuffer | BufferUsage::TransferDst;
         bufferInfo.detail.buffer.cpuAccess = CPUAccessFlags::None;
         bufferInfo.size = sizeof(uint16_t) * indices.size();
-        indexBuffer = std::move(cgd->CreateResource(bufferInfo));
+        indexBuffer.reset(cgd->CreateResource(bufferInfo));
 
         void* data2;
         uploadBuffer2->Map(&data2);
@@ -270,7 +269,7 @@ private:
         cbufferInfo.size = sizeof(UniformBuffer);
         for(auto i = 0u; i < constantBuffers.size(); i++)
         {
-            constantBuffers[i] = std::move(cgd->CreateResource(cbufferInfo));
+            constantBuffers[i].reset(cgd->CreateResource(cbufferInfo));
         }
     }
 
@@ -290,9 +289,8 @@ private:
             ((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
             &surface);
         cgd->InitQueueSet(&surface);
-        fence = std::move(cgd->AllocFence());
+        fence.reset(cgd->AllocFence());
         
-        createVInInfo();
         createShader();
         ResizeWindow(1280, 720);
         createBuffer();
@@ -409,7 +407,7 @@ private:
     std::unique_ptr<Shader> fragshader;
     std::unique_ptr<Sakura::Graphics::SwapChain> swapChain;
     std::unique_ptr<GraphicsPipeline> Pipeline;
-    std::unique_ptr<RenderProgress> prog;
+    std::unique_ptr<RenderPass> prog;
     VkSurfaceKHR surface;
     SDL_Window* win = nullptr;
 };

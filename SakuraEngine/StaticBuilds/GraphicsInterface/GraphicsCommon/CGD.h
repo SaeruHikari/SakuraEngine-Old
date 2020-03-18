@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-17 22:40:57
+ * @LastEditTime: 2020-03-18 10:50:05
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -33,7 +33,7 @@
 #include "ResourceObjects/Shader.h"
 #include "Flags/ResourceFlags.h"
 #include "GraphicsObjects/GraphicsPipeline.h"
-#include "GraphicsObjects/RenderProgress.h"
+#include "GraphicsObjects/RenderPass.h"
 
 namespace Sakura::Graphics
 {
@@ -43,6 +43,7 @@ namespace Sakura::Graphics
     SInterface Fence;
     struct ResourceCreateInfo;
     struct ResourceViewCreateInfo;
+    SInterface RootSignature;
 }
 
 namespace Sakura::Graphics
@@ -66,9 +67,8 @@ namespace Sakura::Graphics
     {
         virtual ~CGD() = default;
         virtual void Initialize(CGDInfo info) = 0;
-        virtual std::unique_ptr<SwapChain> CreateSwapChain(
-            const int width, const int height, 
-            void* mainSurface) = 0;
+        virtual [[nodiscard]] SwapChain* CreateSwapChain(
+            const int width, const int height, void* mainSurface) = 0;
 
         virtual void Present(SwapChain* chain) = 0;
 
@@ -80,12 +80,12 @@ namespace Sakura::Graphics
         virtual const char* CompileShader(const char*, std::size_t) = 0;
         virtual void InitQueueSet(void* mainSurface) = 0;
 
-        virtual std::unique_ptr<RenderProgress> CreateRenderProgress(
-            const RenderProgressCreateInfo& info) const = 0;
+        virtual [[nodiscard]] RenderPass* CreateRenderPass(
+            const RenderPassCreateInfo& info) const = 0;
         
-        virtual std::unique_ptr<GraphicsPipeline> CreateGraphicsPipeline(
+        virtual [[nodiscard]] GraphicsPipeline* CreateGraphicsPipeline(
             const GraphicsPipelineCreateInfo& info,
-            const RenderProgress& progress) const = 0;
+            const RenderPass& progress) const = 0;
             
         // Create & Destroy Command Contexts
         virtual CommandContext* AllocateContext(
@@ -93,23 +93,24 @@ namespace Sakura::Graphics
         virtual void FreeContext(CommandContext* context) = 0;
         virtual void FreeAllContexts(ECommandType typeToDestroy) = 0;
 
-        virtual std::unique_ptr<ResourceView> ViewIntoImage(
+        virtual [[nodiscard]] ResourceView* ViewIntoImage(
             const GpuResource&, const ResourceViewCreateInfo&) const = 0;
         
         virtual CommandQueue* GetGraphicsQueue(void) const = 0;
         virtual CommandQueue* GetComputeQueue(void) const = 0;
         virtual CommandQueue* GetCopyQueue(void) const = 0;
         
-        virtual std::unique_ptr<CommandQueue> AllocQueue(ECommandType type) const = 0;
+        virtual [[nodiscard]] CommandQueue* AllocQueue(ECommandType type) const = 0;
 
-        virtual std::unique_ptr<GpuResource> CreateResource(
+        virtual [[nodiscard]] GpuResource* CreateResource(
             const ResourceCreateInfo&) const = 0;
 
         virtual void Wait(Fence* toWait, uint64 until) const = 0;
         virtual void WaitIdle() const = 0;
-        virtual std::unique_ptr<Fence> AllocFence(void) = 0;
+        virtual [[nodiscard]] Fence* AllocFence(void) = 0;
 
-        //virtual void BindCBV();
+        virtual [[nodiscard]] RootSignature*
+            CreateRootSignature(const RootSignatureCreateInfo& sigInfo) const  = 0;
 
         virtual const TargetGraphicsInterface GetBackEndAPI(void) const = 0;
     public:
@@ -123,11 +124,11 @@ namespace Sakura::Graphics
         std::mutex contextAllocationMutex;
     public:
         template<ResourceType type>
-        std::unique_ptr<ResourceView> ViewIntoResource(
+        [[nodiscard]] ResourceView* ViewIntoResource(
             const GpuResource& resource, const ResourceViewCreateInfo& info) const
         {
             if constexpr (type == ResourceType::Texture2D)
-                return std::move(ViewIntoImage(resource, info));
+                return ViewIntoImage(resource, info);
         }
     };
 }
