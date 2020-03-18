@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:57:40
- * @LastEditTime: 2020-03-18 10:10:27
+ * @LastEditTime: 2020-03-18 15:29:32
  */
 #include "ResourceViewVk.h"
 #include "GpuResourceVk.h"
@@ -44,12 +44,11 @@ void ResourceViewVkImage::Attach(
 {
     Detach();
     CGD_Vk& vkdevice = (CGD_Vk&)device;
-    auto vkres = (const GpuResourceVkImage&)resource;
     VkImageViewCreateInfo viewCreateInfo = {};
     viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewCreateInfo.viewType = Transfer(info.viewType);
     viewCreateInfo.format = Transfer(info.format);
-    viewCreateInfo.image = vkres.image;
+    viewCreateInfo.image = ((const GpuResourceVkImage&)resource).image;
     viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
     viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
     viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -77,8 +76,8 @@ ResourceViewVkImage::~ResourceViewVkImage()
 }
 
 ResourceViewVkImage::ResourceViewVkImage(
-    const CGD_Vk& _device)
-    :ResourceView(_device, ResourceViewType::ImageView2D)
+    const CGD_Vk& _device, const GpuResource& res, const ResourceViewType type)
+    :ResourceView(_device, res, type)
 {
    
 }
@@ -86,7 +85,7 @@ ResourceViewVkImage::ResourceViewVkImage(
 ResourceView* CGD_Vk::ViewIntoImage(
     const GpuResource& resource, const ResourceViewCreateInfo& info) const
 {
-    auto res = new ResourceViewVkImage(*this);
+    auto res = new ResourceViewVkImage(*this, resource, info.viewType);
     VkImageViewCreateInfo viewCreateInfo = {};
     viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewCreateInfo.viewType = Transfer(info.viewType);

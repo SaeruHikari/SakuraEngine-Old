@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-18 10:50:59
+ * @LastEditTime: 2020-03-18 16:46:21
  */
 #pragma once
 #include "SakuraEngine/StaticBuilds/PixelOperators/DigitalImageProcess.h"
@@ -106,7 +106,7 @@ const std::vector<uint16_t> indices = {
     0, 1, 2, 2, 3, 0
 };
 
-struct UniformBuffer
+struct UniformBufferObject
 {
     Sakura::Math::Matrix4f model;
     Sakura::Math::Matrix4f view;
@@ -266,11 +266,22 @@ private:
             BufferUsage::ConstantBuffer;
         cbufferInfo.detail.buffer.cpuAccess 
             = CPUAccessFlags::ReadWrite;
-        cbufferInfo.size = sizeof(UniformBuffer);
+        cbufferInfo.size = sizeof(UniformBufferObject);
         for(auto i = 0u; i < constantBuffers.size(); i++)
         {
             constantBuffers[i].reset(cgd->CreateResource(cbufferInfo));
         }
+    }
+
+    void createRootSignature()
+    {
+        RootSignatureCreateInfo info = {};
+        std::vector<SignatureSlot> slots(1);
+        slots[0].type = SignatureSlotType::UniformBufferSlot;
+        slots[0].stageFlags = ShaderStageFlags::VertexStage;
+        info.paramSlotNum = slots.size();
+        info.paramSlots = slots.data();
+        rootSignature.reset(cgd->CreateRootSignature(info));
     }
 
     void initVulkan()
@@ -294,7 +305,7 @@ private:
         createShader();
         ResizeWindow(1280, 720);
         createBuffer();
-        
+        createRootSignature();
         profiler = std::make_unique<Sakura::Graphics::Im::ImGuiProfiler>(*cgd.get());
         profiler->ImGuiInitialize(win, swapChain->GetPixelFormat()); 
     }
@@ -306,7 +317,7 @@ private:
         auto currentTime = std::chrono::high_resolution_clock::now();
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-        UniformBuffer ubo = {};
+        UniformBufferObject ubo = {};
         ubo.model.setIdentity();
         //Matrix4f::
         //ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -380,6 +391,7 @@ private:
         fragshader.reset();
         Pipeline.reset();
         swapChain.reset();
+        rootSignature.reset();
         vkDestroySurfaceKHR(((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
             surface, nullptr);
         prog.reset();
@@ -396,6 +408,7 @@ private:
         win = VkSDL_CreateWindow("SakuraEngine Window: CGD Vulkan", 1280, 720);
     }
 
+    std::unique_ptr<RootSignature> rootSignature;
     std::vector<std::unique_ptr<GpuResource>> constantBuffers;
     std::unique_ptr<Sakura::Graphics::Im::ImGuiProfiler> profiler;
     std::unique_ptr<GpuResource> vertexBuffer, indexBuffer;

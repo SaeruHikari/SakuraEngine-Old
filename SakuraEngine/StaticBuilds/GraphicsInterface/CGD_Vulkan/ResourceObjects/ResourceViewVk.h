@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:37:46
- * @LastEditTime: 2020-03-18 08:05:52
+ * @LastEditTime: 2020-03-18 15:30:04
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/SInterface.h"
@@ -41,7 +41,8 @@ namespace Sakura::Graphics::Vk
 
     struct ResourceViewVkImage final : public ResourceView
     {
-        ResourceViewVkImage(const CGD_Vk&);
+        ResourceViewVkImage(const CGD_Vk&,
+            const GpuResource&, const ResourceViewType);
         virtual ~ResourceViewVkImage() override final;
         virtual void Detach() override final;
         virtual void Attach(const GpuResource&, const ResourceViewCreateInfo&) override final;

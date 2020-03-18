@@ -22,17 +22,46 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:13:31
- * @LastEditTime: 2020-03-18 09:15:22
+ * @LastEditTime: 2020-03-18 17:01:10
  */
 #pragma once
+#include <vector>
+#include <memory_resource>
 #include "../../GraphicsCommon/GraphicsObjects/RootSignature.h"
 #include "vulkan/vulkan.h"
 
 namespace Sakura::Graphics::Vk
 {
-    class RootSignatureVk : SImplements Sakura::Graphics::RootSignature
-    {
+    class RootArgumentVk;
+}
 
-        VkDescriptorSetLayout descriptorLayout;
+namespace Sakura::Graphics::Vk
+{
+    class RootSignatureVk final : SImplements Sakura::Graphics::RootSignature
+    {
+        friend class CGD_Vk;
+    public:
+        virtual ~RootSignatureVk() override final;
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+        virtual [[nodiscard]] RootArgument* CreateArgument(uint32_t slot,
+            const RootArgumentCreateInfo& info) const override final;
+    protected:
+        RootSignatureVk(const CGD_Vk& _cgd, const RootSignatureCreateInfo& info);
+        const CGD_Vk& cgd;
+    };
+
+    class RootArgumentVk final : SImplements Sakura::Graphics::RootArgument
+    {
+        friend class CGD_Vk;
+        friend class RootSignatureVk;
+    public:
+        VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+        virtual ~RootArgumentVk() override final;
+        virtual const RootArgumentType GetType(void) const override final;
+    protected:
+        RootArgumentType type;
+        RootArgumentVk(const CGD_Vk& _cgd, const VkDescriptorSetLayout& layout, 
+            const RootArgumentCreateInfo& info, VkDescriptorPool pool);
+        const CGD_Vk& cgd; 
     };
 }

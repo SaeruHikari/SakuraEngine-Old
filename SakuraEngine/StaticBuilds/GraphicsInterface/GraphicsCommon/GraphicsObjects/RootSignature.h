@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-17 22:31:04
- * @LastEditTime: 2020-03-18 09:22:47
+ * @LastEditTime: 2020-03-18 16:57:18
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -32,12 +32,26 @@
 
 namespace Sakura::Graphics
 {
+    SInterface GpuResource;
+}
+
+namespace Sakura::Graphics
+{
     enum SignatureSlotType
     {
-        DescriptorTable = 0,
-        RootDescriptor = 1,
-        RootConstants = 2,
-        SignatureSlotTypeCount
+        SamplerSlot = 0,
+        CombinedImageSamplerSlot = 1,
+        SampledImageSlot = 2,
+        StorageImageSlot = 3,
+        UniformTexelBufferSlot = 4,
+        StorageTexelBufferSlot = 5,
+        UniformBufferSlot = 6,
+        StorageBufferSlot = 7,
+        UniformBufferDynamicSlot = 8,
+        StorageBufferDynamicSlot = 9,
+        InputAttachmentSlot = 10,
+        InlineUniformBlockExt = 1000138000,
+        AccelerationStructureNv = 1000165000
     };
     struct SignatureSlot
     {
@@ -46,12 +60,40 @@ namespace Sakura::Graphics
     };
     struct RootSignatureCreateInfo
     {
-        const SignatureSlot* paramSlots;
-        const uint32_t paramSlotNum;
+        const SignatureSlot* paramSlots = nullptr;
+        uint32_t paramSlotNum = 0;
     };
+
+    enum RootArgumentType
+    {
+        UniformBuffer
+    };
+    
+    struct RootArgumentCreateInfo
+    {
+        struct UniformBufferInfo
+        {
+            uint32 offset = 0;
+            uint32 range = 0;
+            const GpuResource& buffer; 
+        };
+        RootArgumentType rootArgType;
+        union Information
+        {
+            UniformBufferInfo uniformBuffer;
+        } info;
+    };
+    SInterface RootArgument
+    {
+        virtual ~RootArgument(){};
+        virtual const RootArgumentType GetType(void) const = 0;
+    };
+
     SInterface RootSignature
     {
-        
+        virtual ~RootSignature(){};
+        virtual [[nodiscard]] RootArgument* CreateArgument(
+            uint32_t slot, const RootArgumentCreateInfo& info) const = 0;
     };
 } // namespace Sakura::Graphics
 

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:35:59
- * @LastEditTime: 2020-03-18 09:04:25
+ * @LastEditTime: 2020-03-18 15:50:20
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -51,7 +51,7 @@ namespace Sakura::Graphics
         ImageView2DArray,
         ImageViewCubeArray,
         ImageViewTypesCount,
-        BufferView
+        Buffer
     };
     inline static bool isImageView(const ResourceViewType type)
     {
@@ -71,9 +71,9 @@ namespace Sakura::Graphics
         {
 
         };
-        struct BufferInfo
+        struct Buffer
         {
-
+            
         };
         Format format;
         ResourceViewType viewType;
@@ -81,7 +81,7 @@ namespace Sakura::Graphics
         {
             Tex2DInfo texture2D;
             Tex3DInfo texture3D;
-            BufferInfo buffer;
+            Buffer buffer;
         } view;
     };
     
@@ -96,24 +96,13 @@ namespace Sakura::Graphics
         virtual void Attach(const GpuResource&, const ResourceViewCreateInfo&) = 0;
         virtual void Detach() = 0;
     protected:
-        ResourceView(const CGD& _device, const ResourceViewType vt)
-            :device(_device), viewType(vt){}
+        ResourceView(const CGD& _device,
+            const GpuResource& res, const ResourceViewType vt)
+            :device(_device), viewType(vt), resource(res){}
     protected:
+        const GpuResource& resource;
         Format format;
         ResourceViewType viewType;
         const CGD& device;
-    };
-
-    SInterface VertexBufferView
-    {
-        const GpuResource& vb;
-        uint32 stride;
-        uint32 size;
-        VertexInputRate rate = VertexInputRate::VertexInputRateVertex;
-    };
-
-    SInterface IndexBufferView
-    {   
-
     };
 }

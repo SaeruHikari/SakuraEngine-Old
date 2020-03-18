@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-18 10:50:05
+ * @LastEditTime: 2020-03-18 11:23:09
  */
 #pragma once
 #include "Core/CoreMinimal/SInterface.h"
@@ -34,6 +34,7 @@
 #include "Flags/ResourceFlags.h"
 #include "GraphicsObjects/GraphicsPipeline.h"
 #include "GraphicsObjects/RenderPass.h"
+#include "GraphicsObjects/RootSignature.h"
 
 namespace Sakura::Graphics
 {
@@ -43,7 +44,6 @@ namespace Sakura::Graphics
     SInterface Fence;
     struct ResourceCreateInfo;
     struct ResourceViewCreateInfo;
-    SInterface RootSignature;
 }
 
 namespace Sakura::Graphics

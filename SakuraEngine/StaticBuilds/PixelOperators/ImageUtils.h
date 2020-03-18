@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-13 16:46:06
- * @LastEditTime: 2020-03-14 01:31:52
+ * @LastEditTime: 2020-03-18 16:28:47
  */
 #pragma once
 #define STB_IMAGE_IMPLEMENTATION
@@ -43,6 +43,10 @@ namespace Sakura::Images
         Image(std::byte* _data)
         {
             data = std::unique_ptr<std::byte>(_data);
+        }
+        ~Image()
+        {
+            data.reset();
         }
         enum PixelChannel
         {

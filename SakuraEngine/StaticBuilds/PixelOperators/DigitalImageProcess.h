@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-14 01:30:54
- * @LastEditTime: 2020-03-17 18:06:56
+ * @LastEditTime: 2020-03-18 17:34:30
  */
 #pragma once
 #include "ImageUtils.h"
@@ -142,7 +142,7 @@ namespace Sakura::Images
             pct[iter.first] = (float)iter.second / (float)(width * height);
         pc = pct;
         float last = 0;
-        // 计算加权
+        // 计算累积频率
         for (auto& iter : pct)
         {
             auto rate = iter.second;
