@@ -4,8 +4,8 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 14:21:56
- * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-23 23:51:13
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-03-20 00:40:12
  */
 #pragma once
 #include "Core/CoreMinimal/SKeyWords.h"
@@ -32,7 +32,7 @@ namespace Sakura
     sinline auto convert(const std::variant<Args...>& var) snoexcept
     {
         return visit(([](const auto& v) {
-            return T(v);
+            return static_cast<T>(v);
         }), var);
     }
 

@@ -22,13 +22,14 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-17 22:31:04
- * @LastEditTime: 2020-03-19 22:25:54
+ * @LastEditTime: 2020-03-20 01:18:24
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
 #include "Core/CoreMinimal/SDefination.h"
 #include <vector>
 #include "../ResourceObjects/Shader.h"
+#include "../ResourceObjects/ResourceViews.h"
 
 namespace Sakura::Graphics
 {
@@ -40,8 +41,8 @@ namespace Sakura::Graphics
 {
     enum SignatureSlotType
     {
-        SamplerSlot = 0,
-        CombinedImageSamplerSlot = 1,
+        TextureSlot = 0,
+        CombinedTextureSamplerSlot = 1,
         SampledImageSlot = 2,
         StorageImageSlot = 3,
         UniformTexelBufferSlot = 4,
@@ -68,30 +69,36 @@ namespace Sakura::Graphics
         const SignatureSlot* paramSlots = nullptr;
         uint32_t paramSlotNum = 0;
     };
-    
+
+    struct UniformBufferAttachment
+    {
+        uint32 offset = 0;
+        uint32 range = 0;
+        const GpuBuffer* buffer = nullptr; 
+    };
+
+    struct TexSamplerAttachment
+    {
+        const ResourceView* imageView = nullptr;
+        const Sampler* sampler = nullptr;
+        ImageLayout imageLayout;
+    };
+
     struct RootArgumentAttachment
     {
-        struct UniformBufferInfo
-        {
-            uint32 offset = 0;
-            uint32 range = 0;
-            const GpuBuffer* buffer = nullptr; 
-        };
         SignatureSlotType rootArgType = SignatureSlotType::UniformBufferSlot;
         uint32_t dstBinding = 0;
         uint32 dstArrayElement = 0;
         uint32 descriptorCount = 1;
-        union Information
-        {
-            UniformBufferInfo uniformBuffer;
-        } info;
+        std::variant<UniformBufferAttachment, TexSamplerAttachment> info;
     };
     
     sinterface RootArgument
     {
         virtual ~RootArgument(){};
         virtual const SignatureSlotType GetType(void) const = 0;
-        virtual void UpdateArgument(const RootArgumentAttachment& attachment) = 0;
+        virtual void UpdateArgument(const RootArgumentAttachment* attachments,
+            std::uint32_t attachmentCount) = 0;
         virtual const size_t GetSlotNum(void) const = 0;
     };
 

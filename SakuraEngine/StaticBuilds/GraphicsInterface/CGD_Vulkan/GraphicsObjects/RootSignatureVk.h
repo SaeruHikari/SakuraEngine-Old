@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:13:31
- * @LastEditTime: 2020-03-19 22:20:43
+ * @LastEditTime: 2020-03-19 22:49:59
  */
 #pragma once
 #include <vector>
@@ -60,8 +60,8 @@ namespace Sakura::Graphics::Vk
         VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
         virtual ~RootArgumentVk() override final;
         virtual const SignatureSlotType GetType(void) const override final;
-        virtual void UpdateArgument(
-            const RootArgumentAttachment& attachment) override final;
+        virtual void UpdateArgument(const RootArgumentAttachment* attachments,
+            std::uint32_t attachmentCount) override final;
         virtual const size_t GetSlotNum(void) const override final;
     protected:
         SignatureSlotType type;

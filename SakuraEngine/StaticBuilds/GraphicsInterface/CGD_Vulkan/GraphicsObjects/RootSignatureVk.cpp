@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:18:23
- * @LastEditTime: 2020-03-19 22:26:13
+ * @LastEditTime: 2020-03-20 01:15:29
  */
 #include "RootSignatureVk.h"
 #include "../CGD_Vulkan.h"
@@ -30,6 +30,7 @@
 
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Vk;
+using namespace Sakura;
 
 RootSignatureVk::RootSignatureVk(
     const CGD_Vk& _cgd, const RootSignatureCreateInfo& info)
@@ -140,31 +141,58 @@ RootArgument* RootSignatureVk::CreateArgument(const SignatureSlotType type) cons
     return new RootArgumentVk(cgd, descriptorSetLayout, type, pool);
 }
 
-void RootArgumentVk::UpdateArgument(const RootArgumentAttachment& attachment)
+void RootArgumentVk::UpdateArgument(
+    const RootArgumentAttachment* attachments, std::uint32_t attachmentCount)
 {
-    VkWriteDescriptorSet descriptorWrite = {};
-    switch (attachment.rootArgType)
+    std::vector<VkWriteDescriptorSet> descriptorWrites(attachmentCount);
+    for(auto i = 0u; i < attachmentCount; i++)
     {
-    case SignatureSlotType::UniformBufferSlot:
-    {
-        VkDescriptorBufferInfo bufferInfo = {};
-        bufferInfo.buffer = 
-            ((const GpuResourceVkBuffer*)attachment.info.uniformBuffer.buffer)->buffer;
-        bufferInfo.offset = attachment.info.uniformBuffer.offset;
-        bufferInfo.range = attachment.info.uniformBuffer.range;
-        descriptorWrite.pBufferInfo = &bufferInfo;
-        break;
+        switch (attachments[i].rootArgType)
+        {
+        case SignatureSlotType::UniformBufferSlot:
+        {
+            VkDescriptorBufferInfo buffer;
+            buffer.buffer = 
+                ((const GpuResourceVkBuffer*)std::get<UniformBufferAttachment>(attachments[i].info).buffer)->buffer;
+            buffer.offset =
+                std::get<UniformBufferAttachment>(attachments[i].info).offset;
+            buffer.range = 
+                std::get<UniformBufferAttachment>(attachments[i].info).range;
+            descriptorWrites[i].pBufferInfo = &buffer;
+            descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[i].dstSet = descriptorSet;
+            descriptorWrites[i].dstBinding = attachments[i].dstBinding;
+            descriptorWrites[i].dstArrayElement = attachments[i].dstArrayElement;
+            descriptorWrites[i].descriptorType = Transfer(attachments[i].rootArgType);
+            descriptorWrites[i].descriptorCount = attachments[i].descriptorCount;
+            vkUpdateDescriptorSets(cgd.GetCGDEntity().device,
+                1, &descriptorWrites[i], 0, nullptr);
+            continue;
+        }
+        case SignatureSlotType::CombinedTextureSamplerSlot:
+        {
+            VkDescriptorImageInfo image;
+            auto tex2D = std::get<TexSamplerAttachment>(attachments[i].info);
+            image.imageLayout 
+                = Transfer(tex2D.imageLayout);
+            image.imageView  
+                = ((const ResourceViewVkImage*)tex2D.imageView)->vkImgView;
+            image.sampler 
+                = ((const SamplerVk*)tex2D.sampler)->sampler;
+            descriptorWrites[i].pImageInfo = &image;
+            descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[i].dstSet = descriptorSet;
+            descriptorWrites[i].dstBinding = attachments[i].dstBinding;
+            descriptorWrites[i].dstArrayElement = attachments[i].dstArrayElement;
+            descriptorWrites[i].descriptorType = Transfer(attachments[i].rootArgType);
+            descriptorWrites[i].descriptorCount = attachments[i].descriptorCount;
+            vkUpdateDescriptorSets(cgd.GetCGDEntity().device,
+                1, &descriptorWrites[i], 0, nullptr);
+            continue;
+        }
+        default:
+            CGD_Vk::error("Root argument Slot type not supported!");
+            return;
+        }
     }
-    default:
-        CGD_Vk::error("Root argument Slot type not supported!");
-        break;
-    }
-    descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrite.dstSet = descriptorSet;
-    descriptorWrite.dstBinding = attachment.dstBinding;
-    descriptorWrite.dstArrayElement = attachment.dstArrayElement;
-    descriptorWrite.descriptorType = Transfer(attachment.rootArgType);
-    descriptorWrite.descriptorCount = attachment.descriptorCount;
-    vkUpdateDescriptorSets(cgd.GetCGDEntity().device,
-        1, &descriptorWrite, 0, nullptr);
 }

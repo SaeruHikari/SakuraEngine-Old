@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-19 22:26:25
+ * @LastEditTime: 2020-03-20 01:19:09
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -66,8 +66,16 @@ using namespace Sakura::Graphics::Vk;
     Sakura::fs::file fs_f
     ("D:\\Coding\\SakuraEngine\\SakuraEngine\\UnitTests\\UnitTestGraphics\\frag.spv",
         'r');
+
     Sakura::fs::file vs_cbv
     ("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\CBV\\CBVVert.spv",
+        'r');
+
+    Sakura::fs::file vs_srv
+    ("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\SRV\\SRVVertex.spv",
+        'r');  
+    Sakura::fs::file fs_srv
+    ("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\SRV\\SRVPixel.spv",
         'r');
     const std::string texPath =
         "D:\\Coding\\SakuraEngine\\SakuraTestProject\\textures\\640x640.jpg";
@@ -77,6 +85,7 @@ struct Vertex
 {
     Sakura::Math::Vector2f pos;
     Sakura::Math::Vector3f color;
+    glm::vec2 texCoord;
     static VertexInputBindingDescription getBindingDescription() {
         VertexInputBindingDescription bindingDescription = {};
         bindingDescription.binding = 0;
@@ -86,8 +95,8 @@ struct Vertex
         return bindingDescription;
     }
 
-    static std::array<VertexInputAttributeDescription, 2> getAttributeDescriptions() {
-        std::array<VertexInputAttributeDescription, 2> attributeDescriptions = {};
+    static std::array<VertexInputAttributeDescription, 3> getAttributeDescriptions() {
+        std::array<VertexInputAttributeDescription, 3> attributeDescriptions = {};
 
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
@@ -98,15 +107,20 @@ struct Vertex
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = Format::R32G32B32_SFLOAT;
         attributeDescriptions[1].offset = offsetof(Vertex, color);
+    
+        attributeDescriptions[2].binding = 0;
+        attributeDescriptions[2].location = 2;
+        attributeDescriptions[2].format = Format::R32G32_SFLOAT;
+        attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
 
         return attributeDescriptions;
     }
 };
 const std::vector<Vertex> vertices = {
-    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 };
 const std::vector<uint16_t> indices = {
     0, 1, 2, 2, 3, 0
@@ -156,10 +170,10 @@ private:
     void createShader()
     {
 		// Create PSO vs_cbv
-		std::vector<char> vs_bytes(vs_cbv.size());
-		std::vector<char> fs_bytes(fs_f.size());
-		vs_cbv.read(vs_bytes.data(), vs_bytes.size());
-		fs_f.read(fs_bytes.data(), fs_bytes.size());
+		std::vector<char> vs_bytes(vs_srv.size());
+		std::vector<char> fs_bytes(fs_srv.size());
+		vs_srv.read(vs_bytes.data(), vs_bytes.size());
+		fs_srv.read(fs_bytes.data(), fs_bytes.size());
 		vertshader = cgd->CreateShader(vs_bytes.data(), vs_bytes.size());
 		fragshader = cgd->CreateShader(fs_bytes.data(), fs_bytes.size());
         // shaders
@@ -178,6 +192,7 @@ private:
         info.shaderStageCount = infos.size();
         info.pipelineLayoutInfo.setLayouts = rootSignature.get();
         // recreate swapchain
+        swapChain.reset();
         swapChain.reset(cgd->CreateSwapChain(width, height, &surface));
 		Viewport vp = {};
 		vp.height = height; vp.width = width;
@@ -203,7 +218,7 @@ private:
         std::vector<VertexInputBindingDescription>
             vertexBindingDescriptions{bindingDescription};
         std::vector<VertexInputAttributeDescription> 
-            vertexAttributeDescriptions{attributeDescriptions[0], attributeDescriptions[1]};
+            vertexAttributeDescriptions{attributeDescriptions[0], attributeDescriptions[1], attributeDescriptions[2]};
         VertexInputStateCreateInfo vbInfo = {};
         vbInfo.vertexAttributeDescriptions = vertexAttributeDescriptions.data();
         vbInfo.vertexAttributeDescriptionCount = (uint32)vertexAttributeDescriptions.size();
@@ -327,11 +342,11 @@ private:
     void createRootSignature()
     {
         RootSignatureCreateInfo info = {};
-        std::vector<SignatureSlot> slots(1);
+        std::vector<SignatureSlot> slots(2);
         slots[0].type = SignatureSlotType::UniformBufferSlot;
         slots[0].stageFlags = ShaderStageFlags::VertexStage;
-        //slots[1].type = SignatureSlotType::SamplerSlot;
-        //slots[1].stageFlags = ShaderStageFlags::PixelStage;
+        slots[1].type = SignatureSlotType::CombinedTextureSamplerSlot;
+        slots[1].stageFlags = ShaderStageFlags::PixelStage;
         info.paramSlotNum = slots.size();
         info.paramSlots = slots.data();
         rootSignature.reset(cgd->CreateRootSignature(info));
@@ -393,11 +408,22 @@ private:
             memcpy(data, &ubo, sizeof(ubo));
         constantBuffers[frameCount]->Unmap();
 
-        RootArgumentAttachment attachment = {};
-        attachment.info.uniformBuffer.offset = 0;
-        attachment.info.uniformBuffer.range = sizeof(UniformBufferObject);
-        attachment.info.uniformBuffer.buffer = constantBuffers[frameCount].get();
-        cbvArgument->UpdateArgument(attachment);
+        RootArgumentAttachment attachments[2];
+        UniformBufferAttachment ubAttach;
+        ubAttach.offset = 0;
+        ubAttach.range = sizeof(UniformBufferObject);
+        ubAttach.buffer = constantBuffers[frameCount].get();
+        attachments[0].info = ubAttach;
+        attachments[0].rootArgType = SignatureSlotType::UniformBufferSlot;
+        attachments[0].dstBinding = 0;
+        TexSamplerAttachment texAttach;
+        texAttach.imageView = textureView.get();
+        texAttach.sampler = sampler.get();
+        texAttach.imageLayout = ImageLayout::ShaderReadOnlyOptimal;
+        attachments[1].info = texAttach;
+        attachments[1].rootArgType = SignatureSlotType::CombinedTextureSamplerSlot;
+        attachments[1].dstBinding = 1;
+        cbvArgument->UpdateArgument(attachments, 2);
     }
 
     void mainLoop()
@@ -425,7 +451,7 @@ private:
         {
             static float f = 0.0f;
             static int counter = 0;
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin("Profiling Board:");                          // Create a window called "Hello, world!" and append into it.
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
