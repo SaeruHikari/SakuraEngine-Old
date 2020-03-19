@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:36:56
- * @LastEditTime: 2020-03-18 18:54:05
+ * @LastEditTime: 2020-03-19 16:46:05
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -33,23 +33,27 @@
 
 namespace Sakura::Graphics
 {
-    struct ResourceCreateInfo
+    enum ResourceLayout 
     {
+
+    };
+
+    struct BufferCreateInfo
+    {
+        BufferUsages usage;
+        CPUAccessFlags cpuAccess;
         uint64 size;
-        ResourceType type = ResourceType::Buffer;
-        union Details
-        {
-            struct Buffer
-            {
-                BufferUsages usage;
-                CPUAccessFlags cpuAccess;
-            } buffer;
+    };
 
-            struct Texture
-            {
-
-            } texture;
-        } detail;
+    struct TextureCreateInfo
+    {
+        ImageUsages usage;
+        uint32 width;
+        uint32 height;
+        Format format;
+        uint32 depth = 1;
+        uint32 mipLevels = 1;
+        uint32 arrayLayers = 1;
     };
     
     sinterface GpuResource
@@ -62,7 +66,6 @@ namespace Sakura::Graphics
         {
             return extent;
         }
-        virtual const ResourceViewType GetDefaultView() const = 0;
     protected:
         GpuResource() = default;
         GpuResource(Extent2D _extent)
@@ -73,5 +76,19 @@ namespace Sakura::Graphics
         }
     protected:
         Extent2D extent;
+    };
+    
+    sinterface GpuBuffer : simplements GpuResource
+    {
+        GpuBuffer() = default;
+        GpuBuffer(Extent2D _extent)
+            :GpuResource(_extent){}
+    };
+
+    sinterface GpuTexture : simplements GpuResource
+    {
+        GpuTexture() = default;
+        GpuTexture(Extent2D _extent)
+            :GpuResource(_extent){}
     };
 }

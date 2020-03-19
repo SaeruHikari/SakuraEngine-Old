@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 23:50:42
- * @LastEditTime: 2020-03-16 00:12:31
+ * @LastEditTime: 2020-03-19 13:17:24
  */
 #pragma once
 
@@ -78,8 +78,8 @@ namespace Sakura::Graphics
 
     enum BufferUsage
     {
-        TransferSrc = 0x00000001,
-        TransferDst = 0x00000002,
+        TransferSrcBuffer = 0x00000001,
+        TransferDstBuffer = 0x00000002,
         UniformTexelBuffer = 0x00000004,
         StorageTexelBuffer = 0x00000008,
         ConstantBuffer = 0x00000010,
@@ -92,7 +92,23 @@ namespace Sakura::Graphics
         TransformFeedbackCounter = 0x00001000,
         ConditionalRendering = 0x00000200,
         RayTracing = 0x00000400,
-        VK_BUFFER_USAGE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+        BufferUsageMaxBit = 0x7FFFFFFF
     };
-    typedef uint32_t BufferUsages;
+    using BufferUsages = uint32_t;
+
+    enum ImageUsage
+    {
+        TransferSrcImage = 0x00000001,
+        TransferDstImage = 0x00000002,
+        SampledImage = 0x00000004,
+        StorageImage = 0x00000008,
+        ColorAttachmentImage = 0x000000010,
+        DepthStencilAttachmentImage = 0x00000020,
+        TransiendtAttachmentImage = 0x00000040,
+        InputAttachmentImage = 0x00000080,
+        ShadingRateImageNv = 0x00000100,
+        FragmentDensityMapExt = 0x00000200,
+        ImageUsageMaxBit = 0x7FFFFFFF
+    };
+    using ImageUsages = uint32_t;
 }

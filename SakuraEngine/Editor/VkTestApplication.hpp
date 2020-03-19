@@ -22,10 +22,14 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-18 20:08:02
+ * @LastEditTime: 2020-03-19 16:53:26
  */
 #pragma once
-#include "SakuraEngine/StaticBuilds/PixelOperators/DigitalImageProcess.h"
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "SakuraEngine/StaticBuilds/PixelOperators/ImageUtils.h"
 #include "SakuraEngine/StaticBuilds/Graphicsinterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/CGD_Vulkan.h"
 extern "C"
@@ -65,6 +69,8 @@ using namespace Sakura::Graphics::Vk;
     Sakura::fs::file vs_cbv
     ("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\CBV\\CBVVert.spv",
         'r');
+    const std::string texPath =
+        "D:\\Coding\\SakuraEngine\\SakuraTestProject\\textures\\640x640.jpg";
 #endif
 
 struct Vertex
@@ -108,9 +114,9 @@ const std::vector<uint16_t> indices = {
 
 struct UniformBufferObject
 {
-    Sakura::Math::Matrix4f model;
-    Sakura::Math::Matrix4f view;
-    Sakura::Math::Matrix4f proj;
+    alignas(16) glm::mat4 model;
+    alignas(16) glm::mat4 view;
+    alignas(16) glm::mat4 proj;
 };
 
 class VkTestApplication
@@ -178,19 +184,19 @@ private:
 		Rect2D scissor = {};
 		scissor.extent = swapChain->GetExtent();
         
-		//Create Render Progress
+		//Create Render Pass
 		RenderPassCreateInfo rpinfo = {};
 		AttachmentDescription colorAttachment;
 		colorAttachment.format = swapChain->GetPixelFormat();
 		AttachmentReference colorAttachmentRef 
             = {0, ImageLayout::ColorAttachment};
-		SubprogressDescription subprog = {};
-		subprog.colorAttachments.push_back(colorAttachmentRef);
+		SubpassDescription subpass = {};
+		subpass.colorAttachments.push_back(colorAttachmentRef);
         
 		rpinfo.attachments.push_back(colorAttachment);
-		rpinfo.subProcs.push_back(subprog);
-		prog.reset(cgd->CreateRenderPass(rpinfo));
-
+		rpinfo.subProcs.push_back(subpass);
+		pass.reset(cgd->CreateRenderPass(rpinfo));
+        
          // vertex input
         auto bindingDescription = Vertex::getBindingDescription();
         auto attributeDescriptions = Vertex::getAttributeDescriptions();
@@ -198,6 +204,7 @@ private:
             vertexBindingDescriptions{bindingDescription};
         std::vector<VertexInputAttributeDescription> 
             vertexAttributeDescriptions{attributeDescriptions[0], attributeDescriptions[1]};
+        VertexInputStateCreateInfo vbInfo = {};
         vbInfo.vertexAttributeDescriptions = vertexAttributeDescriptions.data();
         vbInfo.vertexAttributeDescriptionCount = (uint32)vertexAttributeDescriptions.size();
         vbInfo.vertexBindingDescriptions = vertexBindingDescriptions.data();
@@ -207,24 +214,45 @@ private:
 		info.viewportStateCreateInfo.vpCount = 1;
 		info.viewportStateCreateInfo.scissors = &scissor;
 		info.viewportStateCreateInfo.scissorCount = 1;
-		Pipeline.reset(cgd->CreateGraphicsPipeline(info, *prog.get()));
+		Pipeline.reset(cgd->CreateGraphicsPipeline(info, *pass.get()));
     }
- 
+    void createTexture()
+    {
+        int width, height, channels;
+        auto pixels = Sakura::Images::LoadFromDisk<std::byte>(
+            texPath.c_str(), width, height, channels);
+        std::unique_ptr<GpuBuffer> uploadBuffer;
+        uploadBuffer.reset(cgd->CreateUploadBuffer(10));
+        void* data;
+        uploadBuffer->Map(&data);
+        memcpy(data, pixels, static_cast<size_t>(width * height * channels));
+        uploadBuffer->Unmap();
+        
+        TextureCreateInfo imgInfo = {};
+        imgInfo.width = width;
+        imgInfo.height = height;
+        imgInfo.format = Format::R8G8B8A8_SRGB;
+        imgInfo.arrayLayers = 1;
+        imgInfo.depth = 1;
+        imgInfo.mipLevels = 1;
+        imgInfo.usage = 
+            ImageUsage::TransferDstImage | ImageUsage::SampledImage;
+        texture.reset(
+            cgd->CreateResource(imgInfo));
+    }
+    
     void createBuffer()
     {
-        std::unique_ptr<GpuResource> uploadBuffer;
-        ResourceCreateInfo bufferInfo;
-        bufferInfo.type = ResourceType::Buffer;
-        bufferInfo.detail.buffer.usage = 
-            BufferUsage::VertexBuffer | BufferUsage::TransferDst;
-        bufferInfo.detail.buffer.cpuAccess = CPUAccessFlags::None;
+        BufferCreateInfo bufferInfo = {};
+        bufferInfo.usage = 
+            BufferUsage::VertexBuffer | BufferUsage::TransferDstBuffer;
+        bufferInfo.cpuAccess = CPUAccessFlags::None;
         bufferInfo.size = sizeof(Vertex) * vertices.size();
-        vertexBuffer.reset(cgd->CreateResource(bufferInfo));
-
-        bufferInfo.detail.buffer.usage = BufferUsage::TransferSrc;
-        bufferInfo.detail.buffer.cpuAccess = CPUAccessFlags::ReadWrite;
-        uploadBuffer.reset(cgd->CreateResource(bufferInfo));
+        vertexBuffer.reset((GpuBuffer*)cgd->CreateResource(bufferInfo));
         
+        std::unique_ptr<GpuBuffer> uploadBuffer;
+        uploadBuffer.reset(cgd->CreateUploadBuffer(bufferInfo.size));
+
         void* data;
         uploadBuffer->Map(&data);
         memcpy(data, vertices.data(), (size_t)bufferInfo.size);
@@ -238,20 +266,20 @@ private:
 
         std::unique_ptr<GpuResource> uploadBuffer2;
         bufferInfo.size = sizeof(uint16_t) * indices.size();
-        uploadBuffer2.reset(cgd->CreateResource(bufferInfo));
+        uploadBuffer2.reset(cgd->CreateUploadBuffer(bufferInfo.size));
 
-        bufferInfo.detail.buffer.usage = 
-            BufferUsage::IndexBuffer | BufferUsage::TransferDst;
-        bufferInfo.detail.buffer.cpuAccess = CPUAccessFlags::None;
+        bufferInfo.usage = 
+            BufferUsage::IndexBuffer | BufferUsage::TransferDstBuffer;
+        bufferInfo.cpuAccess = CPUAccessFlags::None;
         bufferInfo.size = sizeof(uint16_t) * indices.size();
-        indexBuffer.reset(cgd->CreateResource(bufferInfo));
+        indexBuffer.reset((GpuBuffer*)cgd->CreateResource(bufferInfo));
 
         void* data2;
         uploadBuffer2->Map(&data2);
         memcpy(data2, indices.data(), (size_t)bufferInfo.size);
         uploadBuffer2->Unmap();
 
-        context->CopyBuffer(*uploadBuffer2.get(),
+        context->CopyBuffer(*(GpuBuffer*)uploadBuffer2.get(),
             *indexBuffer.get(), bufferInfo.size);
         context->End();
         
@@ -260,17 +288,17 @@ private:
         cgd->GetCopyQueue()->WaitIdle();
 
         constantBuffers.resize(swapChain->GetSwapChainCount());
-        ResourceCreateInfo cbufferInfo;
-        cbufferInfo.type = ResourceType::Buffer;
-        cbufferInfo.detail.buffer.usage = 
+        BufferCreateInfo cbufferInfo = {};
+        cbufferInfo.usage = 
             BufferUsage::ConstantBuffer;
-        cbufferInfo.detail.buffer.cpuAccess 
+        cbufferInfo.cpuAccess 
             = CPUAccessFlags::ReadWrite;
         cbufferInfo.size = sizeof(UniformBufferObject);
         for(auto i = 0u; i < constantBuffers.size(); i++)
         {
-            constantBuffers[i].reset(cgd->CreateResource(cbufferInfo));
+            constantBuffers[i].reset((GpuBuffer*)cgd->CreateResource(cbufferInfo));
         }
+        createTexture();
     }
 
     void createRootSignature()
@@ -284,7 +312,6 @@ private:
         rootSignature.reset(cgd->CreateRootSignature(info));
         cbvArgument.reset(
             rootSignature->CreateArgument(0, SignatureSlotType::UniformBufferSlot));
-
     }
 
     void initVulkan()
@@ -321,11 +348,12 @@ private:
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
         UniformBufferObject ubo = {};
-        ubo.model.setIdentity();
-        //Matrix4f::
-        //ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        //ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
-        ubo.proj(1, 1) *= -1;
+        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.proj = glm::perspective(glm::radians(45.0f), 
+        swapChain->GetExtent().width / (float) swapChain->GetExtent().height,
+        0.1f, 10.0f);
+        ubo.proj[1][1] *= -1;
 
         void* data;
         constantBuffers[frameCount]->Map(&data);
@@ -396,9 +424,9 @@ private:
     {
         cgd->WaitIdle();
         profiler.reset();
-        cgd->DestroyCommandObjects();
         for(auto i = 0; i < constantBuffers.size(); i++)
             constantBuffers[i].reset();
+        texture.reset();
         vertshader.reset();
         fragshader.reset();
         Pipeline.reset();
@@ -406,7 +434,7 @@ private:
         rootSignature.reset();
         vkDestroySurfaceKHR(((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
             surface, nullptr);
-        prog.reset();
+        pass.reset();
 		fence.reset();
         vertexBuffer.reset();
         indexBuffer.reset();
@@ -422,18 +450,18 @@ private:
 
     std::unique_ptr<RootArgument> cbvArgument;
     std::unique_ptr<RootSignature> rootSignature;
-    std::vector<std::unique_ptr<GpuResource>> constantBuffers;
+    std::vector<std::unique_ptr<GpuBuffer>> constantBuffers;
+    std::unique_ptr<GpuResource> texture;
+    std::unique_ptr<GpuBuffer> vertexBuffer, indexBuffer;
     std::unique_ptr<Sakura::Graphics::Im::ImGuiProfiler> profiler;
-    std::unique_ptr<GpuResource> vertexBuffer, indexBuffer;
     ShaderStageCreateInfo vsStage, fsStage;
-    VertexInputStateCreateInfo vbInfo;
     std::unique_ptr<Sakura::Graphics::CGD> cgd;
     std::unique_ptr<Fence> fence;
     std::unique_ptr<Shader> vertshader;
     std::unique_ptr<Shader> fragshader;
     std::unique_ptr<Sakura::Graphics::SwapChain> swapChain;
     std::unique_ptr<GraphicsPipeline> Pipeline;
-    std::unique_ptr<RenderPass> prog;
+    std::unique_ptr<RenderPass> pass;
     VkSurfaceKHR surface;
     SDL_Window* win = nullptr;
 };

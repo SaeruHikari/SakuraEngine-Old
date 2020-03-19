@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-18 09:58:52
+ * @LastEditTime: 2020-03-19 11:38:50
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -97,7 +97,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
         func(instance, debugMessenger, pAllocator);
 }
 
-void CGD_Vk::DestroyCommandObjects()
+void CGD_Vk::Destroy()
 {
     CGD_Vk::debug_info("CGD_Vk: Destroy Command Objects");
     for(auto j = 0 ; j < 4; j++)
@@ -106,10 +106,6 @@ void CGD_Vk::DestroyCommandObjects()
             contextPools[j][i].reset();
         contextPools[j].clear();
     }
-}
-
-void CGD_Vk::Destroy()
-{
     CGD_Vk::debug_info("CGD_Vk: Destroy");
     vmaDestroyAllocator(entityVk.vmaAllocator);
     if(entityVk.validate)

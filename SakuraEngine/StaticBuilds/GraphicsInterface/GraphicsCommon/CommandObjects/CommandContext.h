@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-18 19:37:10
+ * @LastEditTime: 2020-03-19 16:33:18
  */
 #pragma once
 #include <mutex>
@@ -26,6 +26,7 @@ namespace Sakura::Graphics
     struct RenderTargetSet;
     sinterface GpuResource;
     sinterface RootArgument;
+    sinterface GpuBuffer;
 }
 
 namespace Sakura::Graphics
@@ -78,16 +79,18 @@ namespace Sakura::Graphics
         virtual void DrawIndexed(const uint32_t indicesCount,
             const uint32_t instanceCount) = 0;
 
-        virtual void BindVertexBuffers(const GpuResource& vb) = 0;
+        virtual void BindVertexBuffers(const GpuBuffer& vb) = 0;
 
-        virtual void BindIndexBuffers(const GpuResource& ib) = 0;
+        virtual void BindIndexBuffers(const GpuBuffer& ib) = 0;
 
         virtual void BindRootArguments(const PipelineBindPoint bindPoint,
             const RootArgument** arguments, uint32_t argumentNum) = 0;
 
-        virtual void CopyBuffer(GpuResource& src, GpuResource& dst,
+        virtual void CopyBuffer(GpuBuffer& src, GpuBuffer& dst,
             const uint64_t srcOffset,
             const uint64_t dstOffset = 0, const uint64_t size = 0) = 0;
+
+        virtual void ResourceBarrier(const GpuBuffer& toTransition) = 0;
 
         sinline ECommandType GetCommandContextType(void)
         {

@@ -24,8 +24,6 @@ else()
 add_library(CGD_Vulkan  
     STATIC    
     CGD_Vulkan.cpp
-    ../CGD/CommandContext.cpp
-    ../CGD/Profiling.cpp 
     CommandObjects/CommandContextVk.cpp
     CommandObjects/CommandQueueVk.cpp
     ResourceObjects/GpuResourceVk.cpp

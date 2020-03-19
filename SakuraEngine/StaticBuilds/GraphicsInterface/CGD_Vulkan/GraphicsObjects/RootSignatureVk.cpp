@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:18:23
- * @LastEditTime: 2020-03-18 20:05:14
+ * @LastEditTime: 2020-03-19 16:21:49
  */
 #include "RootSignatureVk.h"
 #include "../CGD_Vulkan.h"
@@ -156,12 +156,6 @@ void RootArgumentVk::UpdateArgument(const RootArgumentAttachment& attachment)
     case SignatureSlotType::UniformBufferSlot:
     {
         VkDescriptorBufferInfo bufferInfo = {};
-#if defined(SAKURA_DEBUG_GAME) || defined(SAKURA_DEBUG_EDITOR)
-        // Debug: Runtime check of resource type
-        if(attachment.info.uniformBuffer.buffer->GetDefaultView() != ResourceViewType::Buffer)
-            CGD_Vk::error("Can not update argument with incorrected resource type, \
-                resource type cast not supported now!");
-#endif
         bufferInfo.buffer = 
             ((const GpuResourceVkBuffer*)attachment.info.uniformBuffer.buffer)->buffer;
         bufferInfo.offset = attachment.info.uniformBuffer.offset;

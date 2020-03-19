@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 02:12:39
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-13 22:46:27
+ * @LastEditTime: 2020-03-18 23:23:13
  */
 #pragma once
 #include <Eigen/Core> 
@@ -67,6 +67,11 @@ namespace Sakura::Math
     using uint3 = Vector3u;
     using uint2 = Vector2u;
     using uint1 = Vector1u;
+
+
+    //using AlignedVector3d = Eigen::AlignedVector3<double>;
+    //using AlignedVector3f = Eigen::AlignedVector3<float>;
+
 
     inline static const float PI = 3.141592654f;
     inline static const float TWO_PI = 6.283185307f;

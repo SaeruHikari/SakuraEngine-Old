@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:38:49
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-18 19:37:01
+ * @LastEditTime: 2020-03-19 16:32:44
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
@@ -40,16 +40,19 @@ namespace Sakura::Graphics::Vk
 
 
         virtual void BindVertexBuffers(
-            const Sakura::Graphics::GpuResource& vb) override final;
+            const Sakura::Graphics::GpuBuffer& vb) override final;
         virtual void BindIndexBuffers(
-            const Sakura::Graphics::GpuResource& ib) override final;
+            const Sakura::Graphics::GpuBuffer& ib) override final;
 
         virtual void BindRootArguments(const PipelineBindPoint bindPoint,
             const RootArgument** arguments, uint32_t argumentNum) override final;
 
-        virtual void CopyBuffer(GpuResource& src, GpuResource& dst,
+        virtual void CopyBuffer(GpuBuffer& src, GpuBuffer& dst,
             const uint64_t srcOffset,
             const uint64_t dstOffset = 0, const uint64_t size = 0) override final;
+        
+        virtual void ResourceBarrier(const GpuBuffer& toTransition) override final;
+    public:
         VkCommandBuffer commandBuffer;
     protected:
         CommandContextVk(const CGD_Vk& _cgd, ECommandType type,

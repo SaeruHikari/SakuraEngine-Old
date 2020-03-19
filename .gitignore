@@ -11,3 +11,9 @@
 *meta.h
 *.generated.h
 */out
+#
+*.jpg
+*.png
+*.tif
+*.dds
+*.bmp

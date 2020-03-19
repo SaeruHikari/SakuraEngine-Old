@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 22:41:33
- * @LastEditTime: 2020-03-18 18:57:16
+ * @LastEditTime: 2020-03-19 16:50:22
  */
 #include "GpuResourceVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -41,7 +41,10 @@ GpuResourceVkBuffer::~GpuResourceVkBuffer()
 
 GpuResourceVkImage::~GpuResourceVkImage()
 {
-    vkDestroyImage(cgd.GetCGDEntity().device, image, nullptr);
+    if(allocation != VK_NULL_HANDLE)
+        vmaDestroyImage(cgd.GetCGDEntity().vmaAllocator, image, allocation);
+    else
+        vkDestroyImage(cgd.GetCGDEntity().device, image, nullptr);
 }
 
 void GpuResourceVkBuffer::Map(void** data)
@@ -56,13 +59,13 @@ void GpuResourceVkBuffer::Unmap()
 
 void GpuResourceVkImage::Map(void** data)
 {
-
+    vmaMapMemory(cgd.GetCGDEntity().vmaAllocator, allocation, data);
 }
 
 void GpuResourceVkImage::Unmap()
 {
-    
-}
+    vmaUnmapMemory(cgd.GetCGDEntity().vmaAllocator, allocation);
+}   
 
 void CGD_Vk::createAllocator()
 {
@@ -72,53 +75,80 @@ void CGD_Vk::createAllocator()
     vmaCreateAllocator(&allocatorInfo, &entityVk.vmaAllocator);
 }
 
-GpuResource* CGD_Vk::CreateResource(const ResourceCreateInfo& info) const
+GpuTexture* CGD_Vk::CreateResource(const TextureCreateInfo& info) const
 {
-    VkBuffer vertexBuffer = VK_NULL_HANDLE;
-    VkDeviceMemory memory = VK_NULL_HANDLE;
-    switch (info.type)
-    {
-    case ResourceType::Buffer:
-        {
-            VkBufferCreateInfo bufferInfo = {};
-            bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            bufferInfo.size = info.size;
-            bufferInfo.usage = info.detail.buffer.usage;
-            bufferInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
-            bufferInfo.queueFamilyIndexCount = queueFamilyIndices.GetSize();
-            auto indices = queueFamilyIndices.GetIndices();
-            bufferInfo.pQueueFamilyIndices = indices.data();
+    VkImageCreateInfo imageInfo = {};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.extent.width = info.width;
+    imageInfo.extent.height = info.height;
+    imageInfo.extent.depth = info.depth;
+    imageInfo.mipLevels = info.mipLevels;
+    imageInfo.arrayLayers = info.arrayLayers;
+    imageInfo.format = Transfer(info.format);
+    imageInfo.tiling = VK_IMAGE_TILING_LINEAR;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.usage = info.usage;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
+    imageInfo.queueFamilyIndexCount = queueFamilyIndices.GetSize();
+    auto indices = queueFamilyIndices.GetIndices();
+    imageInfo.pQueueFamilyIndices = indices.data();
 
-            VmaAllocationCreateInfo vmaAllocInfo = {};
-            VkMemoryPropertyFlags prop = 0;
-            if(info.detail.buffer.cpuAccess 
-                && CPUAccessFlags::ReadWrite != CPUAccessFlags::None)
-            {
-                prop |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-                prop |= VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-                vmaAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-            }
-            else 
-            {
-                prop |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT ;
-                vmaAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-            }
-            vmaAllocInfo.requiredFlags = prop;
-            vmaAllocInfo.pool = VK_NULL_HANDLE;
-            VkBuffer buffer;
-            VmaAllocation allocation;
-            vmaCreateBuffer(entityVk.vmaAllocator, &bufferInfo, &vmaAllocInfo,
-                &buffer, &allocation, nullptr);
-                
-            GpuResourceVkBuffer* vkBuf = new GpuResourceVkBuffer(
-                *this, allocation, buffer, info.size);
-            return vkBuf;
-        }
-    default:
-        CGD_Vk::error("CreateBuffer: Resource type not supported!");
-        break;
+    VmaAllocationCreateInfo vmaAllocInfo = {};
+    VkMemoryPropertyFlags prop = 0;
+    prop |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    vmaAllocInfo.pool = VK_NULL_HANDLE;
+    vmaAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+    vmaAllocInfo.requiredFlags = prop;
+    VkImage image;
+    VmaAllocation allocation;
+    if(vmaCreateImage(entityVk.vmaAllocator, &imageInfo, &vmaAllocInfo,
+        &image, &allocation, nullptr) != VK_SUCCESS)
+    {
+        CGD_Vk::error("Failed to create Image!");
     }
-    return nullptr;
+    GpuResourceVkImage* vkImg = new GpuResourceVkImage(
+        *this, image, {imageInfo.extent.width, imageInfo.extent.height});
+    vkImg->allocation = allocation;
+    return vkImg;
+}
+
+GpuBuffer* CGD_Vk::CreateResource(const BufferCreateInfo& info) const
+{
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = info.size;
+    bufferInfo.usage = info.usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
+    bufferInfo.queueFamilyIndexCount = queueFamilyIndices.GetSize();
+    auto indices = queueFamilyIndices.GetIndices();
+    bufferInfo.pQueueFamilyIndices = indices.data();
+
+    VmaAllocationCreateInfo vmaAllocInfo = {};
+    VkMemoryPropertyFlags prop = 0;
+    if(info.cpuAccess 
+        && CPUAccessFlags::ReadWrite != CPUAccessFlags::None)
+    {
+        prop |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+        prop |= VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+        vmaAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    }
+    else 
+    {
+        prop |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        vmaAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+    }
+    vmaAllocInfo.requiredFlags = prop;
+    vmaAllocInfo.pool = VK_NULL_HANDLE;
+    VkBuffer buffer;
+    VmaAllocation allocation;
+    vmaCreateBuffer(entityVk.vmaAllocator, &bufferInfo, &vmaAllocInfo,
+        &buffer, &allocation, nullptr);
+        
+    GpuResourceVkBuffer* vkBuf = new GpuResourceVkBuffer(
+        *this, allocation, buffer, info.size);
+    return vkBuf;
 }
 
 uint32_t CGD_Vk::findMemoryType(
@@ -137,14 +167,4 @@ uint32_t CGD_Vk::findMemoryType(
     }
     CGD_Vk::error("failed to find suitable memory type!");
     throw std::runtime_error("failed to find suitable memory type!");
-}
-
-const ResourceViewType GpuResourceVkBuffer::GetDefaultView() const
-{
-    return ResourceViewType::Buffer;    
-}
-
-const ResourceViewType GpuResourceVkImage::GetDefaultView() const
-{
-    return ResourceViewType::ImageView2D;    
 }

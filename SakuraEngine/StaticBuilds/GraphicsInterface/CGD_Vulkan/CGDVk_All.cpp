@@ -22,11 +22,9 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-15 09:00:54
- * @LastEditTime: 2020-03-18 10:49:35
+ * @LastEditTime: 2020-03-19 11:51:42
  */
 #include "CGD_Vulkan.cpp"
-#include "../CGD/CommandContext.cpp"
-#include "../CGD/Profiling.cpp"
 #include "CommandObjects/CommandContextVk.cpp"
 #include "CommandObjects/CommandQueueVk.cpp"
 #include "ResourceObjects/GpuResourceVk.cpp"

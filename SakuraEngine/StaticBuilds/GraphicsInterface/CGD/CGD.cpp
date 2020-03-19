@@ -22,12 +22,21 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-04 23:26:32
+ * @LastEditTime: 2020-03-19 16:52:59
  */
 #define API_EXPORTS     
 #include "../GraphicsCommon/CGD.h" 
-#include "../CGD_Vulkan/CGD_Vulkan.h"
+#include "../GraphicsCommon/ResourceObjects/Resource.h"
+#include "../GraphicsCommon/ResourceObjects/ResourceViews.h"
 #include "Core/EngineUtils/log.h" 
-#include "../CGD_Direct3D12/CGD_Direct3D12.h"
   
 using namespace Sakura::Graphics;  
+
+GpuBuffer* CGD::CreateUploadBuffer(const std::size_t bufferSize) const
+{
+    BufferCreateInfo bufferInfo = {};
+    bufferInfo.usage = BufferUsage::TransferSrcBuffer;
+    bufferInfo.cpuAccess = CPUAccessFlags::ReadWrite;
+    bufferInfo.size = bufferSize;
+    return (GpuBuffer*)CreateResource(bufferInfo);
+}

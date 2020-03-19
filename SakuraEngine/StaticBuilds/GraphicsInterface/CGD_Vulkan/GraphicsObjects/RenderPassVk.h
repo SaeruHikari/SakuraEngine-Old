@@ -76,7 +76,7 @@ namespace Sakura::Graphics::Vk
         return colorAttachmentRef;
     }
 
-    inline static VkSubpassDescription Transfer(const SubprogressDescription& desc)
+    inline static VkSubpassDescription Transfer(const SubpassDescription& desc)
     {
         VkSubpassDescription subpass = {};
         subpass.pipelineBindPoint = Transfer(desc.pipelineBindPoint);

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:47:38
- * @LastEditTime: 2020-03-18 19:53:34
+ * @LastEditTime: 2020-03-18 23:27:51
  */
 #pragma once
 #include <memory_resource>
@@ -231,7 +231,7 @@ namespace Sakura::Graphics
         bool depthClampEnable = false;
         CullModes cullMode = CullModes::CullModeBack;
         PolygonMode polygonMode = PolygonMode::PolygonFill;
-        FrontFace frontFace = FrontFace::FrontFaceClockWise;
+        FrontFace frontFace = FrontFace::FrontFaceCounterClockWise;
         bool depthBiasEnable = false;
         float lineWidth = 1.f;
         float depthBiasConstantFactor = 0.f;

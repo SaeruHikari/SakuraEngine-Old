@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 22:05:50
- * @LastEditTime: 2020-03-18 10:45:17
+ * @LastEditTime: 2020-03-19 10:26:58
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -102,7 +102,7 @@ namespace Sakura::Graphics
         ImageLayout layout = ImageLayout::ColorAttachment;
     };
 
-    struct SubprogressDescription
+    struct SubpassDescription
     {
         PipelineBindPoint pipelineBindPoint 
             = PipelineBindPoint::BindPointGraphics;
@@ -113,7 +113,7 @@ namespace Sakura::Graphics
         std::vector<uint32> preserveAttachments;
     };
     
-    struct SubProgressDependency
+    struct SubpassDependency
     {
         uint32 srcSubpass;
         uint32 dstSubpass;
@@ -127,7 +127,7 @@ namespace Sakura::Graphics
     struct RenderPassCreateInfo
     {
         std::vector<AttachmentDescription> attachments;
-        std::vector<SubprogressDescription> subProcs;
-        std::vector<SubProgressDependency> dependencies;
+        std::vector<SubpassDescription> subProcs;
+        std::vector<SubpassDependency> dependencies;
     };
 }

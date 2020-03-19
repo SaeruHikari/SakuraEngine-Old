@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-18 11:23:09
+ * @LastEditTime: 2020-03-19 16:52:32
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -41,8 +41,11 @@ namespace Sakura::Graphics
     sinterface SwapChain;
     sinterface ResourceView;
     sinterface GpuResource;
+    sinterface GpuBuffer;
+    sinterface GpuTexture;
     sinterface Fence;
-    struct ResourceCreateInfo;
+    struct BufferCreateInfo;
+    struct TextureCreateInfo;
     struct ResourceViewCreateInfo;
 }
 
@@ -73,7 +76,6 @@ namespace Sakura::Graphics
         virtual void Present(SwapChain* chain) = 0;
 
         virtual void Destroy() = 0;
-        virtual void DestroyCommandObjects() = 0;
 
         virtual std::unique_ptr<Shader> CreateShader(
             const char*, std::size_t) = 0;
@@ -102,8 +104,11 @@ namespace Sakura::Graphics
         
         virtual [[nodiscard]] CommandQueue* AllocQueue(ECommandType type) const = 0;
 
-        virtual [[nodiscard]] GpuResource* CreateResource(
-            const ResourceCreateInfo&) const = 0;
+        virtual [[nodiscard]] GpuBuffer* CreateResource(
+            const BufferCreateInfo&) const = 0;
+        
+        virtual [[nodiscard]] GpuTexture* CreateResource(
+            const TextureCreateInfo&) const = 0;
 
         virtual void Wait(Fence* toWait, uint64 until) const = 0;
         virtual void WaitIdle() const = 0;
@@ -113,6 +118,9 @@ namespace Sakura::Graphics
             CreateRootSignature(const RootSignatureCreateInfo& sigInfo) const  = 0;
 
         virtual const TargetGraphicsinterface GetBackEndAPI(void) const = 0;
+
+        virtual [[nodiscard]] GpuBuffer* CreateUploadBuffer(
+            const std::size_t bufferSize) const;
     public:
         const uint64 contextNum() const {return contextPools[0].size();}
 

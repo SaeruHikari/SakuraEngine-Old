@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-18 10:49:20
+ * @LastEditTime: 2020-03-19 16:48:02
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -63,7 +63,6 @@ namespace Sakura::Graphics::Vk
     public:
         CGD_Vk() = default;
         virtual void Destroy() override final; 
-        virtual void DestroyCommandObjects() override final;
         virtual void InitQueueSet(void* mainSurface) override final;
         // Vulkan functions
         virtual void Initialize(CGDInfo info) override final;
@@ -110,12 +109,15 @@ namespace Sakura::Graphics::Vk
         virtual void WaitIdle() const override final;
     public:
     // Implements: See ResourceObjects/GpuResourceVk.cpp
-        virtual [[nodiscard]] GpuResource* CreateResource(
-            const ResourceCreateInfo&) const override final;
+        virtual [[nodiscard]] GpuBuffer* CreateResource(
+            const BufferCreateInfo&) const override final;
+        virtual [[nodiscard]] GpuTexture* CreateResource(
+            const TextureCreateInfo&) const override final;
     public:
     // Implements: See GraphicsObjects/RootSignatureVk.cpp
         virtual [[nodiscard]] RootSignature* CreateRootSignature(
            const RootSignatureCreateInfo& sigInfo) const override final;
+
     private:
          /**
          * @description: Initial Vulkan Device

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-17 22:31:04
- * @LastEditTime: 2020-03-18 20:08:13
+ * @LastEditTime: 2020-03-19 16:22:46
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -33,6 +33,7 @@
 namespace Sakura::Graphics
 {
     sinterface GpuResource;
+    sinterface GpuBuffer;
 }
 
 namespace Sakura::Graphics
@@ -74,7 +75,7 @@ namespace Sakura::Graphics
         {
             uint32 offset = 0;
             uint32 range = 0;
-            const GpuResource* buffer = nullptr; 
+            const GpuBuffer* buffer = nullptr; 
         };
         SignatureSlotType rootArgType = SignatureSlotType::UniformBufferSlot;
         uint32_t dstBinding = 0;

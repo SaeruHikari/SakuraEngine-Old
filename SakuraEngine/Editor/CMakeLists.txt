@@ -3,10 +3,10 @@ add_library(EditorModule SHARED EditorModule.cpp)
 
 if(WIN32)
 add_subdirectory(Win32)
-target_link_libraries(EditorModule SPA ImGuiProfiler 
+target_link_libraries(EditorModule SPA ImGuiProfiler glm
 ApplicationModule CGD Win32Editor ${Vulkan_LIBRARY})
 else()
 add_subdirectory(Linux)
-target_link_libraries(EditorModule SPA ImGuiProfiler 
+target_link_libraries(EditorModule SPA ImGuiProfiler glm
 ApplicationModule CGD LinuxEditor ${Vulkan_LIBRARY})
 endif()

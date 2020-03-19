@@ -129,5 +129,6 @@
         "author":"SaeruHikari"
     },
     "cmake.buildDirectory": "${workspaceFolder}/build",
-    "VSCodeCounter.showInStatusBar": true
+    "VSCodeCounter.showInStatusBar": true,
+    "telemetry.enableTelemetry": true
 }
