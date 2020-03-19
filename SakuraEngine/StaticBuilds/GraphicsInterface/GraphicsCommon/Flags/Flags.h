@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-19 17:35:36
- * @LastEditTime: 2020-03-19 17:49:34
+ * @LastEditTime: 2020-03-19 21:35:46
  */
 #pragma once
 #include "Core/CoreMinimal/SDefination.h"
@@ -105,7 +105,47 @@ namespace Sakura::Graphics
         CullModeBack = 0x00000002,
         CullModeFrontAndBack = 0x00000003
     };
+
+    enum Filter
+    {
+        FilterNearest = 0,
+        FilterLinear = 1,
+        FilterCubicImg = 1000015000,
+        FilterMaxEnum = 0x7FFFFFFF
+    };
     
+    enum SamplerAddressMode
+    {
+        AddressModeRepeat = 0,
+        AddressModeMirroredRepeat = 1,
+        AddressModeClampToEdge = 2,
+        AddressModeClampToBorder = 3,
+        AddressModeMirrorClampToEdge = 4,
+        AddressModeMaxEnum = 0x7FFFFFFF
+    };
+
+    enum CompareOp
+    {
+        CompareOpNever = 0,
+        CompareOpLess = 1,
+        CompareOpEqual = 2,
+        CompareOpLessOrEqual = 3,
+        CompareOpGreater = 4,
+        CompareOpNotEqual = 5,
+        CompareOpGreaterOrEqual = 6,
+        CompareOpAlways = 7,
+        CompareOpCount = 8,
+        CompareOpMaxEnum = 0x7FFFFFFF
+    };
+
+    enum SamplerMipmapMode
+    {
+        SamplerMipmapModeNearest = 0,
+        SamplerMipmapModeLinear = 1,
+        SamplerMipmapModeCount = 2,
+        SamplerMipmapMaxEnum = 0xFFFFFFF
+    };
+
     enum DynamicState
     {
         DynamicStateViewport = 0,

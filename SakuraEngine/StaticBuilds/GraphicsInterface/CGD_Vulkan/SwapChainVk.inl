@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 00:59:21
- * @LastEditTime: 2020-03-18 10:38:30
+ * @LastEditTime: 2020-03-19 20:41:56
  */
 
 // Swap Chain Support Details
@@ -190,15 +190,13 @@ Sakura::Graphics::SwapChain* CGD_Vk::CreateSwapChain(
         
         res->swapChainImages[i] = _img;
         // Views
-        auto vkView= ViewIntoResource<ResourceType::Texture2D>(
-            *res->swapChainImages[i], vinfo);
+        auto vkView= ViewIntoResource(*res->swapChainImages[i], vinfo);
 
         res->resourceViews[i].reset(vkView);
     }
     res->swapChainImageFormat = Transfer(surfaceFormat.format);
     res->swapChainExtent = extent;
     res->swapChainCount = imageCount;
-
     return res;
 }
 #endif

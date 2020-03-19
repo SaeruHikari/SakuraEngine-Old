@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-17 22:31:04
- * @LastEditTime: 2020-03-19 16:22:46
+ * @LastEditTime: 2020-03-19 22:02:56
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -92,6 +92,7 @@ namespace Sakura::Graphics
         virtual ~RootArgument(){};
         virtual const SignatureSlotType GetType(void) const = 0;
         virtual void UpdateArgument(const RootArgumentAttachment& attachment) = 0;
+        virtual const size_t GetSlotNum(void) const = 0;
     };
 
     sinterface RootSignature
@@ -99,7 +100,6 @@ namespace Sakura::Graphics
         virtual ~RootSignature(){};
         virtual [[nodiscard]] RootArgument* CreateArgument(
             uint32_t slot, const SignatureSlotType type) const = 0;
-        virtual const size_t GetSlotNum(void) const = 0;
     };
 } // namespace Sakura::Graphics
 

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-13 16:46:06
- * @LastEditTime: 2020-03-18 17:42:42
+ * @LastEditTime: 2020-03-19 19:18:09
  */
 #pragma once
 #define STB_IMAGE_IMPLEMENTATION
@@ -46,6 +46,7 @@ namespace Sakura::Images
         }
         ~Image()
         {
+            stbi_image_free(data.get());
             data.reset();
         }
         enum PixelChannel
@@ -74,7 +75,7 @@ namespace Sakura::Images
     channelStride* LoadFromDisk(const char* path, int& width, int& height, int& n)
     {
         channelStride* idata = 
-            (channelStride*)stbi_load(path, &width, &height, &n, 0);
+            (channelStride*)stbi_load(path, &width, &height, &n, STBI_rgb_alpha);
         if(n < 0)
             Sakura::log::error("ImageLoader: no texture of this name found!");
         return idata;

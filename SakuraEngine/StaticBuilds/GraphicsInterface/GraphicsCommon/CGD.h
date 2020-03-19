@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-19 16:52:32
+ * @LastEditTime: 2020-03-19 21:14:42
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -47,6 +47,7 @@ namespace Sakura::Graphics
     struct BufferCreateInfo;
     struct TextureCreateInfo;
     struct ResourceViewCreateInfo;
+    struct SamplerCreateInfo;
 }
 
 namespace Sakura::Graphics
@@ -95,7 +96,7 @@ namespace Sakura::Graphics
         virtual void FreeContext(CommandContext* context) = 0;
         virtual void FreeAllContexts(ECommandType typeToDestroy) = 0;
 
-        virtual [[nodiscard]] ResourceView* ViewIntoImage(
+        virtual [[nodiscard]] ResourceView* ViewIntoResource(
             const GpuResource&, const ResourceViewCreateInfo&) const = 0;
         
         virtual CommandQueue* GetGraphicsQueue(void) const = 0;
@@ -121,6 +122,9 @@ namespace Sakura::Graphics
 
         virtual [[nodiscard]] GpuBuffer* CreateUploadBuffer(
             const std::size_t bufferSize) const;
+
+        virtual [[nodiscard]] Sampler* CreateSampler(
+            const SamplerCreateInfo&) const = 0;
     public:
         const uint64 contextNum() const {return contextPools[0].size();}
 
@@ -130,13 +134,5 @@ namespace Sakura::Graphics
         std::queue<CommandContext*> 
             availableContexts[ECommandType::CommandContext_Count];
         std::mutex contextAllocationMutex;
-    public:
-        template<ResourceType type>
-        [[nodiscard]] ResourceView* ViewIntoResource(
-            const GpuResource& resource, const ResourceViewCreateInfo& info) const
-        {
-            if constexpr (type == ResourceType::Texture2D)
-                return ViewIntoImage(resource, info);
-        }
     };
 }

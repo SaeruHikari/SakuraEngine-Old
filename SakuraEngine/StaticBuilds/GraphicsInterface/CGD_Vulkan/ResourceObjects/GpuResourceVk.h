@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 18:01:43
- * @LastEditTime: 2020-03-19 16:17:14
+ * @LastEditTime: 2020-03-19 21:47:51
  */
 #pragma once
 #include "vulkan/vulkan.h"
@@ -64,6 +64,16 @@ namespace Sakura::Graphics::Vk
             :buffer(buf), allocation(_alloc),
             cgd(_cgd), GpuBuffer({_length, 1}){}
         VmaAllocation allocation;
+        const CGD_Vk& cgd;
+    };
+
+    struct SamplerVk final : simplements Sampler
+    {
+        friend class CGD_Vk;
+        VkSampler sampler;
+        virtual ~SamplerVk() override final;
+    protected:    
+        SamplerVk(const CGD_Vk& _cgd);
         const CGD_Vk& cgd;
     };
 } // namespace Sakura::Graphics::Vk

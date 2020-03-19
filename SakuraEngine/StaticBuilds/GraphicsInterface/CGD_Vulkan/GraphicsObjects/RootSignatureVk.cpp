@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:18:23
- * @LastEditTime: 2020-03-19 16:21:49
+ * @LastEditTime: 2020-03-19 22:04:28
  */
 #include "RootSignatureVk.h"
 #include "../CGD_Vulkan.h"
@@ -35,26 +35,23 @@ RootSignatureVk::RootSignatureVk(
     const CGD_Vk& _cgd, const RootSignatureCreateInfo& info)
         :cgd(_cgd)
 {
-    descriptorSetLayouts.resize(info.paramSlotNum);
+    std::vector<VkDescriptorSetLayoutBinding> layoutBindings(info.paramSlotNum);
     for(auto i = 0; i < info.paramSlotNum; i++)
     {
         auto slot = info.paramSlots[i];
-        VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-        uboLayoutBinding.binding = i;
-        uboLayoutBinding.descriptorCount = 1;
-        uboLayoutBinding.descriptorType = Transfer(slot.type);
-        uboLayoutBinding.pImmutableSamplers = nullptr;
-        uboLayoutBinding.stageFlags = slot.stageFlags;
-
-        VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = 1;
-        layoutInfo.pBindings = &uboLayoutBinding;
-
-        if (vkCreateDescriptorSetLayout(cgd.GetCGDEntity().device,
-            &layoutInfo, nullptr, &descriptorSetLayouts[i]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create descriptor set layout!");
-        }
+        layoutBindings[i].binding = i;
+        layoutBindings[i].descriptorCount = 1;
+        layoutBindings[i].descriptorType = Transfer(slot.type);
+        layoutBindings[i].pImmutableSamplers = nullptr;
+        layoutBindings[i].stageFlags = slot.stageFlags;
+    }
+    VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = layoutBindings.size();
+    layoutInfo.pBindings = layoutBindings.data();
+    if (vkCreateDescriptorSetLayout(cgd.GetCGDEntity().device,
+        &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create descriptor set layout!");
     }
 
     pools.resize(info.paramSlotNum);
@@ -80,11 +77,8 @@ RootSignatureVk::RootSignatureVk(
 
 RootSignatureVk::~RootSignatureVk()
 {
-    for(auto i = 0; i < descriptorSetLayouts.size(); i++)
-    {
-        vkDestroyDescriptorSetLayout(cgd.GetCGDEntity().device,
-            descriptorSetLayouts[i], nullptr);
-    }
+    vkDestroyDescriptorSetLayout(cgd.GetCGDEntity().device,
+        descriptorSetLayout, nullptr);
     for(auto i = 0; i < pools.size(); i++)
     {
         vkDestroyDescriptorPool(cgd.GetCGDEntity().device, 
@@ -130,9 +124,9 @@ const SignatureSlotType RootArgumentVk::GetType(void) const
     return type;
 }
 
-const size_t RootSignatureVk::GetSlotNum(void) const
+const size_t RootSignatureVk::RootSignatureVk(void) const
 {
-    return descriptorSetLayouts.size();
+    return 0;
 }
 
 RootSignature* CGD_Vk::CreateRootSignature(

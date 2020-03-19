@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-19 18:05:51
+ * @LastEditTime: 2020-03-19 18:53:46
  */
 #pragma once
 #include <mutex>
@@ -100,7 +100,10 @@ namespace Sakura::Graphics
         virtual void CopyResource(GpuBuffer& src, GpuTexture& dst,
             const BufferImageCopy& info) = 0;
 
-        virtual void ResourceBarrier(const GpuBuffer& toTransition) = 0;
+        virtual void ResourceBarrier(GpuBuffer& toTransition) = 0;
+
+        virtual void ResourceBarrier(GpuTexture& toTransition,
+            const ImageLayout oldLayout, const ImageLayout newLayout) = 0;
 
         sinline ECommandType GetCommandContextType(void)
         {

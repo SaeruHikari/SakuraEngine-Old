@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 00:57:40
- * @LastEditTime: 2020-03-18 18:55:25
+ * @LastEditTime: 2020-03-19 19:37:43
  */
 #include "ResourceViewVk.h"
 #include "GpuResourceVk.h"
@@ -82,7 +82,7 @@ ResourceViewVkImage::ResourceViewVkImage(
    
 }
 
-ResourceView* CGD_Vk::ViewIntoImage(
+ResourceView* CGD_Vk::ViewIntoResource(
     const GpuResource& resource, const ResourceViewCreateInfo& info) const
 {
     auto res = new ResourceViewVkImage(*this, resource, info.viewType);
@@ -95,11 +95,11 @@ ResourceView* CGD_Vk::ViewIntoImage(
     viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
     viewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
     viewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-    viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    viewCreateInfo.subresourceRange.baseMipLevel = 0;
-    viewCreateInfo.subresourceRange.levelCount = 1;
-    viewCreateInfo.subresourceRange.baseArrayLayer = 0;
-    viewCreateInfo.subresourceRange.layerCount = 1;
+    viewCreateInfo.subresourceRange.aspectMask = info.view.texture2D.aspectMask;
+    viewCreateInfo.subresourceRange.baseMipLevel = info.view.texture2D.baseMipLevel;
+    viewCreateInfo.subresourceRange.levelCount = info.view.texture2D.mipLevels;
+    viewCreateInfo.subresourceRange.baseArrayLayer = info.view.texture2D.baseArrayLayer;
+    viewCreateInfo.subresourceRange.layerCount = info.view.texture2D.layerCount;
     if (vkCreateImageView(entityVk.device, &viewCreateInfo, 
         nullptr, &res->vkImgView) != VK_SUCCESS) 
     {

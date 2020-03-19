@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:38:49
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-19 18:04:52
+ * @LastEditTime: 2020-03-19 18:53:54
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
@@ -56,7 +56,10 @@ namespace Sakura::Graphics::Vk
         virtual void CopyResource(GpuBuffer& src, GpuTexture& dst,
             const BufferImageCopy& info) override final;
 
-        virtual void ResourceBarrier(const GpuBuffer& toTransition) override final;
+        virtual void ResourceBarrier(GpuBuffer& toTransition) override final;
+    
+        virtual void ResourceBarrier(GpuTexture& toTransition,
+            const ImageLayout oldLayout, const ImageLayout newLayout) override final;
     public:
         VkCommandBuffer commandBuffer;
     protected:

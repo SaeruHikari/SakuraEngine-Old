@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-19 17:07:51
+ * @LastEditTime: 2020-03-19 21:59:52
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -222,10 +222,10 @@ private:
         auto pixels = Sakura::Images::LoadFromDisk<std::byte>(
             texPath.c_str(), width, height, channels);
         std::unique_ptr<GpuBuffer> uploadBuffer;
-        uploadBuffer.reset(cgd->CreateUploadBuffer(10));
+        uploadBuffer.reset(cgd->CreateUploadBuffer(width * height * 4));
         void* data;
         uploadBuffer->Map(&data);
-        memcpy(data, pixels, static_cast<size_t>(width * height * channels));
+        memcpy(data, pixels, static_cast<size_t>(width * height * 4));
         uploadBuffer->Unmap();
         
         TextureCreateInfo imgInfo = {};
@@ -239,6 +239,29 @@ private:
             ImageUsage::TransferDstImage | ImageUsage::SampledImage;
         texture.reset(
             cgd->CreateResource(imgInfo));
+        auto context = 
+            cgd->AllocateContext(ECommandType::CommandContext_Graphics);
+        context->Begin();
+        context->ResourceBarrier(*texture.get(),
+            ImageLayout::Unknown, ImageLayout::TransferDstOptimal);
+        context->CopyResource(*uploadBuffer.get(), *texture.get(),
+            width, height, ImageAspectFlag::ImageAspectColor);
+        context->ResourceBarrier(*texture.get(),
+            ImageLayout::TransferDstOptimal, ImageLayout::ShaderReadOnlyOptimal);
+        context->End();
+        cgd->GetGraphicsQueue()->Submit(context);
+        cgd->FreeContext(context);
+        cgd->GetGraphicsQueue()->WaitIdle();
+        ResourceViewCreateInfo tvinfo = {};
+        tvinfo.viewType = ResourceViewType::ImageView2D;
+        tvinfo.format = Format::R8G8B8A8_SRGB;
+        tvinfo.view.texture2D.baseMipLevel = 0;
+        tvinfo.view.texture2D.mipLevels = 1;
+        tvinfo.view.texture2D.baseArrayLayer = 0;
+        tvinfo.view.texture2D.layerCount = 1;
+        tvinfo.view.texture2D.aspectMask = ImageAspectFlag::ImageAspectColor;
+        textureView.reset(
+            cgd->ViewIntoResource(*texture.get(), tvinfo));
     }
     
     void createBuffer()
@@ -307,11 +330,19 @@ private:
         std::vector<SignatureSlot> slots(1);
         slots[0].type = SignatureSlotType::UniformBufferSlot;
         slots[0].stageFlags = ShaderStageFlags::VertexStage;
+        //slots[1].type = SignatureSlotType::SamplerSlot;
+        //slots[1].stageFlags = ShaderStageFlags::PixelStage;
         info.paramSlotNum = slots.size();
         info.paramSlots = slots.data();
         rootSignature.reset(cgd->CreateRootSignature(info));
         cbvArgument.reset(
             rootSignature->CreateArgument(0, SignatureSlotType::UniformBufferSlot));
+    }
+
+    void createSampler()
+    {
+        SamplerCreateInfo samplerInfo;
+        sampler.reset(cgd->CreateSampler(samplerInfo));
     }
 
     void initVulkan()
@@ -336,6 +367,8 @@ private:
         createRootSignature();
         ResizeWindow(1280, 720);
         createBuffer();
+        createSampler();
+        cgd->WaitIdle();
         profiler = std::make_unique<Sakura::Graphics::Im::ImGuiProfiler>(*cgd.get());
         profiler->ImGuiInitialize(win, swapChain->GetPixelFormat()); 
     }
@@ -423,6 +456,8 @@ private:
     void cleanUp()
     {
         cgd->WaitIdle();
+        sampler.reset();
+        textureView.reset();
         profiler.reset();
         for(auto i = 0; i < constantBuffers.size(); i++)
             constantBuffers[i].reset();
@@ -450,9 +485,13 @@ private:
 
     std::unique_ptr<RootArgument> cbvArgument;
     std::unique_ptr<RootSignature> rootSignature;
+    // Resources
+    std::unique_ptr<Sampler> sampler;
     std::vector<std::unique_ptr<GpuBuffer>> constantBuffers;
-    std::unique_ptr<GpuResource> texture;
     std::unique_ptr<GpuBuffer> vertexBuffer, indexBuffer;
+    std::unique_ptr<GpuTexture> texture;
+
+    std::unique_ptr<ResourceView> textureView;
     std::unique_ptr<Sakura::Graphics::Im::ImGuiProfiler> profiler;
     ShaderStageCreateInfo vsStage, fsStage;
     std::unique_ptr<Sakura::Graphics::CGD> cgd;

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 23:50:42
- * @LastEditTime: 2020-03-19 13:17:24
+ * @LastEditTime: 2020-03-19 18:52:03
  */
 #pragma once
 
@@ -45,6 +45,7 @@ namespace Sakura::Graphics
         ColorAttachment = 2,
         DepthStencilAttachment = 3,
         DepthStencilReadOnly = 4,
+        ShaderReadOnlyOptimal = 5,
         TransferSrcOptimal = 6,
         TransferDstOptimal = 7,
         Preinitialized = 8,

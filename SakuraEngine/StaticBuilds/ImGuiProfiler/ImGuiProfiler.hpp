@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-16 17:02:13
- * @LastEditTime: 2020-03-17 13:25:47
+ * @LastEditTime: 2020-03-19 19:02:29
  */
 #pragma once
 #include "memory_resource"
@@ -194,6 +194,7 @@ namespace Sakura::Graphics::Im
                 // Use any command queue
                 auto ctx =
                     ((CGD&)gfxDevice).AllocateContext(ECommandType::CommandContext_Graphics);
+                ctx->Reset();
                 VkCommandBuffer command_buffer =
                     ((const CommandContextVk*)ctx)->commandBuffer;
                 VkCommandBufferBeginInfo begin_info = {};

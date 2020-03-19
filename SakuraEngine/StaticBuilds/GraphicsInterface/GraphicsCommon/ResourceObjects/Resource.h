@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:36:56
- * @LastEditTime: 2020-03-19 17:58:21
+ * @LastEditTime: 2020-03-19 21:37:36
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -120,5 +120,26 @@ namespace Sakura::Graphics
         GpuTexture() = default;
         GpuTexture(Extent2D _extent)
             :GpuResource(_extent){}
+    };
+
+    struct SamplerCreateInfo
+    {
+        bool unnormalizedCoordinates = false;
+        bool compareEnable = false;
+        bool anisotropyEnable = true;
+        float maxAnisotropy = 16.f;
+        Filter magFilter = Filter::FilterLinear;
+        Filter minFilter = Filter::FilterLinear;
+        SamplerAddressMode addressModeU = SamplerAddressMode::AddressModeRepeat;
+        SamplerAddressMode addressModeV = SamplerAddressMode::AddressModeRepeat;
+        SamplerAddressMode addressModeW = SamplerAddressMode::AddressModeRepeat;
+        CompareOp compareOp = CompareOp::CompareOpAlways;
+        SamplerMipmapMode mipmapMode = SamplerMipmapMode::SamplerMipmapModeLinear;
+    };
+
+    sinterface Sampler
+    {
+        Sampler() = default;
+        virtual ~Sampler(){}
     };
 }

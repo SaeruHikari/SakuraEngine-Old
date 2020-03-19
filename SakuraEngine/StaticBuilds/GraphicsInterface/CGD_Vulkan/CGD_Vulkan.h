@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-19 16:48:02
+ * @LastEditTime: 2020-03-19 21:15:31
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -90,7 +90,7 @@ namespace Sakura::Graphics::Vk
             const RenderPass& progress) const override final;
     public: 
         // Implements: See ResourceObjects/ResourceViewVk.cpp
-        virtual [[nodiscard]] ResourceView* ViewIntoImage(
+        virtual [[nodiscard]] ResourceView* ViewIntoResource(
             const GpuResource&, const ResourceViewCreateInfo&) const override final;
     public:
     // Implements: See GraphicsObjects/RenderPassVk.cpp
@@ -113,6 +113,8 @@ namespace Sakura::Graphics::Vk
             const BufferCreateInfo&) const override final;
         virtual [[nodiscard]] GpuTexture* CreateResource(
             const TextureCreateInfo&) const override final;
+        virtual [[nodiscard]] Sampler* CreateSampler(
+            const SamplerCreateInfo& createInfo) const final override;
     public:
     // Implements: See GraphicsObjects/RootSignatureVk.cpp
         virtual [[nodiscard]] RootSignature* CreateRootSignature(

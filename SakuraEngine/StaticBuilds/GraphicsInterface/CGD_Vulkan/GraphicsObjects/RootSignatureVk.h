@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:13:31
- * @LastEditTime: 2020-03-18 19:54:52
+ * @LastEditTime: 2020-03-19 22:02:24
  */
 #pragma once
 #include <vector>
@@ -43,11 +43,10 @@ namespace Sakura::Graphics::Vk
         friend class CGD_Vk;
     public:
         virtual ~RootSignatureVk() override final;
-        std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+        VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
         std::vector<VkDescriptorPool> pools;
         virtual [[nodiscard]] RootArgument* CreateArgument(uint32_t slot,
             const SignatureSlotType type) const override final;
-        virtual const size_t GetSlotNum(void) const override final;
     protected:
         RootSignatureVk(const CGD_Vk& _cgd, const RootSignatureCreateInfo& info);
         const CGD_Vk& cgd;
@@ -63,6 +62,7 @@ namespace Sakura::Graphics::Vk
         virtual const SignatureSlotType GetType(void) const override final;
         virtual void UpdateArgument(
             const RootArgumentAttachment& attachment) override final;
+        virtual const size_t GetSlotNum(void) const override final;
     protected:
         SignatureSlotType type;
         RootArgumentVk(const CGD_Vk& _cgd, const VkDescriptorSetLayout& layout, 

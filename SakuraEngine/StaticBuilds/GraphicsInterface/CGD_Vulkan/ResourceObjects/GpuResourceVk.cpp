@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 22:41:33
- * @LastEditTime: 2020-03-19 16:50:22
+ * @LastEditTime: 2020-03-19 21:48:34
  */
 #include "GpuResourceVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -32,6 +32,17 @@
 
 using namespace Sakura::Graphics::Vk;
 using namespace Sakura;
+
+SamplerVk::SamplerVk(const CGD_Vk& _cgd)
+    :cgd(_cgd)
+{
+    
+}
+
+SamplerVk::~SamplerVk()
+{
+    vkDestroySampler(cgd.GetCGDEntity().device, sampler, nullptr);
+}
 
 GpuResourceVkBuffer::~GpuResourceVkBuffer()
 {
@@ -86,7 +97,7 @@ GpuTexture* CGD_Vk::CreateResource(const TextureCreateInfo& info) const
     imageInfo.mipLevels = info.mipLevels;
     imageInfo.arrayLayers = info.arrayLayers;
     imageInfo.format = Transfer(info.format);
-    imageInfo.tiling = VK_IMAGE_TILING_LINEAR;
+    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     imageInfo.usage = info.usage;
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -149,6 +160,34 @@ GpuBuffer* CGD_Vk::CreateResource(const BufferCreateInfo& info) const
     GpuResourceVkBuffer* vkBuf = new GpuResourceVkBuffer(
         *this, allocation, buffer, info.size);
     return vkBuf;
+}
+
+Sampler* CGD_Vk::CreateSampler(const SamplerCreateInfo& info) const
+{
+    SamplerVk* result = new SamplerVk(*this);
+    VkSamplerCreateInfo samplerInfo = {};
+    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    samplerInfo.magFilter = (VkFilter)info.magFilter;
+    samplerInfo.minFilter = (VkFilter)info.minFilter;
+    samplerInfo.addressModeU = (VkSamplerAddressMode)info.addressModeU;
+    samplerInfo.addressModeV = (VkSamplerAddressMode)info.addressModeV;
+    samplerInfo.addressModeW = (VkSamplerAddressMode)info.addressModeW;
+    samplerInfo.anisotropyEnable = info.anisotropyEnable ? VK_TRUE : VK_FALSE;
+    samplerInfo.maxAnisotropy = info.maxAnisotropy;
+
+    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    samplerInfo.compareOp = (VkCompareOp)info.compareOp;
+    samplerInfo.mipmapMode = (VkSamplerMipmapMode)info.mipmapMode;
+
+    samplerInfo.unnormalizedCoordinates = 
+        info.unnormalizedCoordinates ? VK_TRUE : VK_FALSE;
+    samplerInfo.compareEnable = info.compareEnable ? VK_TRUE : VK_FALSE;
+    if (vkCreateSampler(entityVk.device, 
+        &samplerInfo, nullptr, &result->sampler) != VK_SUCCESS) 
+    {
+        throw std::runtime_error("failed to create texture sampler!");
+    }
+    return result;
 }
 
 uint32_t CGD_Vk::findMemoryType(

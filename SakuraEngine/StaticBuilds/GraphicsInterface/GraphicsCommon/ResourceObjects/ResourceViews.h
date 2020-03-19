@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:35:59
- * @LastEditTime: 2020-03-18 15:50:20
+ * @LastEditTime: 2020-03-19 19:24:40
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -30,6 +30,7 @@
 #include "../Flags/CommonFeatures.h"
 #include "../Flags/Format.h"
 #include "../Flags/GraphicsPipelineStates.h"
+#include "Resource.h"
 
 namespace Sakura::Graphics
 {
@@ -66,6 +67,7 @@ namespace Sakura::Graphics
             uint16 mipLevels = 1;
             uint16 baseArrayLayer = 0;
             uint16 layerCount = 1;
+            ImageAspectFlags aspectMask = ImageAspectFlag::ImageAspectColor;
         };
         struct Tex3DInfo
         {
