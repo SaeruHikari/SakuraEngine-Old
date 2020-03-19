@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-19 16:33:18
+ * @LastEditTime: 2020-03-19 18:05:51
  */
 #pragma once
 #include <mutex>
@@ -24,13 +24,16 @@ namespace Sakura::Graphics
     sinterface CommandContext;
     sinterface GraphicsPipeline;
     struct RenderTargetSet;
+    sinterface GpuTexture;
     sinterface GpuResource;
     sinterface RootArgument;
     sinterface GpuBuffer;
+    struct BufferImageCopy;
 }
 
 namespace Sakura::Graphics
 {
+    using ImageAspectFlags = std::uint32_t;
     enum ECommandType   
     {
         CommandContext_Graphics = 0,
@@ -86,9 +89,16 @@ namespace Sakura::Graphics
         virtual void BindRootArguments(const PipelineBindPoint bindPoint,
             const RootArgument** arguments, uint32_t argumentNum) = 0;
 
-        virtual void CopyBuffer(GpuBuffer& src, GpuBuffer& dst,
-            const uint64_t srcOffset,
+        virtual void CopyResource(GpuBuffer& src, GpuBuffer& dst,
+            const uint64_t srcOffset = 0,
             const uint64_t dstOffset = 0, const uint64_t size = 0) = 0;
+
+        virtual void CopyResource(GpuBuffer& src, GpuTexture& dst,
+            const uint32_t imageWidth, const uint32_t imageHeight,
+            const ImageAspectFlags aspectFlags, const uint64_t srcOffset = 0) = 0;
+
+        virtual void CopyResource(GpuBuffer& src, GpuTexture& dst,
+            const BufferImageCopy& info) = 0;
 
         virtual void ResourceBarrier(const GpuBuffer& toTransition) = 0;
 

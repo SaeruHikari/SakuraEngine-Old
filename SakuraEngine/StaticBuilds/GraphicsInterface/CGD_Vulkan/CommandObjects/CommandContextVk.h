@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:38:49
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-19 16:32:44
+ * @LastEditTime: 2020-03-19 18:04:52
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
@@ -15,7 +15,6 @@ namespace Sakura::Graphics::Vk
 {
     class GraphicsPipelineVk;
 }
-
 
 namespace Sakura::Graphics::Vk
 {
@@ -38,7 +37,6 @@ namespace Sakura::Graphics::Vk
         virtual void DrawIndexed(const uint32_t indicesCount,
             const uint32_t instanceCount) override final;
 
-
         virtual void BindVertexBuffers(
             const Sakura::Graphics::GpuBuffer& vb) override final;
         virtual void BindIndexBuffers(
@@ -47,10 +45,17 @@ namespace Sakura::Graphics::Vk
         virtual void BindRootArguments(const PipelineBindPoint bindPoint,
             const RootArgument** arguments, uint32_t argumentNum) override final;
 
-        virtual void CopyBuffer(GpuBuffer& src, GpuBuffer& dst,
-            const uint64_t srcOffset,
-            const uint64_t dstOffset = 0, const uint64_t size = 0) override final;
+        virtual void CopyResource(GpuBuffer& src, GpuBuffer& dst,
+            const uint64_t size,
+            const uint64_t srcOffset = 0, const uint64_t dstOffset = 0) override final;
         
+        virtual void CopyResource(GpuBuffer& src, GpuTexture& dst,
+            const uint32_t imageWidth, const uint32_t imageHeight,
+            const ImageAspectFlags aspectFlags, const uint64_t srcOffset = 0) override final;
+
+        virtual void CopyResource(GpuBuffer& src, GpuTexture& dst,
+            const BufferImageCopy& info) override final;
+
         virtual void ResourceBarrier(const GpuBuffer& toTransition) override final;
     public:
         VkCommandBuffer commandBuffer;

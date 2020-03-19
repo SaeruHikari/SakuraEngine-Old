@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-19 16:33:03
+ * @LastEditTime: 2020-03-19 18:07:34
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -219,8 +219,8 @@ void CommandContextVk::DrawIndexed(const uint32_t indicesCount,
         instanceCount, 0, 0, 0);
 }
 
-void CommandContextVk::CopyBuffer(GpuBuffer& src, GpuBuffer& dst,
-const uint64_t size, const uint64_t srcOffset, const uint64_t dstOffset)
+void CommandContextVk::CopyResource(GpuBuffer& src, GpuBuffer& dst,
+    const uint64 size, const uint64 srcOffset, const uint64 dstOffset)
 {
     VkBufferCopy copyRegion = {};
     copyRegion.dstOffset = dstOffset;
@@ -229,6 +229,49 @@ const uint64_t size, const uint64_t srcOffset, const uint64_t dstOffset)
     vkCmdCopyBuffer(commandBuffer,
         ((GpuResourceVkBuffer&)src).buffer,
         ((GpuResourceVkBuffer&)dst).buffer, 1, &copyRegion);
+}
+
+void CommandContextVk::CopyResource(GpuBuffer& src, GpuTexture& dst,
+    const BufferImageCopy& info)
+{
+    VkBufferImageCopy region = {};
+    region.bufferOffset = info.bufferOffset;
+    region.bufferRowLength = info.bufferRowLength;
+    region.bufferImageHeight = info.bufferImageHeight;
+    region.imageSubresource.aspectMask = info.imageSubresource.aspectMask;
+    region.imageSubresource.mipLevel = info.imageSubresource.mipLevel;
+    region.imageSubresource.baseArrayLayer = info.imageSubresource.baseArrayLayer;
+    region.imageSubresource.layerCount = info.imageSubresource.layerCount;
+    region.imageOffset = *(VkOffset3D*)&info.imageOffset;
+    region.imageExtent = *(VkExtent3D*)&info.imageExtent;
+    vkCmdCopyBufferToImage(commandBuffer,
+        ((GpuResourceVkBuffer&)src).buffer,
+        ((GpuResourceVkImage&)dst).image,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+}
+
+void CommandContextVk::CopyResource(GpuBuffer& src, GpuTexture& dst,
+        const uint32_t imageWidth, const uint32_t imageHeight,
+        const ImageAspectFlags aspectFlags, const uint64_t srcOffset)
+{
+    VkBufferImageCopy region = {};
+    region.bufferOffset = srcOffset;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+    region.imageSubresource.aspectMask = aspectFlags;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1;
+    region.imageOffset = {0, 0, 0};
+    region.imageExtent = {
+        imageWidth,
+        imageHeight,
+        1
+    };
+    vkCmdCopyBufferToImage(commandBuffer,
+        ((GpuResourceVkBuffer&)src).buffer,
+        ((GpuResourceVkImage&)dst).image,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 }
 
 void CommandContextVk::ResourceBarrier(const GpuBuffer& resource)

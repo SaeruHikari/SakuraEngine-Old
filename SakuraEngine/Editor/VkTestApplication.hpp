@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-19 16:53:26
+ * @LastEditTime: 2020-03-19 17:07:51
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -261,10 +261,10 @@ private:
         auto context = 
             cgd->AllocateContext(ECommandType::CommandContext_Copy);
         context->Begin();
-        context->CopyBuffer(*uploadBuffer.get(),
+        context->CopyResource(*uploadBuffer.get(),
             *vertexBuffer.get(), bufferInfo.size);
 
-        std::unique_ptr<GpuResource> uploadBuffer2;
+        std::unique_ptr<GpuBuffer> uploadBuffer2;
         bufferInfo.size = sizeof(uint16_t) * indices.size();
         uploadBuffer2.reset(cgd->CreateUploadBuffer(bufferInfo.size));
 
@@ -279,7 +279,7 @@ private:
         memcpy(data2, indices.data(), (size_t)bufferInfo.size);
         uploadBuffer2->Unmap();
 
-        context->CopyBuffer(*(GpuBuffer*)uploadBuffer2.get(),
+        context->CopyResource(*uploadBuffer2.get(),
             *indexBuffer.get(), bufferInfo.size);
         context->End();
         
