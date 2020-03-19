@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-19 21:59:52
+ * @LastEditTime: 2020-03-19 22:26:25
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -336,7 +336,7 @@ private:
         info.paramSlots = slots.data();
         rootSignature.reset(cgd->CreateRootSignature(info));
         cbvArgument.reset(
-            rootSignature->CreateArgument(0, SignatureSlotType::UniformBufferSlot));
+            rootSignature->CreateArgument(SignatureSlotType::UniformBufferSlot));
     }
 
     void createSampler()

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-17 22:31:04
- * @LastEditTime: 2020-03-19 22:02:56
+ * @LastEditTime: 2020-03-19 22:25:54
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -99,7 +99,7 @@ namespace Sakura::Graphics
     {
         virtual ~RootSignature(){};
         virtual [[nodiscard]] RootArgument* CreateArgument(
-            uint32_t slot, const SignatureSlotType type) const = 0;
+            const SignatureSlotType type) const = 0;
     };
 } // namespace Sakura::Graphics
 

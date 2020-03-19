@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:06:12
- * @LastEditTime: 2020-03-18 20:00:41
+ * @LastEditTime: 2020-03-19 22:21:24
  */
 #include "GraphicsPipelineVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -52,10 +52,10 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     if(info.pipelineLayoutInfo.setLayouts)
     {
-        pipelineLayoutInfo.setLayoutCount 
-            = info.pipelineLayoutInfo.setLayouts->GetSlotNum();
+        pipelineLayoutInfo.setLayoutCount = 1;
+            //= info.pipelineLayoutInfo.setLayouts->GetSlotNum();
         pipelineLayoutInfo.pSetLayouts 
-            = ((const RootSignatureVk*)info.pipelineLayoutInfo.setLayouts)->descriptorSetLayouts.data();
+            = &((const RootSignatureVk*)info.pipelineLayoutInfo.setLayouts)->descriptorSetLayout;
     }
     pipelineLayoutInfo.pushConstantRangeCount 
         = info.pipelineLayoutInfo.pushConstantRangeCount;

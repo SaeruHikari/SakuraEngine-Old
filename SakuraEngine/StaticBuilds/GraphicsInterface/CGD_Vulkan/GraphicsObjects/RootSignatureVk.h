@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:13:31
- * @LastEditTime: 2020-03-19 22:02:24
+ * @LastEditTime: 2020-03-19 22:20:43
  */
 #pragma once
 #include <vector>
@@ -44,8 +44,8 @@ namespace Sakura::Graphics::Vk
     public:
         virtual ~RootSignatureVk() override final;
         VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
-        std::vector<VkDescriptorPool> pools;
-        virtual [[nodiscard]] RootArgument* CreateArgument(uint32_t slot,
+        VkDescriptorPool pool = VK_NULL_HANDLE;
+        virtual [[nodiscard]] RootArgument* CreateArgument(
             const SignatureSlotType type) const override final;
     protected:
         RootSignatureVk(const CGD_Vk& _cgd, const RootSignatureCreateInfo& info);

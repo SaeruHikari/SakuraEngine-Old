@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:18:23
- * @LastEditTime: 2020-03-19 22:04:28
+ * @LastEditTime: 2020-03-19 22:26:13
  */
 #include "RootSignatureVk.h"
 #include "../CGD_Vulkan.h"
@@ -36,6 +36,7 @@ RootSignatureVk::RootSignatureVk(
         :cgd(_cgd)
 {
     std::vector<VkDescriptorSetLayoutBinding> layoutBindings(info.paramSlotNum);
+    std::set<SignatureSlotType> types;
     for(auto i = 0; i < info.paramSlotNum; i++)
     {
         auto slot = info.paramSlots[i];
@@ -44,6 +45,7 @@ RootSignatureVk::RootSignatureVk(
         layoutBindings[i].descriptorType = Transfer(slot.type);
         layoutBindings[i].pImmutableSamplers = nullptr;
         layoutBindings[i].stageFlags = slot.stageFlags;
+        types.insert(slot.type);
     }
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -54,36 +56,34 @@ RootSignatureVk::RootSignatureVk(
         throw std::runtime_error("failed to create descriptor set layout!");
     }
 
-    pools.resize(info.paramSlotNum);
-    for(auto i = 0; i < info.paramSlotNum; i++)
+    std::vector<VkDescriptorPoolSize> poolSizes(types.size());
+    int i = 0;
+    for(auto iter = types.begin(); iter != types.end(); iter++)
     {
-        auto slot = info.paramSlots[i];
-        VkDescriptorPoolSize poolSize = {};
-        poolSize.type = Transfer(slot.type);
-        poolSize.descriptorCount = 1000;
-
-        VkDescriptorPoolCreateInfo poolInfo = {};
-        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        poolInfo.poolSizeCount = 1;
-        poolInfo.pPoolSizes = &poolSize;
-        poolInfo.maxSets = 10;
-
-        if (vkCreateDescriptorPool(cgd.GetCGDEntity().device,
-                &poolInfo, nullptr, &pools[i]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create descriptor pool!");
-        }
+        poolSizes[i].type = Transfer(*iter);
+        poolSizes[i].descriptorCount = 1000;
+        i++;
     }
+    VkDescriptorPoolCreateInfo poolInfo = {};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.poolSizeCount = poolSizes.size();
+    poolInfo.pPoolSizes = poolSizes.data();
+    poolInfo.maxSets = 10;
+
+    if (vkCreateDescriptorPool(cgd.GetCGDEntity().device,
+            &poolInfo, nullptr, &pool) != VK_SUCCESS) 
+    {
+        throw std::runtime_error("failed to create descriptor pool!");
+    }
+    
 }
 
 RootSignatureVk::~RootSignatureVk()
 {
     vkDestroyDescriptorSetLayout(cgd.GetCGDEntity().device,
         descriptorSetLayout, nullptr);
-    for(auto i = 0; i < pools.size(); i++)
-    {
-        vkDestroyDescriptorPool(cgd.GetCGDEntity().device, 
-            pools[i], nullptr);
-    }
+    vkDestroyDescriptorPool(cgd.GetCGDEntity().device, 
+            pool, nullptr);
 }
 
 RootArgumentVk::RootArgumentVk(const CGD_Vk& _cgd,
@@ -124,7 +124,7 @@ const SignatureSlotType RootArgumentVk::GetType(void) const
     return type;
 }
 
-const size_t RootSignatureVk::RootSignatureVk(void) const
+const size_t RootArgumentVk::GetSlotNum(void) const
 {
     return 0;
 }
@@ -135,11 +135,9 @@ RootSignature* CGD_Vk::CreateRootSignature(
     return new RootSignatureVk(*this, sigInfo);
 }
 
-RootArgument* RootSignatureVk::CreateArgument(
-    uint32_t slot, const SignatureSlotType type) const
+RootArgument* RootSignatureVk::CreateArgument(const SignatureSlotType type) const
 {
-    VkDescriptorPool pool = pools[0];
-    return new RootArgumentVk(cgd, descriptorSetLayouts[slot], type, pool);
+    return new RootArgumentVk(cgd, descriptorSetLayout, type, pool);
 }
 
 void RootArgumentVk::UpdateArgument(const RootArgumentAttachment& attachment)
