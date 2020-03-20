@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-10 11:52:58
- * @LastEditTime: 2020-03-12 13:50:51
+ * @LastEditTime: 2020-03-20 23:57:41
  */
 #pragma once
 #include <vector>
@@ -51,7 +51,6 @@ namespace Sakura::Graphics::Vk
     protected:  
 		FenceVk(const CGD_Vk& _cgd);
     protected:
-        uint64 targetVal = 0;
         VkSemaphore timelineSemaphore;
         const CGD_Vk& cgd;
     };

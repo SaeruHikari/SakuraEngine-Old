@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 17:36:56
- * @LastEditTime: 2020-03-19 21:37:36
+ * @LastEditTime: 2020-03-20 23:17:50
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -128,6 +128,9 @@ namespace Sakura::Graphics
         bool compareEnable = false;
         bool anisotropyEnable = true;
         float maxAnisotropy = 16.f;
+        float minLod;
+        float maxLod;
+        float mipLodBias;
         Filter magFilter = Filter::FilterLinear;
         Filter minFilter = Filter::FilterLinear;
         SamplerAddressMode addressModeU = SamplerAddressMode::AddressModeRepeat;

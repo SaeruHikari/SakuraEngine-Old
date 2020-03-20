@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-16 17:02:13
- * @LastEditTime: 2020-03-20 12:38:20
+ * @LastEditTime: 2020-03-20 15:58:52
  */
 #pragma once
 #include "memory_resource"
@@ -40,6 +40,8 @@ using namespace Sakura::Graphics::Im::Vk;
 
 namespace Sakura::Graphics::Im
 {
+    using namespace ImGui;
+
     sinterface ImGuiWindow
     {
         ImGuiWindow(const Sakura::Graphics::CGD& _gfxDevice)
@@ -70,6 +72,8 @@ namespace Sakura::Graphics::Im
             vkDestroyDescriptorPool(pack.device, descriptorPool, pack.allocator);
             ImGui_ImplVulkan_Shutdown();
         }
+        void BeginFrame(SDL_Window* wd) const;
+        void Record(CommandContext* cxt) const;
         ImGuiWindow* CreateImGuiWindow(SDL_Window* wind, int width, int height);
         void ImGuiRender(ImGuiWindow* wd);
         void ImGuiPresent(ImGuiWindow* wd);
@@ -113,6 +117,34 @@ namespace Sakura::Graphics::Im
         }
         ImGui_ImplVulkanH_Window* wind = nullptr;
     };
+
+    void ImGuiProfiler::BeginFrame(SDL_Window* wd) const
+    {
+        switch (backend)
+        {
+        case TargetGraphicsinterface::CGD_TARGET_VULKAN:
+            ImGui_ImplVulkan_NewFrame();
+            ImGui_ImplSDL2_NewFrame(wd);
+            ImGui::NewFrame();
+            break;
+        default:
+            break;
+        }
+    }
+
+    void ImGuiProfiler::Record(CommandContext* cxt) const
+    {
+        ImGui::Render();
+        switch (backend)
+        {
+        case TargetGraphicsinterface::CGD_TARGET_VULKAN:
+            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(),
+                ((const CommandContextVk*)cxt)->commandBuffer);
+            return;
+        default:
+            break;
+        }
+    }
 
     void ImGuiProfiler::ImGuiRender(ImGuiWindow* wd)
     {

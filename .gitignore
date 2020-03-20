@@ -17,3 +17,7 @@
 *.tif
 *.dds
 *.bmp
+*.obj
+GPATH
+GTAGS
+GRTAGS

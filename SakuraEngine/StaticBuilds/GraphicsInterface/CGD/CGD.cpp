@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-19 16:52:59
+ * @LastEditTime: 2020-03-20 15:45:07
  */
 #define API_EXPORTS     
 #include "../GraphicsCommon/CGD.h" 
@@ -39,4 +39,19 @@ GpuBuffer* CGD::CreateUploadBuffer(const std::size_t bufferSize) const
     bufferInfo.cpuAccess = CPUAccessFlags::ReadWrite;
     bufferInfo.size = bufferSize;
     return (GpuBuffer*)CreateResource(bufferInfo);
+}
+
+GpuTexture* CGD::CreateGpuTexture(const Format format,
+    const uint32 width, const uint32 height,
+    ImageUsages imageUsages, uint32 mipLevels) const
+{
+    TextureCreateInfo imgInfo = {};
+    imgInfo.width = width;
+    imgInfo.height = height;
+    imgInfo.format = format;
+    imgInfo.arrayLayers = 1;
+    imgInfo.depth = 1;
+    imgInfo.mipLevels = mipLevels;
+    imgInfo.usage = imageUsages;
+    return (GpuTexture*)CreateResource(imgInfo);
 }

@@ -59,7 +59,11 @@ namespace Sakura::Graphics::Vk
         virtual void ResourceBarrier(GpuBuffer& toTransition) override final;
     
         virtual void ResourceBarrier(GpuTexture& toTransition,
-            const ImageLayout oldLayout, const ImageLayout newLayout) override final;
+            const ImageLayout oldLayout, const ImageLayout newLayout,
+            const TextureSubresourceRange& = plainTextureSubresourceRange) override final;
+
+        virtual void GenerateMipmaps(GpuTexture& texture, Format format,
+            uint32_t texWidth, uint32_t texHeight, uint32_t mipLevels) override final;
     public:
         VkCommandBuffer commandBuffer;
     protected:

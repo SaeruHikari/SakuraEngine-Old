@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-10 11:41:29
- * @LastEditTime: 2020-03-11 21:48:05
+ * @LastEditTime: 2020-03-20 23:56:01
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -35,5 +35,7 @@ namespace Sakura::Graphics
         virtual ~Fence() = default;
         virtual void Reset(void) = 0;
         virtual uint64 GetCompletedValue() const = 0;
+    protected:
+        uint64 targetVal = 0;
     };
 }

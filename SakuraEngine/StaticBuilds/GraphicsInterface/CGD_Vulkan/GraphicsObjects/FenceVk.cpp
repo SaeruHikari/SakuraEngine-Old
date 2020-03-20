@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-11 20:52:05
- * @LastEditTime: 2020-03-18 10:41:15
+ * @LastEditTime: 2020-03-20 23:57:27
  */
 #include "FenceVk.h"
 #include "../CGD_Vulkan.h"
@@ -41,7 +41,7 @@ void FenceVk::Reset(void)
 
 uint64 FenceVk::GetCompletedValue() const
 {
-    return 0;
+    return targetVal;
 }
 
 FenceVk::FenceVk(const CGD_Vk& _cgd)

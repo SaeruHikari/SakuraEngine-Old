@@ -17,17 +17,18 @@
 #include "Core/CoreMinimal/SDefination.h"
 #include "Core/CoreMinimal/SAssert.h"
 #include "../GraphicsObjects/RenderPass.h"
+#include "../ResourceObjects/ResourceViews.h"
 
 namespace Sakura::Graphics
 {
     sinterface CommandQueue;
     sinterface CommandContext;
     sinterface GraphicsPipeline;
-    struct RenderTargetSet;
     sinterface GpuTexture;
     sinterface GpuResource;
     sinterface RootArgument;
     sinterface GpuBuffer;
+	struct RenderTargetSet;
     struct BufferImageCopy;
 }
 
@@ -103,7 +104,11 @@ namespace Sakura::Graphics
         virtual void ResourceBarrier(GpuBuffer& toTransition) = 0;
 
         virtual void ResourceBarrier(GpuTexture& toTransition,
-            const ImageLayout oldLayout, const ImageLayout newLayout) = 0;
+            const ImageLayout oldLayout, const ImageLayout newLayout,
+            const TextureSubresourceRange& = plainTextureSubresourceRange) = 0;
+
+        virtual void GenerateMipmaps(GpuTexture& texture, Format format,
+            uint32_t texWidth, uint32_t texHeight, uint32_t mipLevels) = 0;
 
         sinline ECommandType GetCommandContextType(void)
         {

@@ -22,14 +22,18 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-20 12:35:32
+ * @LastEditTime: 2020-03-21 00:49:04
  */
 #pragma once
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h>
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
+#include <glm/gtx/hash.hpp>
+#include <unordered_map>
 #include "SakuraEngine/StaticBuilds/PixelOperators/ImageUtils.h"
 #include "SakuraEngine/StaticBuilds/Graphicsinterface/GraphicsCommon/CGD.h"
 #include "SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/CGD_Vulkan.h"
@@ -79,13 +83,15 @@ using namespace Sakura::Graphics::Vk;
     ("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\SRV\\SRVPixel.spv",
         'r');
     const std::string texPath =
-        "D:\\Coding\\SakuraEngine\\SakuraTestProject\\textures\\640x640.jpg";
+        "D:\\Coding\\SakuraEngine\\SakuraTestProject\\textures\\chalet.jpg";
+    const std::string modlePath = 
+        "D:\\Coding\\SakuraEngine\\SakuraTestProject\\models\\chalet.obj";
 #endif
 
 struct Vertex
 {
-    Sakura::Math::Vector3f pos;
-    Sakura::Math::Vector3f color;
+    glm::vec3 pos;
+    glm::vec3 color;
     glm::vec2 texCoord;
     static VertexInputBindingDescription getBindingDescription() {
         VertexInputBindingDescription bindingDescription = {};
@@ -116,22 +122,26 @@ struct Vertex
 
         return attributeDescriptions;
     }
+    
+    bool operator==(const Vertex& other) const 
+    {
+        return pos == other.pos && 
+            color == other.color && texCoord == other.texCoord;
+    }
 };
-const std::vector<Vertex> vertices = {
-{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+namespace std {
+    template<> struct hash<Vertex> {
+        size_t operator()(Vertex const& vertex) const {
+            return ((hash<glm::vec3>()(vertex.pos) 
+            ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) 
+            ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
+        }
+    };
+}
 
-    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-};
-const std::vector<uint16_t> indices = {
-    0, 1, 2, 2, 3, 0,
-    4, 5, 6, 6, 7, 4
-};
+
+std::vector<Vertex> vertices;
+std::vector<uint32_t> indices;
 
 struct UniformBufferObject
 {
@@ -146,6 +156,7 @@ public:
     void run()
     {
         SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+        loadModel();
         createWindow();
         initVulkan();
         int run = 1;
@@ -174,6 +185,47 @@ public:
     }
 
 private:
+    void loadModel()
+    {
+        tinyobj::attrib_t attrib;
+         std::vector<tinyobj::shape_t> shapes;
+        std::vector<tinyobj::material_t> materials;
+        std::string warn, err;
+
+        if (!tinyobj::LoadObj(&attrib, &shapes,
+            &materials, &warn, &err, modlePath.c_str())) 
+            throw std::runtime_error(warn + err);
+
+        std::unordered_map<Vertex, uint32_t> uniqueVertices;
+
+        for (const auto& shape : shapes) {
+            for (const auto& index : shape.mesh.indices) {
+                Vertex vertex = {};
+
+                vertex.pos = {
+                    attrib.vertices[3 * index.vertex_index + 0],
+                    attrib.vertices[3 * index.vertex_index + 1],
+                    attrib.vertices[3 * index.vertex_index + 2]
+                };
+
+                vertex.texCoord = {
+                    attrib.texcoords[2 * index.texcoord_index + 0],
+                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+                };
+
+                vertex.color = {1.0f, 1.0f, 1.0f};
+
+                if (uniqueVertices.count(vertex) == 0) {
+                    uniqueVertices[vertex] 
+                        = static_cast<uint32_t>(vertices.size());
+                    vertices.push_back(vertex);
+                }
+
+                indices.push_back(uniqueVertices[vertex]);
+            }
+        }
+    }
+
     void createShader()
     {
 		// Create PSO vs_cbv
@@ -183,24 +235,11 @@ private:
 		fs_srv.read(fs_bytes.data(), fs_bytes.size());
 		vertshader = cgd->CreateShader(vs_bytes.data(), vs_bytes.size());
 		fragshader = cgd->CreateShader(fs_bytes.data(), fs_bytes.size());
-        // shaders
-		vsStage.stage = ShaderStageFlags::VertexStage;
-		vsStage.shader = vertshader.get(); vsStage.entry = "main";
-		fsStage.stage = ShaderStageFlags::PixelStage;
-		fsStage.shader = fragshader.get(); fsStage.entry = "main";
     }
 
     void ResizeWindow(uint32 width, uint32 height)
     {
-        cgd->WaitIdle();    
-
-        DepthStencilStateCreateInfo depthStencil;
-        GraphicsPipelineCreateInfo info;
-        std::vector<ShaderStageCreateInfo> infos{vsStage, fsStage};
-		info.shaderStages = infos.data();
-        info.shaderStageCount = infos.size();
-        info.pipelineLayoutInfo.setLayouts = rootSignature.get();
-        info.depthStencilCreateInfo = depthStencil;
+        cgd->WaitIdle();   
         // recreate swapchain
         swapChain.reset();
         swapChain.reset(cgd->CreateSwapChain(width, height, &surface));
@@ -209,19 +248,32 @@ private:
 		Rect2D scissor = {};
 		scissor.extent = swapChain->GetExtent();
 
+        DepthStencilStateCreateInfo depthStencil;
+        GraphicsPipelineCreateInfo info;
+        // shaders
+		vsStage.stage = ShaderStageFlags::VertexStage;
+		vsStage.shader = vertshader.get(); vsStage.entry = "main";
+		fsStage.stage = ShaderStageFlags::PixelStage;
+		fsStage.shader = fragshader.get(); fsStage.entry = "main";
+        std::vector<ShaderStageCreateInfo> infos{vsStage, fsStage};
+		info.shaderStages = infos.data();
+        info.shaderStageCount = infos.size();
+        info.pipelineLayoutInfo.setLayouts = rootSignature.get();
+        info.depthStencilCreateInfo = depthStencil;
+
 		//Create Render Pass
 		RenderPassCreateInfo rpinfo = {};
+        AttachmentDescription colorAttachment;
+		colorAttachment.format = swapChain->GetPixelFormat();
+		AttachmentReference colorAttachmentRef 
+            = {0, ImageLayout::ColorAttachment};
+
         AttachmentDescription depthAttachment;
         depthAttachment.format = cgd->FindDepthFormat();
         depthAttachment.storeOp = AttachmentStoreOp::AttachmentStoreOpDontCare;
         depthAttachment.finalLayout = ImageLayout::DepthStencilAttachment;
         AttachmentReference depthAttachmentRef 
             = {1, ImageLayout::DepthStencilAttachment};
-
-		AttachmentDescription colorAttachment;
-		colorAttachment.format = swapChain->GetPixelFormat();
-		AttachmentReference colorAttachmentRef 
-            = {0, ImageLayout::ColorAttachment};
 		
         SubpassDescription subpass = {};
 		subpass.colorAttachments.push_back(colorAttachmentRef);
@@ -239,7 +291,8 @@ private:
         std::vector<VertexInputBindingDescription>
             vertexBindingDescriptions{bindingDescription};
         std::vector<VertexInputAttributeDescription> 
-            vertexAttributeDescriptions{attributeDescriptions[0], attributeDescriptions[1], attributeDescriptions[2]};
+            vertexAttributeDescriptions{attributeDescriptions[0],
+            attributeDescriptions[1], attributeDescriptions[2]};
         VertexInputStateCreateInfo vbInfo = {};
         vbInfo.vertexAttributeDescriptions = vertexAttributeDescriptions.data();
         vbInfo.vertexAttributeDescriptionCount = (uint32)vertexAttributeDescriptions.size();
@@ -251,6 +304,7 @@ private:
 		info.viewportStateCreateInfo.scissors = &scissor;
 		info.viewportStateCreateInfo.scissorCount = 1;
 		Pipeline.reset(cgd->CreateGraphicsPipeline(info, *pass.get()));
+        createDepth(); 
     }
 
     void createTexture()
@@ -265,60 +319,66 @@ private:
         memcpy(data, pixels, static_cast<size_t>(width * height * 4));
         uploadBuffer->Unmap();
         
-        TextureCreateInfo imgInfo = {};
-        imgInfo.width = width;
-        imgInfo.height = height;
-        imgInfo.format = Format::R8G8B8A8_SRGB;
-        imgInfo.arrayLayers = 1;
-        imgInfo.depth = 1;
-        imgInfo.mipLevels = 1;
-        imgInfo.usage = 
-            ImageUsage::TransferDstImage | ImageUsage::SampledImage;
+        auto mipLevels = Sakura::Graphics::CalculateMipLevels(width, height);
         texture.reset(
-            cgd->CreateResource(imgInfo));
+            cgd->CreateGpuTexture(Format::R8G8B8A8_SRGB, width, height,
+            ImageUsage::TransferDstImage | ImageUsage::SampledImage |
+            ImageUsage::TransferSrcImage, mipLevels));
+            
+        TextureSubresourceRange textureSubresource;
+        textureSubresource.mipLevels = mipLevels;
         auto context = 
             cgd->AllocateContext(ECommandType::CommandContext_Graphics);
         context->Begin();
         context->ResourceBarrier(*texture.get(),
-            ImageLayout::Unknown, ImageLayout::TransferDstOptimal);
+            ImageLayout::Unknown, ImageLayout::TransferDstOptimal,
+            textureSubresource);
         context->CopyResource(*uploadBuffer.get(), *texture.get(),
             width, height, ImageAspectFlag::ImageAspectColor);
-        context->ResourceBarrier(*texture.get(),
-            ImageLayout::TransferDstOptimal, ImageLayout::ShaderReadOnlyOptimal);
         context->End();
         cgd->GetGraphicsQueue()->Submit(context);
         cgd->FreeContext(context);
         cgd->GetGraphicsQueue()->WaitIdle();
+
+
+        context = 
+            cgd->AllocateContext(ECommandType::CommandContext_Graphics);
+        context->Begin();
+        context->GenerateMipmaps(*texture.get(), Format::R8G8B8A8_SRGB,
+            width, height, mipLevels);
+        context->End();
+        cgd->GetGraphicsQueue()->Submit(context);
+        cgd->FreeContext(context);
+        cgd->GetGraphicsQueue()->WaitIdle();
+
         ResourceViewCreateInfo tvinfo = {};
         tvinfo.viewType = ResourceViewType::ImageView2D;
         tvinfo.format = Format::R8G8B8A8_SRGB;
         tvinfo.view.texture2D.baseMipLevel = 0;
-        tvinfo.view.texture2D.mipLevels = 1;
+        tvinfo.view.texture2D.mipLevels = mipLevels;
         tvinfo.view.texture2D.baseArrayLayer = 0;
         tvinfo.view.texture2D.layerCount = 1;
         tvinfo.view.texture2D.aspectMask = ImageAspectFlag::ImageAspectColor;
         textureView.reset(
             cgd->ViewIntoResource(*texture.get(), tvinfo));
+
+        SamplerCreateInfo samplerInfo;
+        samplerInfo.mipmapMode = SamplerMipmapMode::SamplerMipmapModeLinear;
+        samplerInfo.minLod = 0;
+        samplerInfo.maxLod = mipLevels;
+        samplerInfo.mipLodBias = 0;
+        sampler.reset(cgd->CreateSampler(samplerInfo));
     }
     
     void createDepth()
     {
-        auto depthFormat = cgd->FindDepthFormat();
-        TextureCreateInfo imgInfo = {};
-        imgInfo.width = swapChain->GetExtent().width;
-        imgInfo.height = swapChain->GetExtent().height;
-        imgInfo.format = depthFormat;
-        imgInfo.arrayLayers = 1;
-        imgInfo.depth = 1;
-        imgInfo.mipLevels = 1;
-        imgInfo.usage = 
-            ImageUsage::DepthStencilAttachmentImage | ImageUsage::SampledImage;
-        depth.reset(
-            cgd->CreateResource(imgInfo));
+        depth.reset(cgd->CreateGpuTexture(cgd->FindDepthFormat(),
+                swapChain->GetExtent().width, swapChain->GetExtent().height,
+                ImageUsage::DepthStencilAttachmentImage));
 
         ResourceViewCreateInfo dsvinfo = {};
         dsvinfo.viewType = ResourceViewType::ImageView2D;
-        dsvinfo.format = depthFormat;
+        dsvinfo.format = cgd->FindDepthFormat();
         dsvinfo.view.texture2D.baseMipLevel = 0;
         dsvinfo.view.texture2D.mipLevels = 1;
         dsvinfo.view.texture2D.baseArrayLayer = 0;
@@ -337,7 +397,7 @@ private:
         bufferInfo.size = sizeof(Vertex) * vertices.size();
         vertexBuffer.reset((GpuBuffer*)cgd->CreateResource(bufferInfo));
         
-        std::unique_ptr<GpuBuffer> uploadBuffer;
+        std::unique_ptr<GpuBuffer> uploadBuffer, uploadBuffer2;
         uploadBuffer.reset(cgd->CreateUploadBuffer(bufferInfo.size));
 
         void* data;
@@ -345,31 +405,26 @@ private:
         memcpy(data, vertices.data(), (size_t)bufferInfo.size);
         uploadBuffer->Unmap();
 
-        auto context = 
-            cgd->AllocateContext(ECommandType::CommandContext_Copy);
-        context->Begin();
-        context->CopyResource(*uploadBuffer.get(),
-            *vertexBuffer.get(), bufferInfo.size);
-
-        std::unique_ptr<GpuBuffer> uploadBuffer2;
-        bufferInfo.size = sizeof(uint16_t) * indices.size();
-        uploadBuffer2.reset(cgd->CreateUploadBuffer(bufferInfo.size));
-
         bufferInfo.usage = 
             BufferUsage::IndexBuffer | BufferUsage::TransferDstBuffer;
         bufferInfo.cpuAccess = CPUAccessFlags::None;
-        bufferInfo.size = sizeof(uint16_t) * indices.size();
+        bufferInfo.size = sizeof(uint32_t) * indices.size();
         indexBuffer.reset((GpuBuffer*)cgd->CreateResource(bufferInfo));
+        uploadBuffer2.reset(cgd->CreateUploadBuffer(bufferInfo.size));
 
         void* data2;
         uploadBuffer2->Map(&data2);
         memcpy(data2, indices.data(), (size_t)bufferInfo.size);
         uploadBuffer2->Unmap();
-
-        context->CopyResource(*uploadBuffer2.get(),
-            *indexBuffer.get(), bufferInfo.size);
-        context->End();
         
+        auto context = 
+            cgd->AllocateContext(ECommandType::CommandContext_Copy);
+        context->Begin();
+        context->CopyResource(*uploadBuffer.get(),
+            *vertexBuffer.get(), sizeof(Vertex) * vertices.size());
+        context->CopyResource(*uploadBuffer2.get(),
+            *indexBuffer.get(), sizeof(uint32_t) * indices.size());
+        context->End();
         cgd->GetCopyQueue()->Submit(context);
         cgd->FreeContext(context);
         cgd->GetCopyQueue()->WaitIdle();
@@ -382,11 +437,8 @@ private:
             = CPUAccessFlags::ReadWrite;
         cbufferInfo.size = sizeof(UniformBufferObject);
         for(auto i = 0u; i < constantBuffers.size(); i++)
-        {
             constantBuffers[i].reset((GpuBuffer*)cgd->CreateResource(cbufferInfo));
-        }
         createTexture();
-        createDepth();
     }
 
     void createRootSignature()
@@ -400,14 +452,9 @@ private:
         info.paramSlotNum = slots.size();
         info.paramSlots = slots.data();
         rootSignature.reset(cgd->CreateRootSignature(info));
-        cbvArgument.reset(
-            rootSignature->CreateArgument(SignatureSlotType::UniformBufferSlot));
-    }
-
-    void createSampler()
-    {
-        SamplerCreateInfo samplerInfo;
-        sampler.reset(cgd->CreateSampler(samplerInfo));
+        for(auto i = 0; i < 2; i++)
+            cbvArgument[i].reset(
+                rootSignature->CreateArgument(SignatureSlotType::UniformBufferSlot));
     }
 
     void initVulkan()
@@ -426,13 +473,13 @@ private:
             ((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
             &surface);
         cgd->InitQueueSet(&surface);
-        fence.reset(cgd->AllocFence());
+        for(auto i = 0; i < 2; i++)
+            fence[i].reset(cgd->AllocFence());
         
         createShader();
         createRootSignature();
         ResizeWindow(1280, 720);
-        createBuffer();
-        createSampler();
+        createBuffer();;
         cgd->WaitIdle();
         profiler = std::make_unique<Sakura::Graphics::Im::ImGuiProfiler>(*cgd.get());
         profiler->ImGuiInitialize(win, swapChain->GetPixelFormat(), pass.get()); 
@@ -443,10 +490,11 @@ private:
         using namespace Sakura::Math;
         static auto startTime = std::chrono::high_resolution_clock::now();
         auto currentTime = std::chrono::high_resolution_clock::now();
-        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+        float time 
+            = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
         UniformBufferObject ubo = {};
-        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.model = glm::rotate(glm::mat4(1.0f), time * 0.2f * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.proj = glm::perspective(glm::radians(45.0f), 
         swapChain->GetExtent().width / (float) swapChain->GetExtent().height,
@@ -473,61 +521,56 @@ private:
         attachments[1].info = texAttach;
         attachments[1].rootArgType = SignatureSlotType::CombinedTextureSamplerSlot;
         attachments[1].dstBinding = 1;
-        cbvArgument->UpdateArgument(attachments, 2);
+        cbvArgument[frameCount]->UpdateArgument(attachments, 2);
     }
 
     void mainLoop()
     {
-        auto frameCount = swapChain->GetLastFrame();
+        cgd->Present(swapChain.get());
+
+        auto frameCount = swapChain->GetCurrentFrame();
         RenderTarget rt{&swapChain->GetSwapChainImage(frameCount),
-            &swapChain->GetChainImageView(frameCount)};
-        RenderTarget ds{depth.get(), depthView.get()};
+            &swapChain->GetChainImageView(frameCount), {0.f, 0.f, 0.f, 0.f}};
+        RenderTarget ds{depth.get(), depthView.get(), {1.f, 0.f}};
         RenderTarget rts[2] = {rt, ds};
         RenderTargetSet rtset{(RenderTarget*)rts, 2};
-        updateUniformBuffer(frameCount);
+
+        cgd->Wait(fence[frameCount].get(), fence[frameCount]->GetCompletedValue());
         auto context = 
             cgd->AllocateContext(ECommandType::CommandContext_Graphics);
+
+        updateUniformBuffer(frameCount);
         context->Begin();
         context->BeginRenderPass(Pipeline.get(), rtset);
         context->BindVertexBuffers(*vertexBuffer.get());
         context->BindIndexBuffers(*indexBuffer.get());
-        const auto* arg = cbvArgument.get();
+        const auto* arg = cbvArgument[frameCount].get();
         context->BindRootArguments(PipelineBindPoint::BindPointGraphics,
             &arg, 1);
         context->DrawIndexed(indices.size(), 1);
-    
-        ImGui_ImplVulkan_NewFrame();
-        ImGui_ImplSDL2_NewFrame(win);
-        ImGui::NewFrame();
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+        
+        profiler->BeginFrame(win);
         {
             static float f = 0.0f;
             static int counter = 0;
-            ImGui::Begin("Profiling Board:");                          // Create a window called "Hello, world!" and append into it.
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::Begin("Profiling Board:");                          
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+                1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
-        ImGui::Render();
-        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(),
-            ((const CommandContextVk*)context)->commandBuffer);
+        profiler->Record(context);
         context->EndRenderPass();
         context->End();
 
-        static uint64 fenceVal = 1;
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
         }
-
         cgd->GetGraphicsQueue()->Submit(context);
-        cgd->GetGraphicsQueue()->Submit(fence.get(), fenceVal);
-        cgd->GetGraphicsQueue()->WaitIdle();
-        cgd->Wait(fence.get(), fenceVal);
-		fenceVal += 1;
-        cgd->Present(swapChain.get());
-
+        cgd->GetGraphicsQueue()->Submit(
+            fence[frameCount].get(), fence[frameCount]->GetCompletedValue() + 1);
         cgd->FreeContext(context);
     }
 
@@ -550,7 +593,8 @@ private:
         vkDestroySurfaceKHR(((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
             surface, nullptr);
         pass.reset();
-		fence.reset();
+        for(auto i = 0; i < 2; i++)
+            fence[i].reset();
         vertexBuffer.reset();
         indexBuffer.reset();
         cgd->Destroy();
@@ -563,7 +607,7 @@ private:
         win = VkSDL_CreateWindow("SakuraEngine Window: CGD Vulkan", 1280, 720);
     }
 
-    std::unique_ptr<RootArgument> cbvArgument;
+    std::unique_ptr<RootArgument> cbvArgument[2];
     std::unique_ptr<RootSignature> rootSignature;
     // Resources
     std::unique_ptr<Sampler> sampler;
@@ -579,7 +623,7 @@ private:
     std::unique_ptr<Sakura::Graphics::Im::ImGuiProfiler> profiler;
     ShaderStageCreateInfo vsStage, fsStage;
     std::unique_ptr<Sakura::Graphics::CGD> cgd;
-    std::unique_ptr<Fence> fence;
+    std::unique_ptr<Fence> fence[2];
     std::unique_ptr<Shader> vertshader;
     std::unique_ptr<Shader> fragshader;
     std::unique_ptr<Sakura::Graphics::SwapChain> swapChain;

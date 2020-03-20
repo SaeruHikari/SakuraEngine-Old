@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:41:13
- * @LastEditTime: 2020-03-17 17:37:38
+ * @LastEditTime: 2020-03-20 16:03:54
  */
 #include "CommandQueueVk.h"
 #include "CommandContextVk.h"
@@ -119,7 +119,6 @@ void CommandQueueVk::Wait(Fence* fence, uint64 until)
 	submitInfo.pWaitSemaphores = &FcVk->timelineSemaphore;
     submitInfo.pWaitDstStageMask = &wat;
 	submitInfo.signalSemaphoreCount = 0;
-	//submitInfo.pSignalSemaphores = &FcVk->timelineSemaphore;
 	submitInfo.commandBufferCount = 0;
 	submitInfo.pCommandBuffers = VK_NULL_HANDLE;
 

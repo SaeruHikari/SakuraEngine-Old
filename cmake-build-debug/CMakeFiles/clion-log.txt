@@ -1,0 +1,137 @@
+"D:\Program Files\JetBrains\CLion 2019.3.4\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - NMake Makefiles" D:\Coding\SakuraEngine
+Your feedback is important to improve Vcpkg! Please take 3 minutes to complete our survey by running: vcpkg contact --survey
+The following packages are already installed:
+    boost[core]:x64-windows
+    cpp-taskflow[core]:x64-windows
+    eigen3[core]:x64-windows
+    entt[core]:x64-windows
+    fmt[core]:x64-windows
+    freetype[bzip2,core,png]:x64-windows
+    glfw3[core]:x64-windows
+    glm[core]:x64-windows
+    sdl2[core,vulkan]:x64-windows
+    vulkan-memory-allocator[core]:x64-windows
+    xxhash[core]:x64-windows
+Starting package 1/11: cpp-taskflow:x64-windows
+Package cpp-taskflow:x64-windows is already installed
+Elapsed time for package cpp-taskflow:x64-windows: 14.8 us
+Starting package 2/11: boost:x64-windows
+Package boost:x64-windows is already installed
+Elapsed time for package boost:x64-windows: 7.3 us
+Starting package 3/11: eigen3:x64-windows
+Package eigen3:x64-windows is already installed
+Elapsed time for package eigen3:x64-windows: 7 us
+Starting package 4/11: glfw3:x64-windows
+Package glfw3:x64-windows is already installed
+Elapsed time for package glfw3:x64-windows: 6.9 us
+Starting package 5/11: sdl2:x64-windows
+Package sdl2:x64-windows is already installed
+Elapsed time for package sdl2:x64-windows: 7.2 us
+Starting package 6/11: fmt:x64-windows
+Package fmt:x64-windows is already installed
+Elapsed time for package fmt:x64-windows: 6.6 us
+Starting package 7/11: freetype:x64-windows
+Package freetype:x64-windows is already installed
+Elapsed time for package freetype:x64-windows: 7.3 us
+Starting package 8/11: glm:x64-windows
+Package glm:x64-windows is already installed
+Elapsed time for package glm:x64-windows: 6.3 us
+Starting package 9/11: vulkan-memory-allocator:x64-windows
+Package vulkan-memory-allocator:x64-windows is already installed
+Elapsed time for package vulkan-memory-allocator:x64-windows: 6.9 us
+Starting package 10/11: xxhash:x64-windows
+Package xxhash:x64-windows is already installed
+Elapsed time for package xxhash:x64-windows: 7.1 us
+Starting package 11/11: entt:x64-windows
+Package entt:x64-windows is already installed
+Elapsed time for package entt:x64-windows: 6.6 us
+
+Total elapsed time: 124.1 us
+
+The package cpp-taskflow:x64-windows provides CMake targets:
+
+    find_package(Cpp-Taskflow CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE Cpp-Taskflow::Cpp-Taskflow)
+
+The package eigen3:x64-windows provides CMake targets:
+
+    find_package(Eigen3 CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE Eigen3::Eigen)
+
+The package glfw3:x64-windows provides CMake targets:
+
+    find_package(glfw3 CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glfw)
+
+The package sdl2:x64-windows provides CMake targets:
+
+    find_package(SDL2 CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE SDL2::SDL2 SDL2::SDL2main)
+
+The package fmt:x64-windows provides CMake targets:
+
+    find_package(fmt CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE fmt::fmt fmt::fmt-header-only)
+
+The package freetype:x64-windows provides CMake targets:
+
+    find_package(freetype CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE freetype)
+
+The package glm:x64-windows provides CMake targets:
+
+    find_package(glm CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glm)
+
+The package vulkan-memory-allocator:x64-windows provides CMake targets:
+
+    find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE unofficial::vulkan-memory-allocator::vulkan-memory-allocator)
+
+The package entt:x64-windows provides CMake targets:
+
+    find_package(EnTT CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE EnTT::EnTT)
+
+-- TOOL CHAIN: D:\vcpkg/scripts/buildsystems/vcpkg.cmake
+-- The C compiler identification is MSVC 19.24.28316.0
+-- The CXX compiler identification is MSVC 19.24.28316.0
+-- Check for working C compiler: C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.24.28314/bin/Hostx64/x64/cl.exe
+-- Check for working C compiler: C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.24.28314/bin/Hostx64/x64/cl.exe -- broken
+CMake Error at D:/Program Files/JetBrains/CLion 2019.3.4/bin/cmake/win/share/cmake-3.15/Modules/CMakeTestCCompiler.cmake:60 (message):
+  The C compiler
+
+    "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.24.28314/bin/Hostx64/x64/cl.exe"
+
+  is not able to compile a simple test program.
+
+  It fails with the following output:
+
+    Change Dir: D:/Coding/SakuraEngine/cmake-build-debug/CMakeFiles/CMakeTmp
+    
+    Run Build Command(s):nmake /nologo cmTC_bf847\fast && 	"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.24.28314\bin\HostX64\x64\nmake.exe" -f CMakeFiles\cmTC_bf847.dir\build.make /nologo -L                  CMakeFiles\cmTC_bf847.dir\build
+    Building C object CMakeFiles/cmTC_bf847.dir/testCCompiler.c.obj
+    	C:\PROGRA~2\MICROS~1\2019\ENTERP~1\VC\Tools\MSVC\1424~1.283\bin\Hostx64\x64\cl.exe @C:\Users\30453\AppData\Local\Temp\nm9975.tmp
+    testCCompiler.c
+    Linking C executable cmTC_bf847.exe
+    	"D:\Program Files\JetBrains\CLion 2019.3.4\bin\cmake\win\bin\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\cmTC_bf847.dir --rc="E:\Windows Kits\10\bin\10.0.18362.0\x64\rc.exe" --mt="E:\Windows Kits\10\bin\10.0.18362.0\x64\mt.exe" --manifests  -- C:\PROGRA~2\MICROS~1\2019\ENTERP~1\VC\Tools\MSVC\1424~1.283\bin\Hostx64\x64\link.exe /nologo @CMakeFiles\cmTC_bf847.dir\objects1.rsp @C:\Users\30453\AppData\Local\Temp\nm99B5.tmp
+    LINK Pass 1: command "C:\PROGRA~2\MICROS~1\2019\ENTERP~1\VC\Tools\MSVC\1424~1.283\bin\Hostx64\x64\link.exe /nologo @CMakeFiles\cmTC_bf847.dir\objects1.rsp /out:cmTC_bf847.exe /implib:cmTC_bf847.lib /pdb:D:\Coding\SakuraEngine\cmake-build-debug\CMakeFiles\CMakeTmp\cmTC_bf847.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\cmTC_bf847.dir/intermediate.manifest CMakeFiles\cmTC_bf847.dir/manifest.res" failed (exit code 1120) with the following output:
+    MSVCRTD.lib(utility_app.obj) : error LNK2019: 鏃犳硶瑙ｆ瀽鐨勫閮ㄧ鍙� __imp_RoInitialize锛岃绗﹀彿鍦ㄥ嚱鏁� __scrt_initialize_winrt 涓寮曠敤
+    cmTC_bf847.exe : fatal error LNK1120: 1 涓棤娉曡В鏋愮殑澶栭儴鍛戒护
+    NMAKE : fatal error U1077: 鈥�"D:\Program Files\JetBrains\CLion 2019.3.4\bin\cmake\win\bin\cmake.exe"鈥�: 杩斿洖浠ｇ爜鈥�0xffffffff鈥�
+    Stop.
+    NMAKE : fatal error U1077: 鈥�"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.24.28314\bin\HostX64\x64\nmake.exe"鈥�: 杩斿洖浠ｇ爜鈥�0x2鈥�
+    Stop.
+    
+    
+
+  
+
+  CMake will not be able to correctly generate this project.
+Call Stack (most recent call first):
+  CMakeLists.txt:21 (project)
+
+
+-- Configuring incomplete, errors occurred!
+See also "D:/Coding/SakuraEngine/cmake-build-debug/CMakeFiles/CMakeOutput.log".
+See also "D:/Coding/SakuraEngine/cmake-build-debug/CMakeFiles/CMakeError.log".

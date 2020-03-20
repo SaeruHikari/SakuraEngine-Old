@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:13:31
- * @LastEditTime: 2020-03-19 22:49:59
+ * @LastEditTime: 2020-03-20 23:59:47
  */
 #pragma once
 #include <vector>
@@ -64,6 +64,7 @@ namespace Sakura::Graphics::Vk
             std::uint32_t attachmentCount) override final;
         virtual const size_t GetSlotNum(void) const override final;
     protected:
+        uint32_t slotNum = 0;
         SignatureSlotType type;
         RootArgumentVk(const CGD_Vk& _cgd, const VkDescriptorSetLayout& layout, 
             const SignatureSlotType type, VkDescriptorPool pool);

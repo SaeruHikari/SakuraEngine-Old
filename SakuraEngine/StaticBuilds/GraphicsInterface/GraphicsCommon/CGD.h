@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-20 10:19:24
+ * @LastEditTime: 2020-03-20 20:44:30
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -66,6 +66,13 @@ namespace Sakura::Graphics
         CGD_TARGET_METAL,
         CGD_TARGET_NUMS
     };
+
+    inline static uint32_t CalculateMipLevels(uint32_t texWidth, uint32_t texHeight)
+    {
+        auto mipLevels = static_cast<uint32_t>(
+            std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+        return mipLevels;
+    }
 
     sinterface CGD
     {
@@ -120,13 +127,18 @@ namespace Sakura::Graphics
 
         virtual const TargetGraphicsinterface GetBackEndAPI(void) const = 0;
 
-        virtual [[nodiscard]] GpuBuffer* CreateUploadBuffer(
-            const std::size_t bufferSize) const;
-
         virtual [[nodiscard]] Sampler* CreateSampler(
             const SamplerCreateInfo&) const = 0;
 
         virtual const Format FindDepthFormat(void) const = 0;
+    public:
+        virtual [[nodiscard]] GpuBuffer* CreateUploadBuffer(
+            const std::size_t bufferSize) const;
+        virtual [[nodiscard]] GpuTexture* CreateGpuTexture(const Format format,
+            const uint32 width, const uint32 height,
+            ImageUsages imageUsages, uint32 mipLevels = 1) const; 
+        //virtual [[nodiscard]] ResourceView* ViewIntoTexture(const Format format,
+        //    const )
     public:
         const uint64 contextNum() const {return contextPools[0].size();}
 

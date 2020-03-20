@@ -58,17 +58,23 @@ namespace Sakura::Graphics
     {
         return type <= ImageViewCubeArray;
     }
-    
+
+	struct TextureSubresourceRange
+	{
+		ImageAspectFlags aspectMask = ImageAspectFlag::ImageAspectColor;
+		uint16 baseMipLevel = 0;
+		uint16 mipLevels = 1;
+		uint16 baseArrayLayer = 0;
+		uint16 layerCount = 1;
+	};
+    const TextureSubresourceRange plainTextureSubresourceRange = 
+    {
+        ImageAspectFlag::ImageAspectColor,
+        0, 1, 0, 1
+    };
+
     struct ResourceViewCreateInfo
     {
-        struct Tex2DInfo
-        {
-            uint16 baseMipLevel = 0;
-            uint16 mipLevels = 1;
-            uint16 baseArrayLayer = 0;
-            uint16 layerCount = 1;
-            ImageAspectFlags aspectMask = ImageAspectFlag::ImageAspectColor;
-        };
         struct Tex3DInfo
         {
 
@@ -81,7 +87,7 @@ namespace Sakura::Graphics
         ResourceViewType viewType;
         union View
         {
-            Tex2DInfo texture2D;
+            TextureSubresourceRange texture2D;
             Tex3DInfo texture3D;
             Buffer buffer;
         } view;

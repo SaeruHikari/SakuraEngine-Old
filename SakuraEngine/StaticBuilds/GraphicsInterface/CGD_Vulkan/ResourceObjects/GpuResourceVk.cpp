@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 22:41:33
- * @LastEditTime: 2020-03-19 21:48:34
+ * @LastEditTime: 2020-03-20 23:17:19
  */
 #include "GpuResourceVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -169,12 +169,14 @@ Sampler* CGD_Vk::CreateSampler(const SamplerCreateInfo& info) const
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.magFilter = (VkFilter)info.magFilter;
     samplerInfo.minFilter = (VkFilter)info.minFilter;
+    samplerInfo.minLod = info.minLod;
+    samplerInfo.maxLod = info.maxLod;
     samplerInfo.addressModeU = (VkSamplerAddressMode)info.addressModeU;
     samplerInfo.addressModeV = (VkSamplerAddressMode)info.addressModeV;
     samplerInfo.addressModeW = (VkSamplerAddressMode)info.addressModeW;
     samplerInfo.anisotropyEnable = info.anisotropyEnable ? VK_TRUE : VK_FALSE;
     samplerInfo.maxAnisotropy = info.maxAnisotropy;
-
+    samplerInfo.mipLodBias  = info.mipLodBias;
     samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
     samplerInfo.compareOp = (VkCompareOp)info.compareOp;
     samplerInfo.mipmapMode = (VkSamplerMipmapMode)info.mipmapMode;

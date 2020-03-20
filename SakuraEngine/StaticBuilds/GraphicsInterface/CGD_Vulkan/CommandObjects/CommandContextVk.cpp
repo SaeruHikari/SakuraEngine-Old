@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-20 11:46:02
+ * @LastEditTime: 2020-03-21 00:49:44
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -53,6 +53,7 @@ CommandContext* CGD_Vk::AllocateContext(ECommandType type, bool bTransiant)
         overflow = 0;
         CGD_Vk::warn("CGD Warning: Context pool overflow! Did you free your context after using?");
     }
+    std::cout << "NEW" << std::endl;
     CommandContext* newContext = new CommandContextVk(*this, type, bTransiant);
     auto result = std::unique_ptr<CommandContext>(newContext);
     auto ptr = result.get();
@@ -163,7 +164,7 @@ void CommandContextVk::BindVertexBuffers(const GpuBuffer& vb)
 void CommandContextVk::BindIndexBuffers(const GpuBuffer& ib)
 {
     VkBuffer buf = ((const GpuResourceVkBuffer&)ib).buffer;
-    vkCmdBindIndexBuffer(commandBuffer, buf, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindIndexBuffer(commandBuffer, buf, 0, VK_INDEX_TYPE_UINT32);
 }
 
 void CommandContextVk::BeginRenderPass(
@@ -185,9 +186,11 @@ void CommandContextVk::BeginRenderPass(
     renderPassInfo.renderArea.extent =
         Transfer(rts.rts[0].resource->GetExtent());
 
-    std::array<VkClearValue, 2> clearValues = {};
-    clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
-    clearValues[1].depthStencil = {1.0f, 0};
+    std::vector<VkClearValue> clearValues(rts.rtNum);
+    for(auto i = 0; i < rts.rtNum; i++)
+    {
+        clearValues[i] = *(VkClearValue*)&(rts.rts[i].clearValue);
+    }
     
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
@@ -283,7 +286,8 @@ void CommandContextVk::ResourceBarrier(GpuBuffer& buffer)
 }
 
 void CommandContextVk::ResourceBarrier(GpuTexture& texture,
-    const ImageLayout oldLayout, const ImageLayout newLayout)
+    const ImageLayout oldLayout, const ImageLayout newLayout,
+    const TextureSubresourceRange& range)
 {
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -292,11 +296,11 @@ void CommandContextVk::ResourceBarrier(GpuTexture& texture,
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.image = ((const GpuResourceVkImage&)texture).image;
-    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = 1;
-    barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.aspectMask = range.aspectMask;
+    barrier.subresourceRange.baseMipLevel = range.baseMipLevel;
+    barrier.subresourceRange.levelCount = range.mipLevels;
+    barrier.subresourceRange.baseArrayLayer = range.baseArrayLayer;
+    barrier.subresourceRange.layerCount = range.layerCount;
 
     VkPipelineStageFlags sourceStage;
     VkPipelineStageFlags destinationStage;
@@ -331,6 +335,95 @@ void CommandContextVk::ResourceBarrier(GpuTexture& texture,
         0, nullptr,
         1, &barrier
     );
+}
+
+void CommandContextVk::GenerateMipmaps(GpuTexture& texture, Format format,
+    uint32_t texWidth, uint32_t texHeight, uint32_t mipLevels)
+{
+	VkFormatProperties formatProperties;
+	vkGetPhysicalDeviceFormatProperties(
+        cgd.GetCGDEntity().physicalDevice, Transfer(format), &formatProperties);
+
+	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) 
+    {
+        CGD_Vk::error("texture image format does not support linear blitting!");
+		throw std::runtime_error("texture image format does not support linear blitting!");
+	}
+
+	VkImageMemoryBarrier barrier = {};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.image = ((GpuResourceVkImage&)texture).image;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount = 1;
+	barrier.subresourceRange.levelCount = 1;
+
+	int32_t mipWidth = texWidth;
+	int32_t mipHeight = texHeight;
+
+	for (uint32_t i = 1; i < mipLevels; i++) {
+		barrier.subresourceRange.baseMipLevel = i - 1;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+		vkCmdPipelineBarrier(commandBuffer,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier);
+
+		VkImageBlit blit = {};
+		blit.srcOffsets[0] = { 0, 0, 0 };
+		blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.srcSubresource.mipLevel = i - 1;
+		blit.srcSubresource.baseArrayLayer = 0;
+		blit.srcSubresource.layerCount = 1;
+		blit.dstOffsets[0] = { 0, 0, 0 };
+		blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.dstSubresource.mipLevel = i;
+		blit.dstSubresource.baseArrayLayer = 0;
+		blit.dstSubresource.layerCount = 1;
+
+		vkCmdBlitImage(commandBuffer,
+            ((GpuResourceVkImage&)texture).image, 
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            ((GpuResourceVkImage&)texture).image, 
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1, &blit,
+			VK_FILTER_LINEAR);
+
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		vkCmdPipelineBarrier(commandBuffer,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier);
+
+		if (mipWidth > 1) mipWidth /= 2;
+		if (mipHeight > 1) mipHeight /= 2;
+	}
+
+	barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+	vkCmdPipelineBarrier(commandBuffer,
+		VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier);
 }
 
 void CommandContextVk::Reset()
