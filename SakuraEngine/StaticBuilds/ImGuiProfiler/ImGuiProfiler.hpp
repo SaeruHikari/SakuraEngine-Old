@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-16 17:02:13
- * @LastEditTime: 2020-03-19 19:02:29
+ * @LastEditTime: 2020-03-20 12:38:20
  */
 #pragma once
 #include "memory_resource"
@@ -31,12 +31,12 @@
 #include "ImGuiVulkanSDL.h"
 #include "SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/CGD_Vulkan.h"
 #include "SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/CommandObjects/CommandContextVk.h"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/GraphicsObjects/RenderPassVk.h"
 #include "SakuraEngine/Core/Core.h"
 
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Vk;
 using namespace Sakura::Graphics::Im::Vk;
-
 
 namespace Sakura::Graphics::Im
 {
@@ -65,14 +65,15 @@ namespace Sakura::Graphics::Im
         ~ImGuiProfiler()
         {
             auto pack = GetVkDevicePack();
-            vkDestroyRenderPass(pack.device, RenderPass, pack.allocator);
+            if(bSelfPass)
+                vkDestroyRenderPass(pack.device, RenderPass, pack.allocator);
             vkDestroyDescriptorPool(pack.device, descriptorPool, pack.allocator);
             ImGui_ImplVulkan_Shutdown();
         }
         ImGuiWindow* CreateImGuiWindow(SDL_Window* wind, int width, int height);
         void ImGuiRender(ImGuiWindow* wd);
         void ImGuiPresent(ImGuiWindow* wd);
-        void ImGuiInitialize(SDL_Window* wd, Format fmt);
+        void ImGuiInitialize(SDL_Window* wd, Format fmt, RenderPass* rpass);
     private:
         inline VkDevicePack GetVkDevicePack()
         {
@@ -89,6 +90,7 @@ namespace Sakura::Graphics::Im
             pack.minImageCount = 2;
             return pack;
         }
+        bool bSelfPass = false;
     public:
         VkDescriptorPool descriptorPool;
         VkRenderPass RenderPass;
@@ -127,8 +129,9 @@ namespace Sakura::Graphics::Im
             return;
         }
     }
-
-    void ImGuiProfiler::ImGuiInitialize(SDL_Window* wind, Format fmt)
+    
+    void ImGuiProfiler::ImGuiInitialize(SDL_Window* wind,
+        Format fmt, Sakura::Graphics::RenderPass* rpass)
     {
         VkDevicePack pack = GetVkDevicePack();
         switch (backend)
@@ -188,7 +191,12 @@ namespace Sakura::Graphics::Im
             init_info.MinImageCount = pack.minImageCount;
             init_info.ImageCount = 2;
             init_info.CheckVkResultFn = check_vk_result;
-            RenderPass = ImGuiCreateRenderPass(pack, Transfer(fmt));
+            auto RenderPass = ((RenderPassVk*)rpass)->renderPass;
+            if(RenderPass == nullptr)
+            {
+                bSelfPass = true;
+                ImGuiCreateRenderPass(pack, Transfer(fmt));
+            }
             ImGui_ImplVulkan_Init(&init_info, RenderPass);
             {
                 // Use any command queue

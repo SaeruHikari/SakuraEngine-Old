@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-09 00:45:42
- * @LastEditTime: 2020-03-18 10:44:19
+ * @LastEditTime: 2020-03-20 12:20:04
  */
 #include "RenderPassVk.h"
 #include "../CGD_Vulkan.h"
@@ -50,6 +50,8 @@ RenderPassVk::RenderPassVk(
         colorAttachments[i] = Transfer(info.attachments[i]);
     }
     renderPassInfo.pAttachments = colorAttachments;
+    auto ds =  renderPassInfo.pAttachments[1];
+
 
     renderPassInfo.subpassCount = (uint32)info.subProcs.size();
     VkSubpassDescription* subpasses 
@@ -59,6 +61,8 @@ RenderPassVk::RenderPassVk(
         subpasses[i] = Transfer(info.subProcs[i]);
     }
     renderPassInfo.pSubpasses = subpasses;
+
+
 
     renderPassInfo.dependencyCount = (uint32)info.dependencies.size();
     VkSubpassDependency* deps = 

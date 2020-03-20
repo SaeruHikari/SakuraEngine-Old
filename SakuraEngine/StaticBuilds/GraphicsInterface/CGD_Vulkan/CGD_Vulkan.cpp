@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-20 10:25:52
+ * @LastEditTime: 2020-03-20 11:56:13
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -490,7 +490,7 @@ VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates,
 const Format CGD_Vk::FindDepthFormat(void) const
 {
     return Transfer(findSupportedFormat(
-        {VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D32_SFLOAT,
+        {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT,
         VK_FORMAT_D24_UNORM_S8_UINT},
             VK_IMAGE_TILING_OPTIMAL,
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT,

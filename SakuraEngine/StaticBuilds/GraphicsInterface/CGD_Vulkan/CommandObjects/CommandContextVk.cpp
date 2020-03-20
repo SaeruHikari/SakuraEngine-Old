@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-19 18:54:03
+ * @LastEditTime: 2020-03-20 11:46:02
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -185,9 +185,12 @@ void CommandContextVk::BeginRenderPass(
     renderPassInfo.renderArea.extent =
         Transfer(rts.rts[0].resource->GetExtent());
 
-    VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
-    renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearColor;
+    std::array<VkClearValue, 2> clearValues = {};
+    clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+    clearValues[1].depthStencil = {1.0f, 0};
+    
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
     vkCmdBeginRenderPass(commandBuffer, 
         &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }

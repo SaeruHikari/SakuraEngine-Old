@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:06:12
- * @LastEditTime: 2020-03-19 22:21:24
+ * @LastEditTime: 2020-03-20 11:29:59
  */
 #include "GraphicsPipelineVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -99,11 +99,13 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     auto vps = Transfer(info.viewportStateCreateInfo);
     auto raster = Transfer(info.rasterizationStateCreateInfo);
     auto ms = Transfer(info.multisampleStateCreateInfo);
+    auto ds = Transfer(info.depthStencilCreateInfo);
     pipelineInfo.pVertexInputState = &vertInput;
     pipelineInfo.pInputAssemblyState = &ia;
     pipelineInfo.pViewportState = &vps;
     pipelineInfo.pRasterizationState = &raster;
     pipelineInfo.pMultisampleState = &ms;
+    pipelineInfo.pDepthStencilState = &ds;
     std::vector<VkPipelineColorBlendAttachmentState> 
         attachmentStates(info.colorBlendStateCreateInfo.colorBlendAttachmentCount);
     for(auto i = 0u; i < attachmentStates.size(); i++)

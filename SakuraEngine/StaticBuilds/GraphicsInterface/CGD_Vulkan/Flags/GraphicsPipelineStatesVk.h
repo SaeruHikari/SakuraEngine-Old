@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 11:13:03
- * @LastEditTime: 2020-03-18 19:42:29
+ * @LastEditTime: 2020-03-20 11:47:23
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
@@ -210,6 +210,23 @@ namespace Sakura::Graphics::Vk
         multisampling.rasterizationSamples
             = Transfer(in.rasterizationSamples);
         return multisampling;    
+    }
+
+    sinline static VkPipelineDepthStencilStateCreateInfo Transfer(
+        const DepthStencilStateCreateInfo& in)
+    {
+        VkPipelineDepthStencilStateCreateInfo ds = {};
+        ds.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        ds.depthTestEnable = in.depthTestEnable ? VK_TRUE : VK_FALSE;
+        ds.depthWriteEnable = in.depthWriteEnable ? VK_TRUE : VK_FALSE;
+        ds.depthCompareOp = *(VkCompareOp*)&in.depthCompareOp;
+        ds.depthBoundsTestEnable = in.depthBoundsTestEnable ? VK_TRUE : VK_FALSE;
+        ds.stencilTestEnable = in.stencilTestEnable ? VK_TRUE : VK_FALSE;
+        ds.minDepthBounds = in.minDepthBounds;
+        ds.maxDepthBounds = in.maxDepthBounds;
+        ds.front = {}; // Optional
+        ds.back = {}; // Optional
+        return ds;
     }
 
     sinline static VkPipelineColorBlendAttachmentState Transfer(

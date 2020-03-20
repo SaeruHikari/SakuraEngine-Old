@@ -111,10 +111,10 @@ namespace Sakura::Graphics::Vk
         friend class CommandContextVk;
     public:
         virtual ~RenderPassVk();
+        VkRenderPass renderPass;
     protected:
         RenderPassVk(
             const RenderPassCreateInfo& info, const CGD_Vk& _cgd);
-        VkRenderPass renderPass;
         const CGD_Vk& cgd;
     };
 }

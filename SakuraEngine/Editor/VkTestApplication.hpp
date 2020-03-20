@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-20 10:42:06
+ * @LastEditTime: 2020-03-20 12:35:32
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -192,12 +192,15 @@ private:
 
     void ResizeWindow(uint32 width, uint32 height)
     {
-        cgd->WaitIdle();
-		GraphicsPipelineCreateInfo info;
+        cgd->WaitIdle();    
+
+        DepthStencilStateCreateInfo depthStencil;
+        GraphicsPipelineCreateInfo info;
         std::vector<ShaderStageCreateInfo> infos{vsStage, fsStage};
 		info.shaderStages = infos.data();
         info.shaderStageCount = infos.size();
         info.pipelineLayoutInfo.setLayouts = rootSignature.get();
+        info.depthStencilCreateInfo = depthStencil;
         // recreate swapchain
         swapChain.reset();
         swapChain.reset(cgd->CreateSwapChain(width, height, &surface));
@@ -205,20 +208,31 @@ private:
 		vp.height = height; vp.width = width;
 		Rect2D scissor = {};
 		scissor.extent = swapChain->GetExtent();
-        
+
 		//Create Render Pass
 		RenderPassCreateInfo rpinfo = {};
+        AttachmentDescription depthAttachment;
+        depthAttachment.format = cgd->FindDepthFormat();
+        depthAttachment.storeOp = AttachmentStoreOp::AttachmentStoreOpDontCare;
+        depthAttachment.finalLayout = ImageLayout::DepthStencilAttachment;
+        AttachmentReference depthAttachmentRef 
+            = {1, ImageLayout::DepthStencilAttachment};
+
 		AttachmentDescription colorAttachment;
 		colorAttachment.format = swapChain->GetPixelFormat();
 		AttachmentReference colorAttachmentRef 
             = {0, ImageLayout::ColorAttachment};
-		SubpassDescription subpass = {};
+		
+        SubpassDescription subpass = {};
 		subpass.colorAttachments.push_back(colorAttachmentRef);
-        
-		rpinfo.attachments.push_back(colorAttachment);
+		subpass.depthStencilAttachment.push_back(depthAttachmentRef);
+		
+        rpinfo.attachments.push_back(colorAttachment);
+        rpinfo.attachments.push_back(depthAttachment);
+
 		rpinfo.subProcs.push_back(subpass);
 		pass.reset(cgd->CreateRenderPass(rpinfo));
-        
+
          // vertex input
         auto bindingDescription = Vertex::getBindingDescription();
         auto attributeDescriptions = Vertex::getAttributeDescriptions();
@@ -421,7 +435,7 @@ private:
         createSampler();
         cgd->WaitIdle();
         profiler = std::make_unique<Sakura::Graphics::Im::ImGuiProfiler>(*cgd.get());
-        profiler->ImGuiInitialize(win, swapChain->GetPixelFormat()); 
+        profiler->ImGuiInitialize(win, swapChain->GetPixelFormat(), pass.get()); 
     }
 
     void updateUniformBuffer(uint32_t frameCount)
@@ -467,12 +481,14 @@ private:
         auto frameCount = swapChain->GetLastFrame();
         RenderTarget rt{&swapChain->GetSwapChainImage(frameCount),
             &swapChain->GetChainImageView(frameCount)};
-        RenderTargetSet rts{&rt, 1};
+        RenderTarget ds{depth.get(), depthView.get()};
+        RenderTarget rts[2] = {rt, ds};
+        RenderTargetSet rtset{(RenderTarget*)rts, 2};
         updateUniformBuffer(frameCount);
         auto context = 
             cgd->AllocateContext(ECommandType::CommandContext_Graphics);
         context->Begin();
-        context->BeginRenderPass(Pipeline.get(), rts);
+        context->BeginRenderPass(Pipeline.get(), rtset);
         context->BindVertexBuffers(*vertexBuffer.get());
         context->BindIndexBuffers(*indexBuffer.get());
         const auto* arg = cbvArgument.get();
