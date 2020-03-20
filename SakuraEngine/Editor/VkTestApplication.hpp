@@ -22,10 +22,11 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-20 01:19:09
+ * @LastEditTime: 2020-03-20 10:42:06
  */
 #pragma once
 #define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -83,7 +84,7 @@ using namespace Sakura::Graphics::Vk;
 
 struct Vertex
 {
-    Sakura::Math::Vector2f pos;
+    Sakura::Math::Vector3f pos;
     Sakura::Math::Vector3f color;
     glm::vec2 texCoord;
     static VertexInputBindingDescription getBindingDescription() {
@@ -100,7 +101,7 @@ struct Vertex
 
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = Format::R32G32_SFLOAT;
+        attributeDescriptions[0].format = Format::R32G32B32_SFLOAT;
         attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
         attributeDescriptions[1].binding = 0;
@@ -117,13 +118,19 @@ struct Vertex
     }
 };
 const std::vector<Vertex> vertices = {
-    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 };
 const std::vector<uint16_t> indices = {
-    0, 1, 2, 2, 3, 0
+    0, 1, 2, 2, 3, 0,
+    4, 5, 6, 6, 7, 4
 };
 
 struct UniformBufferObject
@@ -231,6 +238,7 @@ private:
 		info.viewportStateCreateInfo.scissorCount = 1;
 		Pipeline.reset(cgd->CreateGraphicsPipeline(info, *pass.get()));
     }
+
     void createTexture()
     {
         int width, height, channels;
@@ -279,6 +287,33 @@ private:
             cgd->ViewIntoResource(*texture.get(), tvinfo));
     }
     
+    void createDepth()
+    {
+        auto depthFormat = cgd->FindDepthFormat();
+        TextureCreateInfo imgInfo = {};
+        imgInfo.width = swapChain->GetExtent().width;
+        imgInfo.height = swapChain->GetExtent().height;
+        imgInfo.format = depthFormat;
+        imgInfo.arrayLayers = 1;
+        imgInfo.depth = 1;
+        imgInfo.mipLevels = 1;
+        imgInfo.usage = 
+            ImageUsage::DepthStencilAttachmentImage | ImageUsage::SampledImage;
+        depth.reset(
+            cgd->CreateResource(imgInfo));
+
+        ResourceViewCreateInfo dsvinfo = {};
+        dsvinfo.viewType = ResourceViewType::ImageView2D;
+        dsvinfo.format = depthFormat;
+        dsvinfo.view.texture2D.baseMipLevel = 0;
+        dsvinfo.view.texture2D.mipLevels = 1;
+        dsvinfo.view.texture2D.baseArrayLayer = 0;
+        dsvinfo.view.texture2D.layerCount = 1;
+        dsvinfo.view.texture2D.aspectMask = ImageAspectFlag::ImageAspectDepth;
+        depthView.reset(
+            cgd->ViewIntoResource(*depth.get(), dsvinfo));
+    }
+
     void createBuffer()
     {
         BufferCreateInfo bufferInfo = {};
@@ -337,6 +372,7 @@ private:
             constantBuffers[i].reset((GpuBuffer*)cgd->CreateResource(cbufferInfo));
         }
         createTexture();
+        createDepth();
     }
 
     void createRootSignature()
@@ -484,10 +520,12 @@ private:
         cgd->WaitIdle();
         sampler.reset();
         textureView.reset();
+        depthView.reset();
+        texture.reset();
+        depth.reset();
         profiler.reset();
         for(auto i = 0; i < constantBuffers.size(); i++)
             constantBuffers[i].reset();
-        texture.reset();
         vertshader.reset();
         fragshader.reset();
         Pipeline.reset();
@@ -515,9 +553,13 @@ private:
     std::unique_ptr<Sampler> sampler;
     std::vector<std::unique_ptr<GpuBuffer>> constantBuffers;
     std::unique_ptr<GpuBuffer> vertexBuffer, indexBuffer;
-    std::unique_ptr<GpuTexture> texture;
 
+    std::unique_ptr<GpuTexture> texture;
     std::unique_ptr<ResourceView> textureView;
+
+    std::unique_ptr<GpuTexture> depth;
+    std::unique_ptr<ResourceView> depthView;
+
     std::unique_ptr<Sakura::Graphics::Im::ImGuiProfiler> profiler;
     ShaderStageCreateInfo vsStage, fsStage;
     std::unique_ptr<Sakura::Graphics::CGD> cgd;

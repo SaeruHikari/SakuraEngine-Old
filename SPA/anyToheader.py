@@ -1,7 +1,7 @@
 '''
 @Author: your name
 @Date: 2020-02-15 21:10:01
-@LastEditTime: 2020-02-20 13:10:28
+@LastEditTime: 2020-03-20 11:04:03
 @LastEditors: Please set LastEditors
 @Description: In User Settings Edit
 @FilePath: /JustPlug-master/home/saeruhikari/Coding/SakuraEngine/SPA/anyToheader.py
@@ -22,9 +22,9 @@ def json2header(filereg, file_path):
     header += '//Contains the infomation of a module of Sakura Engine\n'
     header += '//With the MIT License Copyright!\n'
     header += '#pragma once\n'
-    header += '#include <tuple>\n'
+    header += '#include <string>\n'
     header += '#include <cstddef>\n\n'
-    header += 'inline static const char sp_meta[] = {\n'  
+    header += 'const std::string sp_meta = {\n'  
     counter = 0
     for _byte in content.encode():
         if counter >= 12:
@@ -36,11 +36,11 @@ def json2header(filereg, file_path):
     header = header.rstrip()
     header = header.rstrip(',')
     header += '\n};\n\n'
-    header += 'inline static const std::size_t sp_meta_size = '
+    header += 'const std::size_t sp_meta_size = '
     header += str(len(content.encode()))
     header += ';\n\n'
-    header += 'inline static std::size_t __GetMetaSize(void)\n{\n    return sp_meta_size;\n}\n'
-    header += 'inline static const char* __GetMetaData(void)\n{\n    return sp_meta;\n}\n'
+    header += 'inline std::size_t __GetMetaSize(void)\n{\n    return sp_meta_size;\n}\n'
+    header += 'inline const char* __GetMetaData(void)\n{\n    return sp_meta.c_str();\n}\n'
     header += 'public:\nvirtual const char* GetMetaData(void) override\n'
     header += '{return __GetMetaData();}\n'
     header += 'public:\nvirtual std::size_t GetMetaSize(void) override\n'

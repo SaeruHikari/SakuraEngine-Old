@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 23:23:02
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-08 16:20:05
+ * @LastEditTime: 2020-03-20 11:06:29
  */
 #define API_EXPORTS
 #include "../include/modulemanager.h"
@@ -101,8 +101,6 @@ namespace Sakura::SPA
             IDynamicModule* module = (IDynamicModule*)ModulesMap[name].get();
             module->sharedLib = std::move(sharedLib);
             module->_information = ParseMetaData(module->GetMetaData());
-            // Delay onload call to initialize time(with dependency graph)
-            //module->OnLoad();
             return module;
         }
         return nullptr;
@@ -138,7 +136,8 @@ namespace Sakura::SPA
         }
         catch (const std::exception & e)
         {
-            //std::cerr << e.what() << '\n';
+            std::cerr << e.what() << '\n';
+            std::cerr << metadata << std::endl;
         }
         return info;
     }

@@ -4,7 +4,7 @@
 	"prettyname": "CoreModule",
 	"version": "1.0.0",
 	"linking": "shared",
-	"dependencies": [{}],
+	"dependencies": [],
 	"author": "",
 	"url": "",
 	"license": "",

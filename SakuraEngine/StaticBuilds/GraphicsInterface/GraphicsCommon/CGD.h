@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-19 21:14:42
+ * @LastEditTime: 2020-03-20 10:19:24
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -125,6 +125,8 @@ namespace Sakura::Graphics
 
         virtual [[nodiscard]] Sampler* CreateSampler(
             const SamplerCreateInfo&) const = 0;
+
+        virtual const Format FindDepthFormat(void) const = 0;
     public:
         const uint64 contextNum() const {return contextPools[0].size();}
 

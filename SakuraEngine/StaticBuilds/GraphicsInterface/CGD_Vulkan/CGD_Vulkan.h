@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-19 21:15:31
+ * @LastEditTime: 2020-03-20 10:20:12
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -119,6 +119,8 @@ namespace Sakura::Graphics::Vk
     // Implements: See GraphicsObjects/RootSignatureVk.cpp
         virtual [[nodiscard]] RootSignature* CreateRootSignature(
            const RootSignatureCreateInfo& sigInfo) const override final;
+    public:
+        virtual const Format FindDepthFormat(void) const override final;
 
     private:
          /**
