@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-03-04 07:52:14
- * @LastEditTime: 2020-03-06 11:28:25
+ * @LastEditTime: 2020-03-21 10:35:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \docs\Modules\CGD\CGD.md
@@ -16,6 +16,8 @@
 !> &emsp;&emsp;旧式的图形API倾向于把状态交由Driver管理, 例如在OpenGL中您可以使用int句柄和纯函数操作所有的绘图功能。
 
 &emsp;&emsp;这同时意味着CGD可以作为一个静态库被链接到任何您需要的目标上, 并且不会引入全局的状态混乱。如果您对**状态**有疑问, 请参阅[Modules](/Modules/README.md)。
+
+?> &emsp;&emsp;由于vulkan的设计理念尤为现代, CGD使用起来会很像vulkan。CGD摒弃了所有SetXXX式的"同步状态机风格"API, 转为采用完全延迟式的指令API设计。这可能需要一定时间去适应, 但在熟练后将保证更为清晰的条理。
 
 
 ## CGD扼要
@@ -35,7 +37,7 @@
 &emsp;&emsp;要将命令送往GPU, CPU需要预先完成一系列的指令录制工作, 我们把指令相关的一系列接口称为[指令接口/命令族]()。在CGD中, 指令的录制交给接口CommandContext完成, 而提交则交给接口CommandQueue完成, 您也可以申请多个CommandContext, 之后统一的提交给一条CommandQueue。
 
 ?>现代图形API都支持并推荐使用AsyncCompute, 这能让您把不同性质的GPU任务交给不同的队列来完成。</br> 
-&emsp;**- GraphicsQueue**: 提交图形绘制任务, 仅能有一条;</br> 
+&emsp;**- GraphicsQueue**: 提交图形绘制任务;</br> 
 &emsp;**- ComputeQueue**: 提交通用计算任务, 可以有多条;</br> 
 &emsp;**- CopyQueue**: 提交拷贝任务, 可以有多条。
 
@@ -49,19 +51,24 @@
 ### 创建设备, 队列集以及交换链
 &emsp;&emsp;在绘图前, 我们也需要创建一系列[设备族](StaticBuilds/CGD/CGD_Device.md)。在CGD中, 一组必须的设备和一套异步计算的队列集被封装进一个结构**CGDEntity**中。您同样需要创建对应窗口的**SwapChain**。在下例中, CGD和SDL共同完成了设备的初始化以及窗口的创建。
 
+&emsp;&emsp;创建设备, 传入窗口初始化逻辑设备, 队列集, 并创建一条交换链:
 ``` cpp
-    Sakura::Graphics::Vk::CGDEntityVk entityVk;
-    VkSurfaceKHR surface;
-    SDL_Window* win = nullptr;
-    
-    using Sakura::Graphics::Vk::CGD_Vk;
+    // Create Devices
     Sakura::Graphics::CGDInfo cgd_info;
+    cgd = std::make_unique<Sakura::Graphics::Vk::CGD_Vk>();
     cgd_info.enableDebugLayer = true;
     cgd_info.extentionNames = VkSDL_GetInstanceExtensions(win,
         cgd_info.enableDebugLayer);
-    using CGD = CGD_Vk;
-    CGD::Initialize(cgd_info, entityVk);
-    SDL_Vulkan_CreateSurface(win, entityVk.GetVkInstance(), &surface);
-    CGD::InitQueueSet(&surface, entityVk);
-    CGD::CreateSwapChain(width, height, entityVk, &surface);
+    cgd_info.extentionNames.push_back
+        (VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    cgd->Initialize(cgd_info);
+    SDL_Vulkan_CreateSurface(win,
+        ((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(), &surface);
+    cgd->InitQueueSet(&surface);
+    swapChain.reset(cgd->CreateSwapChain(width, height, &surface));
+```
+
+&emsp;&emsp;创建一条交换链:
+``` cpp
+
 ```

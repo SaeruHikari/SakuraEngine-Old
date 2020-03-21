@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:06:12
- * @LastEditTime: 2020-03-20 11:29:59
+ * @LastEditTime: 2020-03-22 01:14:08
  */
 #include "GraphicsPipelineVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -50,12 +50,12 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    if(info.pipelineLayoutInfo.setLayouts)
+    if(info.pipelineLayoutInfo.rootSignature)
     {
         pipelineLayoutInfo.setLayoutCount = 1;
             //= info.pipelineLayoutInfo.setLayouts->GetSlotNum();
         pipelineLayoutInfo.pSetLayouts 
-            = &((const RootSignatureVk*)info.pipelineLayoutInfo.setLayouts)->descriptorSetLayout;
+            = &((const RootSignatureVk*)info.pipelineLayoutInfo.rootSignature)->descriptorSetLayout;
     }
     pipelineLayoutInfo.pushConstantRangeCount 
         = info.pipelineLayoutInfo.pushConstantRangeCount;
@@ -67,8 +67,8 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     }
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = (uint32)info.shaderStageCount;
-    std::vector<VkPipelineShaderStageCreateInfo> pStages(info.shaderStageCount); 
+    pipelineInfo.stageCount = (uint32)info.shaderStages.size();
+    std::vector<VkPipelineShaderStageCreateInfo> pStages(pipelineInfo.stageCount); 
     for(auto i = 0; i < pipelineInfo.stageCount; i++)
         pStages[i] = Transfer(info.shaderStages[i]);
     pipelineInfo.pStages = pStages.data();
@@ -77,16 +77,16 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     vertexInputInfo.sType = 
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexBindingDescriptionCount 
-        = info.vertexInputInfo.vertexBindingDescriptionCount;
+        = (uint32)info.vertexInputInfo.vertexBindingDescriptions.size();
     vertexInputInfo.pVertexBindingDescriptions
         = (const VkVertexInputBindingDescription*)
-        (info.vertexInputInfo.vertexBindingDescriptions);
+        (info.vertexInputInfo.vertexBindingDescriptions.data());
     vertexInputInfo.vertexAttributeDescriptionCount 
-        = info.vertexInputInfo.vertexAttributeDescriptionCount;
+        = (uint32_t)info.vertexInputInfo.vertexAttributeDescriptions.size();
     std::vector<VkVertexInputAttributeDescription> attributesDes(vertexInputInfo.vertexAttributeDescriptionCount);
     for(auto i = 0; i < attributesDes.size(); i++)
     {
-        auto src = info.vertexInputInfo.vertexAttributeDescriptions;
+        auto&& src = info.vertexInputInfo.vertexAttributeDescriptions;
         attributesDes[i].binding = src[i].binding;
         attributesDes[i].format = Transfer(src[i].format);
         attributesDes[i].offset = src[i].offset;

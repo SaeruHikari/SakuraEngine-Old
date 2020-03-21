@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-21 00:49:04
+ * @LastEditTime: 2020-03-22 01:54:50
  */
 #pragma once
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -235,6 +235,11 @@ private:
 		fs_srv.read(fs_bytes.data(), fs_bytes.size());
 		vertshader = cgd->CreateShader(vs_bytes.data(), vs_bytes.size());
 		fragshader = cgd->CreateShader(fs_bytes.data(), fs_bytes.size());
+		// shader Stages
+		vsStage.stage = ShaderStageFlags::VertexStage;
+		vsStage.shader = vertshader.get(); vsStage.entry = "main";
+		fsStage.stage = ShaderStageFlags::PixelStage;
+		fsStage.shader = fragshader.get(); fsStage.entry = "main";
     }
 
     void ResizeWindow(uint32 width, uint32 height)
@@ -243,68 +248,35 @@ private:
         // recreate swapchain
         swapChain.reset();
         swapChain.reset(cgd->CreateSwapChain(width, height, &surface));
-		Viewport vp = {};
-		vp.height = height; vp.width = width;
-		Rect2D scissor = {};
-		scissor.extent = swapChain->GetExtent();
-
+        createDepth(); 
+        // Create Graphics Pipeline
         DepthStencilStateCreateInfo depthStencil;
         GraphicsPipelineCreateInfo info;
-        // shaders
-		vsStage.stage = ShaderStageFlags::VertexStage;
-		vsStage.shader = vertshader.get(); vsStage.entry = "main";
-		fsStage.stage = ShaderStageFlags::PixelStage;
-		fsStage.shader = fragshader.get(); fsStage.entry = "main";
-        std::vector<ShaderStageCreateInfo> infos{vsStage, fsStage};
-		info.shaderStages = infos.data();
-        info.shaderStageCount = infos.size();
-        info.pipelineLayoutInfo.setLayouts = rootSignature.get();
+        info.PushShaderStage(vsStage, fsStage);
+        info.AddViewport(width, height);
+        info.AddScissor(swapChain->GetExtent());
+        info.pipelineLayoutInfo.rootSignature = rootSignature.get();
         info.depthStencilCreateInfo = depthStencil;
+		info.AddVertexBinding(Vertex::getBindingDescription());
+		info.AddVertexAttribute(Vertex::getAttributeDescriptions());
 
-		//Create Render Pass
-		RenderPassCreateInfo rpinfo = {};
+		// Create Render Pass
+		RenderPassCreateInfo rpinfo;
         AttachmentDescription colorAttachment;
 		colorAttachment.format = swapChain->GetPixelFormat();
-		AttachmentReference colorAttachmentRef 
-            = {0, ImageLayout::ColorAttachment};
-
         AttachmentDescription depthAttachment;
         depthAttachment.format = cgd->FindDepthFormat();
         depthAttachment.storeOp = AttachmentStoreOp::AttachmentStoreOpDontCare;
         depthAttachment.finalLayout = ImageLayout::DepthStencilAttachment;
-        AttachmentReference depthAttachmentRef 
-            = {1, ImageLayout::DepthStencilAttachment};
+        rpinfo.AttachColor(colorAttachment);
+        rpinfo.AttachDepth(depthAttachment);
 		
-        SubpassDescription subpass = {};
-		subpass.colorAttachments.push_back(colorAttachmentRef);
-		subpass.depthStencilAttachment.push_back(depthAttachmentRef);
-		
-        rpinfo.attachments.push_back(colorAttachment);
-        rpinfo.attachments.push_back(depthAttachment);
-
-		rpinfo.subProcs.push_back(subpass);
 		pass.reset(cgd->CreateRenderPass(rpinfo));
-
-         // vertex input
-        auto bindingDescription = Vertex::getBindingDescription();
-        auto attributeDescriptions = Vertex::getAttributeDescriptions();
-        std::vector<VertexInputBindingDescription>
-            vertexBindingDescriptions{bindingDescription};
-        std::vector<VertexInputAttributeDescription> 
-            vertexAttributeDescriptions{attributeDescriptions[0],
-            attributeDescriptions[1], attributeDescriptions[2]};
-        VertexInputStateCreateInfo vbInfo = {};
-        vbInfo.vertexAttributeDescriptions = vertexAttributeDescriptions.data();
-        vbInfo.vertexAttributeDescriptionCount = (uint32)vertexAttributeDescriptions.size();
-        vbInfo.vertexBindingDescriptions = vertexBindingDescriptions.data();
-        vbInfo.vertexBindingDescriptionCount = (uint32)vertexBindingDescriptions.size();
-        info.vertexInputInfo = vbInfo;
-		info.viewportStateCreateInfo.vps = &vp;
-		info.viewportStateCreateInfo.vpCount = 1;
-		info.viewportStateCreateInfo.scissors = &scissor;
-		info.viewportStateCreateInfo.scissorCount = 1;
 		Pipeline.reset(cgd->CreateGraphicsPipeline(info, *pass.get()));
-        createDepth(); 
+
+        profiler.reset();
+        profiler = std::make_unique<Sakura::Graphics::Im::ImGuiProfiler>(*cgd.get());
+        profiler->ImGuiInitialize(win, swapChain.get()); 
     }
 
     void createTexture()
@@ -479,10 +451,7 @@ private:
         createShader();
         createRootSignature();
         ResizeWindow(1280, 720);
-        createBuffer();;
-        cgd->WaitIdle();
-        profiler = std::make_unique<Sakura::Graphics::Im::ImGuiProfiler>(*cgd.get());
-        profiler->ImGuiInitialize(win, swapChain->GetPixelFormat(), pass.get()); 
+        createBuffer();
     }
 
     void updateUniformBuffer(uint32_t frameCount)
@@ -526,6 +495,9 @@ private:
 
     void mainLoop()
     {
+        cgd->Wait(
+            fence[swapChain->GetCurrentFrame()].get(),
+            fence[swapChain->GetCurrentFrame()]->GetCompletedValue());
         cgd->Present(swapChain.get());
 
         auto frameCount = swapChain->GetCurrentFrame();
@@ -535,7 +507,6 @@ private:
         RenderTarget rts[2] = {rt, ds};
         RenderTargetSet rtset{(RenderTarget*)rts, 2};
 
-        cgd->Wait(fence[frameCount].get(), fence[frameCount]->GetCompletedValue());
         auto context = 
             cgd->AllocateContext(ECommandType::CommandContext_Graphics);
 
@@ -548,7 +519,13 @@ private:
         context->BindRootArguments(PipelineBindPoint::BindPointGraphics,
             &arg, 1);
         context->DrawIndexed(indices.size(), 1);
+        context->EndRenderPass();
+        context->End();
+        cgd->GetGraphicsQueue()->Submit(context);
         
+		auto imContext =
+			cgd->AllocateContext(ECommandType::CommandContext_Graphics);
+        imContext->Begin();
         profiler->BeginFrame(win);
         {
             static float f = 0.0f;
@@ -558,20 +535,22 @@ private:
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
-        profiler->Record(context);
-        context->EndRenderPass();
-        context->End();
-
+        profiler->Record(imContext, rt);
+        imContext->End();
+        cgd->GetGraphicsQueue()->Submit(imContext, 
+        fence[frameCount].get(),
+        fence[frameCount]->GetCompletedValue(),
+        fence[frameCount]->GetCompletedValue() + 1);
+ 
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
         }
-        cgd->GetGraphicsQueue()->Submit(context);
-        cgd->GetGraphicsQueue()->Submit(
-            fence[frameCount].get(), fence[frameCount]->GetCompletedValue() + 1);
+        
         cgd->FreeContext(context);
+        cgd->FreeContext(imContext);
     }
 
     void cleanUp()

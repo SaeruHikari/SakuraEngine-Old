@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-09 00:45:42
- * @LastEditTime: 2020-03-20 12:20:04
+ * @LastEditTime: 2020-03-22 01:44:51
  */
 #include "RenderPassVk.h"
 #include "../CGD_Vulkan.h"
@@ -52,26 +52,10 @@ RenderPassVk::RenderPassVk(
     renderPassInfo.pAttachments = colorAttachments;
     auto ds =  renderPassInfo.pAttachments[1];
 
-
-    renderPassInfo.subpassCount = (uint32)info.subProcs.size();
-    VkSubpassDescription* subpasses 
-        = new VkSubpassDescription[info.subProcs.size()];
-    for(auto i = 0u; i < info.subProcs.size(); i++)
-    {
-        subpasses[i] = Transfer(info.subProcs[i]);
-    }
-    renderPassInfo.pSubpasses = subpasses;
-
-
-
-    renderPassInfo.dependencyCount = (uint32)info.dependencies.size();
-    VkSubpassDependency* deps = 
-        new VkSubpassDependency[info.dependencies.size()];
-    for(auto i = 0u; i < info.dependencies.size(); i++)
-    {
-        deps[i] = *(VkSubpassDependency*)&info.dependencies[i];
-    }
-    renderPassInfo.pDependencies = deps;
+    renderPassInfo.subpassCount = 1;
+    VkSubpassDescription subpass = Transfer(info); 
+    renderPassInfo.pSubpasses = &subpass;
+    renderPassInfo.dependencyCount = 0;
 
     if (vkCreateRenderPass(
         cgd.GetCGDEntity().device, &renderPassInfo, nullptr, &renderPass
@@ -82,8 +66,6 @@ RenderPassVk::RenderPassVk(
         }
 
     delete[] colorAttachments;
-    delete[] subpasses;
-    delete[] deps;
 }
 
 RenderPass* CGD_Vk::CreateRenderPass(

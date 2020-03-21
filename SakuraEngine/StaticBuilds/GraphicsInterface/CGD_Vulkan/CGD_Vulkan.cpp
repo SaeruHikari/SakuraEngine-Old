@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-20 11:56:13
+ * @LastEditTime: 2020-03-22 00:29:40
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -142,10 +142,10 @@ void CGD_Vk::Present(SwapChain* chain)
     vkAcquireNextImageKHR(
         entityVk.device,
         vkChain->swapChain,
-        0,
+        UINT64_MAX,
         vkChain->imageAvailableSemaphores[vkChain->currentFrame],
         VK_NULL_HANDLE,
-        &vkChain->nextPresent
+        &vkChain->currentPresent
     );
     VkPresentInfoKHR info = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
     info.swapchainCount = 1;
@@ -154,6 +154,7 @@ void CGD_Vk::Present(SwapChain* chain)
     info.waitSemaphoreCount = 1;
     info.pWaitSemaphores 
         = &vkChain->imageAvailableSemaphores[vkChain->currentFrame];
+    vkQueueWaitIdle(presentQueue);
     if(vkQueuePresentKHR(presentQueue, &info) != VK_SUCCESS)
     {
         Sakura::log::error("Vulkan: failed to present Vulkan graphics queue!");

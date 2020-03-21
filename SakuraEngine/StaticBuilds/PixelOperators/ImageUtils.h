@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-13 16:46:06
- * @LastEditTime: 2020-03-19 19:18:09
+ * @LastEditTime: 2020-03-21 20:57:45
  */
 #pragma once
 #define STB_IMAGE_IMPLEMENTATION
@@ -46,7 +46,7 @@ namespace Sakura::Images
         }
         ~Image()
         {
-            stbi_image_free(data.get());
+            //stbi_image_free(data.get());
             data.reset();
         }
         enum PixelChannel

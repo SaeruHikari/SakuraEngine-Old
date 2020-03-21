@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-16 17:22:38
- * @LastEditTime: 2020-03-17 11:23:18
+ * @LastEditTime: 2020-03-21 21:42:52
  */
 #pragma once
 #include "SakuraEngine/StaticBuilds/ImGuiProfiler/imgui/imgui.h"
@@ -30,12 +30,19 @@
 #include "SakuraEngine/StaticBuilds/ImGuiProfiler/imgui/imgui_impl_vulkan.h"
 #include "vulkan/vulkan.h"
 #include <memory>
+#include <map>
 extern "C"
 {
 	#include "SDL2/SDL.h"
 	#include "SDL2/SDL_surface.h"
 	#include "SDL2/SDL_vulkan.h"
 	#undef main
+}
+
+namespace Sakura::Graphics
+{
+    struct SwapChain;
+    struct ResourceView;
 }
 
 namespace Sakura::Graphics::Im::Vk
@@ -61,4 +68,7 @@ namespace Sakura::Graphics::Im::Vk
     void check_vk_result(VkResult err);
 
     VkRenderPass ImGuiCreateRenderPass(const VkDevicePack& devices, VkFormat fmt);
+    std::map<const ResourceView*, VkFramebuffer>
+        ImGuiCreateFrameBuffer(const VkDevicePack& devices,
+        SwapChain* swapChain, VkRenderPass renderPass);
 }

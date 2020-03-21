@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:47:38
- * @LastEditTime: 2020-03-20 17:52:37
+ * @LastEditTime: 2020-03-22 01:11:00
  */
 #pragma once
 #include <memory_resource>
@@ -65,18 +65,14 @@ namespace Sakura::Graphics
 
     struct VertexInputStateCreateInfo 
     {
-        const VertexInputBindingDescription* vertexBindingDescriptions;
-        uint32_t vertexBindingDescriptionCount = 0;
-        const VertexInputAttributeDescription* vertexAttributeDescriptions;
-        uint32_t vertexAttributeDescriptionCount = 0;
+        std::vector<VertexInputBindingDescription> vertexBindingDescriptions;
+        std::vector<VertexInputAttributeDescription> vertexAttributeDescriptions;
     };
 
     struct ViewportStateCreateInfo
     {
-        const Viewport* vps = nullptr;
-        uint32_t vpCount = 0;
-        const Rect2D* scissors;
-        uint32_t scissorCount = 0;
+        std::vector<Viewport> vps;
+        std::vector <Rect2D> scissors;
     };
     
     struct DepthStencilStateCreateInfo
@@ -94,7 +90,7 @@ namespace Sakura::Graphics
     {
         ShaderStageFlags stage;
         Shader* shader = nullptr;
-        spmr_string entry;
+        std::string entry;
     };
 
     struct RasterizationStateCreateInfo
@@ -161,7 +157,7 @@ namespace Sakura::Graphics
      */
     struct PipelineLayoutCreateInfo
     {
-        const RootSignature* setLayouts = nullptr;
+        const RootSignature* rootSignature = nullptr;
         const PushConstantRange* pushConstantRanges;
         uint32_t pushConstantRangeCount = 0;
     };
@@ -181,7 +177,98 @@ namespace Sakura::Graphics
         DynamicStateCreateInfo dynamicStateCreateInfo;
         ColorBlendStateCreateInfo colorBlendStateCreateInfo;
         PipelineLayoutCreateInfo pipelineLayoutInfo;
-        const ShaderStageCreateInfo* shaderStages = nullptr;
-        uint32_t shaderStageCount = 0;
+        std::vector<ShaderStageCreateInfo> shaderStages;
+
+        template<typename _ShaderStageCreateInfo>
+        sinline void PushShaderStage(_ShaderStageCreateInfo&& shaderStage)
+        {
+            shaderStages.push_back(shaderStage);
+        }
+
+        template<typename _ShaderStageCreateInfo, typename... Ts>
+        sinline void PushShaderStage(
+            _ShaderStageCreateInfo&& shaderStage, Ts&&... shaderStages)
+        {
+            PushShaderStage(shaderStage);
+            PushShaderStage(shaderStages...);
+        }
+
+        sinline void AddViewport(uint32_t width, uint32_t height)
+        {   
+			Viewport vp = {};
+			vp.height = height; vp.width = width;
+            viewportStateCreateInfo.vps.push_back(vp);
+        }
+
+        sinline void AddScissor(const Extent2D scissorExtent,
+            const Offset2D offset2D)
+        {
+			Rect2D scissor = {};
+            scissor.extent = scissorExtent;
+            scissor.offset = offset2D;
+            viewportStateCreateInfo.scissors.push_back(scissor);
+        }
+
+		sinline void AddScissor(const Extent2D scissorExtent)
+		{
+			Rect2D scissor = {};
+			scissor.extent = scissorExtent;
+			viewportStateCreateInfo.scissors.push_back(scissor);
+		}
+
+        sinline void AddScissor(const Rect2D scissor)
+        {
+            viewportStateCreateInfo.scissors.push_back(scissor);
+        }
+
+        template<typename _VertexInputAttributeDescription>
+        sinline void AddVertexAttribute(
+            _VertexInputAttributeDescription&& attribute)
+        {
+            vertexInputInfo.vertexAttributeDescriptions.push_back(attribute);
+            return;
+        }
+
+		template<typename _VertexInputAttributeDescription, typename... Ts>
+		sinline void AddVertexAttribute(
+            _VertexInputAttributeDescription&& attribute, Ts&&... attris)
+		{
+            AddVertexAttribute(attribute);
+            AddVertexAttribute(attris...);
+		}
+
+		template<typename _VertexInputAttributeDescription, int n>
+		sinline void AddVertexAttribute(
+			std::array<_VertexInputAttributeDescription, n> bindings)
+		{
+			for (auto i = 0; i < n; i++)
+			{
+				AddVertexAttribute(bindings[i]);
+			}
+		}
+
+        template<typename _VertexInputBindingDescription>
+        sinline void AddVertexBinding(_VertexInputBindingDescription&& binding)
+        {
+            vertexInputInfo.vertexBindingDescriptions.push_back(binding);
+        }
+
+		template<typename _VertexInputBindingDescription, typename... Ts>
+		sinline void AddVertexBinding(
+            _VertexInputBindingDescription&& binding, Ts&&... bindings)
+		{
+            AddVertexBinding(binding);
+            AddVertexBinding(bindings...);
+		}
+
+		template<typename _VertexInputBindingDescription, int n>
+		sinline void AddVertexBinding(
+			std::array<_VertexInputBindingDescription, n> bindings)
+		{
+			for (auto i = 0; i < n; i++)
+			{
+                AddVertexBinding(bindings[i]);
+			}
+		}
     };
 }

@@ -127,7 +127,28 @@ namespace Sakura::Graphics
     struct RenderPassCreateInfo
     {
         std::vector<AttachmentDescription> attachments;
-        std::vector<SubpassDescription> subProcs;
-        std::vector<SubpassDependency> dependencies;
+		PipelineBindPoint pipelineBindPoint
+			= PipelineBindPoint::BindPointGraphics;
+		std::vector<AttachmentReference> inputAttachments;
+		std::vector<AttachmentReference> colorAttachments;
+		std::vector<AttachmentReference> resolveAttachments;
+		std::vector<AttachmentReference> depthStencilAttachment;
+		std::vector<uint32> preserveAttachments;
+
+        sinline void AttachColor(const AttachmentDescription& attachment)
+        {
+            attachments.push_back(attachment);
+            AttachmentReference ref
+                = { attachments.size() - 1, ImageLayout::ColorAttachment };
+            colorAttachments.push_back(ref);
+        }
+
+        sinline void AttachDepth(const AttachmentDescription& attachment)
+        {
+            attachments.push_back(attachment);
+			AttachmentReference ref
+				= { attachments.size() - 1, ImageLayout::DepthStencilAttachment };
+            depthStencilAttachment.push_back(ref);
+        }
     };
 }

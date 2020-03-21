@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-04 21:41:05
- * @LastEditTime: 2020-03-19 16:28:04
+ * @LastEditTime: 2020-03-22 00:35:19
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/sinterface.h"
@@ -45,7 +45,7 @@ namespace Sakura::Graphics
     sinterface SwapChain
     {
         SwapChain(const CGD& _device, const uint32 _chainCount)
-            :device(_device), swapChainCount(_chainCount)
+            :device(_device), swapChainCount(_chainCount), lastFrame(swapChainCount - 1)
             {
                 swapChainImages.resize(_chainCount);
                 resourceViews.resize(_chainCount);
@@ -75,7 +75,7 @@ namespace Sakura::Graphics
         }
     protected:
         uint32 swapChainCount = 2;
-        uint32 lastFrame = 0;
+        uint32 lastFrame;
         uint32 currentFrame = 0;
         std::vector<GpuTexture*> swapChainImages;
         std::vector<std::unique_ptr<ResourceView>> resourceViews;

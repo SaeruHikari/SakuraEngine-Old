@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 23:24:08
- * @LastEditTime: 2020-03-18 10:44:40
+ * @LastEditTime: 2020-03-22 01:46:13
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/RenderPass.h"
@@ -103,6 +103,35 @@ namespace Sakura::Graphics::Vk
             nullptr : desc.preserveAttachments.data();
         return subpass;
     }
+
+    inline static VkSubpassDescription Transfer(const RenderPassCreateInfo& desc)
+    {
+        VkSubpassDescription subpass = {};
+        subpass.pipelineBindPoint = Transfer(desc.pipelineBindPoint);
+        
+        subpass.colorAttachmentCount = (uint32)desc.colorAttachments.size();
+        subpass.pColorAttachments = 
+            desc.colorAttachments.size() == 0 ? nullptr :
+            (const VkAttachmentReference*)desc.colorAttachments.data();
+
+        subpass.inputAttachmentCount = (uint32)desc.inputAttachments.size();
+        subpass.pInputAttachments = 
+            desc.inputAttachments.size() == 0 ? nullptr :
+            (const VkAttachmentReference*)desc.inputAttachments.data();
+
+        subpass.pResolveAttachments = 
+            desc.resolveAttachments.size() == 0 ? nullptr :
+            (const VkAttachmentReference*)desc.resolveAttachments.data();
+        subpass.pDepthStencilAttachment = 
+            desc.depthStencilAttachment.size() == 0 ? nullptr : 
+            (const VkAttachmentReference*)desc.depthStencilAttachment.data();
+
+        subpass.preserveAttachmentCount = (uint32)desc.preserveAttachments.size();
+        subpass.pPreserveAttachments = desc.preserveAttachments.size() == 0 ?
+            nullptr : desc.preserveAttachments.data();
+        return subpass;
+    }
+
 
     class RenderPassVk final : simplements RenderPass
     {

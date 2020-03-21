@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:41:13
- * @LastEditTime: 2020-03-20 16:03:54
+ * @LastEditTime: 2020-03-21 22:40:20
  */
 #include "CommandQueueVk.h"
 #include "CommandContextVk.h"
@@ -36,6 +36,48 @@ CommandQueueVk::CommandQueueVk(const CGD_Vk& _cgd)
     :cgd(_cgd)
 {
 
+}
+
+void CommandQueueVk::Submit(CommandContext* commandContext,
+    Fence* fence, uint64 until, uint64 to)
+{
+    auto FcVk = (FenceVk*)fence;
+    const uint64_t waitValue = until; 
+    const uint64_t toValue = to;
+
+    VkTimelineSemaphoreSubmitInfo timelineInfo;
+	timelineInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+	timelineInfo.pNext = NULL;
+	timelineInfo.waitSemaphoreValueCount = 1;
+	timelineInfo.pWaitSemaphoreValues = &waitValue;
+	timelineInfo.signalSemaphoreValueCount = 1;
+	timelineInfo.pSignalSemaphoreValues = &toValue;
+    
+    const VkPipelineStageFlags wat = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+    CommandContextVk* cmdVk = (CommandContextVk*)commandContext;
+    VkSubmitInfo submitInfo;
+    {
+        submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.pNext                = &timelineInfo;
+		submitInfo.waitSemaphoreCount   = 1;
+		submitInfo.pWaitSemaphores      = &FcVk->timelineSemaphore;
+		submitInfo.pWaitDstStageMask    = &wat;
+        submitInfo.commandBufferCount   = 1;
+        submitInfo.pCommandBuffers      = &cmdVk->commandBuffer;
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores    = &FcVk->timelineSemaphore;
+    }
+    // Ensure unbusy before submitting.
+    vkWaitForFences(cgd.GetCGDEntity().device,
+        1, &cmdVk->recordingFence, VK_TRUE, UINT64_MAX);
+    FcVk->targetVal = to;
+    vkResetFences(cgd.GetCGDEntity().device, 1, &cmdVk->recordingFence);
+    if (vkQueueSubmit(vkQueue, 1,
+            &submitInfo, cmdVk->recordingFence) != VK_SUCCESS) 
+    {
+        CGD_Vk::error("failed to submit draw command buffer!");
+        throw std::runtime_error("failed to submit draw command buffer!");
+    }
 }
 
 void CommandQueueVk::Submit(CommandContext* commandContext)
@@ -58,6 +100,7 @@ void CommandQueueVk::Submit(CommandContext* commandContext)
     vkWaitForFences(cgd.GetCGDEntity().device,
         1, &cmdVk->recordingFence, VK_TRUE, UINT64_MAX);
     vkResetFences(cgd.GetCGDEntity().device, 1, &cmdVk->recordingFence);
+   
     if (vkQueueSubmit(vkQueue, 1,
             &submitInfo, cmdVk->recordingFence) != VK_SUCCESS) 
     {
@@ -89,7 +132,7 @@ void CommandQueueVk::Submit(Fence* fence, uint64 completedValue)
 	submitInfo.pSignalSemaphores = &FcVk->timelineSemaphore;
 	submitInfo.commandBufferCount = 0;
 	submitInfo.pCommandBuffers = 0;
-
+    //vkQueueWaitIdle(vkQueue);
     if (vkQueueSubmit(vkQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
     {
 		CGD_Vk::error("failed to submit timeline semaphores!");
@@ -99,8 +142,8 @@ void CommandQueueVk::Submit(Fence* fence, uint64 completedValue)
 
 void CommandQueueVk::Wait(Fence* fence, uint64 until)
 {
-     auto FcVk = (FenceVk*)fence;
-     const uint64_t waitValue = until; 
+    auto FcVk = (FenceVk*)fence;
+    const uint64_t waitValue = until; 
 
     VkTimelineSemaphoreSubmitInfo timelineInfo;
 	timelineInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;

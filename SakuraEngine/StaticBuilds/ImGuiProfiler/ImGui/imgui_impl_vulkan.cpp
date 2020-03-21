@@ -822,7 +822,7 @@ void    ImGui_ImplVulkan_DestroyDeviceObjects()
     if (g_Pipeline)             { vkDestroyPipeline(v->Device, g_Pipeline, v->Allocator); g_Pipeline = VK_NULL_HANDLE; }
 }
 
-bool    ImGui_ImplVulkan_Init(ImGui_ImplVulkan_InitInfo* info, VkRenderPass render_pass)
+bool ImGui_ImplVulkan_Init(ImGui_ImplVulkan_InitInfo* info, VkRenderPass render_pass)
 {
     // Setup back-end capabilities flags
     ImGuiIO& io = ImGui::GetIO();

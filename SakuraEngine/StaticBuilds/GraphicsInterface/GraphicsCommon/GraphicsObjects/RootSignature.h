@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-17 22:31:04
- * @LastEditTime: 2020-03-20 01:18:24
+ * @LastEditTime: 2020-03-21 19:41:18
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -55,7 +55,7 @@ namespace Sakura::Graphics
         InlineUniformBlockExt = 11,//11
         AccelerationStructureNv = 12,//12
         SignatureSlotTypeCount = 13,
-        VK_DESCRIPTOR_TYPE_MAX_ENUM = 0x7FFFFFFF
+        SignatureSlotTypeMaxEnum = 0x7FFFFFFF
     };
 
     struct SignatureSlot

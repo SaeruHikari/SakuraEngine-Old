@@ -22,12 +22,15 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-16 17:02:21
- * @LastEditTime: 2020-03-17 10:50:06
+ * @LastEditTime: 2020-03-21 21:52:37
  */
 #include "ImGuiVulkanSDL.h"
 #include "SakuraEngine/StaticBuilds/Graphicsinterface/GraphicsCommon/CGD.h"
-
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/GraphicsObjects/SwapChainVk.h"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/ResourceObjects/GpuResourceVk.h"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/ResourceObjects/ResourceViewVk.h"
 using namespace Sakura::Graphics;
+using namespace Sakura::Graphics::Vk;
 using namespace Sakura::Graphics::Im::Vk;
 
 void Sakura::Graphics::Im::Vk::check_vk_result(VkResult err)
@@ -205,4 +208,34 @@ VkRenderPass Sakura::Graphics::Im::Vk::ImGuiCreateRenderPass(
             devices.allocator, &result);
         check_vk_result(err);
         return result;
+}
+
+std::map<const ResourceView*, VkFramebuffer> Sakura::Graphics::Im::Vk::ImGuiCreateFrameBuffer(
+    const VkDevicePack& devices, SwapChain* chain, VkRenderPass renderPass)
+{
+    SwapChainVk* vkChain = (SwapChainVk*)chain;
+    std::map<const ResourceView*, VkFramebuffer> result;
+	// Create Framebuffer
+	{
+		for (uint32_t i = 0; i < vkChain->GetSwapChainCount(); i++)
+		{
+			VkFramebuffer view;
+			VkFramebufferCreateInfo info = {};
+			info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			info.renderPass = renderPass;
+			info.attachmentCount = 1;
+			info.width = vkChain->GetExtent().width;
+			info.height = vkChain->GetExtent().height;
+			info.layers = 1;
+			VkImageView attachment;
+			attachment = 
+                ((const ResourceViewVkImage&)vkChain->GetChainImageView(i)).vkImgView;
+			info.pAttachments = &attachment;
+			auto err = vkCreateFramebuffer(devices.device, &info,
+                devices.allocator, &view);
+			check_vk_result(err);
+            result[&vkChain->GetChainImageView(i)] = view;
+		}
+	}
+    return result;
 }

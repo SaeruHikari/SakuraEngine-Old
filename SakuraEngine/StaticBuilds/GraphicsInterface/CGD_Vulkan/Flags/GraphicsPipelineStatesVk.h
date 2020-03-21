@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-07 11:13:03
- * @LastEditTime: 2020-03-20 11:47:23
+ * @LastEditTime: 2020-03-22 00:51:55
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/CoreMinimal.h"
@@ -152,10 +152,10 @@ namespace Sakura::Graphics::Vk
     {
 		VkPipelineViewportStateCreateInfo viewportState = {};
 		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-        viewportState.pScissors = (const VkRect2D*)info.scissors;
-        viewportState.scissorCount = info.scissorCount;
-        viewportState.pViewports = (const VkViewport*)info.vps;
-        viewportState.viewportCount = info.vpCount;
+        viewportState.pScissors = (const VkRect2D*)info.scissors.data();
+        viewportState.scissorCount = (uint32_t)info.scissors.size();
+        viewportState.pViewports = (const VkViewport*)info.vps.data();
+        viewportState.viewportCount = (uint32)info.vps.size();
         return viewportState;
     }
 

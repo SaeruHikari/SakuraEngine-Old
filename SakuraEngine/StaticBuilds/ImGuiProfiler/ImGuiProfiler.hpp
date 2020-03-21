@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-16 17:02:13
- * @LastEditTime: 2020-03-20 15:58:52
+ * @LastEditTime: 2020-03-21 22:42:03
  */
 #pragma once
 #include "memory_resource"
@@ -33,6 +33,10 @@
 #include "SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/CommandObjects/CommandContextVk.h"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/CGD_Vulkan/GraphicsObjects/RenderPassVk.h"
 #include "SakuraEngine/Core/Core.h"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/GraphicsObjects/SwapChain.h"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/ResourceObjects/ResourceViews.h"
+#include <map>
+
 
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Vk;
@@ -67,17 +71,18 @@ namespace Sakura::Graphics::Im
         ~ImGuiProfiler()
         {
             auto pack = GetVkDevicePack();
-            if(bSelfPass)
-                vkDestroyRenderPass(pack.device, RenderPass, pack.allocator);
+            for(auto iter = frameBuffers.begin(); iter != frameBuffers.end(); iter++)
+                vkDestroyFramebuffer(pack.device, iter->second, pack.allocator);
             vkDestroyDescriptorPool(pack.device, descriptorPool, pack.allocator);
+            vkDestroyRenderPass(pack.device, RenderPass, pack.allocator);
             ImGui_ImplVulkan_Shutdown();
         }
         void BeginFrame(SDL_Window* wd) const;
-        void Record(CommandContext* cxt) const;
+        void Record(CommandContext* cxt, RenderTarget&) const;
         ImGuiWindow* CreateImGuiWindow(SDL_Window* wind, int width, int height);
         void ImGuiRender(ImGuiWindow* wd);
         void ImGuiPresent(ImGuiWindow* wd);
-        void ImGuiInitialize(SDL_Window* wd, Format fmt, RenderPass* rpass);
+        void ImGuiInitialize(SDL_Window* wd, SwapChain* swapChain);
     private:
         inline VkDevicePack GetVkDevicePack()
         {
@@ -94,11 +99,13 @@ namespace Sakura::Graphics::Im
             pack.minImageCount = 2;
             return pack;
         }
-        bool bSelfPass = false;
     public:
+        VkPipeline pipeline;
         VkDescriptorPool descriptorPool;
         VkRenderPass RenderPass;
+        SwapChain* swapChain;
         TargetGraphicsinterface backend;
+        mutable std::map<const ResourceView*, VkFramebuffer> frameBuffers;
         const Sakura::Graphics::CGD& gfxDevice;
     };
     
@@ -132,15 +139,27 @@ namespace Sakura::Graphics::Im
         }
     }
 
-    void ImGuiProfiler::Record(CommandContext* cxt) const
+    void ImGuiProfiler::Record(CommandContext* cxt, RenderTarget& rt) const
     {
         ImGui::Render();
         switch (backend)
         {
         case TargetGraphicsinterface::CGD_TARGET_VULKAN:
+        {
+			VkRenderPassBeginInfo info = {};
+			info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			info.renderPass = RenderPass;
+			info.framebuffer = frameBuffers[rt.srv];
+			info.renderArea.extent.width = swapChain->GetExtent().width;
+			info.renderArea.extent.height = swapChain->GetExtent().height;
+			info.clearValueCount = 0;
+			vkCmdBeginRenderPass(((const CommandContextVk*)cxt)->commandBuffer,
+                &info, VK_SUBPASS_CONTENTS_INLINE);
             ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(),
                 ((const CommandContextVk*)cxt)->commandBuffer);
+            vkCmdEndRenderPass(((const CommandContextVk*)cxt)->commandBuffer);
             return;
+        }
         default:
             break;
         }
@@ -163,8 +182,9 @@ namespace Sakura::Graphics::Im
     }
     
     void ImGuiProfiler::ImGuiInitialize(SDL_Window* wind,
-        Format fmt, Sakura::Graphics::RenderPass* rpass)
+        SwapChain* swapChain)
     {
+        this->swapChain = swapChain;
         VkDevicePack pack = GetVkDevicePack();
         switch (backend)
         {
@@ -221,14 +241,11 @@ namespace Sakura::Graphics::Im
             init_info.DescriptorPool = descriptorPool;
             init_info.Allocator = nullptr;
             init_info.MinImageCount = pack.minImageCount;
-            init_info.ImageCount = 2;
+            init_info.ImageCount = swapChain->GetSwapChainCount();
             init_info.CheckVkResultFn = check_vk_result;
-            auto RenderPass = ((RenderPassVk*)rpass)->renderPass;
-            if(RenderPass == nullptr)
-            {
-                bSelfPass = true;
-                ImGuiCreateRenderPass(pack, Transfer(fmt));
-            }
+            RenderPass = ImGuiCreateRenderPass(pack,
+                Transfer(swapChain->GetPixelFormat()));
+            frameBuffers = ImGuiCreateFrameBuffer(pack, swapChain, RenderPass);
             ImGui_ImplVulkan_Init(&init_info, RenderPass);
             {
                 // Use any command queue
