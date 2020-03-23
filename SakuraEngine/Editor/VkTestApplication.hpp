@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-23 15:47:06
+ * @LastEditTime: 2020-03-23 16:13:00
  */
 #pragma once
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -291,13 +291,14 @@ private:
         
         auto mipLevels = Sakura::Graphics::CalculateMipLevels(width, height);
         texture.reset(
-            cgd->CreateGpuTexture(Format::R8G8B8A8_SRGB, width, height,
+            cgd->CreateGpuTexture(Format::R8G8B8A8_UNORM, width, height,
             ImageUsage::TransferDstImage | ImageUsage::SampledImage |
-            ImageUsage::TransferSrcImage, mipLevels));
-        /*textureTarget.reset(
+            ImageUsage::TransferSrcImage | ImageUsage::StorageImage
+            , mipLevels));
+        textureTarget.reset(
             cgd->CreateGpuTexture(Format::R8G8B8A8_UNORM, width, height,
             ImageUsage::SampledImage | ImageUsage::StorageImage,
-            mipLevels));*/
+            mipLevels));
             
         TextureSubresourceRange textureSubresource;
         textureSubresource.mipLevels = mipLevels;
@@ -317,7 +318,7 @@ private:
         context = 
             cgd->AllocateContext(ECommandType::CommandContext_Graphics);
         context->Begin();
-        context->GenerateMipmaps(*texture.get(), Format::R8G8B8A8_SRGB,
+        context->GenerateMipmaps(*texture.get(), Format::R8G8B8A8_UNORM,
             width, height, mipLevels);
         context->End();
         cgd->GetGraphicsQueue()->Submit(context);
@@ -326,7 +327,7 @@ private:
 
         ResourceViewCreateInfo tvinfo = {};
         tvinfo.viewType = ResourceViewType::ImageView2D;
-        tvinfo.format = Format::R8G8B8A8_SRGB;
+        tvinfo.format = Format::R8G8B8A8_UNORM;
         tvinfo.view.texture2D.baseMipLevel = 0;
         tvinfo.view.texture2D.mipLevels = mipLevels;
         tvinfo.view.texture2D.baseArrayLayer = 0;
@@ -334,8 +335,9 @@ private:
         tvinfo.view.texture2D.aspectMask = ImageAspectFlag::ImageAspectColor;
         textureView.reset(
             cgd->ViewIntoResource(*texture.get(), tvinfo));
-        //textureTargetView.reset(
-        //    cgd->ViewIntoResource(*textureTarget.get(), tvinfo));
+        tvinfo.format = Format::R8G8B8A8_UNORM;
+        textureTargetView.reset(
+            cgd->ViewIntoResource(*textureTarget.get(), tvinfo));
 
         SamplerCreateInfo samplerInfo;
         samplerInfo.mipmapMode = SamplerMipmapMode::SamplerMipmapModeLinear;
@@ -344,18 +346,18 @@ private:
         samplerInfo.mipLodBias = 0;
         sampler.reset(cgd->CreateSampler(samplerInfo));
         cgd->WaitIdle();
-        /*RootArgumentAttachment compAttachments[2];
+        RootArgumentAttachment compAttachments[2];
         TexSamplerAttachment srcAttach;
         srcAttach.imageView = textureView.get();
         srcAttach.sampler = sampler.get();
-        srcAttach.imageLayout = ImageLayout::ShaderReadOnlyOptimal;
+        srcAttach.imageLayout = ImageLayout::General;
         compAttachments[0].info = srcAttach;
         compAttachments[0].rootArgType = SignatureSlotType::StorageImageSlot;
         compAttachments[0].dstBinding = 0;
         TexSamplerAttachment dstAttach;
         dstAttach.imageView = textureTargetView.get();
         dstAttach.sampler = sampler.get();
-        dstAttach.imageLayout = ImageLayout::ColorAttachment;
+        dstAttach.imageLayout = ImageLayout::General;
         compAttachments[1].info = dstAttach;
         compAttachments[1].rootArgType = SignatureSlotType::StorageImageSlot;
         compAttachments[1].dstBinding = 1;
@@ -374,7 +376,7 @@ private:
         computeContext->End(); 
         cgd->GetComputeQueue()->Submit(computeContext);
         cgd->WaitIdle();
-        cgd->FreeContext(computeContext);*/
+        cgd->FreeContext(computeContext);
     }
     
     void createDepth()
@@ -461,7 +463,7 @@ private:
         cbvArgument.reset(rootSignature->CreateArgument());
     
         // Compute Pass RootSig
-        /*RootSignatureCreateInfo compInfo = {};
+        RootSignatureCreateInfo compInfo = {};
         std::vector<SignatureSlot> compSlots(2);
         slots[0].type = SignatureSlotType::StorageImageSlot;
         slots[0].stageFlags = ShaderStageFlags::ComputeStage;
@@ -475,7 +477,7 @@ private:
         ComputePipelineCreateInfo compPInfo = {};
         compPInfo.rootSignature = compRootSignature.get();
         compPInfo.shaderStage = csStage;
-        compPipeline.reset(cgd->CreateComputePipeline(compPInfo));*/
+        compPipeline.reset(cgd->CreateComputePipeline(compPInfo));
     }
 
     void initVulkan()
