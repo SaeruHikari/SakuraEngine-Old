@@ -21,42 +21,32 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-08 21:04:52
- * @LastEditTime: 2020-03-18 10:48:49
+ * @Date: 2020-03-23 10:16:40
+ * @LastEditTime: 2020-03-23 11:48:39
  */
 #pragma once
-#include "../../GraphicsCommon/GraphicsObjects/GraphicsPipeline.h"
-#include <memory_resource>
-#include <unordered_map>
-#include "RenderPassVk.h"
+#include "../../GraphicsCommon/GraphicsObjects/ComputePipeline.h"
 #include "vulkan/vulkan.h"
 
-using namespace Sakura::Graphics;
 namespace Sakura::Graphics::Vk
 {
-    class CGD_Vk;
-    class RenderPassVk;
+	class CGD_Vk;
+	class RenderPassVk;
 }
 
 namespace Sakura::Graphics::Vk
 {
-    class GraphicsPipelineVk final : simplements GraphicsPipeline
-    {
-        friend class CGD_Vk;
-        friend class CommandContextVk;
-    public:
-        virtual ~GraphicsPipelineVk() override final;
-    protected:
-        VkFramebuffer FindFrameBuffer(const RenderTargetSet& rts);
-        VkFramebuffer createFrameBuffer(const RenderTargetSet& rts);
-        
-        GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
-            const RenderPassVk& prog, const CGD_Vk& cgd);
-    protected:
-        std::pmr::unordered_map<uint64, VkFramebuffer> fbs;
-        const RenderPassVk& progress;
-        VkPipelineLayout pipelineLayout;
-        VkPipeline graphicsPipeline;
-        const CGD_Vk& cgd;
-    };
+	class ComputePipelineVk final : simplements ComputePipeline
+	{
+		friend class CGD_Vk;
+		friend class CommandContextVk;
+	public:
+		virtual ~ComputePipelineVk() override final;
+	protected:
+		ComputePipelineVk(const ComputePipelineCreateInfo& info,
+			const CGD_Vk& cgd);
+		VkPipelineLayout pipelineLayout;
+		VkPipeline pipeline;
+		const CGD_Vk& cgd;
+	};
 }

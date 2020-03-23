@@ -43,6 +43,7 @@ namespace Sakura::Graphics::Vk
         VkDevice device;
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger;
+        VkPipelineCache pipelineCache = VK_NULL_HANDLE;
         const std::vector<const char*> deviceExtensions = 
         {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
@@ -88,6 +89,10 @@ namespace Sakura::Graphics::Vk
         virtual [[nodiscard]] GraphicsPipeline* CreateGraphicsPipeline(
             const GraphicsPipelineCreateInfo& info,
             const RenderPass& progress) const override final;
+    public:
+        // Implements: See GraphicsObjects/ComputePipeline.cpp
+        virtual [[nodiscard]] ComputePipeline* CreateComputePipeline(
+            const ComputePipelineCreateInfo& info) const override final;
     public: 
         // Implements: See ResourceObjects/ResourceViewVk.cpp
         virtual [[nodiscard]] ResourceView* ViewIntoResource(

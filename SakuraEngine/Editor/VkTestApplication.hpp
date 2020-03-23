@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-22 01:54:50
+ * @LastEditTime: 2020-03-23 15:47:06
  */
 #pragma once
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -52,6 +52,7 @@ extern "C"
 #include "SakuraEngine/StaticBuilds/TaskSystem/TaskSystem.h"
 #include "SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/GraphicsObjects/FenceVk.h"
 #include "SakuraEngine/StaticBuilds/ImGuiProfiler/ImGuiProfiler.hpp"
+#include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/GraphicsObjects/ComputePipeline.h"
 
 using namespace Sakura;
 using namespace Sakura::Graphics::Vk;
@@ -65,23 +66,15 @@ using namespace Sakura::Graphics::Vk;
     ("/Users/saeruhikari/Coding/SakuraEngine/SakuraEngine/UnitTests/UnitTestGraphics/frag.spv",
         'r');
 #elif defined(CONFINFO_PLATFORM_WIN32)
-    Sakura::fs::file vs_f
-    ("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\VertexBuffer\\HWVert.spv",
-        'r');
-    Sakura::fs::file fs_f
-    ("D:\\Coding\\SakuraEngine\\SakuraEngine\\UnitTests\\UnitTestGraphics\\frag.spv",
-        'r');
-
-    Sakura::fs::file vs_cbv
-    ("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\CBV\\CBVVert.spv",
-        'r');
-
     Sakura::fs::file vs_srv
     ("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\SRV\\SRVVertex.spv",
         'r');  
     Sakura::fs::file fs_srv
     ("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\SRV\\SRVPixel.spv",
         'r');
+	Sakura::fs::file cs_sharpen
+	("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\Compute\\sharpen.comp.spv",
+		'r');
     const std::string texPath =
         "D:\\Coding\\SakuraEngine\\SakuraTestProject\\textures\\chalet.jpg";
     const std::string modlePath = 
@@ -231,15 +224,20 @@ private:
 		// Create PSO vs_cbv
 		std::vector<char> vs_bytes(vs_srv.size());
 		std::vector<char> fs_bytes(fs_srv.size());
+		std::vector<char> cs_bytes(cs_sharpen.size());
 		vs_srv.read(vs_bytes.data(), vs_bytes.size());
 		fs_srv.read(fs_bytes.data(), fs_bytes.size());
+		cs_sharpen.read(cs_bytes.data(), cs_bytes.size());
 		vertshader = cgd->CreateShader(vs_bytes.data(), vs_bytes.size());
 		fragshader = cgd->CreateShader(fs_bytes.data(), fs_bytes.size());
+		computeshader = cgd->CreateShader(cs_bytes.data(), cs_bytes.size());
 		// shader Stages
 		vsStage.stage = ShaderStageFlags::VertexStage;
 		vsStage.shader = vertshader.get(); vsStage.entry = "main";
 		fsStage.stage = ShaderStageFlags::PixelStage;
 		fsStage.shader = fragshader.get(); fsStage.entry = "main";
+        csStage.stage = ShaderStageFlags::ComputeStage;
+        csStage.shader = computeshader.get(); csStage.entry = "main";
     }
 
     void ResizeWindow(uint32 width, uint32 height)
@@ -255,7 +253,7 @@ private:
         info.PushShaderStage(vsStage, fsStage);
         info.AddViewport(width, height);
         info.AddScissor(swapChain->GetExtent());
-        info.pipelineLayoutInfo.rootSignature = rootSignature.get();
+        info.rootSignature = rootSignature.get();
         info.depthStencilCreateInfo = depthStencil;
 		info.AddVertexBinding(Vertex::getBindingDescription());
 		info.AddVertexAttribute(Vertex::getAttributeDescriptions());
@@ -296,6 +294,10 @@ private:
             cgd->CreateGpuTexture(Format::R8G8B8A8_SRGB, width, height,
             ImageUsage::TransferDstImage | ImageUsage::SampledImage |
             ImageUsage::TransferSrcImage, mipLevels));
+        /*textureTarget.reset(
+            cgd->CreateGpuTexture(Format::R8G8B8A8_UNORM, width, height,
+            ImageUsage::SampledImage | ImageUsage::StorageImage,
+            mipLevels));*/
             
         TextureSubresourceRange textureSubresource;
         textureSubresource.mipLevels = mipLevels;
@@ -311,7 +313,6 @@ private:
         cgd->GetGraphicsQueue()->Submit(context);
         cgd->FreeContext(context);
         cgd->GetGraphicsQueue()->WaitIdle();
-
 
         context = 
             cgd->AllocateContext(ECommandType::CommandContext_Graphics);
@@ -333,6 +334,8 @@ private:
         tvinfo.view.texture2D.aspectMask = ImageAspectFlag::ImageAspectColor;
         textureView.reset(
             cgd->ViewIntoResource(*texture.get(), tvinfo));
+        //textureTargetView.reset(
+        //    cgd->ViewIntoResource(*textureTarget.get(), tvinfo));
 
         SamplerCreateInfo samplerInfo;
         samplerInfo.mipmapMode = SamplerMipmapMode::SamplerMipmapModeLinear;
@@ -340,6 +343,38 @@ private:
         samplerInfo.maxLod = mipLevels;
         samplerInfo.mipLodBias = 0;
         sampler.reset(cgd->CreateSampler(samplerInfo));
+        cgd->WaitIdle();
+        /*RootArgumentAttachment compAttachments[2];
+        TexSamplerAttachment srcAttach;
+        srcAttach.imageView = textureView.get();
+        srcAttach.sampler = sampler.get();
+        srcAttach.imageLayout = ImageLayout::ShaderReadOnlyOptimal;
+        compAttachments[0].info = srcAttach;
+        compAttachments[0].rootArgType = SignatureSlotType::StorageImageSlot;
+        compAttachments[0].dstBinding = 0;
+        TexSamplerAttachment dstAttach;
+        dstAttach.imageView = textureTargetView.get();
+        dstAttach.sampler = sampler.get();
+        dstAttach.imageLayout = ImageLayout::ColorAttachment;
+        compAttachments[1].info = dstAttach;
+        compAttachments[1].rootArgType = SignatureSlotType::StorageImageSlot;
+        compAttachments[1].dstBinding = 1;
+        compArgument->UpdateArgument(compAttachments, 2);
+
+        auto computeContext = 
+            cgd->AllocateContext(ECommandType::CommandContext_Compute);  
+        computeContext->Begin();
+        computeContext->BeginComputePass(compPipeline.get());
+        const auto* cmparg = compArgument.get();
+        computeContext->BindRootArguments(PipelineBindPoint::BindPointCompute,
+            &cmparg, 1);
+        computeContext->DispatchCompute(
+            texture->GetExtent().width / 16, 
+            texture->GetExtent().height / 16, 1);
+        computeContext->End(); 
+        cgd->GetComputeQueue()->Submit(computeContext);
+        cgd->WaitIdle();
+        cgd->FreeContext(computeContext);*/
     }
     
     void createDepth()
@@ -401,20 +436,19 @@ private:
         cgd->FreeContext(context);
         cgd->GetCopyQueue()->WaitIdle();
 
-        constantBuffers.resize(swapChain->GetSwapChainCount());
         BufferCreateInfo cbufferInfo = {};
         cbufferInfo.usage = 
             BufferUsage::ConstantBuffer;
         cbufferInfo.cpuAccess 
             = CPUAccessFlags::ReadWrite;
         cbufferInfo.size = sizeof(UniformBufferObject);
-        for(auto i = 0u; i < constantBuffers.size(); i++)
-            constantBuffers[i].reset((GpuBuffer*)cgd->CreateResource(cbufferInfo));
+        constantBuffer.reset((GpuBuffer*)cgd->CreateResource(cbufferInfo));
         createTexture();
     }
 
     void createRootSignature()
     {
+        // Graphics Pass RootSig
         RootSignatureCreateInfo info = {};
         std::vector<SignatureSlot> slots(2);
         slots[0].type = SignatureSlotType::UniformBufferSlot;
@@ -424,9 +458,24 @@ private:
         info.paramSlotNum = slots.size();
         info.paramSlots = slots.data();
         rootSignature.reset(cgd->CreateRootSignature(info));
-        for(auto i = 0; i < 2; i++)
-            cbvArgument[i].reset(
-                rootSignature->CreateArgument(SignatureSlotType::UniformBufferSlot));
+        cbvArgument.reset(rootSignature->CreateArgument());
+    
+        // Compute Pass RootSig
+        /*RootSignatureCreateInfo compInfo = {};
+        std::vector<SignatureSlot> compSlots(2);
+        slots[0].type = SignatureSlotType::StorageImageSlot;
+        slots[0].stageFlags = ShaderStageFlags::ComputeStage;
+		slots[1].type = SignatureSlotType::StorageImageSlot;
+		slots[1].stageFlags = ShaderStageFlags::ComputeStage;
+        compInfo.paramSlotNum = slots.size();
+        compInfo.paramSlots = slots.data();
+        compRootSignature.reset(cgd->CreateRootSignature(compInfo));
+		compArgument.reset(compRootSignature->CreateArgument());
+        
+        ComputePipelineCreateInfo compPInfo = {};
+        compPInfo.rootSignature = compRootSignature.get();
+        compPInfo.shaderStage = csStage;
+        compPipeline.reset(cgd->CreateComputePipeline(compPInfo));*/
     }
 
     void initVulkan()
@@ -445,8 +494,7 @@ private:
             ((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
             &surface);
         cgd->InitQueueSet(&surface);
-        for(auto i = 0; i < 2; i++)
-            fence[i].reset(cgd->AllocFence());
+        fence.reset(cgd->AllocFence());
         
         createShader();
         createRootSignature();
@@ -454,7 +502,7 @@ private:
         createBuffer();
     }
 
-    void updateUniformBuffer(uint32_t frameCount)
+    void updateUniformBuffer()
     {
         using namespace Sakura::Math;
         static auto startTime = std::chrono::high_resolution_clock::now();
@@ -471,15 +519,15 @@ private:
         ubo.proj[1][1] *= -1;
 
         void* data;
-        constantBuffers[frameCount]->Map(&data);
+        constantBuffer->Map(&data);
             memcpy(data, &ubo, sizeof(ubo));
-        constantBuffers[frameCount]->Unmap();
+        constantBuffer->Unmap();
 
         RootArgumentAttachment attachments[2];
         UniformBufferAttachment ubAttach;
         ubAttach.offset = 0;
         ubAttach.range = sizeof(UniformBufferObject);
-        ubAttach.buffer = constantBuffers[frameCount].get();
+        ubAttach.buffer = constantBuffer.get();
         attachments[0].info = ubAttach;
         attachments[0].rootArgType = SignatureSlotType::UniformBufferSlot;
         attachments[0].dstBinding = 0;
@@ -490,16 +538,11 @@ private:
         attachments[1].info = texAttach;
         attachments[1].rootArgType = SignatureSlotType::CombinedTextureSamplerSlot;
         attachments[1].dstBinding = 1;
-        cbvArgument[frameCount]->UpdateArgument(attachments, 2);
+        cbvArgument->UpdateArgument(attachments, 2);
     }
 
     void mainLoop()
-    {
-        cgd->Wait(
-            fence[swapChain->GetCurrentFrame()].get(),
-            fence[swapChain->GetCurrentFrame()]->GetCompletedValue());
-        cgd->Present(swapChain.get());
-
+	{
         auto frameCount = swapChain->GetCurrentFrame();
         RenderTarget rt{&swapChain->GetSwapChainImage(frameCount),
             &swapChain->GetChainImageView(frameCount), {0.f, 0.f, 0.f, 0.f}};
@@ -509,22 +552,26 @@ private:
 
         auto context = 
             cgd->AllocateContext(ECommandType::CommandContext_Graphics);
-
-        updateUniformBuffer(frameCount);
+        auto imContext =
+			cgd->AllocateContext(ECommandType::CommandContext_Graphics);
+        
+        updateUniformBuffer();
         context->Begin();
         context->BeginRenderPass(Pipeline.get(), rtset);
         context->BindVertexBuffers(*vertexBuffer.get());
         context->BindIndexBuffers(*indexBuffer.get());
-        const auto* arg = cbvArgument[frameCount].get();
+        const auto* arg = cbvArgument.get();
         context->BindRootArguments(PipelineBindPoint::BindPointGraphics,
             &arg, 1);
         context->DrawIndexed(indices.size(), 1);
         context->EndRenderPass();
         context->End();
-        cgd->GetGraphicsQueue()->Submit(context);
+        cgd->GetGraphicsQueue()->Submit(context,
+            fence.get(),
+            fence->GetCompletedValue(),
+            fence->GetCompletedValue() + 1);
         
-		auto imContext =
-			cgd->AllocateContext(ECommandType::CommandContext_Graphics);
+
         imContext->Begin();
         profiler->BeginFrame(win);
         {
@@ -537,10 +584,7 @@ private:
         }
         profiler->Record(imContext, rt);
         imContext->End();
-        cgd->GetGraphicsQueue()->Submit(imContext, 
-        fence[frameCount].get(),
-        fence[frameCount]->GetCompletedValue(),
-        fence[frameCount]->GetCompletedValue() + 1);
+        cgd->GetGraphicsQueue()->Submit(imContext);
  
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -548,32 +592,37 @@ private:
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
         }
-        
         cgd->FreeContext(context);
         cgd->FreeContext(imContext);
+
+        cgd->Wait(fence.get(), fence->GetCompletedValue());
+        cgd->Present(swapChain.get());
     }
 
     void cleanUp()
     {
         cgd->WaitIdle();
         sampler.reset();
-        textureView.reset();
-        depthView.reset();
         texture.reset();
+        textureTarget.reset();
+        textureView.reset();
+        textureTargetView.reset();
+        depthView.reset();
         depth.reset();
         profiler.reset();
-        for(auto i = 0; i < constantBuffers.size(); i++)
-            constantBuffers[i].reset();
+        constantBuffer.reset();
         vertshader.reset();
         fragshader.reset();
+        computeshader.reset();
+        compPipeline.reset();
         Pipeline.reset();
         swapChain.reset();
         rootSignature.reset();
+        compRootSignature.reset();
         vkDestroySurfaceKHR(((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
             surface, nullptr);
         pass.reset();
-        for(auto i = 0; i < 2; i++)
-            fence[i].reset();
+        fence.reset();
         vertexBuffer.reset();
         indexBuffer.reset();
         cgd->Destroy();
@@ -586,29 +635,33 @@ private:
         win = VkSDL_CreateWindow("SakuraEngine Window: CGD Vulkan", 1280, 720);
     }
 
-    std::unique_ptr<RootArgument> cbvArgument[2];
+    std::unique_ptr<RootArgument> cbvArgument;
+    std::unique_ptr<RootArgument> compArgument;
     std::unique_ptr<RootSignature> rootSignature;
+    std::unique_ptr<RootSignature> compRootSignature;
     // Resources
     std::unique_ptr<Sampler> sampler;
-    std::vector<std::unique_ptr<GpuBuffer>> constantBuffers;
+    std::unique_ptr<GpuBuffer> constantBuffer;
     std::unique_ptr<GpuBuffer> vertexBuffer, indexBuffer;
 
     std::unique_ptr<GpuTexture> texture;
+    std::unique_ptr<GpuTexture> textureTarget;
     std::unique_ptr<ResourceView> textureView;
+    std::unique_ptr<ResourceView> textureTargetView;
 
     std::unique_ptr<GpuTexture> depth;
     std::unique_ptr<ResourceView> depthView;
 
     std::unique_ptr<Sakura::Graphics::Im::ImGuiProfiler> profiler;
-    ShaderStageCreateInfo vsStage, fsStage;
+    ShaderStageCreateInfo vsStage, fsStage, csStage;
+	std::unique_ptr<Shader> vertshader, fragshader, computeshader;
+
     std::unique_ptr<Sakura::Graphics::CGD> cgd;
-    std::unique_ptr<Fence> fence[2];
-    std::unique_ptr<Shader> vertshader;
-    std::unique_ptr<Shader> fragshader;
+    std::unique_ptr<Fence> fence;
     std::unique_ptr<Sakura::Graphics::SwapChain> swapChain;
     std::unique_ptr<GraphicsPipeline> Pipeline;
+    std::unique_ptr<ComputePipeline> compPipeline;
     std::unique_ptr<RenderPass> pass;
     VkSurfaceKHR surface;
     SDL_Window* win = nullptr;
 };
-

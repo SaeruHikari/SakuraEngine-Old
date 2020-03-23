@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:38:49
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-19 18:53:54
+ * @LastEditTime: 2020-03-23 13:03:05
  */
 #pragma once
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
@@ -14,6 +14,7 @@
 namespace Sakura::Graphics::Vk
 {
     class GraphicsPipelineVk;
+    class ComputePipelineVk;
 }
 
 namespace Sakura::Graphics::Vk
@@ -32,8 +33,14 @@ namespace Sakura::Graphics::Vk
         virtual void BeginRenderPass(
             GraphicsPipeline* gp, const RenderTargetSet& rts) override final;
 
+        virtual void BeginComputePass(ComputePipeline* cp) override final;
+
+        virtual void DispatchCompute(uint32 groupCountX, uint32 groupCountY,
+            uint32 groupCountZ) override final;
+
         virtual void Draw(uint32 vertexCount, uint32 instanceCount,
             uint32 firstVertex, uint32 firstInstance) override final;
+            
         virtual void DrawIndexed(const uint32_t indicesCount,
             const uint32_t instanceCount) override final;
 
@@ -72,6 +79,7 @@ namespace Sakura::Graphics::Vk
     protected:
         const CGD_Vk& cgd;
         GraphicsPipelineVk* vkGp = nullptr;
+        ComputePipelineVk* vkCp = nullptr;
         VkCommandPool commandPool;
         VkFence recordingFence = VK_NULL_HANDLE;
     };

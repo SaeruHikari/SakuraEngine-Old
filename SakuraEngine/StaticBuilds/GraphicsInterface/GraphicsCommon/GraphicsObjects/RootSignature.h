@@ -52,8 +52,8 @@ namespace Sakura::Graphics
         UniformBufferDynamicSlot = 8,
         StorageBufferDynamicSlot = 9,
         InputAttachmentSlot = 10,
-        InlineUniformBlockExt = 11,//11
-        AccelerationStructureNv = 12,//12
+		InlineUniformBlockExt = 11,
+		AccelerationStructureNv = 12,
         SignatureSlotTypeCount = 13,
         SignatureSlotTypeMaxEnum = 0x7FFFFFFF
     };
@@ -105,8 +105,7 @@ namespace Sakura::Graphics
     sinterface RootSignature
     {
         virtual ~RootSignature(){};
-        virtual [[nodiscard]] RootArgument* CreateArgument(
-            const SignatureSlotType type) const = 0;
+        virtual [[nodiscard]] RootArgument* CreateArgument() const = 0;
     };
 } // namespace Sakura::Graphics
 

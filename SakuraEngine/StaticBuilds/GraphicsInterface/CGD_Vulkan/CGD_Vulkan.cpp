@@ -106,6 +106,7 @@ void CGD_Vk::Destroy()
             contextPools[j][i].reset();
         contextPools[j].clear();
     }
+    vkDestroyPipelineCache(entityVk.device, entityVk.pipelineCache, nullptr);
     CGD_Vk::debug_info("CGD_Vk: Destroy");
     vmaDestroyAllocator(entityVk.vmaAllocator);
     if(entityVk.validate)
@@ -458,6 +459,9 @@ void CGD_Vk::InitQueueSet(void* mainSurface)
         = std::move(std::unique_ptr<CommandQueueVk>(copyQueue));
 
     createAllocator();
+	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
+	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+	vkCreatePipelineCache(entityVk.device, &pipelineCacheCreateInfo, nullptr, &entityVk.pipelineCache);
 }
 
 const TargetGraphicsinterface CGD_Vk::GetBackEndAPI(void) const

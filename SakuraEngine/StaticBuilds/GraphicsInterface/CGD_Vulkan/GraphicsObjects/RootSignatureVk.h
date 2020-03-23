@@ -45,8 +45,7 @@ namespace Sakura::Graphics::Vk
         virtual ~RootSignatureVk() override final;
         VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
         VkDescriptorPool pool = VK_NULL_HANDLE;
-        virtual [[nodiscard]] RootArgument* CreateArgument(
-            const SignatureSlotType type) const override final;
+        virtual [[nodiscard]] RootArgument* CreateArgument() const override final;
     protected:
         RootSignatureVk(const CGD_Vk& _cgd, const RootSignatureCreateInfo& info);
         const CGD_Vk& cgd;
@@ -66,8 +65,8 @@ namespace Sakura::Graphics::Vk
     protected:
         uint32_t slotNum = 0;
         SignatureSlotType type;
-        RootArgumentVk(const CGD_Vk& _cgd, const VkDescriptorSetLayout& layout, 
-            const SignatureSlotType type, VkDescriptorPool pool);
+        RootArgumentVk(const CGD_Vk& _cgd,
+            const VkDescriptorSetLayout& layout, VkDescriptorPool pool);
         const CGD_Vk& cgd; 
     };
 

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:06:12
- * @LastEditTime: 2020-03-22 01:14:08
+ * @LastEditTime: 2020-03-23 10:48:29
  */
 #include "GraphicsPipelineVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -50,15 +50,12 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    if(info.pipelineLayoutInfo.rootSignature)
+    if(info.rootSignature)
     {
         pipelineLayoutInfo.setLayoutCount = 1;
-            //= info.pipelineLayoutInfo.setLayouts->GetSlotNum();
         pipelineLayoutInfo.pSetLayouts 
-            = &((const RootSignatureVk*)info.pipelineLayoutInfo.rootSignature)->descriptorSetLayout;
+            = &((const RootSignatureVk*)info.rootSignature)->descriptorSetLayout;
     }
-    pipelineLayoutInfo.pushConstantRangeCount 
-        = info.pipelineLayoutInfo.pushConstantRangeCount;
     if (vkCreatePipelineLayout(cgd.GetCGDEntity().device,
         &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
     {
@@ -128,7 +125,7 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     if (vkCreateGraphicsPipelines(
-        cgd.GetCGDEntity().device, VK_NULL_HANDLE, 1,
+        cgd.GetCGDEntity().device, cgd.GetCGDEntity().pipelineCache, 1,
         &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) 
     {
         Sakura::Graphics::Vk::CGD_Vk::debug_error("failed to create graphics pipeline!");

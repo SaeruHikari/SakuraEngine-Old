@@ -44,10 +44,12 @@ namespace Sakura::Graphics
     sinterface GpuBuffer;
     sinterface GpuTexture;
     sinterface Fence;
+    sinterface ComputePipeline;
     struct BufferCreateInfo;
     struct TextureCreateInfo;
     struct ResourceViewCreateInfo;
     struct SamplerCreateInfo;
+    struct ComputePipelineCreateInfo;
 }
 
 namespace Sakura::Graphics
@@ -96,6 +98,9 @@ namespace Sakura::Graphics
         virtual [[nodiscard]] GraphicsPipeline* CreateGraphicsPipeline(
             const GraphicsPipelineCreateInfo& info,
             const RenderPass& progress) const = 0;
+
+        virtual [[nodiscard]] ComputePipeline* CreateComputePipeline(
+            const ComputePipelineCreateInfo& info) const = 0;
             
         // Create & Destroy Command Contexts
         virtual CommandContext* AllocateContext(

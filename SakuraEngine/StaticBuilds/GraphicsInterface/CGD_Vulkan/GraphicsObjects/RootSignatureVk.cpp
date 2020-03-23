@@ -88,30 +88,19 @@ RootSignatureVk::~RootSignatureVk()
 }
 
 RootArgumentVk::RootArgumentVk(const CGD_Vk& _cgd,
-    const VkDescriptorSetLayout& layout,
-    const SignatureSlotType _type, VkDescriptorPool pool)
-    :cgd(_cgd), type(_type)
+    const VkDescriptorSetLayout& layout, VkDescriptorPool pool)
+    :cgd(_cgd)
 {
-    switch (_type)
+    VkDescriptorSetAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = pool;
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = &layout;
+    if (vkAllocateDescriptorSets(
+        _cgd.GetCGDEntity().device, &allocInfo, &descriptorSet) != VK_SUCCESS) 
     {
-    case SignatureSlotType::UniformBufferSlot:
-    {
-        VkDescriptorSetAllocateInfo allocInfo = {};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = pool;
-        allocInfo.descriptorSetCount = 1;
-        allocInfo.pSetLayouts = &layout;
-        if (vkAllocateDescriptorSets(
-            _cgd.GetCGDEntity().device, &allocInfo, &descriptorSet) != VK_SUCCESS) 
-        {
-            CGD_Vk::error("Create Root Argument: failed to allocate descriptor sets!");
-            throw std::runtime_error("failed to allocate descriptor sets!");
-        }
-        break;    
-    }
-    default:
-        CGD_Vk::error("Create Root Argument: Current Type not supported!");
-        break;
+        CGD_Vk::error("Create Root Argument: failed to allocate descriptor sets!");
+        throw std::runtime_error("failed to allocate descriptor sets!");
     }
 }
 
@@ -136,9 +125,9 @@ RootSignature* CGD_Vk::CreateRootSignature(
     return new RootSignatureVk(*this, sigInfo);
 }
 
-RootArgument* RootSignatureVk::CreateArgument(const SignatureSlotType type) const
+RootArgument* RootSignatureVk::CreateArgument() const
 {
-    return new RootArgumentVk(cgd, descriptorSetLayout, type, pool);
+    return new RootArgumentVk(cgd, descriptorSetLayout, pool);
 }
 
 void RootArgumentVk::UpdateArgument(
@@ -149,6 +138,7 @@ void RootArgumentVk::UpdateArgument(
     {
         switch (attachments[i].rootArgType)
         {
+        case SignatureSlotType::StorageBufferSlot:
         case SignatureSlotType::UniformBufferSlot:
         {
             VkDescriptorBufferInfo buffer;
@@ -169,6 +159,7 @@ void RootArgumentVk::UpdateArgument(
                 1, &descriptorWrites[i], 0, nullptr);
             continue;
         }
+        case SignatureSlotType::StorageImageSlot:
         case SignatureSlotType::CombinedTextureSamplerSlot:
         {
             VkDescriptorImageInfo image;

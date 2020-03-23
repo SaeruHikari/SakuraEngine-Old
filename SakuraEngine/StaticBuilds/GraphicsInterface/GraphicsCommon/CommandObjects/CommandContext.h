@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-19 18:53:46
+ * @LastEditTime: 2020-03-23 12:29:10
  */
 #pragma once
 #include <mutex>
@@ -24,6 +24,7 @@ namespace Sakura::Graphics
     sinterface CommandQueue;
     sinterface CommandContext;
     sinterface GraphicsPipeline;
+    sinterface ComputePipeline;
     sinterface GpuTexture;
     sinterface GpuResource;
     sinterface RootArgument;
@@ -77,6 +78,11 @@ namespace Sakura::Graphics
         virtual void BeginRenderPass(
             GraphicsPipeline* gp, const RenderTargetSet& rts) = 0;
         
+        virtual void BeginComputePass(ComputePipeline* gp) = 0;
+
+        virtual void DispatchCompute(uint32 groupCountX,
+            uint32 groupCountY, uint32 groupCountZ) = 0;
+
         virtual void Draw(uint32 vertexCount, uint32 instanceCount,
             uint32 firstVertex, uint32 firstInstance) = 0;
 

@@ -33,6 +33,7 @@
 #include "ResourceObjects/ResourceViewVk.cpp"
 #include "GraphicsObjects/SwapChainVk.cpp"
 #include "GraphicsObjects/GraphicsPipelineVk.cpp"
+#include "GraphicsObjects/ComputePipelineVk.cpp"
 #include "GraphicsObjects/RenderPassVk.cpp"
 #include "GraphicsObjects/RootSignatureVk.cpp"
 #include "GraphicsObjects/FenceVk.cpp"

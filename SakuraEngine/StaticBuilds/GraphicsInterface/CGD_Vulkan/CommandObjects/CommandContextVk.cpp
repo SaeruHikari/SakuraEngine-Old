@@ -5,13 +5,14 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-21 00:49:44
+ * @LastEditTime: 2020-03-23 13:02:48
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
 #include "CommandContextVk.h"
 #include "Core/EngineUtils/log.h"
 #include "../GraphicsObjects/GraphicsPipelineVk.h"
+#include "../GraphicsObjects/ComputePipelineVk.h"
 #include "../CommandObjects/CommandQueueVk.h"
 #include "../GraphicsObjects/RootSignatureVk.h"
 #include "../ResourceObjects/GpuResourceVk.h"
@@ -27,7 +28,6 @@ using namespace Sakura::Graphics::Vk;
 CommandContext* CGD_Vk::AllocateContext(ECommandType type, bool bTransiant)
 {
     std::lock_guard<std::mutex> LockGurad(contextAllocationMutex);
-    static int overflow = 0;
 #ifdef PROFILING_POOL
     for (auto i = 0; i < contextPools[type].size(); i++)
     {
@@ -43,17 +43,9 @@ CommandContext* CGD_Vk::AllocateContext(ECommandType type, bool bTransiant)
             ((CommandContextVk*)res)->recordingFence) == VK_SUCCESS)
         {
             availableContexts[type].pop();
-            overflow = (overflow < 0) ? 0 : overflow - 1;
             return res;
         }
     }
-    overflow++;
-    if(overflow > 1000)
-    {
-        overflow = 0;
-        CGD_Vk::warn("CGD Warning: Context pool overflow! Did you free your context after using?");
-    }
-    std::cout << "NEW" << std::endl;
     CommandContext* newContext = new CommandContextVk(*this, type, bTransiant);
     auto result = std::unique_ptr<CommandContext>(newContext);
     auto ptr = result.get();
@@ -167,6 +159,24 @@ void CommandContextVk::BindIndexBuffers(const GpuBuffer& ib)
     vkCmdBindIndexBuffer(commandBuffer, buf, 0, VK_INDEX_TYPE_UINT32);
 }
 
+void CommandContextVk::BeginComputePass(ComputePipeline* cp)
+{
+    vkCp = (ComputePipelineVk*)cp;
+    if(vkCp->pipeline == VK_NULL_HANDLE)
+    {
+        CGD_Vk::error("CGD: please bind VkPipeline first!");
+        throw std::runtime_error("CGD: please bind VkPipeline first!");
+    }
+    vkCmdBindPipeline(commandBuffer,
+        VK_PIPELINE_BIND_POINT_COMPUTE, ((ComputePipelineVk*)cp)->pipeline);
+}
+
+void CommandContextVk::DispatchCompute(uint32 groupCountX,
+    uint32 groupCountY, uint32 groupCountZ)
+{
+    vkCmdDispatch(commandBuffer, groupCountX, groupCountY, groupCountZ);
+}
+
 void CommandContextVk::BeginRenderPass(
     GraphicsPipeline* gp, const RenderTargetSet& rts)
 {
@@ -207,8 +217,12 @@ void CommandContextVk::BindRootArguments(const PipelineBindPoint bindPoint,
         descriptorSets[i] = 
             (((const RootArgumentVk**)arguments)[i])->descriptorSet;
     }
+    if(bindPoint == PipelineBindPoint::BindPointGraphics)
     vkCmdBindDescriptorSets(commandBuffer, Transfer(bindPoint),
         vkGp->pipelineLayout, 0, argumentNum, descriptorSets.data(), 0, nullptr);
+    else if(bindPoint == PipelineBindPoint::BindPointCompute)
+    vkCmdBindDescriptorSets(commandBuffer, Transfer(bindPoint),
+        vkCp->pipelineLayout, 0, argumentNum, descriptorSets.data(), 0, nullptr);
 }
 
 void CommandContextVk::Draw(uint32 vertexCount, uint32 instanceCount,

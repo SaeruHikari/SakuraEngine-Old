@@ -32,6 +32,7 @@ add_library(CGD_Vulkan
     ResourceObjects/VBIBViewVk.cpp
     GraphicsObjects/SwapChainVk.cpp
     GraphicsObjects/GraphicsPipelineVk.cpp
+    GraphicsObjects/ComputePipelineVk.cpp
     GraphicsObjects/RenderPassVk.cpp
     GraphicsObjects/RootSignatureVk.cpp
     GraphicsObjects/FenceVk.cpp

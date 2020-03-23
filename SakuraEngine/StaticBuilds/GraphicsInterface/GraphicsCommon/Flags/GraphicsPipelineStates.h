@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:47:38
- * @LastEditTime: 2020-03-22 01:11:00
+ * @LastEditTime: 2020-03-23 11:13:38
  */
 #pragma once
 #include <memory_resource>
@@ -152,17 +152,6 @@ namespace Sakura::Graphics
     };
 
     /**
-     * @description: uniform values in the shaders. 
-     * @author: SaeruHikari
-     */
-    struct PipelineLayoutCreateInfo
-    {
-        const RootSignature* rootSignature = nullptr;
-        const PushConstantRange* pushConstantRanges;
-        uint32_t pushConstantRangeCount = 0;
-    };
-
-    /**
      * @description: fill this structure to Create PSO Object.
      * @author: SaeruHikari
      */
@@ -176,8 +165,9 @@ namespace Sakura::Graphics
         MultisampleStateCreateInfo multisampleStateCreateInfo;
         DynamicStateCreateInfo dynamicStateCreateInfo;
         ColorBlendStateCreateInfo colorBlendStateCreateInfo;
-        PipelineLayoutCreateInfo pipelineLayoutInfo;
-        std::vector<ShaderStageCreateInfo> shaderStages;
+		const RootSignature* rootSignature = nullptr;
+		//const PushConstantRange* pushConstantRanges;
+		//uint32_t pushConstantRangeCount = 0;
 
         template<typename _ShaderStageCreateInfo>
         sinline void PushShaderStage(_ShaderStageCreateInfo&& shaderStage)
@@ -270,5 +260,6 @@ namespace Sakura::Graphics
                 AddVertexBinding(bindings[i]);
 			}
 		}
+		std::vector<ShaderStageCreateInfo> shaderStages;
     };
 }
