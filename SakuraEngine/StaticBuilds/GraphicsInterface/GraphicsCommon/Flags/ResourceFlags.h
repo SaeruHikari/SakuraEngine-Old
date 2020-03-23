@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 23:50:42
- * @LastEditTime: 2020-03-19 18:52:03
+ * @LastEditTime: 2020-03-23 18:48:59
  */
 #pragma once
 
@@ -41,7 +41,7 @@ namespace Sakura::Graphics
     enum ImageLayout
     {
         Unknown = 0,
-        General = 1,
+        UAV = 1,
         ColorAttachment = 2,
         DepthStencilAttachment = 3,
         DepthStencilReadOnly = 4,

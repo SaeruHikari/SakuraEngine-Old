@@ -1,0 +1,62 @@
+#version 450
+
+layout (local_size_x = 16, local_size_y = 16) in;
+layout (binding = 0, rgba8) uniform readonly image2D inputImage;
+layout (binding = 1, rgba8) uniform image2D resultImage;
+
+const int n = -7;
+const uint totalPix = ((n * -2) + 1) * ((n * -2) + 1);
+
+
+vec3 mid(in vec3[totalPix] data) 
+{
+	for(uint m = 0; m < totalPix / 2; m++)
+	{
+		uint temp = m;
+		for(uint i = m + 1; i < totalPix; i++)
+		{
+			if(length(data[temp]) >= length(data[i]))
+			{
+				temp = i;				
+			}
+		}
+		vec3 t = data[m];
+		data[m] = data[temp];
+		data[temp] = t;
+	}
+	return data[(totalPix / 2) - 1];
+}
+
+vec3 average(in vec3[totalPix] data)
+{
+	vec3 total = vec3(0, 0, 0);
+	for(uint i = 0; i < totalPix; i++)
+	{
+		total += data[i];
+	}
+	total /= totalPix;
+	return total;
+}
+
+struct ImageData 
+{
+	vec3 avg[totalPix];
+} imageData;	
+
+void main()
+{	
+	// Fetch neighbouring texels
+	int nn = -1;
+	for (int i=n; i< (-1 * n + 1); ++i) 
+	{   
+		for(int j=n; j< (-1 * n + 1); ++j) 
+		{    
+			nn++;    
+			vec3 rgb = imageLoad(inputImage, ivec2(gl_GlobalInvocationID.x + i, gl_GlobalInvocationID.y + j)).rgb;
+			imageData.avg[nn] = rgb;
+		}
+	}
+	vec4 res;
+	res = vec4(average(imageData.avg), 1.0);
+	imageStore(resultImage, ivec2(gl_GlobalInvocationID.xy), res);
+}

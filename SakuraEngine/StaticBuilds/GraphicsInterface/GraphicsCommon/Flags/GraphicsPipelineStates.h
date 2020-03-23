@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:47:38
- * @LastEditTime: 2020-03-23 11:13:38
+ * @LastEditTime: 2020-03-23 21:08:20
  */
 #pragma once
 #include <memory_resource>
@@ -96,7 +96,7 @@ namespace Sakura::Graphics
     struct RasterizationStateCreateInfo
     {
         bool depthClampEnable = false;
-        CullModes cullMode = CullModes::CullModeBack;
+        CullModes cullMode = CullModes::CullModeNone    ;
         PolygonMode polygonMode = PolygonMode::PolygonFill;
         FrontFace frontFace = FrontFace::FrontFaceCounterClockWise;
         bool depthBiasEnable = false;

@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-23 16:22:35
+ * @LastEditTime: 2020-03-23 20:21:31
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -321,19 +321,20 @@ void setImageLayout(
     imageMemoryBarrier.newLayout = newImageLayout;
     imageMemoryBarrier.image = image;
     imageMemoryBarrier.subresourceRange = subresourceRange;
-
     // Source layouts (old)
     // Source access mask controls actions that have to be finished on the old layout
     // before it will be transitioned to the new layout
     switch (oldImageLayout)
     {
+    case VK_IMAGE_LAYOUT_GENERAL:
+        imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+        break;
     case VK_IMAGE_LAYOUT_UNDEFINED:
         // Image layout is undefined (or does not matter)
         // Only valid as initial layout
         // No flags required, listed only for completeness
         imageMemoryBarrier.srcAccessMask = 0;
         break;
-
     case VK_IMAGE_LAYOUT_PREINITIALIZED:
         // Image is preinitialized
         // Only valid as initial layout for linear images, preserves memory contents
@@ -385,6 +386,10 @@ void setImageLayout(
         imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         break;
 
+    case VK_IMAGE_LAYOUT_GENERAL:
+        imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+        break;
+        
     case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
         // Image will be used as a transfer source
         // Make sure any reads from the image have been finished
@@ -436,9 +441,6 @@ void CommandContextVk::ResourceBarrier(GpuTexture& texture,
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.oldLayout = *(VkImageLayout*)&oldLayout;
     barrier.newLayout = *(VkImageLayout*)&newLayout;
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.image = ((const GpuResourceVkImage&)texture).image;
     barrier.subresourceRange.aspectMask = range.aspectMask;
     barrier.subresourceRange.baseMipLevel = range.baseMipLevel;
     barrier.subresourceRange.levelCount = range.mipLevels;
@@ -447,40 +449,45 @@ void CommandContextVk::ResourceBarrier(GpuTexture& texture,
 
     VkPipelineStageFlags sourceStage;
     VkPipelineStageFlags destinationStage;
-    if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED 
-            && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) 
+    switch (barrier.oldLayout)
     {
-        barrier.srcAccessMask = 0;
-        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
+    case VK_IMAGE_LAYOUT_UNDEFINED:
         sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-        destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    } 
-    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL 
-        && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) 
-    {
-        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
+        break;
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
         sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    } else 
-    {
+        break;
+    case VK_IMAGE_LAYOUT_GENERAL:
+        sourceStage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+        break;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        break;
+    default:
         CGD_Vk::error("unsupported layout transition!");
         throw std::invalid_argument("unsupported layout transition!");
+        break;
+    }
+    switch (barrier.newLayout)
+    {
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        break;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        break;
+    case VK_IMAGE_LAYOUT_GENERAL:
+        destinationStage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+        break;
+    default:
+        CGD_Vk::error("unsupported layout transition!");
+        throw std::invalid_argument("unsupported layout transition!");
+        break;
     }
     setImageLayout(commandBuffer, ((const GpuResourceVkImage&)texture).image,
         Transfer(oldLayout), Transfer(newLayout),
         barrier.subresourceRange,
         sourceStage, destinationStage);
-    /*vkCmdPipelineBarrier(
-        commandBuffer,
-        sourceStage, destinationStage,
-        0,
-        0, nullptr,
-        0, nullptr,
-        1, &barrier
-    );*/
 }
 
 void CommandContextVk::GenerateMipmaps(GpuTexture& texture, Format format,
