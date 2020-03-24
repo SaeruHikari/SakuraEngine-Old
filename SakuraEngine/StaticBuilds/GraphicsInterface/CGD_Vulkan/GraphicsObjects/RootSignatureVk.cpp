@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:18:23
- * @LastEditTime: 2020-03-20 01:15:29
+ * @LastEditTime: 2020-03-24 11:53:08
  */
 #include "RootSignatureVk.h"
 #include "../CGD_Vulkan.h"
@@ -141,7 +141,7 @@ void RootArgumentVk::UpdateArgument(
         case SignatureSlotType::StorageBufferSlot:
         case SignatureSlotType::UniformBufferSlot:
         {
-            VkDescriptorBufferInfo buffer;
+            VkDescriptorBufferInfo buffer = {};
             buffer.buffer = 
                 ((const GpuResourceVkBuffer*)std::get<UniformBufferAttachment>(attachments[i].info).buffer)->buffer;
             buffer.offset =
@@ -159,17 +159,25 @@ void RootArgumentVk::UpdateArgument(
                 1, &descriptorWrites[i], 0, nullptr);
             continue;
         }
+        case SignatureSlotType::SamplerSlot:
+        case SignatureSlotType::SampledImageSlot:
         case SignatureSlotType::StorageImageSlot:
         case SignatureSlotType::CombinedTextureSamplerSlot:
         {
-            VkDescriptorImageInfo image;
+            VkDescriptorImageInfo image = {};
             auto tex2D = std::get<TexSamplerAttachment>(attachments[i].info);
-            image.imageLayout 
-                = Transfer(tex2D.imageLayout);
-            image.imageView  
-                = ((const ResourceViewVkImage*)tex2D.imageView)->vkImgView;
-            image.sampler 
-                = ((const SamplerVk*)tex2D.sampler)->sampler;
+            if(attachments[i].rootArgType != SamplerSlot)
+            {
+                image.imageLayout 
+                    = Transfer(tex2D.imageLayout);
+                image.imageView  
+                    = ((const ResourceViewVkImage*)tex2D.imageView)->vkImgView;
+            }
+            if(attachments[i].rootArgType != SampledImageSlot)
+            {
+                image.sampler 
+                    = ((const SamplerVk*)tex2D.sampler)->sampler;
+            }
             descriptorWrites[i].pImageInfo = &image;
             descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[i].dstSet = descriptorSet;

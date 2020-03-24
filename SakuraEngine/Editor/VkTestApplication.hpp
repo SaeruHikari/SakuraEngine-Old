@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-24 11:22:37
+ * @LastEditTime: 2020-03-24 12:21:50
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -369,11 +369,21 @@ private:
     void createRootSignature()
     {
         RootSignatureCreateInfo info = {};
-        std::vector<SignatureSlot> slots(2);
+        std::vector<SignatureSlot> slots(3);
         slots[0].type = SignatureSlotType::UniformBufferSlot;
         slots[0].stageFlags = ShaderStageFlags::VertexStage;
-        slots[1].type = SignatureSlotType::CombinedTextureSamplerSlot;
+        slots[1].type = SignatureSlotType::SamplerSlot;
         slots[1].stageFlags = ShaderStageFlags::PixelStage;
+        slots[2].type = SignatureSlotType::SampledImageSlot;
+        slots[2].stageFlags = ShaderStageFlags::PixelStage;
+        
+        SamplerCreateInfo samplerInfo;
+        samplerInfo.mipmapMode = SamplerMipmapMode::SamplerMipmapModeLinear;
+        samplerInfo.minLod = 0;
+        samplerInfo.maxLod = 15;
+        samplerInfo.mipLodBias = 0;
+
+        info.PushStaticSampler(samplerInfo);
         info.paramSlotNum = slots.size();
         info.paramSlots = slots.data();
         rootSignature.reset(cgd->CreateRootSignature(info));
@@ -443,22 +453,26 @@ private:
                 memcpy(ptr, &ubo, sizeof(ubo));
             });
 
-        RootArgumentAttachment attachments[2];
-        UniformBufferAttachment ubAttach;
+        static RootArgumentAttachment attachments[3];
+        static UniformBufferAttachment ubAttach;
+        static TexSamplerAttachment samplerAttach;
+        static TexSamplerAttachment texAttach;
         ubAttach.offset = 0;
         ubAttach.range = sizeof(UniformBufferObject);
         ubAttach.buffer = constantBuffer.get();
         attachments[0].info = ubAttach;
         attachments[0].rootArgType = SignatureSlotType::UniformBufferSlot;
         attachments[0].dstBinding = 0;
-        TexSamplerAttachment texAttach;
-        texAttach.imageView = textureTargetView.get();
-        texAttach.sampler = sampler.get();
-        texAttach.imageLayout = ImageLayout::ShaderReadOnlyOptimal;
-        attachments[1].info = texAttach;
-        attachments[1].rootArgType = SignatureSlotType::CombinedTextureSamplerSlot;
+        samplerAttach.sampler = sampler.get();
+        attachments[1].info = samplerAttach;
+        attachments[1].rootArgType = SignatureSlotType::SamplerSlot;
         attachments[1].dstBinding = 1;
-        cbvArgument->UpdateArgument(attachments, 2);
+        texAttach.imageView = textureTargetView.get();
+        texAttach.imageLayout = ImageLayout::ShaderReadOnlyOptimal;
+        attachments[2].info = texAttach;
+        attachments[2].rootArgType = SignatureSlotType::SampledImageSlot;
+        attachments[2].dstBinding = 2;
+        cbvArgument->UpdateArgument(attachments, 3);
     }
 
     void mainLoop()
@@ -473,7 +487,7 @@ private:
         context.reset(cgd->CreateContext(ECommandType::CommandContext_Graphics));
 		imContext.reset(cgd->CreateContext(ECommandType::CommandContext_Graphics));
         
-        cgd->GetGraphicsQueue()->WaitIdle();
+        //cgd->GetGraphicsQueue()->WaitIdle();
         updateUniformBuffer();
         
         context->Begin();

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-17 22:31:04
- * @LastEditTime: 2020-03-21 19:41:18
+ * @LastEditTime: 2020-03-24 12:26:48
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -41,7 +41,7 @@ namespace Sakura::Graphics
 {
     enum SignatureSlotType
     {
-        TextureSlot = 0,
+        SamplerSlot = 0,
         CombinedTextureSamplerSlot = 1,
         SampledImageSlot = 2,
         StorageImageSlot = 3,
@@ -68,6 +68,19 @@ namespace Sakura::Graphics
     {
         const SignatureSlot* paramSlots = nullptr;
         uint32_t paramSlotNum = 0;
+        template<typename _SamplerCreateInfo>
+        void PushStaticSampler(const _SamplerCreateInfo& info)
+        {
+            staticSamplers.push_back(info);
+        }
+        template<typename _SamplerCreateInfo, typename... Ts>
+        void PushStaticSampler(const _SamplerCreateInfo& info, const Ts&... ts)
+        {
+            PushStaticSampler(info);
+            PushStaticSampler(ts...);
+        }
+    private:    
+        std::vector<SamplerCreateInfo> staticSamplers;
     };
 
     struct UniformBufferAttachment

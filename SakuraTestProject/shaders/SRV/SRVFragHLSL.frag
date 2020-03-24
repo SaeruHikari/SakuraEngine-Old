@@ -11,7 +11,7 @@ struct PixelOut
 };
 
 [[vk::binding(1, 0)]] SamplerState textureSampler;
-[[vk::binding(1, 0)]] Texture2D<float4> _texture;
+[[vk::binding(2, 0)]] Texture2D<float4> _texture;
 
 PixelOut main(PixelIn pin)
 {
