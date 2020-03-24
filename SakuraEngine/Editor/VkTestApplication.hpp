@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-23 21:47:10
+ * @LastEditTime: 2020-03-24 11:22:37
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -68,7 +68,7 @@ using namespace Sakura::Graphics::Vk;
     Sakura::fs::file fs_srv
     ("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\SRV\\SRVPixel.spv",
         'r');
-    Sakura::fs::file cs_sharpen
+    Sakura::fs::file cs_avgfilter
 	("D:\\Coding\\SakuraEngine\\SakuraTestProject\\shaders\\Compute\\avgfiltering.comp.spv",
 		'r');
     const std::string texPath =
@@ -139,7 +139,7 @@ public:
     void run()
     {
         SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-        createWindow();
+        win = VkSDL_CreateWindow("SakuraEngine Window: CGD Vulkan", 1280, 720);
         initVulkan();
         int run = 1;
         while (run)
@@ -172,14 +172,14 @@ private:
 		// Create PSO vs_cbv
 		std::vector<char> vs_bytes(vs_srv.size());
 		std::vector<char> fs_bytes(fs_srv.size());
-        std::vector<char> cs_bytes(cs_sharpen.size());
+        std::vector<char> cs_bytes(cs_avgfilter.size());
 		vs_srv.read(vs_bytes.data(), vs_bytes.size());
 		fs_srv.read(fs_bytes.data(), fs_bytes.size());
-		cs_sharpen.read(cs_bytes.data(), cs_bytes.size());
+		cs_avgfilter.read(cs_bytes.data(), cs_bytes.size());
 		vertshader = cgd->CreateShader(vs_bytes.data(), vs_bytes.size());
 		fragshader = cgd->CreateShader(fs_bytes.data(), fs_bytes.size());
         computeshader = cgd->CreateShader(cs_bytes.data(), cs_bytes.size());
-        // shaders
+        // shader stages
 		vsStage.stage = ShaderStageFlags::VertexStage;
 		vsStage.shader = vertshader.get(); vsStage.entry = "main";
 		fsStage.stage = ShaderStageFlags::PixelStage;
@@ -228,14 +228,14 @@ private:
     void createTexture()
     {
         int width, height, channels;
-        auto pixels = Sakura::Images::LoadFromDisk<std::byte>(
-            texPath.c_str(), width, height, channels);
+        auto pixels = Sakura::Images::LoadFromDisk<std::byte>
+            (texPath.c_str(), width, height, channels);
         std::unique_ptr<GpuBuffer> uploadBuffer;
         uploadBuffer.reset(cgd->CreateUploadBuffer(width * height * 4));
-        void* data;
-        uploadBuffer->Map(&data);
-        memcpy(data, pixels, static_cast<size_t>(width * height * 4));
-        uploadBuffer->Unmap();
+        uploadBuffer->UpdateValue([&](void* ptr) -> void
+            {
+                memcpy(ptr, pixels, static_cast<size_t>(width * height * 4));
+            });
 
         auto mipLevels = Sakura::Graphics::CalculateMipLevels(width, height);
         texture.reset(
@@ -250,48 +250,30 @@ private:
 
         TextureSubresourceRange textureSubresource;
         textureSubresource.mipLevels = mipLevels;
-        auto context = 
-            cgd->AllocateContext(ECommandType::CommandContext_Graphics);
+        std::unique_ptr<CommandContext> context;
+        context.reset(cgd->CreateContext(ECommandType::CommandContext_Graphics));
         context->Begin();
         context->ResourceBarrier(*texture.get(),
             ImageLayout::Unknown, ImageLayout::TransferDstOptimal,
             textureSubresource);
         context->CopyResource(*uploadBuffer.get(), *texture.get(),
             width, height, ImageAspectFlag::ImageAspectColor);
-        context->End();
-        cgd->GetGraphicsQueue()->Submit(context);
-        cgd->FreeContext(context);
-        cgd->GetGraphicsQueue()->WaitIdle();
-
-        context = 
-            cgd->AllocateContext(ECommandType::CommandContext_Graphics);
-        context->Begin();
         context->GenerateMipmaps(*texture.get(), Format::R8G8B8A8_UNORM,
             width, height, mipLevels);
         context->ResourceBarrier(*texture.get(),
-            ImageLayout::Unknown, ImageLayout::UAV,
-            textureSubresource);
+            ImageLayout::Unknown, ImageLayout::UAV, textureSubresource);
         context->ResourceBarrier(*textureTarget.get(),
-            ImageLayout::Unknown, ImageLayout::UAV,
-            textureSubresource);
+            ImageLayout::Unknown, ImageLayout::UAV, textureSubresource);
         context->End();
-        cgd->GetGraphicsQueue()->Submit(context);
-        cgd->FreeContext(context);
+        cgd->GetGraphicsQueue()->Submit(context.get());
         cgd->GetGraphicsQueue()->WaitIdle();
 
-        ResourceViewCreateInfo tvinfo = {};
-        tvinfo.viewType = ResourceViewType::ImageView2D;
-        tvinfo.format = Format::R8G8B8A8_UNORM;
-        tvinfo.view.texture2D.baseMipLevel = 0;
-        tvinfo.view.texture2D.mipLevels = mipLevels;
-        tvinfo.view.texture2D.baseArrayLayer = 0;
-        tvinfo.view.texture2D.layerCount = 1;
-        tvinfo.view.texture2D.aspectMask = ImageAspectFlag::ImageAspectColor;
         textureView.reset(
-            cgd->ViewIntoResource(*texture.get(), tvinfo));
-        tvinfo.format = Format::R8G8B8A8_UNORM;
+            cgd->ViewIntoTexture(*texture.get(), Format::R8G8B8A8_UNORM,
+                ImageAspectFlag::ImageAspectColor));
         textureTargetView.reset(
-            cgd->ViewIntoResource(*textureTarget.get(), tvinfo));
+           cgd->ViewIntoTexture(*textureTarget.get(), Format::R8G8B8A8_UNORM,
+                ImageAspectFlag::ImageAspectColor));
 
         SamplerCreateInfo samplerInfo;
         samplerInfo.mipmapMode = SamplerMipmapMode::SamplerMipmapModeLinear;
@@ -299,7 +281,6 @@ private:
         samplerInfo.maxLod = mipLevels;
         samplerInfo.mipLodBias = 0;
         sampler.reset(cgd->CreateSampler(samplerInfo));
-        cgd->WaitIdle();
 
         RootArgumentAttachment compAttachments[2];
         TexSamplerAttachment srcAttach;
@@ -318,106 +299,69 @@ private:
         compAttachments[1].dstBinding = 1;
         compArgument->UpdateArgument(compAttachments, 2);
 
-        auto computeContext = 
-            cgd->AllocateContext(ECommandType::CommandContext_Graphics);  
-        computeContext->Begin();
-        computeContext->BeginComputePass(compPipeline.get());
+        context.reset(cgd->CreateContext(ECommandType::CommandContext_Graphics));
+        context->Begin();
+        context->BeginComputePass(compPipeline.get());
         const auto* cmparg = compArgument.get();
-        computeContext->BindRootArguments(PipelineBindPoint::BindPointCompute,
+        context->BindRootArguments(PipelineBindPoint::BindPointCompute,
             &cmparg, 1);
-        computeContext->DispatchCompute(
+        context->DispatchCompute(
             texture->GetExtent().width / 16, 
             texture->GetExtent().height / 16, 1);
-        computeContext->ResourceBarrier(*textureTarget.get(),
+        context->ResourceBarrier(*textureTarget.get(),
             ImageLayout::UAV, ImageLayout::ShaderReadOnlyOptimal,
             textureSubresource);
-        computeContext->End(); 
-        cgd->GetGraphicsQueue()->Submit(computeContext);
+        context->End();
+        cgd->GetGraphicsQueue()->Submit(context.get());
         cgd->WaitIdle();
-        
-        cgd->FreeContext(computeContext);
     }
     
     void createDepth()
     {
         auto depthFormat = cgd->FindDepthFormat();
-        TextureCreateInfo imgInfo = {};
-        imgInfo.width = swapChain->GetExtent().width;
-        imgInfo.height = swapChain->GetExtent().height;
-        imgInfo.format = depthFormat;
-        imgInfo.arrayLayers = 1;
-        imgInfo.depth = 1;
-        imgInfo.mipLevels = 1;
-        imgInfo.usage = 
-            ImageUsage::DepthStencilAttachmentImage | ImageUsage::SampledImage;
+        auto extent = swapChain->GetExtent();
         depth.reset(
-            cgd->CreateResource(imgInfo));
-
-        ResourceViewCreateInfo dsvinfo = {};
-        dsvinfo.viewType = ResourceViewType::ImageView2D;
-        dsvinfo.format = depthFormat;
-        dsvinfo.view.texture2D.baseMipLevel = 0;
-        dsvinfo.view.texture2D.mipLevels = 1;
-        dsvinfo.view.texture2D.baseArrayLayer = 0;
-        dsvinfo.view.texture2D.layerCount = 1;
-        dsvinfo.view.texture2D.aspectMask = ImageAspectFlag::ImageAspectDepth;
+            cgd->CreateGpuTexture(depthFormat, extent.width, extent.height,
+            ImageUsage::DepthStencilAttachmentImage | ImageUsage::SampledImage));
         depthView.reset(
-            cgd->ViewIntoResource(*depth.get(), dsvinfo));
+            cgd->ViewIntoTexture(*depth.get(), depthFormat, ImageAspectDepth));
     }
 
     void createBuffer()
     {
-        BufferCreateInfo bufferInfo = {};
-        bufferInfo.usage = 
-            BufferUsage::VertexBuffer | BufferUsage::TransferDstBuffer;
-        bufferInfo.cpuAccess = CPUAccessFlags::None;
-        bufferInfo.size = sizeof(Vertex) * vertices.size();
-        vertexBuffer.reset((GpuBuffer*)cgd->CreateResource(bufferInfo));
-        
-        std::unique_ptr<GpuBuffer> uploadBuffer;
-        uploadBuffer.reset(cgd->CreateUploadBuffer(bufferInfo.size));
+        auto vbsize = sizeof(Vertex) * vertices.size();
+        auto ibsize = sizeof(uint32_t) * indices.size();
+        vertexBuffer.reset(cgd->CreateGpuBuffer(vbsize,
+            BufferUsage::VertexBuffer | BufferUsage::TransferDstBuffer,
+            CPUAccessFlags::None));
+        indexBuffer.reset(cgd->CreateGpuBuffer(ibsize,
+            BufferUsage::IndexBuffer | BufferUsage::TransferDstBuffer,
+            CPUAccessFlags::None));
+        std::unique_ptr<GpuBuffer> uploadBufferVB, uploadBufferIB;
+        uploadBufferVB.reset(cgd->CreateUploadBuffer(vbsize));
+        uploadBufferIB.reset(cgd->CreateUploadBuffer(ibsize));
+        uploadBufferVB->UpdateValue([&](void* ptr) -> void
+            {
+                memcpy(ptr, vertices.data(), vbsize);
+            });
+        uploadBufferIB->UpdateValue([&](void* ptr) -> void
+            {
+                memcpy(ptr, indices.data(), ibsize);
+            });
 
-        void* data;
-        uploadBuffer->Map(&data);
-        memcpy(data, vertices.data(), (size_t)bufferInfo.size);
-        uploadBuffer->Unmap();
-
-        auto context = 
-            cgd->AllocateContext(ECommandType::CommandContext_Copy);
+        std::unique_ptr<CommandContext> context; 
+        context.reset(cgd->CreateContext(ECommandType::CommandContext_Copy));
         context->Begin();
-        context->CopyResource(*uploadBuffer.get(),
-            *vertexBuffer.get(), bufferInfo.size);
-
-        std::unique_ptr<GpuBuffer> uploadBuffer2;
-        bufferInfo.size = sizeof(uint32_t) * indices.size();
-        uploadBuffer2.reset(cgd->CreateUploadBuffer(bufferInfo.size));
-
-        bufferInfo.usage = 
-            BufferUsage::IndexBuffer | BufferUsage::TransferDstBuffer;
-        bufferInfo.cpuAccess = CPUAccessFlags::None;
-        bufferInfo.size = sizeof(uint32_t) * indices.size();
-        indexBuffer.reset((GpuBuffer*)cgd->CreateResource(bufferInfo));
-
-        void* data2;
-        uploadBuffer2->Map(&data2);
-        memcpy(data2, indices.data(), (size_t)bufferInfo.size);
-        uploadBuffer2->Unmap();
-
-        context->CopyResource(*uploadBuffer2.get(),
-            *indexBuffer.get(), bufferInfo.size);
+        context->CopyResource(*uploadBufferVB.get(), *vertexBuffer.get(),vbsize);
+        context->CopyResource(*uploadBufferIB.get(), *indexBuffer.get(), ibsize);
         context->End();
         
-        cgd->GetCopyQueue()->Submit(context);
-        cgd->FreeContext(context);
+        cgd->GetCopyQueue()->Submit(context.get());
         cgd->GetCopyQueue()->WaitIdle();
 
-        BufferCreateInfo cbufferInfo = {};
-        cbufferInfo.usage = 
-            BufferUsage::ConstantBuffer;
-        cbufferInfo.cpuAccess 
-            = CPUAccessFlags::ReadWrite;
-        cbufferInfo.size = sizeof(UniformBufferObject);
-        constantBuffer.reset((GpuBuffer*)cgd->CreateResource(cbufferInfo));
+        constantBuffer.reset(
+            cgd->CreateGpuBuffer(sizeof(UniformBufferObject),
+            BufferUsage::ConstantBuffer, CPUAccessFlags::ReadWrite));
         createTexture();
         createDepth();
     }
@@ -454,12 +398,6 @@ private:
         compPipeline.reset(cgd->CreateComputePipeline(compPInfo));
     }
 
-    void createSampler()
-    {
-        SamplerCreateInfo samplerInfo;
-        sampler.reset(cgd->CreateSampler(samplerInfo));
-    }
-
     void initVulkan()
     {
         // Create Devices
@@ -475,14 +413,13 @@ private:
         SDL_Vulkan_CreateSurface(win,
             ((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
             &surface);
-        cgd->InitQueueSet(&surface);
+        cgd->InitializeDevice(&surface);
         fence.reset(cgd->AllocFence());
         
         createShader();
         createRootSignature();
         ResizeWindow(1280, 720);
         createBuffer();
-        createSampler();
         cgd->WaitIdle();
     }
 
@@ -501,10 +438,10 @@ private:
         0.1f, 10.0f);
         ubo.proj[1][1] *= -1;
 
-        void* data;
-        constantBuffer->Map(&data);
-            memcpy(data, &ubo, sizeof(ubo));
-        constantBuffer->Unmap();
+        constantBuffer->UpdateValue([&](void* ptr) -> void
+            {
+                memcpy(ptr, &ubo, sizeof(ubo));
+            });
 
         RootArgumentAttachment attachments[2];
         UniformBufferAttachment ubAttach;
@@ -533,12 +470,12 @@ private:
         RenderTarget rts[2] = {rt, ds};
         RenderTargetSet rtset{(RenderTarget*)rts, 2};
 
-        auto context = 
-            cgd->AllocateContext(ECommandType::CommandContext_Graphics);
-        auto imContext =
-			cgd->AllocateContext(ECommandType::CommandContext_Graphics);
+        context.reset(cgd->CreateContext(ECommandType::CommandContext_Graphics));
+		imContext.reset(cgd->CreateContext(ECommandType::CommandContext_Graphics));
         
+        cgd->GetGraphicsQueue()->WaitIdle();
         updateUniformBuffer();
+        
         context->Begin();
         context->BeginRenderPass(Pipeline.get(), rtset);
         context->BindVertexBuffers(*vertexBuffer.get());
@@ -549,12 +486,8 @@ private:
         context->DrawIndexed(indices.size(), 1);
         context->EndRenderPass();
         context->End();
-        cgd->GetGraphicsQueue()->Submit(context,
-            fence.get(),
-            fence->GetCompletedValue(),
-            fence->GetCompletedValue() + 1);
+        cgd->GetGraphicsQueue()->Submit(context.get());
         
-
         imContext->Begin();
         profiler->BeginFrame(win);
         {
@@ -565,9 +498,9 @@ private:
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
-        profiler->Record(imContext, rt);
+        profiler->Record(imContext.get(), rt);
         imContext->End();
-        cgd->GetGraphicsQueue()->Submit(imContext);
+        cgd->GetGraphicsQueue()->Submit(imContext.get());
  
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -575,10 +508,6 @@ private:
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
         }
-        cgd->FreeContext(context);
-        cgd->FreeContext(imContext);
-
-        cgd->Wait(fence.get(), fence->GetCompletedValue());
         cgd->Present(swapChain.get());
     }
 
@@ -603,44 +532,41 @@ private:
         rootSignature.reset();
         compRootSignature.reset();
         compArgument.reset();
-        vkDestroySurfaceKHR(((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
-            surface, nullptr);
         pass.reset();
 		fence.reset();
         vertexBuffer.reset();
         indexBuffer.reset();
-        cgd->Destroy();
+        context.reset();
+        imContext.reset();
+        vkDestroySurfaceKHR(((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
+            surface, nullptr);
 	    SDL_DestroyWindow(win);
         SDL_Quit();
+        cgd->Destroy();
     }
 
-    void createWindow()
-    {
-        win = VkSDL_CreateWindow("SakuraEngine Window: CGD Vulkan", 1280, 720);
-    }
+    
+    std::unique_ptr<Sakura::Graphics::CGD> cgd;
+    std::unique_ptr<Fence> fence;
+    std::unique_ptr<Sakura::Graphics::SwapChain> swapChain;
+    std::unique_ptr<CommandContext> context, imContext;
 
     std::unique_ptr<RootArgument> cbvArgument, compArgument;
     std::unique_ptr<RootSignature> rootSignature, compRootSignature;
-    // Resources
+    
     std::unique_ptr<Sampler> sampler;
-    std::unique_ptr<GpuBuffer> constantBuffer;
-    std::unique_ptr<GpuBuffer> vertexBuffer, indexBuffer;
+    std::unique_ptr<GpuBuffer> constantBuffer, vertexBuffer, indexBuffer;
 
-    std::unique_ptr<GpuTexture> texture, textureTarget;
-    std::unique_ptr<ResourceView> textureView, textureTargetView;
+    std::unique_ptr<GpuTexture> depth, texture, textureTarget;
+    std::unique_ptr<ResourceView> depthView, textureView, textureTargetView;
 
-    std::unique_ptr<GpuTexture> depth;
-    std::unique_ptr<ResourceView> depthView;
-
-    std::unique_ptr<Sakura::Graphics::Im::ImGuiProfiler> profiler;
     ShaderStageCreateInfo vsStage, fsStage, csStage;
-    std::unique_ptr<Sakura::Graphics::CGD> cgd;
-    std::unique_ptr<Fence> fence;
     std::unique_ptr<Shader> vertshader, fragshader, computeshader;
-    std::unique_ptr<Sakura::Graphics::SwapChain> swapChain;
     std::unique_ptr<GraphicsPipeline> Pipeline;
     std::unique_ptr<ComputePipeline> compPipeline;
     std::unique_ptr<RenderPass> pass;
+
     VkSurfaceKHR surface;
     SDL_Window* win = nullptr;
+    std::unique_ptr<Sakura::Graphics::Im::ImGuiProfiler> profiler;
 };

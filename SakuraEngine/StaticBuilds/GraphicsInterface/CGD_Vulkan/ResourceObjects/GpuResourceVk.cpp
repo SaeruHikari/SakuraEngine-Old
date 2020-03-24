@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 22:41:33
- * @LastEditTime: 2020-03-20 23:17:19
+ * @LastEditTime: 2020-03-24 00:16:53
  */
 #include "GpuResourceVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -47,7 +47,6 @@ SamplerVk::~SamplerVk()
 GpuResourceVkBuffer::~GpuResourceVkBuffer()
 {
     vmaDestroyBuffer(cgd.GetCGDEntity().vmaAllocator, buffer, allocation);
-    //vmaDestroyAllocator(cgd.GetCGDEntity().vmaAllocator);
 }
 
 GpuResourceVkImage::~GpuResourceVkImage()
@@ -86,7 +85,7 @@ void CGD_Vk::createAllocator()
     vmaCreateAllocator(&allocatorInfo, &entityVk.vmaAllocator);
 }
 
-GpuTexture* CGD_Vk::CreateResource(const TextureCreateInfo& info) const
+GpuTexture* CGD_Vk::CreateGpuResource(const TextureCreateInfo& info) const
 {
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -125,7 +124,7 @@ GpuTexture* CGD_Vk::CreateResource(const TextureCreateInfo& info) const
     return vkImg;
 }
 
-GpuBuffer* CGD_Vk::CreateResource(const BufferCreateInfo& info) const
+GpuBuffer* CGD_Vk::CreateGpuResource(const BufferCreateInfo& info) const
 {
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;

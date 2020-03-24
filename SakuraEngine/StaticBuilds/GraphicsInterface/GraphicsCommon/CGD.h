@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-20 20:44:30
+ * @LastEditTime: 2020-03-23 23:56:35
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -80,6 +80,7 @@ namespace Sakura::Graphics
     {
         virtual ~CGD() = default;
         virtual void Initialize(CGDInfo info) = 0;
+        virtual void InitializeDevice(void* mainSurface) = 0;
         virtual [[nodiscard]] SwapChain* CreateSwapChain(
             const int width, const int height, void* mainSurface) = 0;
 
@@ -90,7 +91,6 @@ namespace Sakura::Graphics
         virtual std::unique_ptr<Shader> CreateShader(
             const char*, std::size_t) = 0;
         virtual const char* CompileShader(const char*, std::size_t) = 0;
-        virtual void InitQueueSet(void* mainSurface) = 0;
 
         virtual [[nodiscard]] RenderPass* CreateRenderPass(
             const RenderPassCreateInfo& info) const = 0;
@@ -103,6 +103,8 @@ namespace Sakura::Graphics
             const ComputePipelineCreateInfo& info) const = 0;
             
         // Create & Destroy Command Contexts
+        virtual CommandContext* CreateContext(
+            ECommandType type, bool bTransiant = true) const = 0;
         virtual CommandContext* AllocateContext(
             ECommandType type, bool bTransiant = true) = 0;
         virtual void FreeContext(CommandContext* context) = 0;
@@ -111,16 +113,21 @@ namespace Sakura::Graphics
         virtual [[nodiscard]] ResourceView* ViewIntoResource(
             const GpuResource&, const ResourceViewCreateInfo&) const = 0;
         
+        virtual [[nodiscard]] ResourceView* ViewIntoTexture(
+            const GpuTexture&, const Format, const ImageAspectFlags,
+            uint32 mipLevels = 1, uint32 baseMip = 0,
+            uint32 layerCount = 1, uint32 baseArrayLayer = 0) const;
+
         virtual CommandQueue* GetGraphicsQueue(void) const = 0;
         virtual CommandQueue* GetComputeQueue(void) const = 0;
         virtual CommandQueue* GetCopyQueue(void) const = 0;
         
         virtual [[nodiscard]] CommandQueue* AllocQueue(ECommandType type) const = 0;
 
-        virtual [[nodiscard]] GpuBuffer* CreateResource(
+        virtual [[nodiscard]] GpuBuffer* CreateGpuResource(
             const BufferCreateInfo&) const = 0;
         
-        virtual [[nodiscard]] GpuTexture* CreateResource(
+        virtual [[nodiscard]] GpuTexture* CreateGpuResource(
             const TextureCreateInfo&) const = 0;
 
         virtual void Wait(Fence* toWait, uint64 until) const = 0;
@@ -142,8 +149,8 @@ namespace Sakura::Graphics
         virtual [[nodiscard]] GpuTexture* CreateGpuTexture(const Format format,
             const uint32 width, const uint32 height,
             ImageUsages imageUsages, uint32 mipLevels = 1) const; 
-        //virtual [[nodiscard]] ResourceView* ViewIntoTexture(const Format format,
-        //    const )
+        virtual [[nodiscard]] GpuBuffer* CreateGpuBuffer(const uint64 size, 
+            BufferUsages bufferUsages, CPUAccessFlags cpuAccess) const;
     public:
         const uint64 contextNum() const {return contextPools[0].size();}
 

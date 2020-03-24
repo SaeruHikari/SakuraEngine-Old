@@ -41,7 +41,7 @@
 &emsp;**- ComputeQueue**: 提交通用计算任务, 可以有多条;</br> 
 &emsp;**- CopyQueue**: 提交拷贝任务, 可以有多条。
 
-&emsp;&emsp;申请一个命令族对象需要传入一个有效的[**设备实体**](StaticBuilds/CGD/CGD_Device.md)。**设备实体**内含一组默认的命令队列, 您可以在初始化设备族后, 使用CGD::InitQueueSet来初始化它们。InitQueueSet会检查设备支持, 它总是会返回给您一组能够直接用于绘图的命令队列。
+&emsp;&emsp;申请一个命令族对象需要传入一个有效的[**设备实体**](StaticBuilds/CGD/CGD_Device.md)。**设备实体**内含一组默认的命令队列, 您可以在初始化设备族后, 使用CGD::InitializeDevice来初始化它们。InitializeDevice会检查设备支持, 它总是会返回给您一组能够直接用于绘图的命令队列。
 
 &emsp;&emsp;具体的渲染资源们(例如贴图, 以及绑定到shader的结构们)被称为[资源族](StaticBuilds/CGD/CGD_Device.md)。提供一个设备实体可以从CGD申请到它们, 但是需要您自行进行资源管理。
 
@@ -64,7 +64,7 @@
     cgd->Initialize(cgd_info);
     SDL_Vulkan_CreateSurface(win,
         ((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(), &surface);
-    cgd->InitQueueSet(&surface);
+    cgd->InitializeDevice(&surface);
     swapChain.reset(cgd->CreateSwapChain(width, height, &surface));
 ```
 

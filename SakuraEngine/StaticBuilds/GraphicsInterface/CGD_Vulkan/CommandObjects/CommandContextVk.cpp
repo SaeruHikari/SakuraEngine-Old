@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-23 20:21:31
+ * @LastEditTime: 2020-03-24 00:30:21
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -51,6 +51,11 @@ CommandContext* CGD_Vk::AllocateContext(ECommandType type, bool bTransiant)
     auto ptr = result.get();
     contextPools[type].push_back(std::move(result));
     return ptr;
+}
+
+CommandContext* CGD_Vk::CreateContext(ECommandType type, bool bTransiant) const
+{
+    return new CommandContextVk(*this, type, bTransiant);
 }
 
 void CGD_Vk::FreeAllContexts(ECommandType type)

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-20 10:20:12
+ * @LastEditTime: 2020-03-24 00:58:09
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -49,11 +49,11 @@ namespace Sakura::Graphics::Vk
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
             VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME
         };
-        bool validate = false;
         std::unique_ptr<CommandQueueVk> graphicsQueue;
         std::unique_ptr<CommandQueueVk> computeQueue;
         std::unique_ptr<CommandQueueVk> copyQueue;
         VmaAllocator vmaAllocator;
+        bool validate = false;
         bool bTripleBuffering = false;
     };
 
@@ -64,7 +64,7 @@ namespace Sakura::Graphics::Vk
     public:
         CGD_Vk() = default;
         virtual void Destroy() override final; 
-        virtual void InitQueueSet(void* mainSurface) override final;
+        virtual void InitializeDevice(void* mainSurface) override final;
         // Vulkan functions
         virtual void Initialize(CGDInfo info) override final;
         virtual [[nodiscard]] Sakura::Graphics::SwapChain*
@@ -105,6 +105,8 @@ namespace Sakura::Graphics::Vk
     // Implements: See CommandObjects/CommandContextVk.cpp
         virtual CommandContext* AllocateContext(
             ECommandType type, bool bTransiant = true) override final;
+        virtual [[nodiscard]] CommandContext* CreateContext(
+            ECommandType type, bool bTransiant = true) const override final;
         virtual void FreeContext(CommandContext* context) override final;
         virtual void FreeAllContexts(ECommandType typeToDestroy) override final;
     public:
@@ -114,9 +116,9 @@ namespace Sakura::Graphics::Vk
         virtual void WaitIdle() const override final;
     public:
     // Implements: See ResourceObjects/GpuResourceVk.cpp
-        virtual [[nodiscard]] GpuBuffer* CreateResource(
+        virtual [[nodiscard]] GpuBuffer* CreateGpuResource(
             const BufferCreateInfo&) const override final;
-        virtual [[nodiscard]] GpuTexture* CreateResource(
+        virtual [[nodiscard]] GpuTexture* CreateGpuResource(
             const TextureCreateInfo&) const override final;
         virtual [[nodiscard]] Sampler* CreateSampler(
             const SamplerCreateInfo& createInfo) const final override;

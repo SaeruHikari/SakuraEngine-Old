@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-20 15:45:07
+ * @LastEditTime: 2020-03-23 22:38:04
  */
 #define API_EXPORTS     
 #include "../GraphicsCommon/CGD.h" 
@@ -38,7 +38,22 @@ GpuBuffer* CGD::CreateUploadBuffer(const std::size_t bufferSize) const
     bufferInfo.usage = BufferUsage::TransferSrcBuffer;
     bufferInfo.cpuAccess = CPUAccessFlags::ReadWrite;
     bufferInfo.size = bufferSize;
-    return (GpuBuffer*)CreateResource(bufferInfo);
+    return (GpuBuffer*)CreateGpuResource(bufferInfo);
+}
+
+ResourceView* CGD::ViewIntoTexture(const GpuTexture& tex, const Format format,
+    const ImageAspectFlags aspect,
+    uint32 mipLevels, uint32 baseMip, uint32 layerCount, uint32 baseArrayLayer) const
+{
+    ResourceViewCreateInfo tvinfo = {};
+    tvinfo.viewType = ResourceViewType::ImageView2D;
+    tvinfo.format = format;
+    tvinfo.view.texture2D.baseMipLevel = baseMip;
+    tvinfo.view.texture2D.mipLevels = mipLevels;
+    tvinfo.view.texture2D.baseArrayLayer = baseArrayLayer;
+    tvinfo.view.texture2D.layerCount = layerCount;
+    tvinfo.view.texture2D.aspectMask = aspect;
+    return ViewIntoResource(tex, tvinfo);
 }
 
 GpuTexture* CGD::CreateGpuTexture(const Format format,
@@ -53,5 +68,15 @@ GpuTexture* CGD::CreateGpuTexture(const Format format,
     imgInfo.depth = 1;
     imgInfo.mipLevels = mipLevels;
     imgInfo.usage = imageUsages;
-    return (GpuTexture*)CreateResource(imgInfo);
+    return (GpuTexture*)CreateGpuResource(imgInfo);
+}
+
+GpuBuffer* CGD::CreateGpuBuffer(const uint64 size, 
+    BufferUsages bufferUsages, CPUAccessFlags cpuAccess) const
+{
+    BufferCreateInfo bufferInfo = {};
+    bufferInfo.usage = bufferUsages;
+    bufferInfo.cpuAccess = cpuAccess;
+    bufferInfo.size = size;
+    return (GpuBuffer*)CreateGpuResource(bufferInfo);
 }

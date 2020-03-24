@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-22 00:29:40
+ * @LastEditTime: 2020-03-24 11:20:19
  */
 #define API_EXPORTS
 #include "CGD_Vulkan.h"
@@ -140,6 +140,9 @@ void CGD_Vk::Present(SwapChain* chain)
     SwapChainVk* vkChain = (SwapChainVk*)chain;
     VkSwapchainKHR* swapChains = &vkChain->swapChain;
     vkChain->currentPresent = vkChain->nextPresent;
+    vkWaitForFences(entityVk.device,
+        1, &vkChain->inFlightFences[vkChain->currentFrame], VK_TRUE, UINT64_MAX);
+    
     vkAcquireNextImageKHR(
         entityVk.device,
         vkChain->swapChain,
@@ -148,14 +151,38 @@ void CGD_Vk::Present(SwapChain* chain)
         VK_NULL_HANDLE,
         &vkChain->currentPresent
     );
+    if (vkChain->imagesInFlight[vkChain->currentPresent] != VK_NULL_HANDLE) 
+    {
+        vkWaitForFences(entityVk.device, 1,
+            &vkChain->imagesInFlight[vkChain->currentPresent], VK_TRUE, UINT64_MAX);
+    }
+    vkChain->imagesInFlight[vkChain->currentPresent] =
+        vkChain->inFlightFences[vkChain->currentFrame];
+
+    const VkPipelineStageFlags wat = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.pNext = NULL;
+    submitInfo.commandBufferCount = 0;
+    submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = 
+        &vkChain->imageAvailableSemaphores[vkChain->currentFrame];
+    submitInfo.pWaitDstStageMask = &wat;
+	submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores 
+        = &vkChain->renderCompleteSemaphores[vkChain->currentFrame];
+
+    vkResetFences(entityVk.device, 1, &vkChain->inFlightFences[vkChain->currentFrame]);
+    vkQueueSubmit(presentQueue, 1,
+        &submitInfo, vkChain->inFlightFences[vkChain->currentFrame]);
+    
     VkPresentInfoKHR info = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
     info.swapchainCount = 1;
     info.pSwapchains = swapChains;
     info.pImageIndices = &vkChain->currentPresent;
     info.waitSemaphoreCount = 1;
     info.pWaitSemaphores 
-        = &vkChain->imageAvailableSemaphores[vkChain->currentFrame];
-    vkQueueWaitIdle(presentQueue);
+        = &vkChain->renderCompleteSemaphores[vkChain->currentFrame];
     if(vkQueuePresentKHR(presentQueue, &info) != VK_SUCCESS)
     {
         Sakura::log::error("Vulkan: failed to present Vulkan graphics queue!");
@@ -261,6 +288,7 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phy_device,
     vkGetPhysicalDeviceQueueFamilyProperties(phy_device, 
         &queueFamilyCount, queueFamilies.data());
     int i = 0;
+    bool picked = false;
     for (const auto& queueFamily : queueFamilies) 
     {
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
@@ -278,8 +306,11 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phy_device,
         VkBool32 presentSupport = false;
         vkGetPhysicalDeviceSurfaceSupportKHR(phy_device, i, 
             surface, &presentSupport);
-        if (presentSupport) 
+        if (presentSupport & !picked)
+        {
             indices.presentFamily = i;
+            picked = true;
+        } 
         if (indices.isComplete())
             break;
         i++;
@@ -375,7 +406,7 @@ void CGD_Vk::pickPhysicalDevice(VkSurfaceKHR surface)
     queueFamilyIndices = findQueueFamilies(entityVk.physicalDevice, surface);
 }
 
-void CGD_Vk::InitQueueSet(void* mainSurface)
+void CGD_Vk::InitializeDevice(void* mainSurface)
 {
     // Type re-generation
     VkSurfaceKHR surface = *(VkSurfaceKHR*)mainSurface;

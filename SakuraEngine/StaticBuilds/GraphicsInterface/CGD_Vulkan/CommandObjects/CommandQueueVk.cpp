@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-03 10:41:13
- * @LastEditTime: 2020-03-22 18:07:49
+ * @LastEditTime: 2020-03-24 10:40:15
  */
 #include "CommandQueueVk.h"
 #include "CommandContextVk.h"
@@ -53,7 +53,7 @@ void CommandQueueVk::Submit(CommandContext* commandContext,
 	timelineInfo.signalSemaphoreValueCount = 1;
 	timelineInfo.pSignalSemaphoreValues = &toValue;
     
-    const VkPipelineStageFlags wat = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    const VkPipelineStageFlags wat = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
     CommandContextVk* cmdVk = (CommandContextVk*)commandContext;
     VkSubmitInfo submitInfo;
     {
@@ -123,16 +123,17 @@ void CommandQueueVk::Submit(Fence* fence, uint64 completedValue)
 	timelineInfo.signalSemaphoreValueCount = 1;
 	timelineInfo.pSignalSemaphoreValues = &signalValue;
 
+    const VkPipelineStageFlags wat = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 	VkSubmitInfo submitInfo;
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.pNext = &timelineInfo;
-	submitInfo.waitSemaphoreCount = 0;
-	//submitInfo.pWaitSemaphores = &FcVk->timelineSemaphore;
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = &FcVk->timelineSemaphore;
+    submitInfo.pWaitDstStageMask = &wat;
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &FcVk->timelineSemaphore;
 	submitInfo.commandBufferCount = 0;
 	submitInfo.pCommandBuffers = 0;
-    //vkQueueWaitIdle(vkQueue);
     if (vkQueueSubmit(vkQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
     {
 		CGD_Vk::error("failed to submit timeline semaphores!");
@@ -154,7 +155,7 @@ void CommandQueueVk::Wait(Fence* fence, uint64 until)
 	timelineInfo.pSignalSemaphoreValues = &waitValue;
     
 	VkSubmitInfo submitInfo;
-    const VkPipelineStageFlags wat = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    const VkPipelineStageFlags wat = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.pNext = &timelineInfo;

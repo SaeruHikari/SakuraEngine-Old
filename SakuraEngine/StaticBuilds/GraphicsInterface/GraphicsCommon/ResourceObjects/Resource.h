@@ -30,6 +30,7 @@
 #include "../Flags/ResourceFlags.h"
 #include "../Flags/CommonFeatures.h"
 #include "../Flags/GraphicsPipelineStates.h"
+#include <functional>
 
 namespace Sakura::Graphics
 {
@@ -92,6 +93,13 @@ namespace Sakura::Graphics
         virtual ~GpuResource() = default;
         virtual void Map(void** data) = 0;
         virtual void Unmap() = 0;
+        inline void UpdateValue(std::function<void(void*)> func)
+        {
+            void* data;
+            Map(&data);
+            func(data);
+            Unmap();
+        }
         const Extent2D GetExtent() const
         {
             return extent;

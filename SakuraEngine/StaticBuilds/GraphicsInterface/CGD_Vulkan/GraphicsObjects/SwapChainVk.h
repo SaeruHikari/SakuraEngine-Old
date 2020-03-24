@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 01:29:37
- * @LastEditTime: 2020-03-17 11:11:18
+ * @LastEditTime: 2020-03-24 11:19:52
  */
 #pragma once
 #include "../../GraphicsCommon/GraphicsObjects/SwapChain.h"
@@ -51,6 +51,9 @@ namespace Sakura::Graphics::Vk
         VkSwapchainKHR swapChain;
         VkExtent2D swapChainExtent;
         std::vector<VkSemaphore> imageAvailableSemaphores;
+        std::vector<VkSemaphore> renderCompleteSemaphores;
+        std::vector<VkFence> inFlightFences;
+        std::vector<VkFence> imagesInFlight;
         uint32_t nextPresent = 0;
         uint32_t currentPresent = 0;
     };
