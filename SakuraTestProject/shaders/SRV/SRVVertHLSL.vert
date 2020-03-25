@@ -1,4 +1,4 @@
-[[vk::binding(0)]] cbuffer PushConst
+[[vk::binding(0, 0)]] cbuffer PushConst
 {
     float4x4 model;
     float4x4 view;

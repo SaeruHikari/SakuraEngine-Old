@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-24 00:30:21
+ * @LastEditTime: 2020-03-25 10:19:17
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -213,21 +213,24 @@ void CommandContextVk::BeginRenderPass(
         &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void CommandContextVk::BindRootArguments(const PipelineBindPoint bindPoint,
-    const RootArgument** arguments, uint32_t argumentNum)
+void CommandContextVk::BindRootParameters(const PipelineBindPoint bindPoint,
+    const RootParameter** arguments, uint32_t argumentNum)
 {
     std::vector<VkDescriptorSet> descriptorSets(argumentNum);
+    auto set = 9999;
     for(auto i = 0; i < argumentNum; i++)
     {
+        auto cset = ((const RootParameterVk**)arguments)[i]->targetSet;
         descriptorSets[i] = 
-            (((const RootArgumentVk**)arguments)[i])->descriptorSet;
+            (((const RootParameterVk**)arguments)[i])->descriptorSet;
+        set = cset < set ? cset : set;
     }
     if(bindPoint == PipelineBindPoint::BindPointGraphics)
     vkCmdBindDescriptorSets(commandBuffer, Transfer(bindPoint),
-        vkGp->pipelineLayout, 0, argumentNum, descriptorSets.data(), 0, nullptr);
+        vkGp->pipelineLayout, set, argumentNum, descriptorSets.data(), 0, nullptr);
     else if(bindPoint == PipelineBindPoint::BindPointCompute)
     vkCmdBindDescriptorSets(commandBuffer, Transfer(bindPoint),
-        vkCp->pipelineLayout, 0, argumentNum, descriptorSets.data(), 0, nullptr);
+        vkCp->pipelineLayout, set, argumentNum, descriptorSets.data(), 0, nullptr);
 }
 
 void CommandContextVk::Draw(uint32 vertexCount, uint32 instanceCount,

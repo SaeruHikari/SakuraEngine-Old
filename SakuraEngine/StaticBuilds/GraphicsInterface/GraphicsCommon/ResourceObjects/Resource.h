@@ -148,7 +148,7 @@ namespace Sakura::Graphics
         SamplerMipmapMode mipmapMode = SamplerMipmapMode::SamplerMipmapModeLinear;
     };
 
-    sinterface Sampler
+    sinterface Sampler 
     {
         Sampler() = default;
         virtual ~Sampler(){}

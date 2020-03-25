@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-24 12:21:50
+ * @LastEditTime: 2020-03-25 09:57:16
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -282,7 +282,7 @@ private:
         samplerInfo.mipLodBias = 0;
         sampler.reset(cgd->CreateSampler(samplerInfo));
 
-        RootArgumentAttachment compAttachments[2];
+        RootParameterAttachment compAttachments[2];
         TexSamplerAttachment srcAttach;
         srcAttach.imageView = textureView.get();
         srcAttach.sampler = sampler.get();
@@ -303,7 +303,7 @@ private:
         context->Begin();
         context->BeginComputePass(compPipeline.get());
         const auto* cmparg = compArgument.get();
-        context->BindRootArguments(PipelineBindPoint::BindPointCompute,
+        context->BindRootParameters(PipelineBindPoint::BindPointCompute,
             &cmparg, 1);
         context->DispatchCompute(
             texture->GetExtent().width / 16, 
@@ -376,19 +376,16 @@ private:
         slots[1].stageFlags = ShaderStageFlags::PixelStage;
         slots[2].type = SignatureSlotType::SampledImageSlot;
         slots[2].stageFlags = ShaderStageFlags::PixelStage;
-        
         SamplerCreateInfo samplerInfo;
         samplerInfo.mipmapMode = SamplerMipmapMode::SamplerMipmapModeLinear;
         samplerInfo.minLod = 0;
         samplerInfo.maxLod = 15;
         samplerInfo.mipLodBias = 0;
-
         info.PushStaticSampler(samplerInfo);
-        info.paramSlotNum = slots.size();
-        info.paramSlots = slots.data();
+        info.paramSlotsPerFrame[0] = slots;
         rootSignature.reset(cgd->CreateRootSignature(info));
-        cbvArgument.reset(
-            rootSignature->CreateArgument());
+        cbvArgument.reset(rootSignature->
+            CreateArgument(RootParameterSet::RootParameterPerObject));
 
         // Compute Pass RootSig
         RootSignatureCreateInfo compInfo = {};
@@ -397,10 +394,10 @@ private:
         slots[0].stageFlags = ShaderStageFlags::ComputeStage;
 		slots[1].type = SignatureSlotType::StorageImageSlot;
 		slots[1].stageFlags = ShaderStageFlags::ComputeStage;
-        compInfo.paramSlotNum = slots.size();
-        compInfo.paramSlots = slots.data();
+        compInfo.paramSlotsPerFrame[0] = slots;
         compRootSignature.reset(cgd->CreateRootSignature(compInfo));
-		compArgument.reset(compRootSignature->CreateArgument());
+		compArgument.reset(compRootSignature->
+            CreateArgument(RootParameterSet::RootParameterPerObject));
         
         ComputePipelineCreateInfo compPInfo = {};
         compPInfo.rootSignature = compRootSignature.get();
@@ -453,7 +450,7 @@ private:
                 memcpy(ptr, &ubo, sizeof(ubo));
             });
 
-        static RootArgumentAttachment attachments[3];
+        static RootParameterAttachment attachments[3];
         static UniformBufferAttachment ubAttach;
         static TexSamplerAttachment samplerAttach;
         static TexSamplerAttachment texAttach;
@@ -495,7 +492,7 @@ private:
         context->BindVertexBuffers(*vertexBuffer.get());
         context->BindIndexBuffers(*indexBuffer.get());
         const auto* arg = cbvArgument.get();
-        context->BindRootArguments(PipelineBindPoint::BindPointGraphics,
+        context->BindRootParameters(PipelineBindPoint::BindPointGraphics,
             &arg, 1);
         context->DrawIndexed(indices.size(), 1);
         context->EndRenderPass();
@@ -565,7 +562,7 @@ private:
     std::unique_ptr<Sakura::Graphics::SwapChain> swapChain;
     std::unique_ptr<CommandContext> context, imContext;
 
-    std::unique_ptr<RootArgument> cbvArgument, compArgument;
+    std::unique_ptr<RootParameter> cbvArgument, compArgument;
     std::unique_ptr<RootSignature> rootSignature, compRootSignature;
     
     std::unique_ptr<Sampler> sampler;

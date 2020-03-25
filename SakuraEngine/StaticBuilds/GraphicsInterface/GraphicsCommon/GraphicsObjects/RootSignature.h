@@ -64,10 +64,16 @@ namespace Sakura::Graphics
         ShaderStages stageFlags;
     };
 
+    enum RootParameterSet
+    {
+		RootParameterPerObject,
+        RootParameterPerFrame,
+        RootParameterStatic,
+        RootParameterSetCount
+    };
+
     struct RootSignatureCreateInfo
     {
-        const SignatureSlot* paramSlots = nullptr;
-        uint32_t paramSlotNum = 0;
         template<typename _SamplerCreateInfo>
         void PushStaticSampler(const _SamplerCreateInfo& info)
         {
@@ -79,8 +85,8 @@ namespace Sakura::Graphics
             PushStaticSampler(info);
             PushStaticSampler(ts...);
         }
-    private:    
         std::vector<SamplerCreateInfo> staticSamplers;
+        std::vector<SignatureSlot> paramSlotsPerFrame[RootParameterSetCount];
     };
 
     struct UniformBufferAttachment
@@ -97,7 +103,7 @@ namespace Sakura::Graphics
         ImageLayout imageLayout;
     };
 
-    struct RootArgumentAttachment
+    struct RootParameterAttachment
     {
         SignatureSlotType rootArgType = SignatureSlotType::UniformBufferSlot;
         uint32_t dstBinding = 0;
@@ -106,11 +112,11 @@ namespace Sakura::Graphics
         std::variant<UniformBufferAttachment, TexSamplerAttachment> info;
     };
     
-    sinterface RootArgument
+    sinterface RootParameter
     {
-        virtual ~RootArgument(){};
+        virtual ~RootParameter(){};
         virtual const SignatureSlotType GetType(void) const = 0;
-        virtual void UpdateArgument(const RootArgumentAttachment* attachments,
+        virtual void UpdateArgument(const RootParameterAttachment* attachments,
             std::uint32_t attachmentCount) = 0;
         virtual const size_t GetSlotNum(void) const = 0;
     };
@@ -118,7 +124,8 @@ namespace Sakura::Graphics
     sinterface RootSignature
     {
         virtual ~RootSignature(){};
-        virtual [[nodiscard]] RootArgument* CreateArgument() const = 0;
+        virtual [[nodiscard]] RootParameter* CreateArgument(
+            const RootParameterSet targetSet) const = 0;
     };
 } // namespace Sakura::Graphics
 

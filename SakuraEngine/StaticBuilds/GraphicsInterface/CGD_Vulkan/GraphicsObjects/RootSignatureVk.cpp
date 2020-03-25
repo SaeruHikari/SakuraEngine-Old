@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:18:23
- * @LastEditTime: 2020-03-24 11:53:08
+ * @LastEditTime: 2020-03-25 16:11:38
  */
 #include "RootSignatureVk.h"
 #include "../CGD_Vulkan.h"
@@ -36,27 +36,31 @@ RootSignatureVk::RootSignatureVk(
     const CGD_Vk& _cgd, const RootSignatureCreateInfo& info)
         :cgd(_cgd)
 {
-    std::vector<VkDescriptorSetLayoutBinding> layoutBindings(info.paramSlotNum);
-    std::set<SignatureSlotType> types;
-    for(auto i = 0; i < info.paramSlotNum; i++)
+	std::set<SignatureSlotType> types;
+    types.insert(SamplerSlot);
+    for (auto setN = 0; setN < RootParameterSetCount; setN++)
     {
-        auto slot = info.paramSlots[i];
-        layoutBindings[i].binding = i;
-        layoutBindings[i].descriptorCount = 1;
-        layoutBindings[i].descriptorType = Transfer(slot.type);
-        layoutBindings[i].pImmutableSamplers = nullptr;
-        layoutBindings[i].stageFlags = slot.stageFlags;
-        types.insert(slot.type);
+		auto paramSlotNum = info.paramSlotsPerFrame[setN].size();
+		std::vector<VkDescriptorSetLayoutBinding> layoutBindings(paramSlotNum);
+		for (auto i = 0; i < paramSlotNum; i++)
+		{
+			auto slot = info.paramSlotsPerFrame[setN][i];
+			layoutBindings[i].binding = i;
+			layoutBindings[i].descriptorCount = 1;
+			layoutBindings[i].descriptorType = Transfer(slot.type);
+			layoutBindings[i].pImmutableSamplers = nullptr;
+			layoutBindings[i].stageFlags = slot.stageFlags;
+			types.insert(slot.type);
+		}
+		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.bindingCount = layoutBindings.size();
+		layoutInfo.pBindings = layoutBindings.data();
+		if (vkCreateDescriptorSetLayout(cgd.GetCGDEntity().device,
+			&layoutInfo, nullptr, &descriptorSetLayout[setN]) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create descriptor set layout!");
+		}
     }
-    VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = layoutBindings.size();
-    layoutInfo.pBindings = layoutBindings.data();
-    if (vkCreateDescriptorSetLayout(cgd.GetCGDEntity().device,
-        &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create descriptor set layout!");
-    }
-
     std::vector<VkDescriptorPoolSize> poolSizes(types.size());
     int i = 0;
     for(auto iter = types.begin(); iter != types.end(); iter++)
@@ -76,20 +80,103 @@ RootSignatureVk::RootSignatureVk(
     {
         throw std::runtime_error("failed to create descriptor pool!");
     }
+
+    staticSamplers.resize(info.staticSamplers.size());
+    for (auto i = 0; i < staticSamplers.size(); i++)
+    {
+        auto samp = info.staticSamplers[i];
+		VkSamplerCreateInfo samplerInfo = {};   
+		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerInfo.magFilter = (VkFilter)samp.magFilter;
+		samplerInfo.minFilter = (VkFilter)samp.minFilter;
+		samplerInfo.minLod = samp.minLod;
+		samplerInfo.maxLod = samp.maxLod;
+		samplerInfo.addressModeU = (VkSamplerAddressMode)samp.addressModeU;
+		samplerInfo.addressModeV = (VkSamplerAddressMode)samp.addressModeV;
+		samplerInfo.addressModeW = (VkSamplerAddressMode)samp.addressModeW;
+		samplerInfo.anisotropyEnable = samp.anisotropyEnable ? VK_TRUE : VK_FALSE;
+		samplerInfo.maxAnisotropy = samp.maxAnisotropy;
+		samplerInfo.mipLodBias = samp.mipLodBias;
+		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		samplerInfo.compareOp = (VkCompareOp)samp.compareOp;
+		samplerInfo.mipmapMode = (VkSamplerMipmapMode)samp.mipmapMode;
+
+		samplerInfo.unnormalizedCoordinates =
+            samp.unnormalizedCoordinates ? VK_TRUE : VK_FALSE;
+		samplerInfo.compareEnable = samp.compareEnable ? VK_TRUE : VK_FALSE;
+		if (vkCreateSampler(cgd.GetCGDEntity().device,
+			&samplerInfo, nullptr, &staticSamplers[i]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create texture sampler!");
+		}
+    }
     
+    std::vector<VkDescriptorSetLayoutBinding> 
+            layoutBinding(staticSamplers.size());
+	for (auto i = 0; i < staticSamplers.size(); i++)
+	{
+		layoutBinding[i].binding = i;
+		layoutBinding[i].descriptorCount = 1;
+		layoutBinding[i].descriptorType =
+            VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+		layoutBinding[i].pImmutableSamplers = nullptr;
+		layoutBinding[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	}
+	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = staticSamplers.size();
+	layoutInfo.pBindings = layoutBinding.data();
+	if (vkCreateDescriptorSetLayout(cgd.GetCGDEntity().device, &layoutInfo,
+		nullptr, &descriptorSetLayout[RootParameterSetCount]) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create descriptor set layout!");
+	}
+    
+	VkDescriptorSetAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = pool;
+	allocInfo.descriptorSetCount = 1;
+	allocInfo.pSetLayouts = &descriptorSetLayout[RootParameterSetCount];
+	if (vkAllocateDescriptorSets(
+		_cgd.GetCGDEntity().device, &allocInfo, &staticSamplerSet) != VK_SUCCESS)
+	{
+		CGD_Vk::error("Create Root Argument: failed to allocate descriptor sets!");
+		throw std::runtime_error("failed to allocate descriptor sets!");
+	}
+    std::vector<VkWriteDescriptorSet> samplerWrites(staticSamplers.size());
+    for (auto i = 0; i < staticSamplers.size(); i++)
+    {
+        VkDescriptorImageInfo image = {};
+        image.sampler = staticSamplers[i];
+        image.imageView = VK_NULL_HANDLE;
+		samplerWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        samplerWrites[i].descriptorCount = 1;
+        samplerWrites[i].dstSet = staticSamplerSet;
+        samplerWrites[i].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+        samplerWrites[i].pImageInfo = &image;
+        samplerWrites[i].dstBinding = i;
+        samplerWrites[i].dstArrayElement = 0;
+    }
+	vkUpdateDescriptorSets(cgd.GetCGDEntity().device,
+        samplerWrites.size(), samplerWrites.data(), 0, nullptr);
 }
 
 RootSignatureVk::~RootSignatureVk()
 {
-    vkDestroyDescriptorSetLayout(cgd.GetCGDEntity().device,
-        descriptorSetLayout, nullptr);
+    for (auto i = 0; i < staticSamplers.size(); i++)
+        vkDestroySampler(cgd.GetCGDEntity().device, staticSamplers[i], nullptr);
+    for(auto i = 0; i < RootParameterSetCount + 1; i++)
+        vkDestroyDescriptorSetLayout(cgd.GetCGDEntity().device,
+            descriptorSetLayout[i], nullptr);
     vkDestroyDescriptorPool(cgd.GetCGDEntity().device, 
             pool, nullptr);
 }
 
-RootArgumentVk::RootArgumentVk(const CGD_Vk& _cgd,
+RootParameterVk::RootParameterVk(const CGD_Vk& _cgd, 
+    const RootSignatureVk* rootSignature,
+    const RootParameterSet _targetSet,
     const VkDescriptorSetLayout& layout, VkDescriptorPool pool)
-    :cgd(_cgd)
+    :cgd(_cgd), rootSig(rootSignature), targetSet(_targetSet)
 {
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -104,17 +191,17 @@ RootArgumentVk::RootArgumentVk(const CGD_Vk& _cgd,
     }
 }
 
-RootArgumentVk::~RootArgumentVk()
+RootParameterVk::~RootParameterVk()
 {
     
 }
 
-const SignatureSlotType RootArgumentVk::GetType(void) const
+const SignatureSlotType RootParameterVk::GetType(void) const
 {
     return type;
 }
 
-const size_t RootArgumentVk::GetSlotNum(void) const
+const size_t RootParameterVk::GetSlotNum(void) const
 {
     return 0;
 }
@@ -125,13 +212,14 @@ RootSignature* CGD_Vk::CreateRootSignature(
     return new RootSignatureVk(*this, sigInfo);
 }
 
-RootArgument* RootSignatureVk::CreateArgument() const
+RootParameter* RootSignatureVk::CreateArgument(const RootParameterSet targetSet) const
 {
-    return new RootArgumentVk(cgd, descriptorSetLayout, pool);
+    return new RootParameterVk(cgd, this,
+        targetSet, descriptorSetLayout[targetSet], pool);
 }
 
-void RootArgumentVk::UpdateArgument(
-    const RootArgumentAttachment* attachments, std::uint32_t attachmentCount)
+void RootParameterVk::UpdateArgument(
+    const RootParameterAttachment* attachments, std::uint32_t attachmentCount)
 {
     std::vector<VkWriteDescriptorSet> descriptorWrites(attachmentCount);
     for(auto i = 0u; i < attachmentCount; i++)

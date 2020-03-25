@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:06:12
- * @LastEditTime: 2020-03-23 10:48:29
+ * @LastEditTime: 2020-03-25 10:02:44
  */
 #include "GraphicsPipelineVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -52,9 +52,9 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     if(info.rootSignature)
     {
-        pipelineLayoutInfo.setLayoutCount = 1;
+        pipelineLayoutInfo.setLayoutCount = RootParameterSetCount + 1;
         pipelineLayoutInfo.pSetLayouts 
-            = &((const RootSignatureVk*)info.rootSignature)->descriptorSetLayout;
+            = ((const RootSignatureVk*)info.rootSignature)->descriptorSetLayout;
     }
     if (vkCreatePipelineLayout(cgd.GetCGDEntity().device,
         &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
