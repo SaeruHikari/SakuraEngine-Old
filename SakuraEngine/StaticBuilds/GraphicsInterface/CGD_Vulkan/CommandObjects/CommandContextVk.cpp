@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-25 10:19:17
+ * @LastEditTime: 2020-03-26 17:14:02
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -151,17 +151,20 @@ void CommandContextVk::Begin()
     }
 }
 
-void CommandContextVk::BindVertexBuffers(const GpuBuffer& vb) 
+void CommandContextVk::BindVertexBuffer(const GpuBuffer& vb) 
 {
     VkDeviceSize offsets[] = {0};
     VkBuffer bufs[] = {((const GpuResourceVkBuffer&)vb).buffer};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, bufs, offsets);
 }
 
-void CommandContextVk::BindIndexBuffers(const GpuBuffer& ib)
+void CommandContextVk::BindIndexBuffer(const GpuBuffer& ib,
+    const IndexBufferStride stride)
 {
     VkBuffer buf = ((const GpuResourceVkBuffer&)ib).buffer;
-    vkCmdBindIndexBuffer(commandBuffer, buf, 0, VK_INDEX_TYPE_UINT32);
+    auto index = (stride == IndexBufferStride::IndexBufferUINT16) 
+        ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
+    vkCmdBindIndexBuffer(commandBuffer, buf, 0, index);
 }
 
 void CommandContextVk::BeginComputePass(ComputePipeline* cp)
@@ -225,12 +228,20 @@ void CommandContextVk::BindRootParameters(const PipelineBindPoint bindPoint,
             (((const RootParameterVk**)arguments)[i])->descriptorSet;
         set = cset < set ? cset : set;
     }
-    if(bindPoint == PipelineBindPoint::BindPointGraphics)
-    vkCmdBindDescriptorSets(commandBuffer, Transfer(bindPoint),
-        vkGp->pipelineLayout, set, argumentNum, descriptorSets.data(), 0, nullptr);
+
+    if (bindPoint == PipelineBindPoint::BindPointGraphics)
+    {
+		vkCmdBindDescriptorSets(commandBuffer, Transfer(bindPoint),
+			vkGp->pipelineLayout, set, argumentNum, descriptorSets.data(), 0, nullptr);
+        vkCmdBindDescriptorSets(commandBuffer, Transfer(BindPointGraphics),
+			vkGp->pipelineLayout, 3, 1, 
+            ((RootParameterVk*)arguments[0])->staticSamplers, 0, nullptr);
+    }
     else if(bindPoint == PipelineBindPoint::BindPointCompute)
-    vkCmdBindDescriptorSets(commandBuffer, Transfer(bindPoint),
-        vkCp->pipelineLayout, set, argumentNum, descriptorSets.data(), 0, nullptr);
+    {
+        vkCmdBindDescriptorSets(commandBuffer, Transfer(bindPoint),
+            vkCp->pipelineLayout, set, argumentNum, descriptorSets.data(), 0, nullptr);
+    }
 }
 
 void CommandContextVk::Draw(uint32 vertexCount, uint32 instanceCount,

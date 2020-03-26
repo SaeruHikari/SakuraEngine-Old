@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:13:31
- * @LastEditTime: 2020-03-25 09:28:52
+ * @LastEditTime: 2020-03-26 17:08:27
  */
 #pragma once
 #include <vector>
@@ -73,20 +73,19 @@ namespace Sakura::Graphics::Vk
         const RootSignatureVk* rootSig;
         uint32_t slotNum = 0;
         const RootParameterSet targetSet;
+        const VkDescriptorSet* staticSamplers;
         SignatureSlotType type;
         const CGD_Vk& cgd; 
     };
 
     inline static const VkDescriptorType Transfer(const SignatureSlotType in)
     {
-        if(in != InlineUniformBlockExt || in != AccelerationStructureNv)
+        if(in != AccelerationStructureNv)
             return ((VkDescriptorType)in);
         else 
         {
             switch (in)
             {
-            case SignatureSlotType::InlineUniformBlockExt:
-                return VkDescriptorType::VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT;
             case SignatureSlotType::AccelerationStructureNv:
                 return VkDescriptorType::VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV;            
             default:

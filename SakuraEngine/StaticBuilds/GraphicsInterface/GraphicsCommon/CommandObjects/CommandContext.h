@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-05 23:50:30
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-23 12:29:10
+ * @LastEditTime: 2020-03-26 17:13:41
  */
 #pragma once
 #include <mutex>
@@ -89,9 +89,10 @@ namespace Sakura::Graphics
         virtual void DrawIndexed(const uint32_t indicesCount,
             const uint32_t instanceCount) = 0;
 
-        virtual void BindVertexBuffers(const GpuBuffer& vb) = 0;
+        virtual void BindVertexBuffer(const GpuBuffer& vb) = 0;
 
-        virtual void BindIndexBuffers(const GpuBuffer& ib) = 0;
+        virtual void BindIndexBuffer(const GpuBuffer& ib,
+            const IndexBufferStride stride = IndexBufferStride::IndexBufferUINT32) = 0;
 
         virtual void BindRootParameters(const PipelineBindPoint bindPoint,
             const RootParameter** arguments, uint32_t argumentNum) = 0;

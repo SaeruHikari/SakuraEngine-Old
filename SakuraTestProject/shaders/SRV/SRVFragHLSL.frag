@@ -12,14 +12,13 @@ struct PixelOut
 
 [[vk::binding(1, 0)]] SamplerState textureSampler;
 [[vk::binding(2, 0)]] Texture2D<float4> _texture;
-
-[[vk::binding(0, 3)]] SamplerState staticSampler;
+[[vk::binding(0, 3)]] SamplerState staSampler;
 
 
 PixelOut main(PixelIn pin)
 {
     PixelOut pout;
-    pout.outColor = _texture.Sample(staticSampler, pin.fragTexCoord);
+    pout.outColor = _texture.Sample(staSampler, pin.fragTexCoord);
     return pout;
 };
 

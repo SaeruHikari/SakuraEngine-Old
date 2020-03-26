@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:18:23
- * @LastEditTime: 2020-03-25 16:11:38
+ * @LastEditTime: 2020-03-26 17:08:05
  */
 #include "RootSignatureVk.h"
 #include "../CGD_Vulkan.h"
@@ -37,7 +37,8 @@ RootSignatureVk::RootSignatureVk(
         :cgd(_cgd)
 {
 	std::set<SignatureSlotType> types;
-    types.insert(SamplerSlot);
+    if(info.staticSamplers.size() > 0)
+        types.insert(SamplerSlot);
     for (auto setN = 0; setN < RootParameterSetCount; setN++)
     {
 		auto paramSlotNum = info.paramSlotsPerFrame[setN].size();
@@ -110,7 +111,6 @@ RootSignatureVk::RootSignatureVk(
 			throw std::runtime_error("failed to create texture sampler!");
 		}
     }
-    
     std::vector<VkDescriptorSetLayoutBinding> 
             layoutBinding(staticSamplers.size());
 	for (auto i = 0; i < staticSamplers.size(); i++)
@@ -119,7 +119,7 @@ RootSignatureVk::RootSignatureVk(
 		layoutBinding[i].descriptorCount = 1;
 		layoutBinding[i].descriptorType =
             VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
-		layoutBinding[i].pImmutableSamplers = nullptr;
+		layoutBinding[i].pImmutableSamplers = &staticSamplers[i];
 		layoutBinding[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	}
 	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
@@ -143,22 +143,22 @@ RootSignatureVk::RootSignatureVk(
 		CGD_Vk::error("Create Root Argument: failed to allocate descriptor sets!");
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
-    std::vector<VkWriteDescriptorSet> samplerWrites(staticSamplers.size());
+    /*std::vector<VkWriteDescriptorSet> samplerWrites(staticSamplers.size());
     for (auto i = 0; i < staticSamplers.size(); i++)
     {
         VkDescriptorImageInfo image = {};
-        image.sampler = staticSamplers[i];
+        image.sampler = VK_NULL_HANDLE;
         image.imageView = VK_NULL_HANDLE;
 		samplerWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        samplerWrites[i].descriptorCount = 1;
+        samplerWrites[i].descriptorCount = 0;
         samplerWrites[i].dstSet = staticSamplerSet;
         samplerWrites[i].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
         samplerWrites[i].pImageInfo = &image;
-        samplerWrites[i].dstBinding = i;
-        samplerWrites[i].dstArrayElement = 0;
+        //samplerWrites[i].dstBinding = i;
+        //samplerWrites[i].dstArrayElement = 0;
     }
 	vkUpdateDescriptorSets(cgd.GetCGDEntity().device,
-        samplerWrites.size(), samplerWrites.data(), 0, nullptr);
+        samplerWrites.size(), samplerWrites.data(), 0, nullptr);*/
 }
 
 RootSignatureVk::~RootSignatureVk()
@@ -214,8 +214,10 @@ RootSignature* CGD_Vk::CreateRootSignature(
 
 RootParameter* RootSignatureVk::CreateArgument(const RootParameterSet targetSet) const
 {
-    return new RootParameterVk(cgd, this,
-        targetSet, descriptorSetLayout[targetSet], pool);
+	auto res = new RootParameterVk(cgd, this,
+		targetSet, descriptorSetLayout[targetSet], pool);
+    res->staticSamplers = &staticSamplerSet;
+    return res;
 }
 
 void RootParameterVk::UpdateArgument(

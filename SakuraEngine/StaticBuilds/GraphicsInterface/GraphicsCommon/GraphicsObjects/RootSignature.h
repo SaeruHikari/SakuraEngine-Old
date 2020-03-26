@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-17 22:31:04
- * @LastEditTime: 2020-03-24 12:26:48
+ * @LastEditTime: 2020-03-25 19:02:27
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -49,10 +49,10 @@ namespace Sakura::Graphics
         StorageTexelBufferSlot = 5,
         UniformBufferSlot = 6,
         StorageBufferSlot = 7,
-        UniformBufferDynamicSlot = 8,
-        StorageBufferDynamicSlot = 9,
-        InputAttachmentSlot = 10,
-		InlineUniformBlockExt = 11,
+        //UniformBufferDynamicSlot = 8,
+        //StorageBufferDynamicSlot = 9,
+        //InputAttachmentSlot = 10,
+		//InlineUniformBlockExt = 11,
 		AccelerationStructureNv = 12,
         SignatureSlotTypeCount = 13,
         SignatureSlotTypeMaxEnum = 0x7FFFFFFF

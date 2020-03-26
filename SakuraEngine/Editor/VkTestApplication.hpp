@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-25 09:57:16
+ * @LastEditTime: 2020-03-26 17:27:53
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -184,6 +184,7 @@ private:
 		vsStage.shader = vertshader.get(); vsStage.entry = "main";
 		fsStage.stage = ShaderStageFlags::PixelStage;
 		fsStage.shader = fragshader.get(); fsStage.entry = "main";
+        
         csStage.stage = ShaderStageFlags::ComputeStage;
         csStage.shader = computeshader.get(); csStage.entry = "main";
     }
@@ -489,8 +490,8 @@ private:
         
         context->Begin();
         context->BeginRenderPass(Pipeline.get(), rtset);
-        context->BindVertexBuffers(*vertexBuffer.get());
-        context->BindIndexBuffers(*indexBuffer.get());
+        context->BindVertexBuffer(*vertexBuffer.get());
+        context->BindIndexBuffer(*indexBuffer.get());
         const auto* arg = cbvArgument.get();
         context->BindRootParameters(PipelineBindPoint::BindPointGraphics,
             &arg, 1);

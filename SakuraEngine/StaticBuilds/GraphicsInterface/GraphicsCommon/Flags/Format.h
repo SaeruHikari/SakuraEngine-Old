@@ -5,7 +5,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 11:41:23
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-10 00:59:38
+ * @LastEditTime: 2020-03-26 17:05:12
  */
 #pragma once
 #include <cinttypes>
@@ -52,6 +52,13 @@ namespace Sakura
             BlendFactorOneMinusSrc1Color = 16,
             BlendFactorSrc1Alpha = 17,
             BlendFactorOneMinusSrc1Alpha = 18
+        };
+
+        enum IndexBufferStride
+        {
+            IndexBufferUINT16,
+            IndexBufferUINT32,
+            IndexBufferCount
         };
 
         /**
