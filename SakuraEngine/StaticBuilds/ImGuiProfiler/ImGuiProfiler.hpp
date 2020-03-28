@@ -89,13 +89,13 @@ namespace Sakura::Graphics::Im
             if(backend != TargetGraphicsinterface::CGD_TARGET_VULKAN)
                 ImGuiProfiler::error("ImGuiProfiler: Not Vk backend, can not Get VkDevice Pack!");
             VkDevicePack pack; 
-            auto&& entity = ((const CGD_Vk&)gfxDevice).GetCGDEntity();
+            auto&& entity = ((const CGDVk&)gfxDevice).GetCGDEntity();
             pack.allocator = nullptr;    pack.instance = entity.instance;
             pack.device = entity.device; pack.physicalDevice = entity.physicalDevice;
             pack.graphicsQueue = 
                 ((CommandQueueVk*)entity.graphicsQueue.get())->vkQueue;
             pack.graphicsQueueFamily = 
-                ((const CGD_Vk&)gfxDevice).GetQueueFamily().graphicsFamily.value();
+                ((const CGDVk&)gfxDevice).GetQueueFamily().graphicsFamily.value();
             pack.minImageCount = 2;
             return pack;
         }
@@ -119,8 +119,8 @@ namespace Sakura::Graphics::Im
         virtual ~ImGuiWindowVk() override final
         {
             ImGui_ImplVulkanH_DestroyWindow(
-                ((const CGD_Vk&)gfxDevice).GetCGDEntity().instance,
-                ((const CGD_Vk&)gfxDevice).GetCGDEntity().device, wind, nullptr);
+                ((const CGDVk&)gfxDevice).GetCGDEntity().instance,
+                ((const CGDVk&)gfxDevice).GetCGDEntity().device, wind, nullptr);
         }
         ImGui_ImplVulkanH_Window* wind = nullptr;
     };

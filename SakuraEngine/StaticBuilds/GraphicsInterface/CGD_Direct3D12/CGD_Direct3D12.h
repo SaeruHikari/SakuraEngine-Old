@@ -5,20 +5,24 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 16:23:20
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-06 21:46:19
+ * @LastEditTime: 2020-03-26 17:49:07
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
 #include <iostream>
 
-namespace Sakura::Graphics::Dx12
+namespace Sakura::Graphics::D3D12
 {
-    class CGD_Direct3D12 
+    struct CGDEntityD3D12
     {
+
+    };
+    
+    class CGDD3D12 final : public CGD
+    {
+        DECLARE_LOGGER("CGD_D3D12")
+        friend struct SwapChainD3D12;
     public:
-        CGD_Direct3D12() = default;
-        static void Initialize(CGDInfo info);
-        static void Render();
-        static void Destroy();
+
     };
 }

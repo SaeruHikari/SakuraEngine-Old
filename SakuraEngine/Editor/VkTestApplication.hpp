@@ -410,7 +410,7 @@ private:
     {
         // Create Devices
         Sakura::Graphics::CGDInfo cgd_info;
-        cgd = std::make_unique<Sakura::Graphics::Vk::CGD_Vk>();
+        cgd = std::make_unique<Sakura::Graphics::Vk::CGDVk>();
         cgd_info.enableDebugLayer = true;
         cgd_info.extentionNames = VkSDL_GetInstanceExtensions(win,
             cgd_info.enableDebugLayer);
@@ -419,7 +419,7 @@ private:
     
         cgd->Initialize(cgd_info);
         SDL_Vulkan_CreateSurface(win,
-            ((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
+            ((Sakura::Graphics::Vk::CGDVk*)cgd.get())->GetVkInstance(),
             &surface);
         cgd->InitializeDevice(&surface);
         fence.reset(cgd->AllocFence());
@@ -550,7 +550,7 @@ private:
         indexBuffer.reset();
         context.reset();
         imContext.reset();
-        vkDestroySurfaceKHR(((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(),
+        vkDestroySurfaceKHR(((Sakura::Graphics::Vk::CGDVk*)cgd.get())->GetVkInstance(),
             surface, nullptr);
 	    SDL_DestroyWindow(win);
         SDL_Quit();

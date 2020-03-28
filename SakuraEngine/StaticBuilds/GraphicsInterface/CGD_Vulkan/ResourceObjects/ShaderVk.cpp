@@ -35,7 +35,7 @@ ShaderVk::~ShaderVk()
     vkDestroyShaderModule(device, shaderModule, nullptr);
 }
 
-std::unique_ptr<Shader> CGD_Vk::CreateShader(
+std::unique_ptr<Shader> CGDVk::CreateShader(
     const char* data, std::size_t dataSize)
 {
     auto shader = std::make_unique<ShaderVk>(entityVk.device);
@@ -51,7 +51,7 @@ std::unique_ptr<Shader> CGD_Vk::CreateShader(
     return std::move(shader);
 }
 
-const char* CGD_Vk::CompileShader(const char* src, std::size_t srcSize)
+const char* CGDVk::CompileShader(const char* src, std::size_t srcSize)
 {
     return nullptr;
 }

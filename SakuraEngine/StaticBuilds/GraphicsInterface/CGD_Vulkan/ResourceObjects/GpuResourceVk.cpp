@@ -33,7 +33,7 @@
 using namespace Sakura::Graphics::Vk;
 using namespace Sakura;
 
-SamplerVk::SamplerVk(const CGD_Vk& _cgd)
+SamplerVk::SamplerVk(const CGDVk& _cgd)
     :cgd(_cgd)
 {
     
@@ -77,7 +77,7 @@ void GpuResourceVkImage::Unmap()
     vmaUnmapMemory(cgd.GetCGDEntity().vmaAllocator, allocation);
 }   
 
-void CGD_Vk::createAllocator()
+void CGDVk::createAllocator()
 {
     VmaAllocatorCreateInfo allocatorInfo = {};
     allocatorInfo.physicalDevice = entityVk.physicalDevice;
@@ -85,7 +85,7 @@ void CGD_Vk::createAllocator()
     vmaCreateAllocator(&allocatorInfo, &entityVk.vmaAllocator);
 }
 
-GpuTexture* CGD_Vk::CreateGpuResource(const TextureCreateInfo& info) const
+GpuTexture* CGDVk::CreateGpuResource(const TextureCreateInfo& info) const
 {
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -116,7 +116,7 @@ GpuTexture* CGD_Vk::CreateGpuResource(const TextureCreateInfo& info) const
     if(vmaCreateImage(entityVk.vmaAllocator, &imageInfo, &vmaAllocInfo,
         &image, &allocation, nullptr) != VK_SUCCESS)
     {
-        CGD_Vk::error("Failed to create Image!");
+        CGDVk::error("Failed to create Image!");
     }
     GpuResourceVkImage* vkImg = new GpuResourceVkImage(
         *this, image, {imageInfo.extent.width, imageInfo.extent.height});
@@ -124,7 +124,7 @@ GpuTexture* CGD_Vk::CreateGpuResource(const TextureCreateInfo& info) const
     return vkImg;
 }
 
-GpuBuffer* CGD_Vk::CreateGpuResource(const BufferCreateInfo& info) const
+GpuBuffer* CGDVk::CreateGpuResource(const BufferCreateInfo& info) const
 {
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -161,7 +161,7 @@ GpuBuffer* CGD_Vk::CreateGpuResource(const BufferCreateInfo& info) const
     return vkBuf;
 }
 
-Sampler* CGD_Vk::CreateSampler(const SamplerCreateInfo& info) const
+Sampler* CGDVk::CreateSampler(const SamplerCreateInfo& info) const
 {
     SamplerVk* result = new SamplerVk(*this);
     VkSamplerCreateInfo samplerInfo = {};
@@ -191,7 +191,7 @@ Sampler* CGD_Vk::CreateSampler(const SamplerCreateInfo& info) const
     return result;
 }
 
-uint32_t CGD_Vk::findMemoryType(
+uint32_t CGDVk::findMemoryType(
     uint32_t typeFilter, VkMemoryPropertyFlags properties) const
 {
     VkPhysicalDeviceMemoryProperties memProperties;
@@ -205,6 +205,6 @@ uint32_t CGD_Vk::findMemoryType(
             return i;
         }
     }
-    CGD_Vk::error("failed to find suitable memory type!");
+    CGDVk::error("failed to find suitable memory type!");
     throw std::runtime_error("failed to find suitable memory type!");
 }

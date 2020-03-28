@@ -34,7 +34,7 @@
 using namespace Sakura::Graphics;
 namespace Sakura::Graphics::Vk
 {
-    class CGD_Vk;
+    class CGDVk;
     class RenderPassVk;
 }
 
@@ -42,7 +42,7 @@ namespace Sakura::Graphics::Vk
 {
     class GraphicsPipelineVk final : simplements GraphicsPipeline
     {
-        friend class CGD_Vk;
+        friend class CGDVk;
         friend class CommandContextVk;
     public:
         virtual ~GraphicsPipelineVk() override final;
@@ -51,12 +51,12 @@ namespace Sakura::Graphics::Vk
         VkFramebuffer createFrameBuffer(const RenderTargetSet& rts);
         
         GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
-            const RenderPassVk& prog, const CGD_Vk& cgd);
+            const RenderPassVk& prog, const CGDVk& cgd);
     protected:
         std::pmr::unordered_map<uint64, VkFramebuffer> fbs;
         const RenderPassVk& progress;
         VkPipelineLayout pipelineLayout;
         VkPipeline graphicsPipeline;
-        const CGD_Vk& cgd;
+        const CGDVk& cgd;
     };
 }

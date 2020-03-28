@@ -25,7 +25,7 @@
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Vk;
 
-CommandContext* CGD_Vk::AllocateContext(ECommandType type, bool bTransiant)
+CommandContext* CGDVk::AllocateContext(ECommandType type, bool bTransiant)
 {
     std::lock_guard<std::mutex> LockGurad(contextAllocationMutex);
 #ifdef PROFILING_POOL
@@ -53,12 +53,12 @@ CommandContext* CGD_Vk::AllocateContext(ECommandType type, bool bTransiant)
     return ptr;
 }
 
-CommandContext* CGD_Vk::CreateContext(ECommandType type, bool bTransiant) const
+CommandContext* CGDVk::CreateContext(ECommandType type, bool bTransiant) const
 {
     return new CommandContextVk(*this, type, bTransiant);
 }
 
-void CGD_Vk::FreeAllContexts(ECommandType type)
+void CGDVk::FreeAllContexts(ECommandType type)
 {
     std::lock_guard<std::mutex> LockGurad(contextAllocationMutex);
     for(auto i = 0; i < contextPools[type].size(); i++)
@@ -67,14 +67,14 @@ void CGD_Vk::FreeAllContexts(ECommandType type)
     }
 }
 
-void CGD_Vk::FreeContext(CommandContext* context)
+void CGDVk::FreeContext(CommandContext* context)
 {
     std::lock_guard<std::mutex> LockGurad(contextAllocationMutex);
     auto vkContext = (CommandContextVk*)context;
     availableContexts[context->GetCommandContextType()].push(context);
 }
 
-CommandContextVk::CommandContextVk(const CGD_Vk& _cgd, 
+CommandContextVk::CommandContextVk(const CGDVk& _cgd, 
     ECommandType type, bool bTransiant)
     : cgd(_cgd)
 {
@@ -101,7 +101,7 @@ CommandContextVk::CommandContextVk(const CGD_Vk& _cgd,
     if (vkCreateCommandPool(_cgd.GetCGDEntity().device, &poolInfo,
         nullptr, &commandPool) != VK_SUCCESS) 
     {
-        CGD_Vk::error("Vulkan: failed to create command pool!");
+        CGDVk::error("Vulkan: failed to create command pool!");
         throw std::runtime_error("failed to create command pool!");
     }
 
@@ -114,7 +114,7 @@ CommandContextVk::CommandContextVk(const CGD_Vk& _cgd,
     if (vkAllocateCommandBuffers(_cgd.GetCGDEntity().device, &allocInfo,
         &commandBuffer) != VK_SUCCESS) 
     {
-        CGD_Vk::error("Vulkan: failed to allocate command buffers!");
+        CGDVk::error("Vulkan: failed to allocate command buffers!");
         throw std::runtime_error("failed to allocate command buffers!");
     }
 
@@ -124,7 +124,7 @@ CommandContextVk::CommandContextVk(const CGD_Vk& _cgd,
     if(vkCreateFence(_cgd.GetCGDEntity().device, &fenceInfo,
         nullptr, &recordingFence) != VK_SUCCESS)
     {        
-        CGD_Vk::error("failed to create synchronization objects for a CmdBuffer!");
+        CGDVk::error("failed to create synchronization objects for a CmdBuffer!");
         throw std::runtime_error("failed to create synchronization objects for a CmdBuffer!");
     }
 }
@@ -146,7 +146,7 @@ void CommandContextVk::Begin()
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) 
     {
-        CGD_Vk::error("Vulkan: failed to begin recording command buffer!");
+        CGDVk::error("Vulkan: failed to begin recording command buffer!");
         throw std::runtime_error("failed to begin recording command buffer!");
     }
 }
@@ -172,7 +172,7 @@ void CommandContextVk::BeginComputePass(ComputePipeline* cp)
     vkCp = (ComputePipelineVk*)cp;
     if(vkCp->pipeline == VK_NULL_HANDLE)
     {
-        CGD_Vk::error("CGD: please bind VkPipeline first!");
+        CGDVk::error("CGD: please bind VkPipeline first!");
         throw std::runtime_error("CGD: please bind VkPipeline first!");
     }
     vkCmdBindPipeline(commandBuffer,
@@ -191,7 +191,7 @@ void CommandContextVk::BeginRenderPass(
     vkGp = (GraphicsPipelineVk*)gp;
     if(vkGp->graphicsPipeline == VK_NULL_HANDLE)
     {
-        CGD_Vk::error("CGD: please bind VkPipeline first!");
+        CGDVk::error("CGD: please bind VkPipeline first!");
         throw std::runtime_error("CGD: please bind VkPipeline first!");
     }
     vkCmdBindPipeline(commandBuffer,
@@ -483,7 +483,7 @@ void CommandContextVk::ResourceBarrier(GpuTexture& texture,
         sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         break;
     default:
-        CGD_Vk::error("unsupported layout transition!");
+        CGDVk::error("unsupported layout transition!");
         throw std::invalid_argument("unsupported layout transition!");
         break;
     }
@@ -499,7 +499,7 @@ void CommandContextVk::ResourceBarrier(GpuTexture& texture,
         destinationStage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
         break;
     default:
-        CGD_Vk::error("unsupported layout transition!");
+        CGDVk::error("unsupported layout transition!");
         throw std::invalid_argument("unsupported layout transition!");
         break;
     }
@@ -518,7 +518,7 @@ void CommandContextVk::GenerateMipmaps(GpuTexture& texture, Format format,
 
 	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) 
     {
-        CGD_Vk::error("texture image format does not support linear blitting!");
+        CGDVk::error("texture image format does not support linear blitting!");
 		throw std::runtime_error("texture image format does not support linear blitting!");
 	}
 
@@ -616,7 +616,7 @@ void CommandContextVk::End()
     bOpen = false;
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) 
     {
-        CGD_Vk::error("Vulkan: failed to record command buffer!");
+        CGDVk::error("Vulkan: failed to record command buffer!");
         throw std::runtime_error("failed to record command buffer!");
     }
 }

@@ -32,7 +32,7 @@
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Vk;
 
-CommandQueueVk::CommandQueueVk(const CGD_Vk& _cgd)
+CommandQueueVk::CommandQueueVk(const CGDVk& _cgd)
     :cgd(_cgd)
 {
 
@@ -75,7 +75,7 @@ void CommandQueueVk::Submit(CommandContext* commandContext,
     if (vkQueueSubmit(vkQueue, 1,
             &submitInfo, cmdVk->recordingFence) != VK_SUCCESS) 
     {
-        CGD_Vk::error("failed to submit draw command buffer!");
+        CGDVk::error("failed to submit draw command buffer!");
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 }
@@ -104,7 +104,7 @@ void CommandQueueVk::Submit(CommandContext* commandContext)
     if (vkQueueSubmit(vkQueue, 1,
             &submitInfo, cmdVk->recordingFence) != VK_SUCCESS) 
     {
-        CGD_Vk::error("failed to submit draw command buffer!");
+        CGDVk::error("failed to submit draw command buffer!");
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 }
@@ -136,7 +136,7 @@ void CommandQueueVk::Submit(Fence* fence, uint64 completedValue)
 	submitInfo.pCommandBuffers = 0;
     if (vkQueueSubmit(vkQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
     {
-		CGD_Vk::error("failed to submit timeline semaphores!");
+		CGDVk::error("failed to submit timeline semaphores!");
 		throw std::runtime_error("failed to submit timeline semaphores!");
     }
 }
@@ -168,7 +168,7 @@ void CommandQueueVk::Wait(Fence* fence, uint64 until)
 
     if (vkQueueSubmit(vkQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
     {
-		CGD_Vk::error("failed to submit timeline semaphores!");
+		CGDVk::error("failed to submit timeline semaphores!");
 		throw std::runtime_error("failed to submit timeline semaphores!");
     }
 }

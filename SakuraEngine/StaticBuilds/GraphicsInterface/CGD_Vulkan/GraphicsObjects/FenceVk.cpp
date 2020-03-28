@@ -44,7 +44,7 @@ uint64 FenceVk::GetCompletedValue() const
     return targetVal;
 }
 
-FenceVk::FenceVk(const CGD_Vk& _cgd)
+FenceVk::FenceVk(const CGDVk& _cgd)
     :cgd(_cgd)
 {
 	VkSemaphoreTypeCreateInfo timelineCreateInfo;
@@ -62,12 +62,12 @@ FenceVk::FenceVk(const CGD_Vk& _cgd)
         &timelineSemaphore);
 }
 
-[[nodiscard]] Fence* CGD_Vk::AllocFence(void)
+[[nodiscard]] Fence* CGDVk::AllocFence(void)
 {
     return new FenceVk(*this);
 }
 
-void CGD_Vk::Wait(Fence* toWait, uint64 until) const
+void CGDVk::Wait(Fence* toWait, uint64 until) const
 {
 	FenceVk* fcVk = (FenceVk*)toWait;
 	const uint64_t waitValue = until;

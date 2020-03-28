@@ -55,7 +55,7 @@
 ``` cpp
     // Create Devices
     Sakura::Graphics::CGDInfo cgd_info;
-    cgd = std::make_unique<Sakura::Graphics::Vk::CGD_Vk>();
+    cgd = std::make_unique<Sakura::Graphics::Vk::CGDVk>();
     cgd_info.enableDebugLayer = true;
     cgd_info.extentionNames = VkSDL_GetInstanceExtensions(win,
         cgd_info.enableDebugLayer);
@@ -63,7 +63,7 @@
         (VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     cgd->Initialize(cgd_info);
     SDL_Vulkan_CreateSurface(win,
-        ((Sakura::Graphics::Vk::CGD_Vk*)cgd.get())->GetVkInstance(), &surface);
+        ((Sakura::Graphics::Vk::CGDVk*)cgd.get())->GetVkInstance(), &surface);
     cgd->InitializeDevice(&surface);
     swapChain.reset(cgd->CreateSwapChain(width, height, &surface));
 ```

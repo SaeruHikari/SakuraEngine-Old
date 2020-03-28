@@ -35,7 +35,7 @@ namespace Sakura::Graphics::Vk
 {
     struct GpuResourceVkImage final : public GpuTexture
     {
-        friend class CGD_Vk;
+        friend class CGDVk;
         friend class ResourceViewVkImage;
         virtual ~GpuResourceVkImage() override final;
         virtual void Map(void** data) override final;
@@ -43,38 +43,38 @@ namespace Sakura::Graphics::Vk
         VkImage image;   
         VmaAllocation allocation = VK_NULL_HANDLE;
     protected:
-        GpuResourceVkImage(const CGD_Vk& _cgd,
+        GpuResourceVkImage(const CGDVk& _cgd,
             const VkImage& img, Extent2D _extent)
             :image(img), cgd(_cgd), GpuTexture(_extent){}
-        const CGD_Vk& cgd;
+        const CGDVk& cgd;
     };
     
     struct GpuResourceVkBuffer final : public GpuBuffer
     {
-        friend class CGD_Vk;
+        friend class CGDVk;
         friend class CommandContextVk;
         virtual ~GpuResourceVkBuffer() override final;
         virtual void Map(void** data) override final;
         virtual void Unmap() override final;
         VkBuffer buffer;
     protected:
-        GpuResourceVkBuffer(const CGD_Vk& _cgd, 
+        GpuResourceVkBuffer(const CGDVk& _cgd, 
             const VmaAllocation& _alloc,
             const VkBuffer& buf, uint32 _length)
             :buffer(buf), allocation(_alloc),
             cgd(_cgd), GpuBuffer({_length, 1}){}
         VmaAllocation allocation;
-        const CGD_Vk& cgd;
+        const CGDVk& cgd;
     };
 
     struct SamplerVk final : simplements Sampler
     {
-        friend class CGD_Vk;
+        friend class CGDVk;
         VkSampler sampler;
         virtual ~SamplerVk() override final;
     protected:    
-        SamplerVk(const CGD_Vk& _cgd);
-        const CGD_Vk& cgd;
+        SamplerVk(const CGDVk& _cgd);
+        const CGDVk& cgd;
     };
 } // namespace Sakura::Graphics::Vk
 

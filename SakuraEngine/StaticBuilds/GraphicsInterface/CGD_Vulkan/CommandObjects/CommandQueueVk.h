@@ -33,12 +33,12 @@ namespace Sakura::Graphics::Vk
 {
     class CommandQueueVk : simplements CommandQueue
     {
-        friend class CGD_Vk;
+        friend class CGDVk;
         friend class CommandQueueVk;
         friend class CommandContextVk;
         friend struct FenceVk;
     protected:
-        CommandQueueVk(const CGD_Vk& _cgd);
+        CommandQueueVk(const CGDVk& _cgd);
     public:
         virtual void Submit(CommandContext* commandContext) override final;
         virtual void Submit(CommandContext* commandContext,
@@ -47,6 +47,6 @@ namespace Sakura::Graphics::Vk
         virtual void Wait(Fence* fence, uint64 until) override final;
         virtual void WaitIdle() override final;
         VkQueue vkQueue = VK_NULL_HANDLE;
-        const CGD_Vk& cgd;
+        const CGDVk& cgd;
     };
 }

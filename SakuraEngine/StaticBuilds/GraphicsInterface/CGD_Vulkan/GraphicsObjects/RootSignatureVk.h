@@ -40,7 +40,7 @@ namespace Sakura::Graphics::Vk
 {
     class RootSignatureVk final : simplements Sakura::Graphics::RootSignature
     {
-        friend class CGD_Vk;
+        friend class CGDVk;
     public:
         virtual ~RootSignatureVk() final override;
         VkDescriptorSetLayout descriptorSetLayout[RootParameterSetCount + 1];
@@ -50,13 +50,13 @@ namespace Sakura::Graphics::Vk
     protected:
         std::vector<VkSampler> staticSamplers;
         VkDescriptorSet staticSamplerSet;
-        RootSignatureVk(const CGD_Vk& _cgd, const RootSignatureCreateInfo& info);
-        const CGD_Vk& cgd;
+        RootSignatureVk(const CGDVk& _cgd, const RootSignatureCreateInfo& info);
+        const CGDVk& cgd;
     };
 
     class RootParameterVk final : simplements Sakura::Graphics::RootParameter
     {
-        friend class CGD_Vk;
+        friend class CGDVk;
         friend class RootSignatureVk;
         friend class CommandContextVk;
     public:
@@ -67,7 +67,7 @@ namespace Sakura::Graphics::Vk
             std::uint32_t attachmentCount) override final;
         virtual const size_t GetSlotNum(void) const override final;
     protected:
-		RootParameterVk(const CGD_Vk& _cgd, const RootSignatureVk*,
+		RootParameterVk(const CGDVk& _cgd, const RootSignatureVk*,
 			const RootParameterSet targetSet,
             const VkDescriptorSetLayout& layout, VkDescriptorPool pool);
         const RootSignatureVk* rootSig;
@@ -75,7 +75,7 @@ namespace Sakura::Graphics::Vk
         const RootParameterSet targetSet;
         const VkDescriptorSet* staticSamplers;
         SignatureSlotType type;
-        const CGD_Vk& cgd; 
+        const CGDVk& cgd; 
     };
 
     inline static const VkDescriptorType Transfer(const SignatureSlotType in)

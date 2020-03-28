@@ -38,9 +38,9 @@ namespace Sakura::Graphics::Vk
 {
     struct SwapChainVk final : public Sakura::Graphics::SwapChain
     {
-        friend class CGD_Vk;
+        friend class CGDVk;
         SwapChainVk(const VkSwapchainKHR _chain, 
-            const CGD_Vk& _device,const uint32 _chainCount);
+            const CGDVk& _device,const uint32 _chainCount);
         
         virtual ~SwapChainVk() override final;
         virtual Extent2D GetExtent() const override final;

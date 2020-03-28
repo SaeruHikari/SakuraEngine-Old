@@ -32,7 +32,7 @@
 
 namespace Sakura::Graphics::Vk
 {
-    class CGD_Vk;
+    class CGDVk;
 }
 
 namespace Sakura::Graphics::Vk
@@ -43,15 +43,15 @@ namespace Sakura::Graphics::Vk
      */
     struct FenceVk final : simplements Fence
     {
-        friend class CGD_Vk;
+        friend class CGDVk;
         friend class CommandQueueVk;
         virtual ~FenceVk() override final;
         virtual void Reset(void) override final;
         virtual uint64 GetCompletedValue() const override final;
     protected:  
-		FenceVk(const CGD_Vk& _cgd);
+		FenceVk(const CGDVk& _cgd);
     protected:
         VkSemaphore timelineSemaphore;
-        const CGD_Vk& cgd;
+        const CGDVk& cgd;
     };
 }

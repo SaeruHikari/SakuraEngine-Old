@@ -32,7 +32,7 @@
 
 namespace Sakura::Graphics::Vk
 {
-    class CGD_Vk;
+    class CGDVk;
 }
 
 namespace Sakura::Graphics::Vk
@@ -41,7 +41,7 @@ namespace Sakura::Graphics::Vk
 
     struct ResourceViewVkImage final : public ResourceView
     {
-        ResourceViewVkImage(const CGD_Vk&,
+        ResourceViewVkImage(const CGDVk&,
             const GpuResource&, const ResourceViewType);
         virtual ~ResourceViewVkImage() override final;
         virtual void Detach() override final;

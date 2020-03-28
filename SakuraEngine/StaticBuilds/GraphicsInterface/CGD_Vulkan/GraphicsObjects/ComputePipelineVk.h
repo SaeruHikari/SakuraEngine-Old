@@ -30,7 +30,7 @@
 
 namespace Sakura::Graphics::Vk
 {
-	class CGD_Vk;
+	class CGDVk;
 	class RenderPassVk;
 }
 
@@ -38,15 +38,15 @@ namespace Sakura::Graphics::Vk
 {
 	class ComputePipelineVk final : simplements ComputePipeline
 	{
-		friend class CGD_Vk;
+		friend class CGDVk;
 		friend class CommandContextVk;
 	public:
 		virtual ~ComputePipelineVk() override final;
 	protected:
 		ComputePipelineVk(const ComputePipelineCreateInfo& info,
-			const CGD_Vk& cgd);
+			const CGDVk& cgd);
 		VkPipelineLayout pipelineLayout;
 		VkPipeline pipeline;
-		const CGD_Vk& cgd;
+		const CGDVk& cgd;
 	};
 }

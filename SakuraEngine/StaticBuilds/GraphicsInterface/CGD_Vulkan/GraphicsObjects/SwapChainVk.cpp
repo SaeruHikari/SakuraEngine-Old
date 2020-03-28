@@ -33,7 +33,7 @@ using namespace Sakura::Graphics::Vk;
 using namespace Sakura;
 
 SwapChainVk::SwapChainVk(const VkSwapchainKHR _chain, 
-    const CGD_Vk& _device,const uint32 _chainCount)
+    const CGDVk& _device,const uint32 _chainCount)
     :swapChain(_chain), SwapChain(_device, _chainCount)
 {
     VkSemaphoreCreateInfo semaphoreInfo = {};
@@ -64,15 +64,15 @@ SwapChainVk::SwapChainVk(const VkSwapchainKHR _chain,
 
 SwapChainVk::~SwapChainVk()
 {
-	vkDestroySwapchainKHR(((CGD_Vk&)device).GetCGDEntity().device,
+	vkDestroySwapchainKHR(((CGDVk&)device).GetCGDEntity().device,
 		swapChain, nullptr);
     for(auto i = 0u; i < imageAvailableSemaphores.size(); i++)
     {
-        vkDestroySemaphore(((CGD_Vk&)device).GetCGDEntity().device, 
+        vkDestroySemaphore(((CGDVk&)device).GetCGDEntity().device, 
             imageAvailableSemaphores[i], nullptr);
-        vkDestroySemaphore(((CGD_Vk&)device).GetCGDEntity().device, 
+        vkDestroySemaphore(((CGDVk&)device).GetCGDEntity().device, 
             renderCompleteSemaphores[i], nullptr);
-        vkDestroyFence(((CGD_Vk&)device).GetCGDEntity().device,
+        vkDestroyFence(((CGDVk&)device).GetCGDEntity().device,
             inFlightFences[i], nullptr);
     }
 }

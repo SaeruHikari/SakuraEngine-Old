@@ -30,7 +30,7 @@
 using namespace Sakura::Graphics;
 using namespace Sakura::Graphics::Vk;
 
-ComputePipeline* CGD_Vk::CreateComputePipeline(const ComputePipelineCreateInfo& info) const
+ComputePipeline* CGDVk::CreateComputePipeline(const ComputePipelineCreateInfo& info) const
 {
 	return new ComputePipelineVk(info, *this);
 }
@@ -43,7 +43,7 @@ ComputePipelineVk::~ComputePipelineVk()
 }
 
 ComputePipelineVk::ComputePipelineVk(const ComputePipelineCreateInfo& info,
-    const CGD_Vk& _cgd)
+    const CGDVk& _cgd)
     :cgd(_cgd)
 {
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
@@ -57,7 +57,7 @@ ComputePipelineVk::ComputePipelineVk(const ComputePipelineCreateInfo& info,
 	if (vkCreatePipelineLayout(cgd.GetCGDEntity().device,
 		&pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
 	{
-		Sakura::Graphics::Vk::CGD_Vk::debug_error("failed to create pipeline layout!");
+		Sakura::Graphics::Vk::CGDVk::debug_error("failed to create pipeline layout!");
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 	VkComputePipelineCreateInfo computePipelineCreateInfo = {};
@@ -70,7 +70,7 @@ ComputePipelineVk::ComputePipelineVk(const ComputePipelineCreateInfo& info,
 		cgd.GetCGDEntity().pipelineCache,
 		1, &computePipelineCreateInfo, nullptr, &pipeline) != VK_SUCCESS)
 	{
-		Sakura::Graphics::Vk::CGD_Vk::debug_error("failed to create compute pipeline!");
+		Sakura::Graphics::Vk::CGDVk::debug_error("failed to create compute pipeline!");
 		throw std::runtime_error("failed to create compute pipeline!");
 	}
 }

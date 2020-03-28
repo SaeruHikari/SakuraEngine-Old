@@ -21,7 +21,7 @@
     * [CGD设备族](StaticBuilds/CGD/CGD_Device.md) 
     * [CGD命令族](StaticBuilds/CGD/CGD_Command.md) 
     * [CGD资源族](StaticBuilds/CGD/CGD_Resource.md) 
-    * [CGD_Vk](StaticBuilds/CGD/CGD_Vulkan.md) 
+    * [CGDVk](StaticBuilds/CGD/CGD_Vulkan.md) 
     * [CGD_Direct3D12](StaticBuilds/CGD/CGD_Direct3D12.md) 
 
 * [Modules](Modules/)

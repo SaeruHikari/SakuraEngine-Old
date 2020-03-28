@@ -33,7 +33,7 @@ using namespace Sakura::Graphics::Vk;
 using namespace Sakura;
 
 RootSignatureVk::RootSignatureVk(
-    const CGD_Vk& _cgd, const RootSignatureCreateInfo& info)
+    const CGDVk& _cgd, const RootSignatureCreateInfo& info)
         :cgd(_cgd)
 {
 	std::set<SignatureSlotType> types;
@@ -140,7 +140,7 @@ RootSignatureVk::RootSignatureVk(
 	if (vkAllocateDescriptorSets(
 		_cgd.GetCGDEntity().device, &allocInfo, &staticSamplerSet) != VK_SUCCESS)
 	{
-		CGD_Vk::error("Create Root Argument: failed to allocate descriptor sets!");
+		CGDVk::error("Create Root Argument: failed to allocate descriptor sets!");
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
     /*std::vector<VkWriteDescriptorSet> samplerWrites(staticSamplers.size());
@@ -172,7 +172,7 @@ RootSignatureVk::~RootSignatureVk()
             pool, nullptr);
 }
 
-RootParameterVk::RootParameterVk(const CGD_Vk& _cgd, 
+RootParameterVk::RootParameterVk(const CGDVk& _cgd, 
     const RootSignatureVk* rootSignature,
     const RootParameterSet _targetSet,
     const VkDescriptorSetLayout& layout, VkDescriptorPool pool)
@@ -186,7 +186,7 @@ RootParameterVk::RootParameterVk(const CGD_Vk& _cgd,
     if (vkAllocateDescriptorSets(
         _cgd.GetCGDEntity().device, &allocInfo, &descriptorSet) != VK_SUCCESS) 
     {
-        CGD_Vk::error("Create Root Argument: failed to allocate descriptor sets!");
+        CGDVk::error("Create Root Argument: failed to allocate descriptor sets!");
         throw std::runtime_error("failed to allocate descriptor sets!");
     }
 }
@@ -206,7 +206,7 @@ const size_t RootParameterVk::GetSlotNum(void) const
     return 0;
 }
 
-RootSignature* CGD_Vk::CreateRootSignature(
+RootSignature* CGDVk::CreateRootSignature(
     const RootSignatureCreateInfo& sigInfo) const
 {
     return new RootSignatureVk(*this, sigInfo);
@@ -280,7 +280,7 @@ void RootParameterVk::UpdateArgument(
             continue;
         }
         default:
-            CGD_Vk::error("Root argument Slot type not supported!");
+            CGDVk::error("Root argument Slot type not supported!");
             return;
         }
     }

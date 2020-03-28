@@ -105,8 +105,8 @@ inline VkExtent2D chooseSwapExtent(const int width, const int height,
     }
 }
 
-#ifdef _CGD_VK_IMPLEMENTATION_
-Sakura::Graphics::SwapChain* CGD_Vk::CreateSwapChain(
+#ifdef _CGDVk_IMPLEMENTATION_
+Sakura::Graphics::SwapChain* CGDVk::CreateSwapChain(
     const int width, const int height, void* mainSurface)
 {
     VkSurfaceKHR surface = *(VkSurfaceKHR*)mainSurface;
@@ -128,7 +128,7 @@ Sakura::Graphics::SwapChain* CGD_Vk::CreateSwapChain(
         imageCount = swapChainSupport.capabilities.maxImageCount;
     if(entityVk.bTripleBuffering && (imageCount == 2))
     {
-        CGD_Vk::error("Can't enable triplebuffering, device not supported!");
+        CGDVk::error("Can't enable triplebuffering, device not supported!");
         entityVk.bTripleBuffering = false;
     }
 

@@ -45,7 +45,7 @@ GraphicsPipelineVk::~GraphicsPipelineVk()
 }
 
 GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info, 
-    const RenderPassVk& progVk, const CGD_Vk& _cgd)
+    const RenderPassVk& progVk, const CGDVk& _cgd)
         :cgd(_cgd), progress(progVk)
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
@@ -59,7 +59,7 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     if (vkCreatePipelineLayout(cgd.GetCGDEntity().device,
         &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
     {
-        Sakura::Graphics::Vk::CGD_Vk::debug_error("failed to create pipeline layout!");
+        Sakura::Graphics::Vk::CGDVk::debug_error("failed to create pipeline layout!");
         throw std::runtime_error("failed to create pipeline layout!");
     }
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
@@ -128,12 +128,12 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
         cgd.GetCGDEntity().device, cgd.GetCGDEntity().pipelineCache, 1,
         &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) 
     {
-        Sakura::Graphics::Vk::CGD_Vk::debug_error("failed to create graphics pipeline!");
+        Sakura::Graphics::Vk::CGDVk::debug_error("failed to create graphics pipeline!");
         throw std::runtime_error("failed to create graphics pipeline!");
     }
 }
 
-GraphicsPipeline* CGD_Vk::CreateGraphicsPipeline(
+GraphicsPipeline* CGDVk::CreateGraphicsPipeline(
     const GraphicsPipelineCreateInfo& info,
     const RenderPass& progress) const
 {
@@ -173,7 +173,7 @@ VkFramebuffer GraphicsPipelineVk::createFrameBuffer(const RenderTargetSet& rts)
     if (vkCreateFramebuffer(cgd.GetCGDEntity().device, &framebufferInfo,
             nullptr, &result) != VK_SUCCESS)
     {
-        Sakura::Graphics::Vk::CGD_Vk::debug_error("failed to create framebuffer!");
+        Sakura::Graphics::Vk::CGDVk::debug_error("failed to create framebuffer!");
         throw std::runtime_error("failed to create framebuffer!");
     }
     return result;

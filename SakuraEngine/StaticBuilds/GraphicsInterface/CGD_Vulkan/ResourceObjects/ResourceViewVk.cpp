@@ -33,7 +33,7 @@ using namespace Sakura::Graphics::Vk;
 
 void ResourceViewVkImage::Detach()
 {
-    CGD_Vk& vkdevice = (CGD_Vk&)(device);
+    CGDVk& vkdevice = (CGDVk&)(device);
     if(vkImgView != VK_NULL_HANDLE)
         vkDestroyImageView(vkdevice.GetCGDEntity().device, vkImgView, nullptr);
     vkImgView = VK_NULL_HANDLE;
@@ -43,7 +43,7 @@ void ResourceViewVkImage::Attach(
     const GpuResource& resource, const ResourceViewCreateInfo& info)
 {
     Detach();
-    CGD_Vk& vkdevice = (CGD_Vk&)device;
+    CGDVk& vkdevice = (CGDVk&)device;
     VkImageViewCreateInfo viewCreateInfo = {};
     viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewCreateInfo.viewType = Transfer(info.viewType);
@@ -76,13 +76,13 @@ ResourceViewVkImage::~ResourceViewVkImage()
 }
 
 ResourceViewVkImage::ResourceViewVkImage(
-    const CGD_Vk& _device, const GpuResource& res, const ResourceViewType type)
+    const CGDVk& _device, const GpuResource& res, const ResourceViewType type)
     :ResourceView(_device, res, type)
 {
    
 }
 
-ResourceView* CGD_Vk::ViewIntoResource(
+ResourceView* CGDVk::ViewIntoResource(
     const GpuResource& resource, const ResourceViewCreateInfo& info) const
 {
     auto res = new ResourceViewVkImage(*this, resource, info.viewType);

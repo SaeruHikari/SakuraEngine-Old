@@ -36,9 +36,9 @@
 using namespace Sakura::Graphics::Vk;
 using namespace Sakura::Graphics;
 
-void CGD_Vk::Initialize(Sakura::Graphics::CGDInfo info)
+void CGDVk::Initialize(Sakura::Graphics::CGDInfo info)
 {
-    CGD_Vk::debug_info("CGD_Vk: Initialize");  
+    CGDVk::debug_info("CGDVk: Initialize");  
     VkInit(info);    
     if(info.enableDebugLayer)
         setupDebugMessenger();
@@ -73,7 +73,7 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
         return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
-void CGD_Vk::setupDebugMessenger()
+void CGDVk::setupDebugMessenger()
 {
     if(!entityVk.validate)
         return;
@@ -97,9 +97,9 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
         func(instance, debugMessenger, pAllocator);
 }
 
-void CGD_Vk::Destroy()
+void CGDVk::Destroy()
 {
-    CGD_Vk::debug_info("CGD_Vk: Destroy Command Objects");
+    CGDVk::debug_info("CGDVk: Destroy Command Objects");
     for(auto j = 0 ; j < 4; j++)
     { 
         for(auto i = 0u; i < contextPools[j].size(); i++)
@@ -107,7 +107,7 @@ void CGD_Vk::Destroy()
         contextPools[j].clear();
     }
     vkDestroyPipelineCache(entityVk.device, entityVk.pipelineCache, nullptr);
-    CGD_Vk::debug_info("CGD_Vk: Destroy");
+    CGDVk::debug_info("CGDVk: Destroy");
     vmaDestroyAllocator(entityVk.vmaAllocator);
     if(entityVk.validate)
         DestroyDebugUtilsMessengerEXT(entityVk.instance,
@@ -116,17 +116,17 @@ void CGD_Vk::Destroy()
     vkDestroyInstance(entityVk.instance, nullptr);
 }
 
-void CGD_Vk::VkInit(Sakura::Graphics::CGDInfo info)
+void CGDVk::VkInit(Sakura::Graphics::CGDInfo info)
 {
     //VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME
     //VkEnum
     auto exts = VkEnumInstanceExtensions();
     uint32 extensionCount = (uint32)VkEnumInstanceExtensions().size();
     if(extensionCount < 0)
-        CGD_Vk::error
+        CGDVk::error
             ("0 Vulkan extensions supported, check your platform/device!");
     else if(extensionCount < info.extentionNames.size())
-        CGD_Vk::error
+        CGDVk::error
             ("Do not support so many Vulkan extensions, check your CGDInfo");
     entityVk.validate = info.enableDebugLayer;
     
@@ -135,7 +135,7 @@ void CGD_Vk::VkInit(Sakura::Graphics::CGDInfo info)
     entityVk.physicalDeviceFeatures = info.physicalDeviceFeatures;
 }
 
-void CGD_Vk::Present(SwapChain* chain)
+void CGDVk::Present(SwapChain* chain)
 {
     SwapChainVk* vkChain = (SwapChainVk*)chain;
     VkSwapchainKHR* swapChains = &vkChain->swapChain;
@@ -192,27 +192,27 @@ void CGD_Vk::Present(SwapChain* chain)
     vkChain->currentFrame = (vkChain->currentFrame + 1) % vkChain->swapChainCount;
 }
 
-CommandQueue* CGD_Vk::GetGraphicsQueue() const
+CommandQueue* CGDVk::GetGraphicsQueue() const
 {
     return entityVk.graphicsQueue.get();
 }
 
-CommandQueue* CGD_Vk::GetComputeQueue() const
+CommandQueue* CGDVk::GetComputeQueue() const
 {
     return entityVk.computeQueue.get();
 }
 
-CommandQueue* CGD_Vk::GetCopyQueue() const
+CommandQueue* CGDVk::GetCopyQueue() const
 {
     return entityVk.copyQueue.get();
 }
 
-void CGD_Vk::WaitIdle() const
+void CGDVk::WaitIdle() const
 {
     vkDeviceWaitIdle(entityVk.device);
 }
 
-CommandQueue* CGD_Vk::AllocQueue(ECommandType type) const 
+CommandQueue* CGDVk::AllocQueue(ECommandType type) const 
 {
     auto newQueue = new CommandQueueVk(*this);
     uint32 family; 
@@ -228,7 +228,7 @@ CommandQueue* CGD_Vk::AllocQueue(ECommandType type) const
         family = queueFamilyIndices.graphicsFamily.value();
         break;
     default:
-        CGD_Vk::error("AllocQueue: type not supported!");
+        CGDVk::error("AllocQueue: type not supported!");
         break;
     }
     vkGetDeviceQueue(entityVk.device,
@@ -237,11 +237,11 @@ CommandQueue* CGD_Vk::AllocQueue(ECommandType type) const
     return newQueue; 
 }
 
-void CGD_Vk::createVkInstance(uint pCount, const char** pName)
+void CGDVk::createVkInstance(uint pCount, const char** pName)
 {
     if(entityVk.validate && !VkCheckValidationLayerSupport())
     {
-        CGD_Vk::debug_error(
+        CGDVk::debug_error(
             "Vulkan: validation layers requested, \
             but not available!");
     }
@@ -255,7 +255,7 @@ void CGD_Vk::createVkInstance(uint pCount, const char** pName)
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
     if (entityVk.validate) 
     {
-        CGD_Vk::debug_info(
+        CGDVk::debug_info(
             "Vulkan: Enable Validation Layer!");
         createInfo.enabledLayerCount 
             = static_cast<uint32_t>(validationLayers.size());
@@ -276,7 +276,7 @@ void CGD_Vk::createVkInstance(uint pCount, const char** pName)
 
     entityVk.instance = vk::createInstance(createInfo);
 }
-using QueueFamilyIndices = CGD_Vk::QueueFamilyIndices;
+using QueueFamilyIndices = CGDVk::QueueFamilyIndices;
 QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phy_device,
     VkSurfaceKHR surface) 
 {
@@ -347,7 +347,7 @@ VkPhysicalDeviceFeatures getDeviceFeatureVk(
     return deviceFeature;
 }
 
-#define _CGD_VK_IMPLEMENTATION_
+#define _CGDVk_IMPLEMENTATION_
 #include "SwapChainVk.inl"
 
 bool isDeviceSuitable(VkPhysicalDevice phy_device, 
@@ -369,7 +369,7 @@ bool isDeviceSuitable(VkPhysicalDevice phy_device,
             && extensionsSupported && swapChainAdequate;
 }
 
-void CGD_Vk::pickPhysicalDevice(VkSurfaceKHR surface)
+void CGDVk::pickPhysicalDevice(VkSurfaceKHR surface)
 {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(entityVk.instance, &deviceCount, nullptr);
@@ -380,7 +380,7 @@ void CGD_Vk::pickPhysicalDevice(VkSurfaceKHR surface)
         return;
     }
     else
-        CGD_Vk::debug_info("Vulkan: "+ 
+        CGDVk::debug_info("Vulkan: "+ 
             std::to_string(deviceCount) + " Physical Devices support");
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(entityVk.instance, &deviceCount, devices.data());
@@ -401,12 +401,12 @@ void CGD_Vk::pickPhysicalDevice(VkSurfaceKHR surface)
 
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(entityVk.physicalDevice, &deviceProperties);
-    CGD_Vk::debug_info("Vulkan: physical device "
+    CGDVk::debug_info("Vulkan: physical device "
         + std::string(deviceProperties.deviceName));
     queueFamilyIndices = findQueueFamilies(entityVk.physicalDevice, surface);
 }
 
-void CGD_Vk::InitializeDevice(void* mainSurface)
+void CGDVk::InitializeDevice(void* mainSurface)
 {
     // Type re-generation
     VkSurfaceKHR surface = *(VkSurfaceKHR*)mainSurface;
@@ -495,7 +495,7 @@ void CGD_Vk::InitializeDevice(void* mainSurface)
 	vkCreatePipelineCache(entityVk.device, &pipelineCacheCreateInfo, nullptr, &entityVk.pipelineCache);
 }
 
-const TargetGraphicsinterface CGD_Vk::GetBackEndAPI(void) const
+const TargetGraphicsinterface CGDVk::GetBackEndAPI(void) const
 {
     return TargetGraphicsinterface::CGD_TARGET_VULKAN;
 }
@@ -523,7 +523,7 @@ VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates,
     throw std::runtime_error("failed to find supported format!");
 }
 
-const Format CGD_Vk::FindDepthFormat(void) const
+const Format CGDVk::FindDepthFormat(void) const
 {
     return Transfer(findSupportedFormat(
         {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT,

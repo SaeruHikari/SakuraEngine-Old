@@ -21,7 +21,7 @@ namespace Sakura::Graphics::Vk
 {
     class CommandContextVk : simplements CommandContext
     {
-        friend class CGD_Vk;
+        friend class CGDVk;
         friend class CommandQueueVk;
         virtual ~CommandContextVk() override final;
     public:
@@ -74,10 +74,10 @@ namespace Sakura::Graphics::Vk
     public:
         VkCommandBuffer commandBuffer;
     protected:
-        CommandContextVk(const CGD_Vk& _cgd, ECommandType type,
+        CommandContextVk(const CGDVk& _cgd, ECommandType type,
             bool bTransiant = false);
     protected:
-        const CGD_Vk& cgd;
+        const CGDVk& cgd;
         GraphicsPipelineVk* vkGp = nullptr;
         ComputePipelineVk* vkCp = nullptr;
         VkCommandPool commandPool;

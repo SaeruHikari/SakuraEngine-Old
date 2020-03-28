@@ -32,7 +32,7 @@
 
 namespace Sakura::Graphics::Vk
 {
-    class CGD_Vk;
+    class CGDVk;
 }
 
 namespace Sakura::Graphics::Vk
@@ -135,7 +135,7 @@ namespace Sakura::Graphics::Vk
 
     class RenderPassVk final : simplements RenderPass
     {
-        friend class CGD_Vk;
+        friend class CGDVk;
         friend class GraphicsPipelineVk;
         friend class CommandContextVk;
     public:
@@ -143,7 +143,7 @@ namespace Sakura::Graphics::Vk
         VkRenderPass renderPass;
     protected:
         RenderPassVk(
-            const RenderPassCreateInfo& info, const CGD_Vk& _cgd);
-        const CGD_Vk& cgd;
+            const RenderPassCreateInfo& info, const CGDVk& _cgd);
+        const CGDVk& cgd;
     };
 }

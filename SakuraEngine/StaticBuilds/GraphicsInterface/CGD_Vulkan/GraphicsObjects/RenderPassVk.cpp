@@ -36,7 +36,7 @@ RenderPassVk::~RenderPassVk()
 }
 
 RenderPassVk::RenderPassVk(
-    const RenderPassCreateInfo& info, const CGD_Vk& _cgd)
+    const RenderPassCreateInfo& info, const CGDVk& _cgd)
         :cgd(_cgd)
 {
     VkRenderPassCreateInfo renderPassInfo = {};
@@ -68,7 +68,7 @@ RenderPassVk::RenderPassVk(
     delete[] colorAttachments;
 }
 
-RenderPass* CGD_Vk::CreateRenderPass(
+RenderPass* CGDVk::CreateRenderPass(
     const RenderPassCreateInfo& rpInfo) const
 {
     auto res = new RenderPassVk(rpInfo, *this);

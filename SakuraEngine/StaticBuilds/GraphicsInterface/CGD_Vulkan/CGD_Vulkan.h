@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-24 00:58:09
+ * @LastEditTime: 2020-03-26 17:49:45
  */
 #pragma once
 #include "../GraphicsCommon/CGD.h"
@@ -57,12 +57,12 @@ namespace Sakura::Graphics::Vk
         bool bTripleBuffering = false;
     };
 
-    class CGD_Vk final : public CGD
+    class CGDVk final : public CGD
     {
-        DECLARE_LOGGER("CGD_Vk")
+        DECLARE_LOGGER("CGDVk")
         friend struct SwapChainVk;
     public:
-        CGD_Vk() = default;
+        CGDVk() = default;
         virtual void Destroy() override final; 
         virtual void InitializeDevice(void* mainSurface) override final;
         // Vulkan functions
@@ -231,7 +231,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
     void* pUserData) 
 {
-    Sakura::Graphics::Vk::CGD_Vk::debug_error("validation layer: " + 
+    Sakura::Graphics::Vk::CGDVk::debug_error("validation layer: " + 
         std::string(pCallbackData->pMessage));
     return VK_FALSE;
 }
