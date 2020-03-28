@@ -1,9 +1,4 @@
-[[vk::binding(0, 0)]] cbuffer PushConst
-{
-    float4x4 model;
-    float4x4 view;
-    float4x4 proj;
-}
+#include "SRVVertHLSL.prop"
 
 struct VertexIn
 {

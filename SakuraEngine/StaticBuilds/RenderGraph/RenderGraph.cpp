@@ -21,7 +21,16 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-28 20:13:57
- * @LastEditTime: 2020-03-28 20:29:42
+ * @Date: 2020-03-28 20:30:27
+ * @LastEditTime: 2020-03-28 20:31:24
  */
-#include "SakuraWorld.h"
+#include "RenderGraph.h"
+
+using namespace Sakura::Graphics;
+using namespace Sakura::RenderGraph;
+
+SRenderGraph::SRenderGraph(CGD* commanGraphicsDevice)
+    :cgd(commanGraphicsDevice)
+{
+
+}

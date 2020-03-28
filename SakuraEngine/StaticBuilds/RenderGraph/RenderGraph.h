@@ -21,7 +21,21 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-28 20:13:57
- * @LastEditTime: 2020-03-28 20:29:42
+ * @Date: 2020-03-28 20:31:11
+ * @LastEditTime: 2020-03-28 20:33:01
  */
-#include "SakuraWorld.h"
+#pragma once
+#include "../GraphicsInterface/GraphicsCommon/CGD.h"
+
+using namespace Sakura::Graphics;
+
+namespace Sakura::RenderGraph
+{
+    class SRenderGraph
+    {
+    public:
+        SRenderGraph(CGD* commanGraphicsDevice);
+    private:
+        CGD* cgd;
+    };
+}

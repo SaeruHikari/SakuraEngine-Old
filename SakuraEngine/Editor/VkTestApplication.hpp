@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-26 17:27:53
+ * @LastEditTime: 2020-03-28 21:49:14
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -485,7 +485,6 @@ private:
         context.reset(cgd->CreateContext(ECommandType::CommandContext_Graphics));
 		imContext.reset(cgd->CreateContext(ECommandType::CommandContext_Graphics));
         
-        //cgd->GetGraphicsQueue()->WaitIdle();
         updateUniformBuffer();
         
         context->Begin();
