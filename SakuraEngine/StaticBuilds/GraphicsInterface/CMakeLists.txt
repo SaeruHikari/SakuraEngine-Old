@@ -1,3 +1,10 @@
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+
+project(CGD 
+VERSION 1.00
+LANGUAGES CXX
+)
+
 add_subdirectory(GraphicsCommon)
 add_subdirectory(CGD_Vulkan)
 add_subdirectory(CGD_Direct3D12)

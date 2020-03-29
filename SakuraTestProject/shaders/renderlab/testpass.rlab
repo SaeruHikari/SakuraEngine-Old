@@ -1,0 +1,53 @@
+Desclare
+{
+    struct PixelIn
+    {
+        float4 position : SV_Position;
+        float3 fragColor;
+        float2 fragTexCoord;
+    };
+    struct PixelOut 
+    {
+        float4 outColor;
+    };
+    struct MVP
+    {
+        float4x4 M;
+        float4x4 V;
+        float4x4 P;
+    };
+};
+
+Resource
+{
+    [outter] 
+    TexturePath texpath; 
+    
+    [[extern][R8G8B8A8Unorm][ScreenSize][RenderTarget]] 
+    Texture2D<float4> _gbuffer;
+};
+
+Graphics "GBuffer"
+{
+    #pragma zwrite off
+    #pragma culling back
+    #pragma clear off
+
+    [[transiant][R8G8B8A8Unorm]] 
+    Texture2D<float4> _texture(texpath);
+
+    [reference] // (Default Attribute)
+    Texture2D<float4> _gbuffer;
+
+    [perinstance] 
+    cbuffer MVP;
+
+    PixelOut pixelshader(PixelIn pin)
+    {
+        PixelOut pout;
+        pout.outColor = _texture.Sample(staSampler, pin.fragTexCoord);
+        return pout;
+    }
+};
+
+

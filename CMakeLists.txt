@@ -93,6 +93,7 @@ endif(MSVC)
 include_directories(Extern/include/)
 
 add_subdirectory(Extern)
+add_subdirectory(SakuraParser)
 add_subdirectory(DependencyGraph)
 add_subdirectory(SPA)
 add_subdirectory(SakuraTestProject)
