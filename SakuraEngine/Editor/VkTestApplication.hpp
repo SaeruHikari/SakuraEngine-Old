@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-28 21:49:14
+ * @LastEditTime: 2020-03-29 18:27:37
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -75,7 +75,7 @@ using namespace Sakura::Graphics::Vk;
         "D:\\Coding\\SakuraEngine\\SakuraTestProject\\textures\\CGBull.jpg";
 #endif
 
-struct Vertex
+struct VertexData
 {
     Sakura::Math::Vector3f pos;
     Sakura::Math::Vector3f color;
@@ -83,7 +83,7 @@ struct Vertex
     static VertexInputBindingDescription getBindingDescription() {
         VertexInputBindingDescription bindingDescription = {};
         bindingDescription.binding = 0;
-        bindingDescription.stride = sizeof(Vertex);
+        bindingDescription.stride = sizeof(VertexData);
         bindingDescription.inputRate = VertexInputRate::VertexInputRateVertex;
 
         return bindingDescription;
@@ -95,23 +95,23 @@ struct Vertex
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
         attributeDescriptions[0].format = Format::R32G32B32_SFLOAT;
-        attributeDescriptions[0].offset = offsetof(Vertex, pos);
+        attributeDescriptions[0].offset = offsetof(VertexData, pos);
 
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = Format::R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(Vertex, color);
+        attributeDescriptions[1].offset = offsetof(VertexData, color);
     
         attributeDescriptions[2].binding = 0;
         attributeDescriptions[2].location = 2;
         attributeDescriptions[2].format = Format::R32G32_SFLOAT;
-        attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+        attributeDescriptions[2].offset = offsetof(VertexData, texCoord);
 
         return attributeDescriptions;
     }
 };
-const std::vector<Vertex> vertices = {
-{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+const std::vector<VertexData> vertices = {
+    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
     {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
     {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
     {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
@@ -128,7 +128,7 @@ const std::vector<uint32_t> indices = {
 
 struct UniformBufferObject
 {
-    alignas(16) glm::mat4 model;
+    alignas(16) Matrix4x4f model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
 };
@@ -204,8 +204,8 @@ private:
         info.AddScissor(swapChain->GetExtent());
         info.rootSignature = rootSignature.get();
         info.depthStencilCreateInfo = depthStencil;
-		info.AddVertexBinding(Vertex::getBindingDescription());
-		info.AddVertexAttribute(Vertex::getAttributeDescriptions());
+		info.AddVertexBinding(VertexData::getBindingDescription());
+		info.AddVertexAttribute(VertexData::getAttributeDescriptions());
 
 		// Create Render Pass
 		RenderPassCreateInfo rpinfo;
@@ -330,7 +330,7 @@ private:
 
     void createBuffer()
     {
-        auto vbsize = sizeof(Vertex) * vertices.size();
+        auto vbsize = sizeof(VertexData) * vertices.size();
         auto ibsize = sizeof(uint32_t) * indices.size();
         vertexBuffer.reset(cgd->CreateGpuBuffer(vbsize,
             BufferUsage::VertexBuffer | BufferUsage::TransferDstBuffer,
@@ -439,11 +439,14 @@ private:
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
         UniformBufferObject ubo = {};
-        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        //ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.proj = glm::perspective(glm::radians(45.0f), 
         swapChain->GetExtent().width / (float) swapChain->GetExtent().height,
         0.1f, 10.0f);
+        ubo.model = Matrix4x4f::Identity();
+        Sakura::Math::Vector3f offset(0.f, 0.f, 0.5f);
+        Sakura::Math::Translate(ubo.model, offset);
         ubo.proj[1][1] *= -1;
 
         constantBuffer->UpdateValue([&](void* ptr) -> void

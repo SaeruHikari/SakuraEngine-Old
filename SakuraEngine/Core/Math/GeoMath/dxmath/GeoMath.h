@@ -21,8 +21,15 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-28 20:13:57
- * @LastEditTime: 2020-03-29 16:30:42
+ * @Date: 2020-03-29 16:39:22
+ * @LastEditTime: 2020-03-29 18:27:54
  */
-#include "Components/SceneComponents.h"
-#include "SakuraWorld.h"
+#pragma once
+#include "Vector.h"
+#include "Matrix.h"
+#include "Transform.h"
+
+namespace Sakura::Math
+{
+    
+}
