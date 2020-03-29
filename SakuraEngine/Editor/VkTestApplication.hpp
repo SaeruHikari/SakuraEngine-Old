@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-29 18:27:37
+ * @LastEditTime: 2020-03-30 00:47:01
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -77,8 +77,8 @@ using namespace Sakura::Graphics::Vk;
 
 struct VertexData
 {
-    Sakura::Math::Vector3f pos;
-    Sakura::Math::Vector3f color;
+    Sakura::Math::Vector3 pos;
+    Sakura::Math::Vector3 color;
     glm::vec2 texCoord;
     static VertexInputBindingDescription getBindingDescription() {
         VertexInputBindingDescription bindingDescription = {};
@@ -111,15 +111,15 @@ struct VertexData
     }
 };
 const std::vector<VertexData> vertices = {
-    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+    {{-0.5f, 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, 0.0f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, 0.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.5f, 0.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
 
     {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
     {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
+    {{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.5f, -0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 };
 const std::vector<uint32_t> indices = {
     0, 1, 2, 2, 3, 0,
@@ -128,9 +128,9 @@ const std::vector<uint32_t> indices = {
 
 struct UniformBufferObject
 {
-    alignas(16) Matrix4x4f model;
-    alignas(16) glm::mat4 view;
-    alignas(16) glm::mat4 proj;
+    alignas(16) Matrix4x4 model;
+    alignas(16) Matrix4x4 view;
+    alignas(16) Matrix4x4 proj;
 };
 
 class VkTestApplication
@@ -279,7 +279,7 @@ private:
         SamplerCreateInfo samplerInfo;
         samplerInfo.mipmapMode = SamplerMipmapMode::SamplerMipmapModeLinear;
         samplerInfo.minLod = 0;
-        samplerInfo.maxLod = mipLevels;
+        samplerInfo.maxLod = (float)mipLevels;
         samplerInfo.mipLodBias = 0;
         sampler.reset(cgd->CreateSampler(samplerInfo));
 
@@ -439,15 +439,16 @@ private:
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
         UniformBufferObject ubo = {};
-        //ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.proj = glm::perspective(glm::radians(45.0f), 
-        swapChain->GetExtent().width / (float) swapChain->GetExtent().height,
-        0.1f, 10.0f);
-        ubo.model = Matrix4x4f::Identity();
-        Sakura::Math::Vector3f offset(0.f, 0.f, 0.5f);
-        Sakura::Math::Translate(ubo.model, offset);
-        ubo.proj[1][1] *= -1;
+        ubo.view = Matrix4x4::CreateLookAt(Vector3(0.f, 2.f, -5.f),
+            Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f));
+        ubo.proj = Matrix4x4::CreatePerspectiveFieldOfView(PI / 4.f,
+            swapChain->GetExtent().width / (float) swapChain->GetExtent().height,
+            0.1f, 10.f);
+        ubo.model = Matrix4x4::Identity();
+        auto offset = ubo.model.Right();
+        //offset = Vector3(0.f, 0.f, 1.f);
+        //ubo.model.Translate(offset);
+
 
         constantBuffer->UpdateValue([&](void* ptr) -> void
             {
@@ -497,7 +498,7 @@ private:
         const auto* arg = cbvArgument.get();
         context->BindRootParameters(PipelineBindPoint::BindPointGraphics,
             &arg, 1);
-        context->DrawIndexed(indices.size(), 1);
+        context->DrawIndexed((uint32_t)indices.size(), 1);
         context->EndRenderPass();
         context->End();
         cgd->GetGraphicsQueue()->Submit(context.get());

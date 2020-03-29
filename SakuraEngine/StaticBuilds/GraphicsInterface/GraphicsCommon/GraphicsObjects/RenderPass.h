@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 22:05:50
- * @LastEditTime: 2020-03-19 10:26:58
+ * @LastEditTime: 2020-03-29 19:47:02
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -139,7 +139,7 @@ namespace Sakura::Graphics
         {
             attachments.push_back(attachment);
             AttachmentReference ref
-                = { attachments.size() - 1, ImageLayout::ColorAttachment };
+                = { (uint32_t)attachments.size() - 1, ImageLayout::ColorAttachment };
             colorAttachments.push_back(ref);
         }
 
@@ -147,7 +147,7 @@ namespace Sakura::Graphics
         {
             attachments.push_back(attachment);
 			AttachmentReference ref
-				= { attachments.size() - 1, ImageLayout::DepthStencilAttachment };
+				= { (uint32_t)attachments.size() - 1, ImageLayout::DepthStencilAttachment };
             depthStencilAttachment.push_back(ref);
         }
     };

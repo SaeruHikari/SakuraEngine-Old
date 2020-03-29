@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:59
- * @LastEditTime: 2020-03-23 23:56:35
+ * @LastEditTime: 2020-03-30 00:15:22
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -50,6 +50,11 @@ namespace Sakura::Graphics
     struct ResourceViewCreateInfo;
     struct SamplerCreateInfo;
     struct ComputePipelineCreateInfo;
+}
+
+namespace Sakura::Math
+{
+    struct Matrix4x4;
 }
 
 namespace Sakura::Graphics
@@ -153,7 +158,6 @@ namespace Sakura::Graphics
             BufferUsages bufferUsages, CPUAccessFlags cpuAccess) const;
     public:
         const uint64 contextNum() const {return contextPools[0].size();}
-
     protected:
         std::vector<std::unique_ptr<CommandContext>> 
             contextPools[ECommandType::CommandContext_Count];

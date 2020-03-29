@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:47:38
- * @LastEditTime: 2020-03-23 21:08:20
+ * @LastEditTime: 2020-03-29 19:46:42
  */
 #pragma once
 #include <memory_resource>
@@ -186,7 +186,7 @@ namespace Sakura::Graphics
         sinline void AddViewport(uint32_t width, uint32_t height)
         {   
 			Viewport vp = {};
-			vp.height = height; vp.width = width;
+			vp.height = (float)height; vp.width = (float)width;
             viewportStateCreateInfo.vps.push_back(vp);
         }
 

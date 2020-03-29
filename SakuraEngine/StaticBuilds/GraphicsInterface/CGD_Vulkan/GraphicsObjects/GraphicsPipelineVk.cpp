@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-08 21:06:12
- * @LastEditTime: 2020-03-25 17:29:40
+ * @LastEditTime: 2020-03-30 00:52:59
  */
 #include "GraphicsPipelineVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -66,7 +66,7 @@ GraphicsPipelineVk::GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = (uint32)info.shaderStages.size();
     std::vector<VkPipelineShaderStageCreateInfo> pStages(pipelineInfo.stageCount); 
-    for(auto i = 0; i < pipelineInfo.stageCount; i++)
+    for(auto i = 0u; i < pipelineInfo.stageCount; i++)
         pStages[i] = Transfer(info.shaderStages[i]);
     pipelineInfo.pStages = pStages.data();
 

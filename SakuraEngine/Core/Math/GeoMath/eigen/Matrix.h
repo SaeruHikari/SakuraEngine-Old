@@ -18,7 +18,7 @@ namespace Sakura::Math
     using Matrix2x2d = Eigen::Matrix<double, 2, 2>;
     using Matrix3x4d = Eigen::Matrix<double, 3, 4>;
 
-    using Matrix4x4f = Eigen::Matrix<float, 4, 4>;
+    using Matrix4x4 = Eigen::Matrix<float, 4, 4>;
     using Matrix3x3f = Eigen::Matrix<float, 3, 3>;
     using Matrix2x2f = Eigen::Matrix<float, 2, 2>;
     using Matrix3x4f = Eigen::Matrix<float, 3, 4>;

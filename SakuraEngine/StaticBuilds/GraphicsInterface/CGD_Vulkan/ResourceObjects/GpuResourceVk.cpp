@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 22:41:33
- * @LastEditTime: 2020-03-24 00:16:53
+ * @LastEditTime: 2020-03-29 19:48:12
  */
 #include "GpuResourceVk.h"
 #include "../Flags/GraphicsPipelineStatesVk.h"
@@ -157,7 +157,7 @@ GpuBuffer* CGDVk::CreateGpuResource(const BufferCreateInfo& info) const
         &buffer, &allocation, nullptr);
         
     GpuResourceVkBuffer* vkBuf = new GpuResourceVkBuffer(
-        *this, allocation, buffer, info.size);
+        *this, allocation, buffer, (uint32_t)info.size);
     return vkBuf;
 }
 

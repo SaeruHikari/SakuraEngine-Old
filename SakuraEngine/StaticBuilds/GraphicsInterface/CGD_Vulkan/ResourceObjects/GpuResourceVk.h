@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-05 18:01:43
- * @LastEditTime: 2020-03-19 21:47:51
+ * @LastEditTime: 2020-03-29 19:47:45
  */
 #pragma once
 #include "vulkan/vulkan.h"
@@ -36,7 +36,7 @@ namespace Sakura::Graphics::Vk
     struct GpuResourceVkImage final : public GpuTexture
     {
         friend class CGDVk;
-        friend class ResourceViewVkImage;
+        friend struct ResourceViewVkImage;
         virtual ~GpuResourceVkImage() override final;
         virtual void Map(void** data) override final;
         virtual void Unmap() override final;

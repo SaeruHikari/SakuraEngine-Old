@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-18 09:18:23
- * @LastEditTime: 2020-03-26 17:08:05
+ * @LastEditTime: 2020-03-29 19:49:01
  */
 #include "RootSignatureVk.h"
 #include "../CGD_Vulkan.h"
@@ -55,7 +55,7 @@ RootSignatureVk::RootSignatureVk(
 		}
 		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = layoutBindings.size();
+		layoutInfo.bindingCount = (uint32_t)layoutBindings.size();
 		layoutInfo.pBindings = layoutBindings.data();
 		if (vkCreateDescriptorSetLayout(cgd.GetCGDEntity().device,
 			&layoutInfo, nullptr, &descriptorSetLayout[setN]) != VK_SUCCESS) {
@@ -72,7 +72,7 @@ RootSignatureVk::RootSignatureVk(
     }
     VkDescriptorPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = poolSizes.size();
+    poolInfo.poolSizeCount = (uint32_t)poolSizes.size();
     poolInfo.pPoolSizes = poolSizes.data();
     poolInfo.maxSets = 10;
 
@@ -124,7 +124,7 @@ RootSignatureVk::RootSignatureVk(
 	}
 	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layoutInfo.bindingCount = staticSamplers.size();
+	layoutInfo.bindingCount = (uint32_t)staticSamplers.size();
 	layoutInfo.pBindings = layoutBinding.data();
 	if (vkCreateDescriptorSetLayout(cgd.GetCGDEntity().device, &layoutInfo,
 		nullptr, &descriptorSetLayout[RootParameterSetCount]) != VK_SUCCESS)
@@ -143,22 +143,6 @@ RootSignatureVk::RootSignatureVk(
 		CGDVk::error("Create Root Argument: failed to allocate descriptor sets!");
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
-    /*std::vector<VkWriteDescriptorSet> samplerWrites(staticSamplers.size());
-    for (auto i = 0; i < staticSamplers.size(); i++)
-    {
-        VkDescriptorImageInfo image = {};
-        image.sampler = VK_NULL_HANDLE;
-        image.imageView = VK_NULL_HANDLE;
-		samplerWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        samplerWrites[i].descriptorCount = 0;
-        samplerWrites[i].dstSet = staticSamplerSet;
-        samplerWrites[i].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-        samplerWrites[i].pImageInfo = &image;
-        //samplerWrites[i].dstBinding = i;
-        //samplerWrites[i].dstArrayElement = 0;
-    }
-	vkUpdateDescriptorSets(cgd.GetCGDEntity().device,
-        samplerWrites.size(), samplerWrites.data(), 0, nullptr);*/
 }
 
 RootSignatureVk::~RootSignatureVk()

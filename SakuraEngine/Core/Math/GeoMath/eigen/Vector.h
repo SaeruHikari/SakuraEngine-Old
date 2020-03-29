@@ -4,7 +4,7 @@
  * @Author: SaeruHikari
  * @Date: 2020-02-02 02:12:39
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-29 16:45:55
+ * @LastEditTime: 2020-03-29 21:37:10
  */
 #pragma once
 #include <Eigen/Core> 
@@ -17,10 +17,10 @@ namespace Sakura::Math
     using Vector3h = Eigen::Matrix<half, 3, 1>;
     using Vector4h = Eigen::Matrix<half, 4, 1>;
 
-    using Vector1f = Eigen::Matrix<float, 1, 1>;
-    using Vector2f = Eigen::Matrix<float, 2, 1>;
-    using Vector3f = Eigen::Matrix<float, 3, 1>;
-    using Vector4f = Eigen::Matrix<float, 4, 1>;
+    using Vector1 = Eigen::Matrix<float, 1, 1>;
+    using Vector2 = Eigen::Matrix<float, 2, 1>;
+    using Vector3 = Eigen::Matrix<float, 3, 1>;
+    using Vector4 = Eigen::Matrix<float, 4, 1>;
 
     using Vector1d = Eigen::Matrix<double, 1, 1>;
     using Vector2d = Eigen::Matrix<double, 2, 1>;
@@ -48,10 +48,10 @@ namespace Sakura::Math
     using double2 = Vector2d;
     using double1 = Vector1d;
 
-    using float4 = Vector4f;
-    using float3 = Vector3f;
-    using float2 = Vector2f;
-    using float1 = Vector1f;
+    using float4 = Vector4;
+    using float3 = Vector3;
+    using float2 = Vector2;
+    using float1 = Vector1;
 
     using half4 = Vector4h;
     using half3 = Vector3h;
@@ -70,6 +70,6 @@ namespace Sakura::Math
 
 
     //using AlignedVector3d = Eigen::AlignedVector3<double>;
-    //using AlignedVector3f = Eigen::AlignedVector3<float>;
+    //using AlignedVector3 = Eigen::AlignedVector3<float>;
 }
 

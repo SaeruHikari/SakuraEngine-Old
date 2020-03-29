@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 01:25:06
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-26 17:14:02
+ * @LastEditTime: 2020-03-29 19:48:01
  */
 #include "../../GraphicsCommon/CommandObjects/CommandContext.h"
 #include "../CGD_Vulkan.h"
@@ -205,7 +205,7 @@ void CommandContextVk::BeginRenderPass(
         Transfer(rts.rts[0].resource->GetExtent());
 
     std::vector<VkClearValue> clearValues(rts.rtNum);
-    for(auto i = 0; i < rts.rtNum; i++)
+    for(auto i = 0u; i < rts.rtNum; i++)
     {
         clearValues[i] = *(VkClearValue*)&(rts.rts[i].clearValue);
     }
@@ -221,7 +221,7 @@ void CommandContextVk::BindRootParameters(const PipelineBindPoint bindPoint,
 {
     std::vector<VkDescriptorSet> descriptorSets(argumentNum);
     auto set = 9999;
-    for(auto i = 0; i < argumentNum; i++)
+    for(auto i = 0u; i < argumentNum; i++)
     {
         auto cset = ((const RootParameterVk**)arguments)[i]->targetSet;
         descriptorSets[i] = 

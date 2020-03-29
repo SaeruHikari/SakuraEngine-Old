@@ -31,7 +31,7 @@
 namespace Sakura::World::Scene
 {
 	using namespace Sakura::Math;
-	struct TransformComponent
+	struct TransformComponent : Transform
 	{
 		enum Flags
 		{
@@ -40,6 +40,5 @@ namespace Sakura::World::Scene
 		};
 		uint32_t flags = Dirty;
 
-		Matrix4x4f scale_local = Matrix4x4f::Identity();
 	};
 }

@@ -22,166 +22,162 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-29 16:40:00
- * @LastEditTime: 2020-03-29 19:38:09
+ * @LastEditTime: 2020-03-30 00:21:33
  */
 #pragma once
 #include <stdint.h>
+#include <assert.h>
+#include <memory.h>
 #include "Vector.h"
 
 using namespace DirectX;
 
 namespace Sakura::Math
 {
-    struct Matrix4x4f
+    struct Matrix4x4 : XMFLOAT4X4
     {
-        inline static Matrix4x4f Identity()
+        Matrix4x4() noexcept
+            : XMFLOAT4X4(1.f, 0, 0, 0,
+                            0, 1.f, 0, 0,
+                            0, 0, 1.f, 0,
+                            0, 0, 0, 1.f) {}
+                            
+        constexpr Matrix4x4(float m00, float m01, float m02, float m03,
+                             float m10, float m11, float m12, float m13,
+                             float m20, float m21, float m22, float m23,
+                             float m30, float m31, float m32, float m33) noexcept
+            : XMFLOAT4X4(m00, m01, m02, m03,
+                        m10, m11, m12, m13,
+                        m20, m21, m22, m23,
+                        m30, m31, m32, m33) {}
+        explicit Matrix4x4(const Vector3& r0, const Vector3& r1, const Vector3& r2) noexcept
+            : XMFLOAT4X4(r0.x, r0.y, r0.z, 0,
+                            r1.x, r1.y, r1.z, 0,
+                            r2.x, r2.y, r2.z, 0,
+                            0, 0, 0, 1.f) {}
+        explicit Matrix4x4(const Vector4& r0, const Vector4& r1,
+            const Vector4& r2, const Vector4& r3) noexcept
+            : XMFLOAT4X4(r0.x, r0.y, r0.z, r0.w,
+                            r1.x, r1.y, r1.z, r1.w,
+                            r2.x, r2.y, r2.z, r2.w,
+                            r3.x, r3.y, r3.z, r3.w) {}
+        Matrix4x4(const XMFLOAT4X4& M) noexcept 
         {
-            return Matrix4x4f(XMFLOAT4X4(1, 0, 0, 0,
-                                         0, 1, 0, 0,
-                                         0, 0, 1, 0,
-                                         0, 0, 0, 1));
+            memcpy_s(this, sizeof(float) * 16, &M, sizeof(XMFLOAT4X4)); 
         }
+        Matrix4x4(const XMFLOAT3X3& M) noexcept;
+        Matrix4x4(const XMFLOAT4X3& M) noexcept;
 
-        XM_CONSTEXPR Matrix4x4f(float m00, float m01, float m02, float m03,
-                            float m10, float m11, float m12, float m13,
-                            float m20, float m21, float m22, float m23,
-                            float m30, float m31, float m32, float m33)
-        : _11(m00), _12(m01), _13(m02), _14(m03),
-          _21(m10), _22(m11), _23(m12), _24(m13),
-          _31(m20), _32(m21), _33(m22), _34(m23),
-          _41(m30), _42(m31), _43(m32), _44(m33) {}
+        operator XMMATRIX() const noexcept { return XMLoadFloat4x4(this); }
+
+        // Comparison operators
+        bool operator == (const Matrix4x4& M) const noexcept;
+        bool operator != (const Matrix4x4& M) const noexcept;
+
+        inline static Matrix4x4 Identity() noexcept;
+        inline static Matrix4x4 Zero() noexcept;
+        inline static Matrix4x4 ScalingFromVector(Vector3 scale) noexcept;
+        inline static Matrix4x4 ScalingFromVector(Vector4 scale) noexcept;
+        inline static Matrix4x4 RotationFromQuad(Vector4 rotation) noexcept;
+        inline static Matrix4x4 CreatePerspectiveFieldOfView(
+            float fov, float aspectRatio, float nearPlane, float farPlane) noexcept;
+
+        inline static Matrix4x4 CreatePerspectiveFieldOfView_ReverseY(
+            float fov, float aspectRatio, float nearPlane, float farPlane) noexcept;
+        inline static Matrix4x4 CreateLookAt(const Vector3& position,
+            const Vector3& target, const Vector3& up) noexcept;
+        inline static Matrix4x4 CreateScale(const Vector3& scales) noexcept;
+        inline static Matrix4x4 CreateScale(float xs, float ys, float zs) noexcept;
+        inline static Matrix4x4 CreateScale(float scale) noexcept;
+        inline static Matrix4x4 CreateRotationX(float radians) noexcept;
+        inline static Matrix4x4 CreateRotationY(float radians) noexcept;
+        inline static Matrix4x4 CreateRotationZ(float radians) noexcept;
+        inline static Matrix4x4 CreateWorld(const Vector3& position,
+            const Vector3& forward, const Vector3& up) noexcept;
+        inline Matrix4x4 CreateFromQuaternion(const Quaternion& rotation) noexcept;
+	    static Matrix4x4 CreateFromYawPitchRoll(float yaw, float pitch, float roll) noexcept;
+
+        inline Vector3 GetRow3f(uint32_t row) const noexcept;
+        inline Vector4 GetRow4f(uint32_t row) const noexcept;
+
+        // Unary operators
+        inline Matrix4x4 operator+ () const noexcept { return *this; }
+        inline Matrix4x4 operator- () const noexcept;
+
+        // Assignment operators
+        Matrix4x4& operator= (const XMFLOAT3X3& M) noexcept;
+        Matrix4x4& operator= (const XMFLOAT4X3& M) noexcept;
+        inline Matrix4x4& operator+= (Matrix4x4 M) noexcept;
+        inline Matrix4x4& operator-= (Matrix4x4 M) noexcept;
+        inline Matrix4x4& operator*=(Matrix4x4 M) noexcept;
+        inline Matrix4x4& operator*=(float S) noexcept;
+        inline Matrix4x4& operator/=(float S) noexcept;
+        Matrix4x4& operator/= (const Matrix4x4& M) noexcept;
+
+        inline Matrix4x4 operator+(Matrix4x4 M) noexcept;
+        inline Matrix4x4 operator-(Matrix4x4 M) noexcept;
+        inline Matrix4x4 operator*(Matrix4x4 M) noexcept;
+        inline Matrix4x4 operator*(float S) noexcept;
+        inline Matrix4x4 operator/(float S) noexcept;
+
+        inline Vector3 GetScale() noexcept;
+        inline Vector4 GetRotation() noexcept;
         
-        XM_CONSTEXPR Matrix4x4f(XMFLOAT4X4 mat)
-            :__matrix(mat){}
+        // Matrix operations
+        bool Decompose(Vector3& scale, Quaternion& rotation, Vector3& translation) noexcept;
+        inline void Translate(Vector3 value) noexcept;
 
-        Matrix4x4f() = default;
+        Matrix4x4 Transpose() const noexcept;
+        inline void Transpose(Matrix4x4& result) const noexcept;
 
-        XM_CONSTEXPR Vector3f GetRow3f(uint32_t row) const
+        Matrix4x4 Invert() const noexcept;
+		void Invert(Matrix4x4& result) const noexcept;
+		float Determinant() const noexcept;
+
+
+        inline XM_CONSTEXPR Vector3 Up() const noexcept
         {
-            return Vector3f(*((XMFLOAT3*)&__matrix.m[row]));
+            return Vector3(_21, _22, _23);
         }
-        XM_CONSTEXPR Vector4f GetRow4f(uint32_t row) const
+
+        inline XM_CONSTEXPR Vector3 Down() const noexcept
         {
-            return Vector4f(*((XMFLOAT4*)&__matrix.m[row]));
+            return Vector3(-_21, -_22, -_23);
+        }
+
+        inline XM_CONSTEXPR Vector3 Translation() const noexcept
+        {
+            return Vector3(-_41, _42, _43);
+        }
+
+        inline XM_CONSTEXPR Vector3 Backward() const noexcept
+        {
+            return Vector3(-_31, -_32, -_33); 
         }
         
-        inline Matrix4x4f Matrix4x4f::operator- () const
+        inline XM_CONSTEXPR Vector3 Forward() const noexcept
         {
-            Matrix4x4f result;
-            XMStoreFloat4x4(&result.__matrix, -XMLoadFloat4x4(&__matrix));
-            return result;
+            return Vector3(_31, _32, _33); 
         }
 
-        inline Matrix4x4f& Matrix4x4f::operator+= (Matrix4x4f M)
+        inline XM_CONSTEXPR Vector3 Right() const noexcept
         {
-            XMMATRIX R = XMLoadFloat4x4(&__matrix);
-            FXMMATRIX RR = XMLoadFloat4x4(&M.__matrix);
-            R += RR;
-            XMStoreFloat4x4(&__matrix, R);
-            return *this;
-        }
-
-        inline Matrix4x4f& Matrix4x4f::operator-= (Matrix4x4f M)
-        {
-            XMMATRIX R = XMLoadFloat4x4(&__matrix);
-            FXMMATRIX RR = XMLoadFloat4x4(&M.__matrix);
-            R -= RR;
-            XMStoreFloat4x4(&__matrix, RR);
-            return *this;
-        }
-
-        inline Matrix4x4f& Matrix4x4f::operator*=(Matrix4x4f M)
-        {
-            XMMATRIX R = XMLoadFloat4x4(&__matrix);
-            FXMMATRIX RR = XMLoadFloat4x4(&M.__matrix);
-            R *= RR;
-            XMStoreFloat4x4(&__matrix, R);
-            return *this;
-        }
-
-        inline Matrix4x4f& Matrix4x4f::operator*=(float S)
-        {
-            XMMATRIX R = XMLoadFloat4x4(&__matrix);
-            R *= S;
-            XMStoreFloat4x4(&__matrix, R);
-            return *this;
+            return Vector3(_11, _12, _13); 
         }
         
-        inline Matrix4x4f& Matrix4x4f::operator/=(float S)
+        inline XM_CONSTEXPR Vector3 Left() const noexcept
         {
-            XMMATRIX R = XMLoadFloat4x4(&__matrix);
-            R /= S;
-            XMStoreFloat4x4(&__matrix, R);
-            return *this;
+            return Vector3(-_11, -_12, -_13); 
         }
-
-        inline Matrix4x4f Matrix4x4f::operator+(Matrix4x4f M)
-        {
-            Matrix4x4f result;
-            XMMATRIX R = XMLoadFloat4x4(&__matrix);
-            FXMMATRIX RR = XMLoadFloat4x4(&M.__matrix);
-            XMStoreFloat4x4(&result.__matrix, R + RR);
-            return result;
-        }
-
-        inline Matrix4x4f Matrix4x4f::operator-(Matrix4x4f M)
-        {
-            Matrix4x4f result;
-            XMMATRIX R = XMLoadFloat4x4(&__matrix);
-            FXMMATRIX RR = XMLoadFloat4x4(&M.__matrix);
-            XMStoreFloat4x4(&result.__matrix, R - RR);
-            return result;
-        }
-
-        inline Matrix4x4f Matrix4x4f::operator*(Matrix4x4f M)
-        {
-            Matrix4x4f result;
-            XMMATRIX R = XMLoadFloat4x4(&__matrix);
-            FXMMATRIX RR = XMLoadFloat4x4(&M.__matrix);
-            XMStoreFloat4x4(&result.__matrix, R * RR);
-            return result;
-        }
-
-        inline Matrix4x4f Matrix4x4f::operator*(float S)
-        {
-            Matrix4x4f result;
-            XMMATRIX R = XMLoadFloat4x4(&__matrix);
-            XMStoreFloat4x4(&result.__matrix, R * S);
-            return result;
-        }
-         
-        inline Matrix4x4f Matrix4x4f::operator/(float S)
-        {
-            Matrix4x4f result;
-            XMMATRIX R = XMLoadFloat4x4(&__matrix);
-            XMStoreFloat4x4(&result.__matrix, R / S);
-            return result;
-        }
-
-        // data domain
-        union
-        {
-            XMFLOAT4X4 __matrix;
-            struct
-            {
-                float _11;float _12;float _13;float _14;
-                float _21;float _22;float _23;float _24;
-                float _31;float _32;float _33;float _34;
-                float _41;float _42;float _43;float _44;
-            };
-        };
     };
-
-    inline Matrix4x4f operator*
-    (
-        float S,
-        Matrix4x4f M
-    )
-    {
-        Matrix4x4f result;
-        FXMMATRIX FM = XMLoadFloat4x4(&M.__matrix);
-        XMStoreFloat4x4(&result.__matrix, S * FM);
-        return result;
-    }
+	// Binary operators
+    Matrix4x4 operator+ (const Matrix4x4& M1, const Matrix4x4& M2) noexcept;
+    Matrix4x4 operator- (const Matrix4x4& M1, const Matrix4x4& M2) noexcept;
+    Matrix4x4 operator* (const Matrix4x4& M1, const Matrix4x4& M2) noexcept;
+    Matrix4x4 operator* (const Matrix4x4& M, float S) noexcept;
+    Matrix4x4 operator/ (const Matrix4x4& M, float S) noexcept;
+    Matrix4x4 operator/ (const Matrix4x4& M1, const Matrix4x4& M2) noexcept;
+	// Element-wise divide
+    Matrix4x4 operator* (float S, const Matrix4x4& M) noexcept;
     
 }
