@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-17 22:31:04
- * @LastEditTime: 2020-03-25 19:02:27
+ * @LastEditTime: 2020-03-31 00:04:09
  */
 #pragma once
 #include "Core/CoreMinimal/sinterface.h"
@@ -75,18 +75,48 @@ namespace Sakura::Graphics
     struct RootSignatureCreateInfo
     {
         template<typename _SamplerCreateInfo>
-        void PushStaticSampler(const _SamplerCreateInfo& info)
+        void PushStaticSampler(_SamplerCreateInfo&& info)
         {
-            staticSamplers.push_back(info);
+            staticSamplers.emplace_back(info);
+        }
+        template<RootParameterSet paramSlot = RootParameterPerObject>
+        void PushSignatureSlot(const std::vector<SignatureSlot>& slots)
+        {
+            paramSlots[paramSlot] = slots;
         }
         template<typename _SamplerCreateInfo, typename... Ts>
-        void PushStaticSampler(const _SamplerCreateInfo& info, const Ts&... ts)
+        void PushStaticSampler(_SamplerCreateInfo&& info, Ts&&... ts)
         {
-            PushStaticSampler(info);
-            PushStaticSampler(ts...);
+            PushStaticSampler(std::forward<_SamplerCreateInfo>(info));
+            PushStaticSampler(std::forward<Ts>(ts)...);
+        }
+
+        template<RootParameterSet paramSlot = RootParameterPerObject,
+            typename _SignatureSlot,
+            typename std::enable_if<std::is_same<
+                std::remove_reference_t<_SignatureSlot>, SignatureSlot>::value>::type* = nullptr>
+        void PushSignatureSlot(_SignatureSlot&& slot)
+        {
+            paramSlots[paramSlot].emplace_back(slot);
+        }
+        template<RootParameterSet paramSlot = RootParameterPerObject,
+            typename _SignatureSlot,
+            typename std::enable_if<std::is_same<
+                std::remove_reference_t<_SignatureSlot>, std::vector<SignatureSlot>>::value
+                >::type* = nullptr>
+        void PushSignatureSlot(_SignatureSlot&& slots)
+        {
+            paramSlots[paramSlot].insert(paramSlots[paramSlot].end(), slots.begin(), slots.end());
+        }
+        template<RootParameterSet paramSlot = RootParameterPerObject,
+            typename _SignatureSlot, typename... _SignatureSlots>
+        void PushSignatureSlot(_SignatureSlot&& slot, _SignatureSlots&&... slots)
+        {
+            PushSignatureSlot(std::forward<_SignatureSlot>(slot));
+            PushSignatureSlot(std::forward<_SignatureSlots>(slots)...);
         }
         std::vector<SamplerCreateInfo> staticSamplers;
-        std::vector<SignatureSlot> paramSlotsPerFrame[RootParameterSetCount];
+        std::vector<SignatureSlot> paramSlots[RootParameterSetCount];
     };
 
     struct UniformBufferAttachment

@@ -22,10 +22,9 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-28 20:31:11
- * @LastEditTime: 2020-03-30 13:26:58
+ * @LastEditTime: 2020-03-30 21:21:00
  */
 #pragma once
-#include "SakuraEngine/Core/EngineUtils/EngineUtils.h"
 #include "../GraphicsInterface/GraphicsCommon/CGD.h"
 #include "GraphPassNode.h"
 #include "GraphResourceNode.h"
@@ -53,10 +52,9 @@ namespace Sakura::RenderGraph
 			const sstring& name, const Format format,
 			const uint32 width, const uint32 height,
 			ImageUsages imageUsages, uint32 mipLevels = 1);
-
     private:
-        Sakura::SStringMap<sstring, std::unique_ptr<SGraphTextureNode>> texturePool;
-        Sakura::SStringMap<sstring, std::unique_ptr<SGraphBufferNode>> bufferPool;
+        Sakura::SUnorderedMap<sstring, std::unique_ptr<SGraphTextureNode>> texturePool;
+        Sakura::SUnorderedMap<sstring, std::unique_ptr<SGraphBufferNode>> bufferPool;
         CGD* cgd = nullptr;
     };
 }

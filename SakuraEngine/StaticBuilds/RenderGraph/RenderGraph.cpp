@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-28 20:30:27
- * @LastEditTime: 2020-03-28 20:31:24
+ * @LastEditTime: 2020-03-30 20:21:56
  */
 #include "RenderGraph.h"
 #include "GraphResourceNode.h"
@@ -32,6 +32,7 @@ using namespace Sakura::Graphics;
 
 namespace Sakura::RenderGraph
 {
+	Sakura::StringHasher rghasher;
 	SRenderGraph::SRenderGraph(CGD* commanGraphicsDevice)
 		:cgd(commanGraphicsDevice)
 	{
@@ -45,7 +46,8 @@ namespace Sakura::RenderGraph
         if (bufferPool.find(name) != bufferPool.end())
             SRenderGraph::warn(
                 "AllocateRGBuffer: Rename & Allocation of an existed buffer node!");
-        bufferPool[name].reset(new SGraphBufferNode(cgd->CreateGpuResource(bufInfo)));
+        bufferPool[name].reset(new SGraphBufferNode(
+				cgd->CreateGpuResource(bufInfo), name));
 		return bufferPool[name].get();
 	}
 
@@ -56,8 +58,8 @@ namespace Sakura::RenderGraph
 		if (bufferPool.find(name) != bufferPool.end())
 			SRenderGraph::warn(
 				"AllocateRGBuffer: Rename & Allocation of an existed buffer node!");
-		bufferPool[name].reset(
-            new SGraphBufferNode(cgd->CreateGpuBuffer(size, bufferUsages, cpuAccess)));
+		bufferPool[name].reset(new SGraphBufferNode(
+				cgd->CreateGpuBuffer(size, bufferUsages, cpuAccess), name));
 		return bufferPool[name].get();
 	}
 
@@ -68,7 +70,8 @@ namespace Sakura::RenderGraph
 		if (texturePool.find(name) != texturePool.end())
 			SRenderGraph::warn(
                 "AllocateRGTexture: Rename & Allocation of an existed texture node!");
-        texturePool[name].reset(new SGraphTextureNode(cgd->CreateGpuResource(texInfo)));
+        texturePool[name].reset(new SGraphTextureNode(
+			cgd->CreateGpuResource(texInfo), name));
 		return texturePool[name].get();
 	}
 
@@ -80,9 +83,10 @@ namespace Sakura::RenderGraph
 		if (texturePool.find(name) != texturePool.end())
 			SRenderGraph::warn(
 				"AllocateRGTexture: Rename & Allocation of an existed texture node!");
+
 		texturePool[name].reset(new SGraphTextureNode(
-            cgd->CreateGpuTexture(format, width, height, imageUsages, mipLevels)));
-		return texturePool[name].get();
+            cgd->CreateGpuTexture(format, width, height, imageUsages, mipLevels), name));
+        return texturePool[name].get();
 	}
 
 }

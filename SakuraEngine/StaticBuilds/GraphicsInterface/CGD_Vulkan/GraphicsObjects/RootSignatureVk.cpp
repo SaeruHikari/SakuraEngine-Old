@@ -41,11 +41,11 @@ RootSignatureVk::RootSignatureVk(
         types.insert(SamplerSlot);
     for (auto setN = 0; setN < RootParameterSetCount; setN++)
     {
-		auto paramSlotNum = info.paramSlotsPerFrame[setN].size();
+		auto paramSlotNum = info.paramSlots[setN].size();
 		std::vector<VkDescriptorSetLayoutBinding> layoutBindings(paramSlotNum);
 		for (auto i = 0; i < paramSlotNum; i++)
 		{
-			auto slot = info.paramSlotsPerFrame[setN][i];
+			auto slot = info.paramSlots[setN][i];
 			layoutBindings[i].binding = i;
 			layoutBindings[i].descriptorCount = 1;
 			layoutBindings[i].descriptorType = Transfer(slot.type);

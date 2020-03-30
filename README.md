@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-03-01 20:09:10
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-13 14:35:24
+ * @LastEditTime: 2020-03-30 13:49:02
  -->
 [简体中文](./README.md) | [English](./README.en-US.md) | [文档](https://saeruhikari.github.io/SakuraEngine/#/)
 <h1 align="center">Sakura Engine</h1>
@@ -19,12 +19,13 @@
 # 特性
 - 🌉 跨平台: Win32, Linux, Android(待定)以及IOS(待定)的跨平台基础支持;
 - ⚙️ 模块/插件化: 基于依赖图的模块管理器[SPA](SPA/), 支持静态/动态导出的插件/模块;
+# 不完全的支持
+- 🧰 跨图形接口(Vulkan Only): [CGD](SakuraEngine/StaticBuilds/Graphicsinterface/)(CommonGraphicsDevice)现代图形API([Direct3D12](SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Direct3D12/), [Vulkan](SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/))的上层抽象;
 
 # Coming Soon
-- 🧰 跨图形接口: [CGD](SakuraEngine/StaticBuilds/Graphicsinterface/)(CommonGraphicsDevice)现代图形API([Direct3D12](SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Direct3D12/), [Vulkan](SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/))的上层抽象;
+- 🎨 渲染调度: RenderGraph, 数据驱动可自由配置装载的Pass;
 
 # 待实现
-- 🎨 渲染调度: RenderGraph, 数据驱动可自由配置装载的Pass;
 - 🖼️ 渲染特性: 字体渲染, RayTracing Layer, F+ Pipeline, 粒子...
 - 📂 资产管理: 支持虚拟路径挂载, 资源依赖以及异步读取的资产管理系统;
 - ⛳ 场景: 基于Node的场景管理, 提供自由的装载/序列化;

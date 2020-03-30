@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-06 16:47:38
- * @LastEditTime: 2020-03-29 19:46:42
+ * @LastEditTime: 2020-03-30 22:21:16
  */
 #pragma once
 #include <memory_resource>
@@ -166,8 +166,6 @@ namespace Sakura::Graphics
         DynamicStateCreateInfo dynamicStateCreateInfo;
         ColorBlendStateCreateInfo colorBlendStateCreateInfo;
 		const RootSignature* rootSignature = nullptr;
-		//const PushConstantRange* pushConstantRanges;
-		//uint32_t pushConstantRangeCount = 0;
 
         template<typename _ShaderStageCreateInfo>
         sinline void PushShaderStage(_ShaderStageCreateInfo&& shaderStage)

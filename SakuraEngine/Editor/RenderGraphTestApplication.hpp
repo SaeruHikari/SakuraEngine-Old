@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-30 14:12:15
+ * @LastEditTime: 2020-03-31 00:59:21
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -49,7 +49,7 @@ extern "C"
 #include "SakuraEngine/StaticBuilds/Graphicsinterface/CGD_Vulkan/GraphicsObjects/FenceVk.h"
 #include "SakuraEngine/StaticBuilds/ImGuiProfiler/ImGuiProfiler.hpp"
 #include "SakuraEngine/StaticBuilds/GraphicsInterface/GraphicsCommon/GraphicsObjects/ComputePipeline.h"
-
+#include "SakuraEngine/StaticBuilds/RenderGraph/RenderGraph.h"
 using namespace Sakura;
 using namespace Sakura::Graphics::Vk;
 
@@ -133,7 +133,7 @@ struct UniformBufferObject
     alignas(16) Matrix4x4 proj;
 };
 
-class VkTestApplication
+class RenderGraphTestApplication
 {
 public:
     void run()
@@ -366,7 +366,7 @@ private:
         createTexture();
         createDepth();
     }
-
+    using GraphPassBuilder = Sakura::RenderGraph::GraphPassBuilder;
     void createRootSignature()
     {
         RootSignatureCreateInfo info = {};
@@ -383,10 +383,18 @@ private:
         samplerInfo.maxLod = 15;
         samplerInfo.mipLodBias = 0;
         info.PushStaticSampler(samplerInfo);
-        info.paramSlots[0] = slots;
+        info.PushSignatureSlot(slots);
         rootSignature.reset(cgd->CreateRootSignature(info));
         cbvArgument.reset(rootSignature->
             CreateArgument(RootParameterSet::RootParameterPerObject));
+
+        GraphPassBuilder builder;
+        builder.AddParameter(
+            GraphPassBuilder::ShaderParameter<UniformBufferSlot>(),
+            GraphPassBuilder::ShaderParameter<SamplerSlot>(),
+            GraphPassBuilder::ShaderParameter<SampledImageSlot>());
+        builder.AddStaticSampler(samplerInfo);
+
 
         // Compute Pass RootSig
         RootSignatureCreateInfo compInfo = {};
@@ -395,7 +403,7 @@ private:
         slots[0].stageFlags = ShaderStageFlags::ComputeStage;
 		slots[1].type = SignatureSlotType::StorageImageSlot;
 		slots[1].stageFlags = ShaderStageFlags::ComputeStage;
-        compInfo.paramSlots[0] = slots;
+        compInfo.PushSignatureSlot(slots);
         compRootSignature.reset(cgd->CreateRootSignature(compInfo));
 		compArgument.reset(compRootSignature->
             CreateArgument(RootParameterSet::RootParameterPerObject));

@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 13:58:16
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-30 12:10:14
+ * @LastEditTime: 2020-03-30 21:13:03
  */
 // Excellent Prototype from Star Engine :
 // https://github.com/star-e/StarEngine/blob/master/Star/SMap.h
@@ -20,14 +20,14 @@ namespace Sakura
 {
     struct StringHasher
     {
-        std::size_t operator()(const std::string &key) const
+        inline std::size_t operator()(const std::string &key) const
         {
             using std::size_t;
             using std::hash;
             return Sakura::hash::hash(key, Sakura::hash::defaultseed);
         }
         
-        std::size_t operator()(const std::pmr::string &key) const
+        inline std::size_t operator()(const std::pmr::string &key) const
         {
             using std::size_t;
             using std::hash;

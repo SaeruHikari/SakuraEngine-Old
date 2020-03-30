@@ -22,12 +22,15 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-30 11:29:58
- * @LastEditTime: 2020-03-30 11:48:37
+ * @LastEditTime: 2020-03-30 21:40:54
  */
 #pragma once
+#include "SakuraEngine/Core/EngineUtils/EngineUtils.h"
 #include "../GraphicsInterface/GraphicsCommon/CGD.h"
 
 using namespace Sakura::Graphics;
+using namespace Sakura::hash;
+
 namespace Sakura::RenderGraph
 {
     class SRenderGraph;
@@ -47,8 +50,8 @@ namespace Sakura::RenderGraph
             return resource.get();
         }
     protected:
-		SGraphResourceNode(GpuResource* _resource);
-    private:
+		SGraphResourceNode(GpuResource* _resource, sstring _name);
+        sstring name;
         std::unique_ptr<GpuResource> resource;
 	};
 
@@ -56,13 +59,13 @@ namespace Sakura::RenderGraph
     {
         friend class SRenderGraph;
     protected:
-        SGraphBufferNode(GpuBuffer* buf);
+        SGraphBufferNode(GpuBuffer* buf, sstring _name);
     };
 
     struct SGraphTextureNode final : public SGraphResourceNode
     {
         friend class SRenderGraph;
     protected:
-        SGraphTextureNode(GpuTexture* tex);
+        SGraphTextureNode(GpuTexture* tex, sstring _name);
     };
 }
