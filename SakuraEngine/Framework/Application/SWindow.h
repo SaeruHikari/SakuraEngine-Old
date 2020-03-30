@@ -24,7 +24,7 @@ namespace Sakura
         bool bRegisterEx = true;
         Math::Unorm4 forground;
         Math::Unorm4 background;
-        Sakura::spmr_string title = "SakuraEngine Window";
+        Sakura::sstring title = "SakuraEngine Window";
     };
 
     sinterface SWindow
@@ -50,9 +50,9 @@ namespace Sakura
         virtual int OnCreate(void) = 0;
         // properties get;set;
 
-        virtual void SetTile(const Sakura::spmr_string& str) { desc.title = str;}
+        virtual void SetTile(const Sakura::sstring& str) { desc.title = str;}
       
-        sinline Sakura::spmr_string GetTitle(void) {return desc.title;}
+        sinline Sakura::sstring GetTitle(void) {return desc.title;}
         sinline float GetHeight(void){return desc.height;}
         sinline float GetWidth(void) {return desc.width;}
         sinline Math::Unorm4 GetBackgroundColor(void){return desc.background;}

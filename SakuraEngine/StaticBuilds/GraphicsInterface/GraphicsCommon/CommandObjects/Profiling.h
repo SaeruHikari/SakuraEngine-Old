@@ -28,9 +28,9 @@ namespace Sakura::Graphics
     struct Profiling
     {
     public:
-        static void BeginBlock(const spmr_string& ID,
+        static void BeginBlock(const sstring& ID,
             const CommandContext& context);
-        static void EndBlock(const spmr_string& ID,
+        static void EndBlock(const sstring& ID,
             const CommandContext& context);
     };
 } // Sakura::Graphics

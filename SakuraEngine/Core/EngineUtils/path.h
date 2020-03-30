@@ -70,18 +70,18 @@ namespace Sakura::path
         typename std::enable_if<
             std::is_constructible<std::string_view, T>::value 
         >::type * = nullptr>
-        sinline spmr_string __join(const T& str)
+        sinline sstring __join(const T& str)
         {
-            return (spmr_string)str;
+            return (sstring)str;
         }
 
         template<typename T, typename... Ts,
         typename std::enable_if<
             std::is_constructible<std::string_view, T>::value 
         >::type * = nullptr>
-        sinline spmr_string __join(const T& str, const Ts&... s)
+        sinline sstring __join(const T& str, const Ts&... s)
         {
-            return !((spmr_string)str).empty() ? ((spmr_string)str + "/" + __join(s...))  
+            return !((sstring)str).empty() ? ((sstring)str + "/" + __join(s...))  
                 : __join(s...);
         }
     }
@@ -90,7 +90,7 @@ namespace Sakura::path
     typename std::enable_if<
         std::is_constructible<std::string_view, T>::value 
     >::type * = nullptr>
-    sinline spmr_string join(const T& str, const Ts&... str2)
+    sinline sstring join(const T& str, const Ts&... str2)
     {
         return ____::__join(str, str2...);
     }    

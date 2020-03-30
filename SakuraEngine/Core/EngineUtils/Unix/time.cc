@@ -55,7 +55,7 @@ int64 Sakura::now::us()
     return _Clk::us();
 }
 
-spmr_string Sakura::now::str(const char* fm /*="%Y-%m-%d %H:%M:%S"*/)
+sstring Sakura::now::str(const char* fm /*="%Y-%m-%d %H:%M:%S"*/)
 {
     time_t x = time(0);
     struct tm t;
@@ -63,5 +63,5 @@ spmr_string Sakura::now::str(const char* fm /*="%Y-%m-%d %H:%M:%S"*/)
 
     char buf[32]; // 32 is big enough in most cases
     size_t r = strftime(buf, 32, fm, &t);
-    return spmr_string(buf, r);
+    return sstring(buf, r);
 }

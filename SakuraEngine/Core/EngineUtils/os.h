@@ -20,7 +20,7 @@ namespace Sakura
          * @return: env param value
          * @author: SaeruHikari
          */
-        spmr_string env(const char* name);
+        sstring env(const char* name);
 
         /**
          * @description: 
@@ -28,7 +28,7 @@ namespace Sakura
          * @return: home dir or current user
          * @author: SaeruHikari
          */
-        spmr_string homedir(void);
+        sstring homedir(void);
 
         /**
          * @description: Get current work directory 
@@ -36,7 +36,7 @@ namespace Sakura
          * @return: current work directory.
          * @author: SaeruHikari
          */
-        spmr_string cwd(void);
+        sstring cwd(void);
 
         /**
          * @description: 
@@ -44,7 +44,7 @@ namespace Sakura
          * @return: 
          * @author: SaeruHikari
          */
-        spmr_string exepath(void);
+        sstring exepath(void);
 
         /**
          * @description: 
@@ -52,7 +52,7 @@ namespace Sakura
          * @return: name of executable.
          * @author: SaeruHikari
          */
-        spmr_string exename(void);
+        sstring exename(void);
 
         /**
          * @description: Get PID. 

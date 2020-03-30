@@ -4,30 +4,53 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 13:58:16
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-09 21:33:07
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-03-30 12:10:14
  */
 // Excellent Prototype from Star Engine :
 // https://github.com/star-e/StarEngine/blob/master/Star/SMap.h
 // Thanks for the great idea and work !
 #include <map>
 #include <unordered_map>
+#include "Core/EngineUtils/SHash.h"
 #include "Core/CoreMinimal/SKeyWords.h"
 #include <memory_resource>
 
 namespace Sakura
 {
+    struct StringHasher
+    {
+        std::size_t operator()(const std::string &key) const
+        {
+            using std::size_t;
+            using std::hash;
+            return Sakura::hash::hash(key, Sakura::hash::defaultseed);
+        }
+        
+        std::size_t operator()(const std::pmr::string &key) const
+        {
+            using std::size_t;
+            using std::hash;
+            return Sakura::hash::hash(key, Sakura::hash::defaultseed);
+        }
+    };
+    
     template<class Key, class Val>
     using SMap = std::map<Key, Val, std::less<>>;
 
-    template<class Key, class Val>
-    using SUnorderedMap = std::unordered_map<Key, Val, std::less<>>;
+    template<class Key, class Val,
+        typename HashFunc = std::hash<Key>, typename EqualKey = std::equal_to<Key>>
+    using SUnorderedMap = std::unordered_map<Key, Val, HashFunc, EqualKey>;
 
     template<class Key, class Val>
     using SPmrMap = std::pmr::map<Key, Val, std::less<>>;
 
+    template<class Key, class Val,
+        typename HashFunc = std::hash<Key>, typename EqualKey = std::equal_to<Key>>
+    using SPmrUnorderedMap = std::pmr::unordered_map<Key, Val, HashFunc, EqualKey>;
+
     template<class Key, class Val>
-    using SPmrUnorderedMap = std::pmr::unordered_map<Key, Val, std::less<>>;
+    using SStringMap = SPmrUnorderedMap<Key, Val, StringHasher>;
 
     // Prototype from Star Engine :
     // https://github.com/star-e/StarEngine/blob/master/Star/SMap.h

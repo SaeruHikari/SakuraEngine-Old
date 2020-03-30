@@ -98,7 +98,7 @@ namespace Sakura::fs
 
 		operator bool() const;
 
-		const Sakura::spmr_string& path() const;
+		const Sakura::sstring& path() const;
 
 		int64 size() const
 		{
@@ -118,7 +118,7 @@ namespace Sakura::fs
 
 		size_t read(void* buf, size_t size);
 
-		Sakura::spmr_string read(size_t size);
+		Sakura::sstring read(size_t size);
 
 		size_t write(const void* buf, size_t size);
 

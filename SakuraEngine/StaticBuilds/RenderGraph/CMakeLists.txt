@@ -5,4 +5,14 @@ VERSION 1.00
 LANGUAGES CXX
 )
 
-add_library(RenderGraph RenderGraph.cpp)
+if(${SAKURA_UNITY_BUILD})
+add_library(RenderGraph
+STATIC
+RenderGraph_All.cpp)
+else()
+add_library(RenderGraph
+STATIC
+RenderGraph.cpp
+GraphPassNode.cpp
+GraphResourceNode.cpp)
+endif()

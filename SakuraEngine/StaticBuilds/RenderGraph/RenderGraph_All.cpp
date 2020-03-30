@@ -21,31 +21,9 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-01 19:46:34
- * @LastEditTime: 2020-03-30 12:04:01
+ * @Date: 2020-03-30 11:22:20
+ * @LastEditTime: 2020-03-30 13:08:51
  */
-#pragma once
-#include "SakuraEngine/Core/CoreMinimal/SDefination.h"
-#include "xxhash.h"
-#include <memory_resource>
-#include <string>
-
-namespace Sakura::hash
-{
-    using hash_code = std::size_t;
-    const uint64 defaultseed = 154643214564687;
-    inline static hash_code hash(const void* buffer, size_t size, uint64 seed)
-    {
-        return XXH64(buffer, size, seed);
-    }
-
-    inline static hash_code hash(const std::string& str, uint64 seed)
-    {
-        return XXH64(str.c_str(), str.size(), seed);
-    }
-
-    inline static hash_code hash(const std::pmr::string& str, uint64 seed)
-    {
-        return XXH64(str.c_str(), str.size(), seed);
-    }
-}
+#include "RenderGraph.cpp"
+#include "GraphPassNode.cpp"
+#include "GraphResourceNode.cpp"

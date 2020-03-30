@@ -123,7 +123,7 @@ namespace Sakura::Graphics
         }
     protected:
         bool bOpen = false;
-        spmr_string m_ID;
+        sstring m_ID;
         ECommandType m_Type = ECommandType::CommandContext_Graphics;    
     };
 

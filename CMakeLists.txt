@@ -4,6 +4,8 @@ set(VCPKG_PKGS eigen3 boost glfw3 SDL2 SDL2[vulkan] freetype glm
 tinyobjloader tinyobjloader[double]
 fmt vulkan-memory-allocator xxhash entt cpp-taskflow)
 
+set(SAKURA_UNITY_BUILD on)
+
 if(WIN32)
 execute_process(COMMAND 
 $ENV{VCPKG_ROOT}/vcpkg install --triplet x64-windows ${VCPKG_PKGS})

@@ -21,42 +21,48 @@
  * @Description: 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
- * @Date: 2020-03-28 20:31:11
- * @LastEditTime: 2020-03-30 13:26:58
+ * @Date: 2020-03-30 11:29:58
+ * @LastEditTime: 2020-03-30 11:48:37
  */
 #pragma once
-#include "SakuraEngine/Core/EngineUtils/EngineUtils.h"
 #include "../GraphicsInterface/GraphicsCommon/CGD.h"
-#include "GraphPassNode.h"
-#include "GraphResourceNode.h"
 
 using namespace Sakura::Graphics;
-using namespace Sakura::hash;
+namespace Sakura::RenderGraph
+{
+    class SRenderGraph;
+}
 
 namespace Sakura::RenderGraph
 {
-    class SRenderGraph
-    {
-        DECLARE_LOGGER("RenderGraph")
-    public:
-        SRenderGraph(CGD* commanGraphicsDevice);
-        
-		[[nodiscard]] SGraphBufferNode* AllocateRenderGraphBuffer(
-            const sstring& name, const BufferCreateInfo&);
-		[[nodiscard]] SGraphBufferNode* AllocateRenderGraphBuffer(
-			const sstring& name, const uint64 size,
-			BufferUsages bufferUsages, CPUAccessFlags cpuAccess);
-
-        [[nodiscard]] SGraphTextureNode* AllocateRenderGraphTexture(
-            const sstring& name, const TextureCreateInfo&);
-		[[nodiscard]] SGraphTextureNode* AllocateRenderGraphTexture(
-			const sstring& name, const Format format,
-			const uint32 width, const uint32 height,
-			ImageUsages imageUsages, uint32 mipLevels = 1);
-
+	/**
+	 * @description: A node that holds graph resource reference.
+	 * @author: SaeruHikari
+	 */
+	struct SGraphResourceNode
+	{
+        virtual ~SGraphResourceNode() = default;
+        inline GpuResource* GetResource(void) const
+        {
+            return resource.get();
+        }
+    protected:
+		SGraphResourceNode(GpuResource* _resource);
     private:
-        Sakura::SStringMap<sstring, std::unique_ptr<SGraphTextureNode>> texturePool;
-        Sakura::SStringMap<sstring, std::unique_ptr<SGraphBufferNode>> bufferPool;
-        CGD* cgd = nullptr;
+        std::unique_ptr<GpuResource> resource;
+	};
+
+    struct SGraphBufferNode final : public SGraphResourceNode
+    {
+        friend class SRenderGraph;
+    protected:
+        SGraphBufferNode(GpuBuffer* buf);
+    };
+
+    struct SGraphTextureNode final : public SGraphResourceNode
+    {
+        friend class SRenderGraph;
+    protected:
+        SGraphTextureNode(GpuTexture* tex);
     };
 }

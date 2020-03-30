@@ -15,27 +15,27 @@
 
 namespace Sakura::os
 {
-    spmr_string env(const char* name)
+    sstring env(const char* name)
     {
         char* x = getenv(name);
-        return x ? spmr_string(x) : spmr_string();
+        return x ? sstring(x) : sstring();
     }
 
-    spmr_string homedir()
+    sstring homedir()
     {
         return os::env("HOME");
     }
 
-    spmr_string cwd()
+    sstring cwd()
     {
         char buf[512];
         char* s = getcwd(buf, 4096);
-        return s ? spmr_string(s) : spmr_string();
+        return s ? sstring(s) : sstring();
     }
 
-    spmr_string exename()
+    sstring exename()
     {
-        spmr_string s = os::exepath();
+        sstring s = os::exepath();
         return s.substr(s.rfind('/') + 1);
     }
 
@@ -51,17 +51,17 @@ namespace Sakura::os
     }
 
 #if defined(__linux__) || defined(SAKURA_TARGET_PLATFORM_LINUX)
-    spmr_string exepath() {
+    sstring exepath() {
         char buf[4096] = { 0 };
         int r = (int) readlink("/proc/self/exe", buf, 4096);
-        return r > 0 ? spmr_string(buf, r) : spmr_string();
+        return r > 0 ? sstring(buf, r) : sstring();
     }
 #else
-    spmr_string exepath() {
+    sstring exepath() {
         char buf[4096] = { 0 };
         uint32_t size = sizeof(buf);
         int r = _NSGetExecutablePath(buf, &size);
-        return r == 0 ? spmr_string(buf) : spmr_string();
+        return r == 0 ? sstring(buf) : sstring();
     }
 #endif
 }

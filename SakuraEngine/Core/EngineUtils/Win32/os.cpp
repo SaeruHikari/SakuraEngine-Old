@@ -6,9 +6,9 @@
 
 namespace Sakura::os
 {
-    spmr_string env(const char* name)
+    sstring env(const char* name)
     {
-        spmr_string s(256, '\0');
+        sstring s(256, '\0');
         DWORD r = GetEnvironmentVariableA(name, &s[0], 256);
         s.resize(r);
 
@@ -20,24 +20,24 @@ namespace Sakura::os
         return s;
     }
 
-    spmr_string homedir() {
+    sstring homedir() {
         return os::env("SYSTEMDRIVE") + os::env("HOMEPATH");
     }
 
-    spmr_string cwd() {
+    sstring cwd() {
         char buf[264];
         DWORD r = GetCurrentDirectoryA(sizeof(buf), buf);
-        return spmr_string(buf, r);
+        return sstring(buf, r);
     }
 
-    spmr_string exepath() {
+    sstring exepath() {
         char buf[264]; // MAX_PATH = 260
         DWORD r = GetModuleFileNameA(0, buf, sizeof(buf));
-        return spmr_string(buf, r);
+        return sstring(buf, r);
     }
 
-    spmr_string exename() {
-        spmr_string s = exepath();
+    sstring exename() {
+        sstring s = exepath();
         return s.substr(s.rfind('\\') + 1);
     }
 

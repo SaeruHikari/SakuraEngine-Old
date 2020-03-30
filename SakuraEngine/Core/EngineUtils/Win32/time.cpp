@@ -54,14 +54,14 @@ namespace Sakura::now {
         return _Mono::us();
     }
 
-    spmr_string str(const char* fm) {
+    sstring str(const char* fm) {
         int64 x = time(0);
         struct tm t;
         _localtime64_s(&t, &x);
 
         char buf[32]; // 32 is big enough int most cases
         size_t r = strftime(buf, 32, fm, &t);
-        return spmr_string(buf, r);
+        return sstring(buf, r);
     }
 
 } // now

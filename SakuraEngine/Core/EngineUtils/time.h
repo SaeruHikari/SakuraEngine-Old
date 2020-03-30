@@ -20,7 +20,7 @@ namespace Sakura
          * @param output format 
          * @return: "%Y-%m-%d %H:%M:%S" ==> 2018-08-08 08:08:08
          */
-        spmr_string str(const char* fm = "%Y-%m-%d %H:%M:%S");
+        sstring str(const char* fm = "%Y-%m-%d %H:%M:%S");
     } 
 
     class Timer

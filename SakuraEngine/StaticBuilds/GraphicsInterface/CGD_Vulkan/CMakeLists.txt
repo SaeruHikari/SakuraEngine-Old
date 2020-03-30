@@ -15,7 +15,7 @@ endif(SpecificTimerImpl)
 
 find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
 
-if(TRUE)
+if(${SAKURA_UNITY_BUILD})
 add_library(CGD_Vulkan  
     STATIC  
     CGDVk_All.cpp

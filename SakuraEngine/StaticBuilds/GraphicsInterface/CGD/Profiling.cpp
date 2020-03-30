@@ -13,7 +13,7 @@
 
 namespace Sakura::Graphics
 {
-    void Profiling::BeginBlock(const spmr_string& ID,
+    void Profiling::BeginBlock(const sstring& ID,
         const CommandContext& context)
     {
         #ifdef SAKURA_GRAPHICS_PROFILING
@@ -25,7 +25,7 @@ namespace Sakura::Graphics
         #endif
     }
 
-    void Profiling::EndBlock(const spmr_string& ID,
+    void Profiling::EndBlock(const sstring& ID,
         const CommandContext& context)
     {
         #ifdef SAKURA_GRAPHICS_PROFILING

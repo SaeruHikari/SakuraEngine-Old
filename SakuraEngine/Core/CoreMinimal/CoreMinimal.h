@@ -3,8 +3,8 @@
  * @Version: Do not edit
  * @Author: SaeruHikari
  * @Date: 2020-02-02 09:36:54
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-13 16:43:55
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-03-30 11:52:47
  */
 #pragma once
 // Concepts
@@ -17,7 +17,6 @@
 #include "sinterface.h"
 // Assert
 #include "SAssert.h"
-
 #ifdef SAKURA_TARGET_PLATFORM_WIN32
 #include "SWinDefination.h"
 #elif defined(SAKURA_TARGET_PLATFFORM_OSX)

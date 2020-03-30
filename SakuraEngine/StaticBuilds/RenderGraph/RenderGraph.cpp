@@ -25,12 +25,65 @@
  * @LastEditTime: 2020-03-28 20:31:24
  */
 #include "RenderGraph.h"
+#include "GraphResourceNode.h"
+#include "GraphPassNode.h"
 
 using namespace Sakura::Graphics;
-using namespace Sakura::RenderGraph;
 
-SRenderGraph::SRenderGraph(CGD* commanGraphicsDevice)
-    :cgd(commanGraphicsDevice)
+namespace Sakura::RenderGraph
 {
+	SRenderGraph::SRenderGraph(CGD* commanGraphicsDevice)
+		:cgd(commanGraphicsDevice)
+	{
+
+	}
+
+	inline SGraphBufferNode* SRenderGraph::AllocateRenderGraphBuffer(
+        const sstring& name, const BufferCreateInfo& bufInfo)
+	{
+        assert(cgd != nullptr);
+        if (bufferPool.find(name) != bufferPool.end())
+            SRenderGraph::warn(
+                "AllocateRGBuffer: Rename & Allocation of an existed buffer node!");
+        bufferPool[name].reset(new SGraphBufferNode(cgd->CreateGpuResource(bufInfo)));
+		return bufferPool[name].get();
+	}
+
+	SGraphBufferNode* SRenderGraph::AllocateRenderGraphBuffer(const sstring& name,
+        const uint64 size, BufferUsages bufferUsages, CPUAccessFlags cpuAccess)
+	{
+		assert(cgd != nullptr);
+		if (bufferPool.find(name) != bufferPool.end())
+			SRenderGraph::warn(
+				"AllocateRGBuffer: Rename & Allocation of an existed buffer node!");
+		bufferPool[name].reset(
+            new SGraphBufferNode(cgd->CreateGpuBuffer(size, bufferUsages, cpuAccess)));
+		return bufferPool[name].get();
+	}
+
+	inline SGraphTextureNode* SRenderGraph::AllocateRenderGraphTexture(
+        const sstring& name, const TextureCreateInfo& texInfo)
+	{
+        assert(cgd != nullptr);
+		if (texturePool.find(name) != texturePool.end())
+			SRenderGraph::warn(
+                "AllocateRGTexture: Rename & Allocation of an existed texture node!");
+        texturePool[name].reset(new SGraphTextureNode(cgd->CreateGpuResource(texInfo)));
+		return texturePool[name].get();
+	}
+
+	SGraphTextureNode* SRenderGraph::AllocateRenderGraphTexture(const sstring& name,
+        const Format format, const uint32 width, const uint32 height,
+        ImageUsages imageUsages, uint32 mipLevels /*= 1*/)
+	{
+		assert(cgd != nullptr);
+		if (texturePool.find(name) != texturePool.end())
+			SRenderGraph::warn(
+				"AllocateRGTexture: Rename & Allocation of an existed texture node!");
+		texturePool[name].reset(new SGraphTextureNode(
+            cgd->CreateGpuTexture(format, width, height, imageUsages, mipLevels)));
+		return texturePool[name].get();
+	}
 
 }
+
