@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 14:36:44
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-31 00:49:38
+ * @LastEditTime: 2020-03-31 12:19:50
  */
 #pragma once
 #include "SakuraPlatformFlag.h"
@@ -55,21 +55,15 @@ namespace Sakura::flags
         return false;
     }
 
-    template<typename Flag>
-    constexpr decltype(auto) Or(Flag&& flag)
-    {
-        return std::forward<Flag>(flag);
-    }
-
     template<typename Flag, typename... Flags>
     constexpr decltype(auto) Or(Flag&& flag, Flags&&... flags)
     {
-        return std::forward<Flag>(flag) | Or(std::forward<Flags>(flags)...);
+        return std::forward<Flag>(flag) | ... | std::forward<Flags>(flags);
     }
 
-    template<typename... Flags>
-    constexpr decltype(auto) Or(Flags&&... flags)
+    template<typename Flag, typename... Flags>
+    constexpr decltype(auto) And(Flag&& flag, Flags&&... flags)
     {
-        return Or(std::forward<Flags>(flags)...);
+        return std::forward<Flag>(flag) & ... & std::forward<Flags>(flags);
     }
 }

@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-29 11:46:00
- * @LastEditTime: 2020-03-31 00:59:21
+ * @LastEditTime: 2020-03-31 13:49:24
  */
 #pragma once
 #define GLM_FORCE_RADIANS
@@ -330,6 +330,10 @@ private:
 
     void createBuffer()
     {
+        int a = 5;
+        std::cout << std::endl << &a << std::endl; 
+        int&& b = std::move(a);
+        std::cout << std::endl << &b << "  " << a << std::endl; 
         auto vbsize = sizeof(VertexData) * vertices.size();
         auto ibsize = sizeof(uint32_t) * indices.size();
         vertexBuffer.reset(cgd->CreateGpuBuffer(vbsize,
@@ -389,11 +393,11 @@ private:
             CreateArgument(RootParameterSet::RootParameterPerObject));
 
         GraphPassBuilder builder;
+        builder.AddStaticSampler(samplerInfo);
         builder.AddParameter(
             GraphPassBuilder::ShaderParameter<UniformBufferSlot>(),
             GraphPassBuilder::ShaderParameter<SamplerSlot>(),
             GraphPassBuilder::ShaderParameter<SampledImageSlot>());
-        builder.AddStaticSampler(samplerInfo);
 
 
         // Compute Pass RootSig

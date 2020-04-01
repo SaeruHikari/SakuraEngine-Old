@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-30 13:46:34
- * @LastEditTime: 2020-03-31 01:01:27
+ * @LastEditTime: 2020-03-31 12:03:00
  */
 #pragma once
 #include "SakuraEngine/Core/EngineUtils/EngineUtils.h"
@@ -56,7 +56,7 @@ namespace Sakura::RenderGraph
         {
             SignatureSlot slot;
             slot.type = slotType;
-            slot.stageFlags 
+            slot.stageFlags; 
                 = Sakura::flags::Or(std::forward<_ShaderStageFlags>(flags)...);
             return slot;
         }
