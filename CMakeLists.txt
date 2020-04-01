@@ -79,13 +79,16 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 
 if(MSVC)
+    add_definitions(-D "SAKURA_COMPILER_MSVC")
     message(STATUS "MSVC Compiler cl.exe")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _CRT_SECURE_NO_WARNINGS -DNOMINMAX") #Multi Thread Build Enable
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /await /D _CRT_SECURE_NO_WARNINGS -DNOMINMAX") #Multi Thread Build Enable
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_definitions(-D "SAKURA_COMPILER_CLANG")
     message(STATUS "Use CLANG Compiler lang.exe")
     add_definitions(-msse4.2)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -stdlib=libc++ -lc++fs -m64 -fPIC -march=native -O3 -pthread -lpthread ${VAR_CONFIG_FLAGS}")
 else()
+    add_definitions(-D "SAKURA_COMPILER_GCC")
     message(STATUS "Use GCC Compiler gcc.exe")
     add_definitions(-msse4.2)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -m64 -fPIC -march=native -O3 -pthread -lpthread ${VAR_CONFIG_FLAGS}")
