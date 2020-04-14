@@ -1,0 +1,16 @@
+{
+    __version = "2.3.2",
+    vcpkgs = {
+        __scriptdir = [[D:\Coding\SakuraEngine\SakuraEngine]],
+        check = { },
+        check_after = { },
+        __sourceinfo_default = {
+            ["vcpkg::entt vcpkg::zlib"] = {
+                file = [[.\xmake.lua]],
+                line = 11
+            }
+        },
+        check_before = { },
+        default = "vcpkg::entt vcpkg::zlib"
+    }
+}

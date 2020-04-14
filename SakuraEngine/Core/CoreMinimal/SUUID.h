@@ -4,8 +4,8 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 22:20:30
- * @LastEditors  : SaeruHikari
- * @LastEditTime : 2020-02-08 22:51:14
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-04-14 11:50:48
  */
 #pragma once
 #include <boost/uuid/uuid.hpp>
