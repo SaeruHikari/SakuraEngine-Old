@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2020-02-09 16:02:27
- * @LastEditTime : 2020-02-09 16:39:11
- * @LastEditors  : SaeruHikari
+ * @LastEditTime: 2020-04-14 22:33:07
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /SakuraEngine/Core/EngineUtils/Win32/time.cpp
  */

@@ -63,16 +63,6 @@ if (CMAKE_BUILD_TYPE STREQUAL Debug)
 add_definitions(-D_DEBUG)
 endif ()
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-include(TargetArchDetect)
-target_architecture(TARGET_ARCH)
-if((TARGET_ARCH MATCHES "x86_64" OR TARGET_ARCH MATCHES "ia64") AND NOT OF_32BIT)
-        message(STATUS "x86_64 Target Architechture detected.")
-        set(ARCH_BIT 64)
-else()
-        message(STATUS "x86 Target Architechture detected.")
-        set(ARCH_BIT 32)
-endif()
 
 #features
 set(CMAKE_C_STANDARD 11)
