@@ -1,7 +1,7 @@
 '''
 @Author: your name
 @Date: 2020-02-15 21:10:01
-@LastEditTime: 2020-04-15 18:20:21
+@LastEditTime: 2020-04-15 18:14:28
 @LastEditors: Please set LastEditors
 @Description: In User Settings Edit
 @FilePath: /JustPlug-master/home/saeruhikari/Coding/SakuraEngine/SPA/anyToheader.py
@@ -36,6 +36,9 @@ def json2header(filereg, file_path):
     header = header.rstrip()
     header = header.rstrip(',')
     header += '\n};\n\n'
+    header += 'const std::size_t sp_meta_size = '
+    header += str(len(content.encode()))
+    header += ';\n\n'
     header += 'inline const char* __GetMetaData(void)\n{\n    return sp_meta.c_str();\n}\n'
     header += 'public:\nvirtual const char* GetMetaData(void) override\n'
     header += '{return __GetMetaData();}\n'

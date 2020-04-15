@@ -1,4 +1,3 @@
-target("plugin_1")   
-    set_kind("shared")
-    add_files("plugin_1.cpp")
+shared_module("plugin_1", EngineVersion, "plugin_1.cpp")   
     add_deps("SPA")
+    

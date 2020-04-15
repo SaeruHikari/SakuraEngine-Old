@@ -5,12 +5,16 @@
 /SakuraEngine/.vscode
 /SakuraEngine/build
 /.vs
+*/.vs
 /build
 /Extern/googletest
 /.VSCodeCounter
 *meta.h
 *.generated.h
 */out
+/.xmake
+/vsxmake2019
+*/.xmake
 #
 *.jpg
 *.png

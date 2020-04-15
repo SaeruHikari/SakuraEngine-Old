@@ -1,4 +1,2 @@
-target("plugin_main")   
-    set_kind("static")
-    add_files("plugin_main.cpp")
+static_module("plugin_main", EngineVersion, "plugin_main.cpp")   
     add_deps("SPA")

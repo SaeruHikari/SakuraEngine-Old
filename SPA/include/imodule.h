@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-01 19:46:34
- * @LastEditTime: 2020-03-02 15:01:40
+ * @LastEditTime: 2020-04-15 18:17:34
  */
 #pragma once
 #include "confinfo.h"
@@ -74,7 +74,6 @@ namespace Sakura::SPA
         virtual void MainPluginExec() {}
 
         virtual const char* GetMetaData(void) = 0;
-        virtual std::size_t GetMetaSize(void) = 0;
 
         virtual const ModuleInfo& GetModuleInfo()
         {
@@ -90,10 +89,6 @@ namespace Sakura::SPA
         virtual const char* GetMetaData(void) override
         {
             return sharedLib->get<const char*>("sp_meta"); 
-        }
-        virtual std::size_t GetMetaSize(void) override
-        {
-            return sharedLib->get<std::size_t>("sp_meta_size");
         }
     };
     struct IStaticModule : public IModule

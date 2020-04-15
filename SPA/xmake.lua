@@ -1,4 +1,4 @@
-shared_lib("SPA", EngineVersion, "src/*.cpp", "include/whereami/src/*.c")
-    on_load(function(target)
-        print("SPA"..target:get("version"))
-    end)
+shared_lib("SPA", EngineVersion, "src/*.cpp", "../Extern/include/whereami/src/*.c")
+    --before_build(function(target)
+    --    print("SPA "..target:get("version"))
+    --end)
