@@ -201,7 +201,7 @@ namespace Sakura::fs
 			return this->append(s, strlen(s));
 		}
 
-		fstream& operator<<(const std::pmr::string& s) {
+		fstream& operator<<(const pmr::string& s) {
 			return this->append(s.data(), s.size());
 		}
 

@@ -5,10 +5,11 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-08 14:36:44
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-31 12:19:50
+ * @LastEditTime: 2020-04-17 03:37:13
  */
 #pragma once
 #include "SakuraPlatformFlag.h"
+#include <type_traits>
 
 namespace Sakura::flags
 {
@@ -58,12 +59,12 @@ namespace Sakura::flags
     template<typename Flag, typename... Flags>
     constexpr decltype(auto) Or(Flag&& flag, Flags&&... flags)
     {
-        return std::forward<Flag>(flag) | ... | std::forward<Flags>(flags);
+        return std::forward<Flag>(flag) | std::forward<Flags...>(flags...);
     }
 
     template<typename Flag, typename... Flags>
     constexpr decltype(auto) And(Flag&& flag, Flags&&... flags)
     {
-        return std::forward<Flag>(flag) & ... & std::forward<Flags>(flags);
+        return std::forward<Flag>(flag) & std::forward<Flags...>(flags...);
     }
 }

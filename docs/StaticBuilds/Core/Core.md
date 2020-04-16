@@ -11,7 +11,7 @@
 
 ## 核心
 - [最小核心](./CoreMinimal): 纯头的核心关键字, 定义及函数。
-- [容器](./Containers): 纯头的std::pmr/boost容器wrapper, 引擎的常用容器。
+- [容器](./Containers): 纯头的pmr/boost容器wrapper, 引擎的常用容器。
 - [Math](./Math): 引擎的数学库, 尽量保持纯模板/纯内联。当前有[GeoMath](./Math/GeoMath/)支持。
 - [EngineUtils](./EngineUtils/): 引擎工具集, 包含跨平台的OS基础操作支持, 高速文件流以及日志输出等。
 
@@ -22,7 +22,7 @@ Core会输出一个无状态的静态库Core.lib, 可以随意链接使用。
 
 
 ### Containers
-&emsp;&emsp;Containers选用了boost以及std::pmr下的容器。这些alias以及辅助使用的工具函数们被统一包含至[Containers.h](./Containers/Containers.h)下。
+&emsp;&emsp;Containers选用了boost以及pmr下的容器。这些alias以及辅助使用的工具函数们被统一包含至[Containers.h](./Containers/Containers.h)下。
 
 
 ### Math

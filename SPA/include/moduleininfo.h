@@ -23,8 +23,8 @@ namespace Sakura::SPA
      */
     struct Dependency
     {
-        std::pmr::string name; //!< The name of the dependency
-        std::pmr::string version; //!< The version of the dependency
+        pmr::string name; //!< The name of the dependency
+        pmr::string version; //!< The version of the dependency
     };
 
     /**
@@ -33,17 +33,17 @@ namespace Sakura::SPA
      */
     struct ModuleInfo
     {
-        std::pmr::string name; //!< name of the plugin
-        std::pmr::string prettyname;//!< formatted name of the plugin
-        std::pmr::string engine_version;//!< version of the engine
-        std::pmr::string version;// !< version of the plugin
-        std::pmr::string linking;// !< linking of the plugin
-        std::pmr::string license;//!< license of the plugin
-        std::pmr::string url; //!< url of the plugin 
-        std::pmr::string copyright;//!< copyright of the plugin
-        std::pmr::string make;//!<making method
+        pmr::string name; //!< name of the plugin
+        pmr::string prettyname;//!< formatted name of the plugin
+        pmr::string engine_version;//!< version of the engine
+        pmr::string version;// !< version of the plugin
+        pmr::string linking;// !< linking of the plugin
+        pmr::string license;//!< license of the plugin
+        pmr::string url; //!< url of the plugin 
+        pmr::string copyright;//!< copyright of the plugin
+        pmr::string make;//!<making method
 
         // Dependencies array
-        std::pmr::vector<Dependency> dependencies;
+        pmr::vector<Dependency> dependencies;
     };
 }

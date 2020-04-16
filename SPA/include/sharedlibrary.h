@@ -39,7 +39,7 @@ namespace Sakura::SPA
         {load(path);}
         SharedLibrary(const std::string& path)
         {load(path);}
-        SharedLibrary(const std::pmr::string& path)
+        SharedLibrary(const pmr::string& path)
         {load(path);}
         SharedLibrary(std::string_view path)
         {load(path);}
@@ -71,7 +71,7 @@ namespace Sakura::SPA
         * @overload 
         * @see load(const char* path) 
         */
-        inline bool load(const std::pmr::string& path)
+        inline bool load(const pmr::string& path)
         {return load(path.c_str());}
         /**
         * @overload 
@@ -101,7 +101,7 @@ namespace Sakura::SPA
          */
         bool hasSymbol(const char* symbolName)
         {
-            std::pmr::string error = _lastError;
+            pmr::string error = _lastError;
             getImpl(symbolName);
             bool has = _lastError.empty();
             _lastError = error;
@@ -137,7 +137,7 @@ namespace Sakura::SPA
         * @see get(const char* symbolName)
         */
         template<typename SymT>
-        SymT& get(const std::pmr::string& symbolName)
+        SymT& get(const pmr::string& symbolName)
         {return get<SymT>(symbolName.c_str());}
         /**
         * @overload
@@ -174,7 +174,7 @@ namespace Sakura::SPA
          * @description: Get the last error string.
          * @author: SaeruHikari
          */
-        std::pmr::string errorString() const
+        pmr::string errorString() const
         { return _lastError; }
 
         /**
@@ -184,7 +184,7 @@ namespace Sakura::SPA
         NativeLibHandle handle() const
         {return _handle;}
     private:
-        std::pmr::string _lastError;
+        pmr::string _lastError;
         NativeLibHandle _handle = nullptr;
         // Linux implementation
 #if defined(CONFINFO_PLATFORM_LINUX) || defined(CONFINFO_PLATFORM_CYGWIN) || defined(CONFINFO_PLATFORM_MACOS)

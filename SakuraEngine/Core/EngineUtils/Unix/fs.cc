@@ -57,7 +57,7 @@ namespace Sakura::fs
         const char* s = strrchr((char*)path, '/');
         if (s == 0) return ::mkdir(path, 0755) == 0;
 
-        std::pmr::string parent(path, s - path);
+        pmr::string parent(path, s - path);
         
         if (fs::exists(parent.c_str())) {
             return ::mkdir(path, 0755) == 0;
@@ -77,7 +77,7 @@ namespace Sakura::fs
                 return rmdir(path) == 0;
             return unlink(path) == 0;
         } else {
-            std::pmr::string cmd;
+            pmr::string cmd;
             cmd.resize(strlen(path) + 9);
             cmd.append("rm -rf \"").append(path);
             cmd += '"';
@@ -113,7 +113,7 @@ namespace xx
     struct fctx 
     {
         int fd;
-        std::pmr::string path;
+        pmr::string path;
     };
 
     Sakura::fs::file::~file() 
@@ -130,7 +130,7 @@ namespace xx
         return p && p->fd != nullfd;
     }
 
-    const std::pmr::string& file::path() const 
+    const pmr::string& file::path() const 
     {
         fctx* p = (fctx*) _p;
         return p->path;
@@ -162,8 +162,8 @@ namespace xx
         return r < 0 ? 0 : (size_t)r;
     }
 
-    std::pmr::string file::read(size_t n) {
-        std::pmr::string s;
+    pmr::string file::read(size_t n) {
+        pmr::string s;
         s.resize(n + 1);
         this->read((void*)s.data(), n);
         return s;

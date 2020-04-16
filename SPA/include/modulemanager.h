@@ -74,7 +74,7 @@ namespace Sakura::SPA
     struct ModuleProperty
     {
         bool bActive = false;
-        std::pmr::string name;
+        pmr::string name;
     };
     using registerer = std::function<std::unique_ptr<IModule>(void)>;
     using ModuleProp = property<ModuleProp_t, ModuleProperty>;
@@ -86,36 +86,36 @@ namespace Sakura::SPA
         friend struct IModule;
     public:
         ModuleManager() = default;
-        virtual IModule* GetModule(const std::pmr::string& name);
+        virtual IModule* GetModule(const pmr::string& name);
     
-        virtual const ModuleGraph& MakeModuleGraph(const std::pmr::string& entry, 
+        virtual const ModuleGraph& MakeModuleGraph(const pmr::string& entry, 
             bool shared = false);
         virtual bool InitModuleGraph(void);
         virtual bool DestroyModuleGraph(void);
     public:
-        virtual void Mount(const std::pmr::string& rootdir);
+        virtual void Mount(const pmr::string& rootdir);
         virtual std::string_view GetRoot(void);
         virtual void RegisterStaticallyLinkedModule(
             const char* moduleName, registerer _register);
-        virtual IModule* SpawnStaticModule(const std::pmr::string& moduleName);
-        virtual IModule* SpawnDynamicModule(const std::pmr::string& moduleName);
-        virtual ModuleProperty GetModuleProp(const std::pmr::string& name);
-        virtual void SetModuleProp(const std::pmr::string& name, const ModuleProperty& prop);
+        virtual IModule* SpawnStaticModule(const pmr::string& moduleName);
+        virtual IModule* SpawnDynamicModule(const pmr::string& moduleName);
+        virtual ModuleProperty GetModuleProp(const pmr::string& name);
+        virtual void SetModuleProp(const pmr::string& name, const ModuleProperty& prop);
     private:
-        bool __internal_DestroyModuleGraph(const std::pmr::string& nodename);
-        void __internal_MakeModuleGraph(const std::pmr::string& entry,
+        bool __internal_DestroyModuleGraph(const pmr::string& nodename);
+        void __internal_MakeModuleGraph(const pmr::string& entry,
             bool shared = false);
-        bool __internal_InitModuleGraph(const std::pmr::string& nodename);
+        bool __internal_InitModuleGraph(const pmr::string& nodename);
         Version CoreVersion{"0.1.0"};
         ModuleInfo ParseMetaData(const char* metadata);
     private:
-        std::pmr::string moduleDir;
-        std::vector<std::pmr::string> roots;
-        std::pmr::string mainModuleName;
+        pmr::string moduleDir;
+        std::vector<pmr::string> roots;
+        pmr::string mainModuleName;
         ModuleGraph moduleDependecyGraph;
-        std::pmr::map<std::pmr::string, int, std::less<>> NodeMap;
-        std::pmr::map<std::pmr::string, registerer, std::less<>> InitializeMap;
-        std::pmr::map<std::pmr::string, std::unique_ptr<IModule>, std::less<>>
+        pmr::map<pmr::string, int, std::less<>> NodeMap;
+        pmr::map<pmr::string, registerer, std::less<>> InitializeMap;
+        pmr::map<pmr::string, std::unique_ptr<IModule>, std::less<>>
             ModulesMap;
     };
 

@@ -22,12 +22,18 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-01 19:46:34
- * @LastEditTime: 2020-04-14 22:37:59
+ * @LastEditTime: 2020-04-17 03:38:17
  */
 #pragma once
 #include "SakuraEngine/Core/CoreMinimal/SDefination.h"
 #include "xxHash/xxhash.h"
+#ifdef SAKURA_TARGET_PLATFORM_OSX
+#include <experimental/memory_resource>
+#include <experimental/string>
+using namespace std::experimental;
+#else
 #include <memory_resource>
+#endif
 #include <string>
 
 namespace Sakura::hash
@@ -44,7 +50,7 @@ namespace Sakura::hash
         return XXH64(str.c_str(), str.size(), seed);
     }
 
-    inline static hash_code hash(const std::pmr::string& str, uint64 seed)
+    inline static hash_code hash(const pmr::string& str, uint64 seed)
     {
         return XXH64(str.c_str(), str.size(), seed);
     }

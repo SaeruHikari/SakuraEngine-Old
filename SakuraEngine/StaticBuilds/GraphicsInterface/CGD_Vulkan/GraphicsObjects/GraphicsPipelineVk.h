@@ -53,7 +53,7 @@ namespace Sakura::Graphics::Vk
         GraphicsPipelineVk(const GraphicsPipelineCreateInfo& info,
             const RenderPassVk& prog, const CGDVk& cgd);
     protected:
-        std::pmr::unordered_map<uint64, VkFramebuffer> fbs;
+        pmr::unordered_map<uint64, VkFramebuffer> fbs;
         const RenderPassVk& progress;
         VkPipelineLayout pipelineLayout;
         VkPipeline graphicsPipeline;

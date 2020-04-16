@@ -166,13 +166,13 @@ namespace boost
     template<class T>
     struct container_gen<DAG::____::pmrVecS, T> 
     {
-        using type = std::pmr::vector<T> ;
+        using type = pmr::vector<T> ;
     };
 
     template<class T>
     struct container_gen<DAG::____::pmrListS, T>
     {
-        using type = std::pmr::list<T>;
+        using type = pmr::list<T>;
     };
 
     template<>

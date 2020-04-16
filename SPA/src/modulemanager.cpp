@@ -24,7 +24,7 @@ namespace Sakura::SPA
         InitializeMap[moduleName] = _register;
     }
 
-    IModule* ModuleManager::SpawnStaticModule(const std::pmr::string& name)
+    IModule* ModuleManager::SpawnStaticModule(const pmr::string& name)
     {
         if (ModulesMap.find(name) != ModulesMap.end())
             return ModulesMap[name].get();
@@ -39,16 +39,16 @@ namespace Sakura::SPA
         return ModulesMap[name].get();
     }
 
-    IModule* ModuleManager::SpawnDynamicModule(const std::pmr::string& name)
+    IModule* ModuleManager::SpawnDynamicModule(const pmr::string& name)
     {
         if (ModulesMap.find(name) != ModulesMap.end())
             return ModulesMap[name].get();
         std::unique_ptr<SharedLibrary> sharedLib
             = std::make_unique<SharedLibrary>();
-        std::pmr::string initName("InitializeModule");
-        std::pmr::string mName(name);
+        pmr::string initName("InitializeModule");
+        pmr::string mName(name);
         initName.append(mName);
-        std::pmr::string prefix = moduleDir;
+        pmr::string prefix = moduleDir;
 #if defined(CONFINFO_PLATFORM_LINUX) 
     #if defined(DEBUG) || defined(_DEBUG)
         prefix.append("/Debug");
@@ -142,14 +142,14 @@ namespace Sakura::SPA
         return info;
     }
 
-    IModule* ModuleManager::GetModule(const std::pmr::string& name)
+    IModule* ModuleManager::GetModule(const pmr::string& name)
     {
         if (ModulesMap.find(name) == ModulesMap.end())
             return nullptr;
         return ModulesMap.find(name)->second.get();
     }
 
-    ModuleProperty ModuleManager::GetModuleProp(const std::pmr::string& entry)
+    ModuleProperty ModuleManager::GetModuleProp(const pmr::string& entry)
     {
         if(NodeMap.find(entry) == NodeMap.end())
             assert(0 && "Module Node not found");
@@ -157,7 +157,7 @@ namespace Sakura::SPA
             (ModuleNode(NodeMap[entry]), moduleDependecyGraph);
     }
 
-    void ModuleManager::SetModuleProp(const std::pmr::string& entry, const ModuleProperty& prop)
+    void ModuleManager::SetModuleProp(const pmr::string& entry, const ModuleProperty& prop)
     {
         DAG::set_vertex_property<ModuleProp_t>(
             DAG::vertex(NodeMap.find(entry)->second,
@@ -165,7 +165,7 @@ namespace Sakura::SPA
             moduleDependecyGraph, prop);
     }
 
-    bool ModuleManager::__internal_InitModuleGraph(const std::pmr::string& nodename)
+    bool ModuleManager::__internal_InitModuleGraph(const pmr::string& nodename)
     {
         if(GetModuleProp(nodename).bActive) 
             return true;
@@ -184,7 +184,7 @@ namespace Sakura::SPA
         return true;
     }
 
-    void ModuleManager::__internal_MakeModuleGraph(const std::pmr::string& entry,
+    void ModuleManager::__internal_MakeModuleGraph(const pmr::string& entry,
         bool shared)
     {
         if(NodeMap.find(entry) != NodeMap.end())
@@ -213,7 +213,7 @@ namespace Sakura::SPA
         }
     }
 
-    bool ModuleManager::__internal_DestroyModuleGraph(const std::pmr::string& nodename)
+    bool ModuleManager::__internal_DestroyModuleGraph(const pmr::string& nodename)
     {
         if(!GetModuleProp(nodename).bActive) 
             return true;
@@ -256,14 +256,14 @@ namespace Sakura::SPA
     }
 
     const ModuleGraph& ModuleManager::MakeModuleGraph
-        (const std::pmr::string& entry, bool shared/*=false*/)
+        (const pmr::string& entry, bool shared/*=false*/)
     {
         mainModuleName = entry;
         __internal_MakeModuleGraph(entry, shared);
         return moduleDependecyGraph;
     }
 
-    void ModuleManager::Mount(const std::pmr::string& rootdir)
+    void ModuleManager::Mount(const pmr::string& rootdir)
     {
         moduleDir = rootdir;
     }

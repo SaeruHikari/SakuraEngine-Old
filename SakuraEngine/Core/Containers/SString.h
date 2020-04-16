@@ -45,13 +45,21 @@
 #include "../CoreMinimal/SKeyWords.h"
 #include <string>
 #include "SVariant.h"
+#ifdef SAKURA_TARGET_PLATFORM_OSX
+#include <experimental/memory_resource>
+#include <experimental/string>
+using namespace std::experimental;
+#else
 #include <memory_resource>
+#endif
+
+using namespace std; 
 
 namespace Sakura
 {
     // __c_plus_plus 17+
-    using sstring = std::pmr::string;
-    using swstring = std::pmr::wstring;
+    using sstring = pmr::string;
+    using swstring = pmr::wstring;
     /*
     using sstring = std::string;
     using swstring = std::wstring;*/
@@ -67,7 +75,7 @@ namespace Sakura
         {
             return std::string_view(str);
         }
-        sinline sstring_view view(const std::pmr::string& str) noexcept
+        sinline sstring_view view(const pmr::string& str) noexcept
         {
             return std::string_view(str);
         }
