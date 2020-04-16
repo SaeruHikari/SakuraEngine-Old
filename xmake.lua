@@ -55,14 +55,17 @@ end
 function static_module(targetName, version, ...)
     static_lib(targetName, version, ...)
     before_build(function(target)
-        os.exec("lua BuildTools/JsonToHeader.lua "..target:scriptdir().." meta")
+        os.exec("lua BuildTools/ModuleInfoGen.lua ".."meta "..target:scriptdir().." ./")
     end)
 end
 
 function shared_module(targetName, version, ...)
     shared_lib(targetName, version, ...)
     before_build(function(target)
-        os.exec("lua BuildTools/JsonToHeader.lua "..target:scriptdir().." meta")
+        os.exec("lua BuildTools/ModuleInfoGen.lua ".."meta "..target:scriptdir().." ./")
+        for i = 1, #target._INFO._INFO.includedirs do
+            --print(target._INFO._INFO.includedirs[i])
+        end
     end)
 end
 
