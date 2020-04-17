@@ -84,8 +84,8 @@ public:
 
     BOOST_ARCHIVE_DECL archive_exception(
         exception_code c, 
-        const char * e1 = NULL,
-        const char * e2 = NULL
+        const char * e1 = nullptr,
+        const char * e2 = nullptr
     ) BOOST_NOEXCEPT;
     BOOST_ARCHIVE_DECL archive_exception(archive_exception const &) BOOST_NOEXCEPT ;
     virtual BOOST_ARCHIVE_DECL ~archive_exception() BOOST_NOEXCEPT_OR_NOTHROW ;

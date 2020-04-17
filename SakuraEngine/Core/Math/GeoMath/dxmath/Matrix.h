@@ -22,7 +22,7 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-03-29 16:40:00
- * @LastEditTime: 2020-03-30 00:21:33
+ * @LastEditTime: 2020-04-17 04:21:37
  */
 #pragma once
 #include <stdint.h>
@@ -63,7 +63,11 @@ namespace Sakura::Math
                             r3.x, r3.y, r3.z, r3.w) {}
         Matrix4x4(const XMFLOAT4X4& M) noexcept 
         {
+            #ifdef _WIN32
             memcpy_s(this, sizeof(float) * 16, &M, sizeof(XMFLOAT4X4)); 
+            #else
+            memcpy(this, &M, sizeof(XMFLOAT4X4));
+            #endif
         }
         Matrix4x4(const XMFLOAT3X3& M) noexcept;
         Matrix4x4(const XMFLOAT4X3& M) noexcept;
@@ -135,37 +139,37 @@ namespace Sakura::Math
 		float Determinant() const noexcept;
 
 
-        inline XM_CONSTEXPR Vector3 Up() const noexcept
+        inline constexpr Vector3 Up() const noexcept
         {
             return Vector3(_21, _22, _23);
         }
 
-        inline XM_CONSTEXPR Vector3 Down() const noexcept
+        inline constexpr Vector3 Down() const noexcept
         {
             return Vector3(-_21, -_22, -_23);
         }
 
-        inline XM_CONSTEXPR Vector3 Translation() const noexcept
+        inline constexpr Vector3 Translation() const noexcept
         {
             return Vector3(-_41, _42, _43);
         }
 
-        inline XM_CONSTEXPR Vector3 Backward() const noexcept
+        inline constexpr Vector3 Backward() const noexcept
         {
             return Vector3(-_31, -_32, -_33); 
         }
         
-        inline XM_CONSTEXPR Vector3 Forward() const noexcept
+        inline constexpr Vector3 Forward() const noexcept
         {
             return Vector3(_31, _32, _33); 
         }
 
-        inline XM_CONSTEXPR Vector3 Right() const noexcept
+        inline constexpr Vector3 Right() const noexcept
         {
             return Vector3(_11, _12, _13); 
         }
         
-        inline XM_CONSTEXPR Vector3 Left() const noexcept
+        inline constexpr Vector3 Left() const noexcept
         {
             return Vector3(-_11, -_12, -_13); 
         }

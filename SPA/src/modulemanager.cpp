@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 23:23:02
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-20 11:06:29
+ * @LastEditTime: 2020-04-17 12:05:59
  */
 #define API_EXPORTS
 #include "../include/modulemanager.h"
@@ -115,20 +115,20 @@ namespace Sakura::SPA
             json tree = json::parse(metadata);
             if (Version(tree.at("api").get<std::string>()).compatible(CoreVersion))
             {
-                info.name = tree.at("name").get<std::string>();
-                info.prettyname = tree.at("prettyname").get<std::string>();
-                info.engine_version = tree.at("api").get<std::string>();
-                info.url = tree.at("url").get<std::string>();
-                info.copyright = tree.at("copyright").get<std::string>();
-                info.license = tree.at("license").get<std::string>();
-                info.version = tree.at("version").get<std::string>();
-                info.linking = tree.at("linking").get<std::string>();
+                info.name = tree.at("name").get<std::string>().c_str();
+                info.prettyname = tree.at("prettyname").get<std::string>().c_str();
+                info.engine_version = tree.at("api").get<std::string>().c_str();
+                info.url = tree.at("url").get<std::string>().c_str();
+                info.copyright = tree.at("copyright").get<std::string>().c_str();
+                info.license = tree.at("license").get<std::string>().c_str();
+                info.version = tree.at("version").get<std::string>().c_str();
+                info.linking = tree.at("linking").get<std::string>().c_str();
                 json jsonDependecy = tree.at("dependencies");
                 for (json& jdep : jsonDependecy)
                 {
                     Dependency dep;
-                    dep.name = jdep.at("name").get<std::string>();
-                    dep.version = jdep.at("version").get<std::string>();
+                    dep.name = jdep.at("name").get<std::string>().c_str();
+                    dep.version = jdep.at("version").get<std::string>().c_str();
                     info.dependencies.push_back(dep);
                 }
                 return info;

@@ -4,14 +4,29 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-14 00:31:40
- * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-03-01 13:35:12
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-04-17 12:02:05
  */
 #pragma once
-#include <memory_resource>
 #include <string>
 #include <vector>
 #include <cstdlib>
+#ifdef SAKURA_TARGET_PLATFORM_OSX
+#include <boost/container/pmr/string.hpp>
+#include <boost/container/pmr/vector.hpp>
+#include <boost/container/pmr/map.hpp>
+namespace Sakura::SPA
+{
+    namespace pmr
+    {
+        using boost::container::string;
+        using boost::container::vector;
+        using boost::container::map;
+    }
+}
+#else
+#include <memory_resource>
+#endif
 
 namespace Sakura::SPA
 {

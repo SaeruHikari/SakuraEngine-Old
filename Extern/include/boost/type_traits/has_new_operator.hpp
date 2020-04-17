@@ -38,7 +38,7 @@ namespace detail {
             test<
             void *(*)(std::size_t),
                 &U::operator new
-            >* = NULL
+            >* = nullptr
         );
         template<class U>
         static type_traits::no_type check_sig1(...);
@@ -49,7 +49,7 @@ namespace detail {
             test<
             void *(*)(std::size_t, const std::nothrow_t&),
                 &U::operator new
-            >* = NULL
+            >* = nullptr
         );
         template<class U>
         static type_traits::no_type check_sig2(...);
@@ -60,7 +60,7 @@ namespace detail {
             test<
             void *(*)(std::size_t, void*),
                 &U::operator new
-            >* = NULL
+            >* = nullptr
         );
         template<class U>
         static type_traits::no_type check_sig3(...);
@@ -72,7 +72,7 @@ namespace detail {
             test<
             void *(*)(std::size_t),
                 &U::operator new[]
-            >* = NULL
+            >* = nullptr
         );
         template<class U>
         static type_traits::no_type check_sig4(...);
@@ -83,7 +83,7 @@ namespace detail {
             test<
             void *(*)(std::size_t, const std::nothrow_t&),
                 &U::operator new[]
-            >* = NULL
+            >* = nullptr
         );
         template<class U>
         static type_traits::no_type check_sig5(...);
@@ -94,7 +94,7 @@ namespace detail {
             test<
             void *(*)(std::size_t, void*),
                 &U::operator new[]
-            >* = NULL
+            >* = nullptr
         );
         template<class U>
         static type_traits::no_type check_sig6(...);

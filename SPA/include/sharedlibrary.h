@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 22:58:31
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-08 12:33:05
+ * @LastEditTime: 2020-04-17 12:06:58
  */
 #pragma once
 #include "confinfo.h" 
@@ -17,9 +17,22 @@ using NativeLibHandle = void*;
 #include <windows.h>
 using NativeLibHandle = HMODULE;
 #endif
-    
+#ifdef SAKURA_TARGET_PLATFORM_OSX
+#include <boost/container/pmr/string.hpp>
+#include <boost/container/pmr/vector.hpp>
+#include <boost/container/pmr/map.hpp>
+namespace Sakura::SPA
+{
+    namespace pmr
+    {
+        using boost::container::string;
+        using boost::container::vector;
+        using boost::container::map;
+    }
+}
+#else
 #include <memory_resource>
-#include <string>
+#endif
 namespace Sakura::SPA
 {      
     /**

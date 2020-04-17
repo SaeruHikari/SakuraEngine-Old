@@ -22,14 +22,13 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-25 22:25:45
- * @LastEditTime: 2020-03-02 15:01:16
+ * @LastEditTime: 2020-04-17 04:24:51
  */
 #pragma once
 #include "../../Extern/include/version/version.h"
 #include "../../DependencyGraph/Graph.h"
 #include <functional>
 #include <memory>
-#include <memory_resource>
 #include <stdint.h>
 #include <iostream>
 #include <string>

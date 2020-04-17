@@ -4,14 +4,27 @@
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-02-11 17:28:48
- * @LastEditors: SaeruHikari
- * @LastEditTime: 2020-02-26 09:14:37
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-04-17 12:18:21
  */
 // Source page:
 //   boost.org/doc/libs/1_61_0/libs/graph/doc/
 //    using_adjacency_list.html#sec:adjacency-list-properties
 #pragma once
+#ifdef SAKURA_TARGET_PLATFORM_OSX
+#include <boost/container/pmr/vector.hpp>
+#include <boost/container/pmr/list.hpp>
+namespace DAG
+{
+    namespace pmr
+    {
+        using boost::container::vector;
+        using boost::container::list;
+    }
+}
+#else
 #include <memory_resource>
+#endif
 #include <vector>
 #include <boost/graph/adjacency_list.hpp>
 
@@ -27,7 +40,7 @@ namespace DAG
         class EdgeProperty = boost::no_property,
         class GraphProperty = boost::no_property,
         class EdgeListS = boost::listS>
-    using Graph = boost::adjacency_list<____::pmrVecS, ____::pmrVecS, 
+    using Graph = boost::adjacency_list<boost::vecS, boost::vecS, 
         boost::bidirectionalS,
         VertexProperty, EdgeProperty, GraphProperty, EdgeListS>;
     
@@ -52,7 +65,7 @@ namespace DAG
         class EdgeProperty = boost::no_property,
         class GraphProperty = boost::no_property,
         class EdgeListS = boost::listS>
-    using MutaGraph = boost::adjacency_list<____::pmrListS, ____::pmrListS, 
+    using MutaGraph = boost::adjacency_list<boost::listS, boost::listS, 
         boost::bidirectionalS,
         VertexProperty, EdgeProperty, GraphProperty, EdgeListS>;
 
@@ -166,13 +179,13 @@ namespace boost
     template<class T>
     struct container_gen<DAG::____::pmrVecS, T> 
     {
-        using type = pmr::vector<T> ;
+        using type = DAG::pmr::vector<T> ;
     };
 
     template<class T>
     struct container_gen<DAG::____::pmrListS, T>
     {
-        using type = pmr::list<T>;
+        using type = DAG::pmr::list<T>;
     };
 
     template<>

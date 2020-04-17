@@ -3,12 +3,13 @@ add_rules("mode.debug", "mode.release")
 
 set_languages("c99", "c++20")
 
-add_defines("SAKURA_COMPILER_MSVC")
+add_defines("SAKURA_COMPILER_CLANG")
 add_cxxflags("/await /D _CRT_SECURE_NO_WARNINGS -DNOMINMAX /MP /EHsc")
 
 add_cxxflags("-Wconstant-logical-operand")
 
 add_includedirs("Extern/include")
+add_includedirs("Extern/include/DirectXMath/Inc")
 add_includedirs("./")
 add_includedirs("SakuraEngine/")
 
