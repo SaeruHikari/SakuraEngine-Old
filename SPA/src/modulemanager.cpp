@@ -5,7 +5,7 @@
  * @Autor: SaeruHikari
  * @Date: 2020-02-13 23:23:02
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-04-17 12:05:59
+ * @LastEditTime: 2020-04-17 15:06:06
  */
 #define API_EXPORTS
 #include "../include/modulemanager.h"
@@ -64,9 +64,9 @@ namespace Sakura::SPA
     #if defined(DEBUG) || defined(_DEBUG)
         prefix.append("/Debug");
     #else
-        prefix.append("/Release"); 
+        prefix.append("/release"); 
     #endif
-        prefix.append("/lib/lib").append(name);
+        prefix.append("/lib").append(name);
     #if defined(DEBUG) || defined(_DEBUG)
         prefix.append("d");
     #endif
@@ -100,6 +100,7 @@ namespace Sakura::SPA
             ModulesMap[name] = std::move(std::unique_ptr<IModule>(func()));
             IDynamicModule* module = (IDynamicModule*)ModulesMap[name].get();
             module->sharedLib = std::move(sharedLib);
+            
             module->_information = ParseMetaData(module->GetMetaData());
             return module;
         }
@@ -136,6 +137,7 @@ namespace Sakura::SPA
         }
         catch (const std::exception & e)
         {
+            std::cerr << "Json Parsing Error: ";
             std::cerr << e.what() << '\n';
             std::cerr << metadata << std::endl;
         }

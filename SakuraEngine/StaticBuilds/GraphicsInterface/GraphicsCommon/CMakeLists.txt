@@ -1,4 +1,0 @@
-add_subdirectory(Flags)
-add_subdirectory(CommandObjects)
-add_subdirectory(GraphicsObjects)
-add_subdirectory(ResourceObjects)

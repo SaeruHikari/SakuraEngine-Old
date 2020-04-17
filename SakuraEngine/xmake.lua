@@ -1,2 +1,2 @@
 includes("Core")
-
+includes("StaticBuilds")

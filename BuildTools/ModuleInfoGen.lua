@@ -25,7 +25,8 @@ if JsonFileModify == nil then
 elseif MetaHeaderModify == nil or MetaHeaderModify <= JsonFileModify then
     print(arg[2].." Refreshing meta header.")
     JsF = io.open(JsonFile, "r")
-    ModuleMeta = json.decode(JsF:read("*a"))
+    jsonContent = JsF:read("*a")
+    ModuleMeta = json.decode(jsonContent)
     HdrF = io.open(arg[2].."/"..arg[1]..".h", "w")
     io.output(HdrF)
     io.write("//A header file genereate by Sakura J2H tool\n")
@@ -35,7 +36,7 @@ elseif MetaHeaderModify == nil or MetaHeaderModify <= JsonFileModify then
     io.write("#include <string>\n")
     io.write("#include <cstddef>\n\n")
     io.write("const std::string sp_meta = \nR\"(")  
-    io.write(JsF:read("*a")..")\";\n")
+    io.write(jsonContent..")\";\n")
     io.write("inline const char* __GetMetaData(void)\n{\n    return sp_meta.c_str();\n}\n")
     io.write("public:\nvirtual const char* GetMetaData(void) override\n")
     io.write("{return __GetMetaData();}\n")
