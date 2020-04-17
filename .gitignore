@@ -7,7 +7,6 @@
 /.vs
 */.vs
 /build
-/Extern/googletest
 /.VSCodeCounter
 *meta.h
 *.generated.h
@@ -15,7 +14,7 @@
 /.xmake
 /vsxmake2019
 */.xmake
-*/.DS_Store
+*.DS_Store
 .DS_Store
 #
 *.jpg
