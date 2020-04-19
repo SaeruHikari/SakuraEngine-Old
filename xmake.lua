@@ -63,8 +63,8 @@ function shared_module(targetName, version, ...)
     shared_lib(targetName, version, ...)
     before_build(function(target)
         os.exec("lua BuildTools/ModuleInfoGen.lua ".."meta "..target:scriptdir().." ./")
-        for i = 1, #target._INFO._INFO.includedirs do
-            --print(target._INFO._INFO.includedirs[i])
+        for _, includedir in ipairs(target:get("includedirs")) do
+            --print(includedir)
         end
     end)
 end
