@@ -1,0 +1,22 @@
+*PS5*
+*Agc*
+*gnm*
+
+/Debug-build
+/Release-build
+/build
+/Web-build
+/SakuraEngine/Binaries
+compile_commands.json
+/.vs
+/VSProject
+/VSProject*
+/.clangd
+/out
+/.VSCodeCounter
+
+# ISPC Generated Headers
+*.ispc.h
+*.ispc_avx512skx.h
+*.ispc_sse4.h
+*.ispc_avx512knl.h
