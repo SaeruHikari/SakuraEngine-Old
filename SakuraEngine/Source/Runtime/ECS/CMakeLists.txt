@@ -1,11 +1,14 @@
 Module(
     NAME ECS
     TYPE Library
-    SRC_PATH  #Default as Source
+    SRC_PATH  
+        #Default as Source
     DEPS
     DEPS_PUBLIC 
-        RuntimeCore
-    INCLUDES_PUBLIC #Default as RuntimeCore
+        RuntimeCore 
+        CMakeImported::DotsCodebase CMakeImported::DotsDatabase
+    INCLUDES_PUBLIC 
+        #Default as RuntimeCore
     LINKS
     LINKS_PUBLIC
 )

@@ -1,5 +1,34 @@
 include(CMakeFindDependencyMacro)
 
+include(${CMAKE_CURRENT_LIST_DIR}/Microsoft.GSL/Microsoft.GSLConfig.cmake)
 
-include("${CMAKE_CURRENT_LIST_DIR}/Runtime/SakuraEngineRuntimeTargets.cmake")
+include(${CMAKE_CURRENT_LIST_DIR}/Runtime/SakuraEngineRuntimeTargetsCMakeImported.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/Runtime/SakuraEngineRuntimeTargets.cmake)
+
+# TODO: DO SOMETHING
+set(SAKURA_USE_DXMATH TRUE)
+add_definitions(-D SAKURA_USE_DXMATH)
+
+include_directories(${CMAKE_CURRENT_LIST_DIR}/../Extern)
+
 link_directories(${CMAKE_CURRENT_LIST_DIR}/../Binaries/Debug)
+
+set(PROJECT_DIR ${PROJECT_SOURCE_DIR}) 
+set(PROJECT_BIN_DIR ${PROJECT_SOURCE_DIR}/Binaries) 
+#set(ENGINE_TOOLS_DIR ${ENGINE_DIR}/Binaries/Tools) 
+#set(FILE_SERVER_DIR "http://139.59.27.159//SaeruHikari")
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BIN_DIR}/Debug)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BIN_DIR}/Debug)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BIN_DIR}/Debug)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BIN_DIR}/Release)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BIN_DIR}/Release)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BIN_DIR}/Release)
+
+link_directories(${PROJECT_BIN_DIR}/$<$<CONFIG:Debug>:Release>$<$<CONFIG:Release>:Debug>)
+set(SAKURA_PROJECT_FINAL_BIN_DIR ${PROJECT_BIN_DIR}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>)
+
+if(__COMPILER_PS5)
+else()
+find_package(Threads REQUIRED)
+endif()

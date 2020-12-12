@@ -4,3 +4,6 @@
 [submodule "SakuraEngine/Source/Runtime/CMakeImported/Dots"]
 	path = SakuraEngine/Source/Runtime/CMakeImported/Dots
 	url = git@github.com:BenzzzX/Dots.git
+[submodule "SakuraEngine/Source/Runtime/CMakeImported/GSL"]
+	path = SakuraEngine/Source/Runtime/CMakeImported/GSL
+	url = git@github.com:microsoft/GSL.git

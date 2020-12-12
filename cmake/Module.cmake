@@ -120,5 +120,29 @@ function(Module)
         ARCHIVE DESTINATION "/Lib"
         LIBRARY DESTINATION "/Lib"
     )
+
+    set_property(GLOBAL PROPERTY ${CurrentScope}HasModule TRUE)
 endfunction(Module)
 
+
+function(CMakeImportedModule)
+    CMAKE_PARSE_ARGUMENTS(  
+        MODULE "" "NAME;TYPE;SELF_INSTALL;"  
+        "DEPS;DEPS_PUBLIC;INCLUDES_PUBLIC;INCLUDES;SRC_PATH;LINKS;LINKS_PUBLIC"  
+        ${ARGN}  
+    )
+    get_property(CurrentScope GLOBAL PROPERTY Scope)
+
+    if(NOT ${MODULE_SELF_INSTALL})
+        install(TARGETS ${MODULE_NAME}
+            EXPORT "SakuraEngine${CurrentScope}CMakeImported"
+            RUNTIME DESTINATION "/Binaries"
+            ARCHIVE DESTINATION "/Lib"
+            LIBRARY DESTINATION "/Lib"
+            INCLUDES DESTINATION ${MODULE_INCLUDES_PUBLIC}
+        )
+    else()
+        set_property(GLOBAL PROPERTY ${CurrentScope}HasCMakeImported TRUE)
+    endif()
+    add_library(CMakeImported::${MODULE_NAME} ALIAS ${MODULE_NAME})
+endfunction()

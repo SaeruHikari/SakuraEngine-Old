@@ -3,8 +3,9 @@ Module(
     TYPE Library
     SRC_PATH  #Default as Source
     DEPS
-    DEPS_PUBLIC
-    INCLUDES_PUBLIC #Default as RuntimeCore
+    DEPS_PUBLIC marl GSL
+    INCLUDES_PUBLIC  
+        /Include
     LINKS
     LINKS_PUBLIC
 )
