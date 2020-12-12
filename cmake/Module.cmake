@@ -102,14 +102,14 @@ function(Module)
     foreach(dep ${MODULE_DEPS_PUBLIC})
         target_compile_definitions(${MODULE_NAME} 
             PUBLIC 
-            ${dep}API=${API_EXPORT_DEF}
+            ${dep}API=${API_IMPORT_DEF}
             ${dep}HIDDEN=${API_HIDDEN_DEF}
         )
     endforeach()
     foreach(private_dep ${MODULE_DEPS})
         target_compile_definitions(${MODULE_NAME} 
             PRIVATE 
-            ${private_dep}API=${API_EXPORT_DEF}
+            ${private_dep}API=${API_IMPORT_DEF}
             ${private_dep}HIDDEN=${API_HIDDEN_DEF}
         )
     endforeach()

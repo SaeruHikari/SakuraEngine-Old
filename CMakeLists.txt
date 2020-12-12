@@ -45,7 +45,7 @@ foreach(scope ${Scopes})
     get_property(HasModule GLOBAL PROPERTY ${scope}HasModule)
     if(${HasCMakeImported})
         install(EXPORT SakuraEngine${scope}CMakeImported
-            FILE SakuraEngine${scope}Targets.cmake
+            FILE SakuraEngine${scope}TargetsCMakeImported.cmake
             NAMESPACE SakuraEngine::${scope}::CMakeImported::
             DESTINATION cmake/${scope}
         )

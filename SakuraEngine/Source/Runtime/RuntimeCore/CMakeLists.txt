@@ -1,9 +1,14 @@
+if(__COMPILER_PS5)
+else()
+    set(MARL marl)
+endif()
+
 Module(
     NAME RuntimeCore
     TYPE Library
     SRC_PATH  #Default as Source
     DEPS
-    DEPS_PUBLIC marl GSL
+    DEPS_PUBLIC ${MARL} GSL crossguid
     INCLUDES_PUBLIC  
         /Include
     LINKS
