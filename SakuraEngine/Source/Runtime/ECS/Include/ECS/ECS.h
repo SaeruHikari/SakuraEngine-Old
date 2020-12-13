@@ -21,10 +21,10 @@ namespace sakura::task_system::ecs
 			pass_events.reserve(100);
 		};
 		template<class T>
-		sakura::ecs::pass* create_pass(const sakura::ecs::filters& v, T paramList)
+		sakura::ecs::pass* create_pass(const sakura::ecs::filters& v, T paramList, gsl::span<core::codebase::shared_entry> sharedEntries = {})
 		{
 			pass_events.emplace_back(task_system::Event::Mode::Manual);
-			return static_cast<sakura::ecs::pass*>(base_t::create_pass(v, paramList));
+			return static_cast<sakura::ecs::pass*>(base_t::create_pass(v, paramList, sharedEntries));
 		}
 		void wait()
 		{
@@ -43,11 +43,13 @@ namespace sakura::task_system::ecs
 			"F must be an invokable of void(const ecs::pipeline&, const ecs::pass&, const ecs::task&)>");
 		static_assert(!(ForceParallel & ForceNoParallel),
 			"A schedule can not force both parallel and not parallel!");
+		if (pass.archetypeCount == 0)
+			return task_system::Event{};
 		task_system::schedule([&, maxSlice, t]()
 		{
 			defer(pipeline.pass_events[pass.passIndex].signal());
 			//defer(tasks.reset());
-			for(auto i = 0u; i < pass.dependencyCount; i++)
+			forloop(i, 0, pass.dependencyCount)
 				pipeline.pass_events[pass.dependencies[i]->passIndex].wait();
 			auto tasks = pipeline.create_tasks(pass, maxSlice); //�� pass ��ȡ task
 
@@ -57,7 +59,7 @@ namespace sakura::task_system::ecs
 				goto FORCE_NO_PARALLEL;
 			if ((recommandParallel & !ForceNoParallel) || ForceParallel) // task����task_system
 			{
-				task_system::WaitGroup tasksGroup(tasks.size);
+				task_system::WaitGroup tasksGroup((uint32_t)tasks.size);
 				forloop(tsk, 0, tasks.size)
 				{
 					auto& tk = tasks[tsk];

@@ -83,7 +83,7 @@ task_system::Event Child2WorldSystem(task_system::ecs::pipeline& ppl)
 	using namespace ecs;
 	filters filter;
 	filter.archetypeFilter = {
-		{complist<const Child, LocalToWorld>},
+		{complist<Child, LocalToWorld>},
 		{},
 		{complist<Parent, LocalToParent>} // from root
 	};
@@ -141,7 +141,7 @@ task_system::Event World2LocalSystem(task_system::ecs::pipeline& ppl)
 	using namespace ecs;
 	filters filter;
 	filter.archetypeFilter = {
-		{complist<const LocalToWorld, WorldToLocal>}, //all
+		{complist<LocalToWorld, WorldToLocal>}, //all
 		{}, //any
 		{} //none
 	};
@@ -263,13 +263,13 @@ int main()
 		wrd_filter.archetypeFilter = {
 			{complist<LocalToWorld>},
 			{complist<Translation, Scale, Rotation>},
-			{complist<LocalToParent, const Parent>}
+			{complist<LocalToParent, Parent>}
 		};
 		auto parentWorldSystem = Local2XSystem<LocalToWorld>(transform_pipeline, wrd_filter);
 
 		filters c2p_filter;
 		c2p_filter.archetypeFilter = {
-			{complist<LocalToParent, const Parent>},
+			{complist<LocalToParent, Parent>},
 			{complist<Translation, Scale, Rotation>},
 			{}
 		};
