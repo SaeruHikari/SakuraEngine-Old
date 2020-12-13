@@ -135,9 +135,9 @@ function(Module)
 
     install(TARGETS ${MODULE_NAME}
         EXPORT "SakuraEngine${CurrentScope}"
-        RUNTIME DESTINATION "/Binaries"
-        ARCHIVE DESTINATION "/Binaries"
-        LIBRARY DESTINATION "/Binaries"
+        RUNTIME DESTINATION "${ENGINE_DIR}/Installed/Binaries"
+        ARCHIVE DESTINATION "${ENGINE_DIR}/Installed/Lib"
+        LIBRARY DESTINATION "${ENGINE_DIR}/Installed/Lib"
     )
 
     if(MSVC)
@@ -167,9 +167,9 @@ function(CMakeImportedModule)
     if(NOT ${MODULE_SELF_INSTALL})
         install(TARGETS ${MODULE_NAME}
             EXPORT "SakuraEngine${CurrentScope}CMakeImported"
-            RUNTIME DESTINATION "/Binaries"
-            ARCHIVE DESTINATION "/Binaries"
-            LIBRARY DESTINATION "/Binaries"
+            RUNTIME DESTINATION "${ENGINE_DIR}/Installed/Binaries"
+            ARCHIVE DESTINATION "${ENGINE_DIR}/Installed/Lib"
+            LIBRARY DESTINATION "${ENGINE_DIR}/Installed/Lib"
             INCLUDES DESTINATION ${MODULE_INCLUDES_PUBLIC}
         )
     else()
