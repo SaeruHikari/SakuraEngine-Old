@@ -1,5 +1,6 @@
 #pragma once
 #include <crossguid/guid.hpp>
+#include <spdlog/fmt/fmt.h>
 
 namespace sakura
 {

@@ -36,6 +36,7 @@ function(Module)
         "DEPS;DEPS_PUBLIC;INCLUDES_PUBLIC;INCLUDES;SRC_PATH;LINKS;LINKS_PUBLIC"  
         ${ARGN}  
     )
+
     get_property(CurrentScope GLOBAL PROPERTY Scope)
 
     list(LENGTH MODULE_SRC_PATH _length) 
@@ -51,17 +52,19 @@ function(Module)
         set(MODULE_INCLUDES ${MODULE_SRC_PATH})
     endif()
 
+    get_filename_component(ProjectId ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+
     foreach(p ${MODULE_SRC_PATH})
-        GlobCXXFiles(${ENGINE_DIR}/Source/${CurrentScope}/${MODULE_NAME}/${p} MODULE_SRC_T)
+        GlobCXXFiles(${ENGINE_DIR}/Source/${CurrentScope}/${ProjectId}/${p} MODULE_SRC_T)
         set(MODULE_SRC ${MODULE_SRC} ${MODULE_SRC_T})
-        message(STATUS ${ENGINE_DIR}/Source/${CurrentScope}/${MODULE_NAME}/${p})
+        message(STATUS ${ENGINE_DIR}/Source/${CurrentScope}/${ProjectId}/${p})
     endforeach()
 
     foreach(p ${MODULE_INCLUDES_PUBLIC})
-        GlobCXXFiles(${ENGINE_DIR}/Source/${CurrentScope}/${MODULE_NAME}/${p} MODULE_SRC_T)
+        GlobCXXFiles(${ENGINE_DIR}/Source/${CurrentScope}/${ProjectId}/${p} MODULE_SRC_T)
 
-        set(MODULE_ABS_HEADER_DIR ${MODULE_ABS_HEADER_DIR} ${ENGINE_DIR}/Source/${CurrentScope}/${MODULE_NAME}/${p})
-        set(MODULE_REL_HEADER_DIR ${MODULE_REL_HEADER_DIR} Source/${CurrentScope}/${MODULE_NAME}/${p})
+        set(MODULE_ABS_HEADER_DIR ${MODULE_ABS_HEADER_DIR} ${ENGINE_DIR}/Source/${CurrentScope}/${ProjectId}/${p})
+        set(MODULE_REL_HEADER_DIR ${MODULE_REL_HEADER_DIR} Source/${CurrentScope}/${ProjectId}/${p})
         set(MODULE_SRC ${MODULE_SRC} ${MODULE_SRC_T})
     endforeach()
 

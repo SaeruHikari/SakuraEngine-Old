@@ -1,9 +1,9 @@
-﻿#include "base/GenerationalId.h"
+﻿#include "Base/GenerationalId.h"
 #include <SakuraSTL.hpp>
 
 using namespace sakura;
 
-const GenerationalId GenerationalId::UNINITIALIZED = GenerationalId();
+RuntimeCoreAPI const GenerationalId GenerationalId::UNINITIALIZED = GenerationalId();
 GenerationalId::GenerationalId(uhalf_t generation, uhalf_t index)
 {
 	u.v.generation = generation;

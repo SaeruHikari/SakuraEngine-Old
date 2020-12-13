@@ -9,7 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS YES)
 set(DUMP_BUILD_MESSAGE OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-project(SAKURA)
+project(SakuraEngine)
 
 include(cmake/Configurations.cmake)
 include(cmake/TargetArchDetect.cmake)

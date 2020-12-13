@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.18.0)
 
+INCLUDE(cmake/Network.cmake)
 INCLUDE(cmake/Module.cmake)
 INCLUDE(cmake/Initialize.cmake)
 
@@ -7,12 +8,14 @@ project(SakuraEngine VERSION 0.0.2)
 
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/SakuraEngine)
 set(CMAKE_INSTALL_DATADIR ${PROJECT_SOURCE_DIR}/SakuraEngine)
+set(CMAKE_INSTALL_INCLUDEDIR ${PROJECT_SOURCE_DIR}/SakuraEngine/Extern)
 include_directories(${ENGINE_DIR}/Extern)
 
 # Build all engine modules
 FILE(GLOB children RELATIVE ${ENGINE_DIR}/Source/ ${ENGINE_DIR}/Source/*)
 FOREACH(child ${children})
 IF(IS_DIRECTORY ${ENGINE_DIR}/Source/${child})
+
     set_property(GLOBAL PROPERTY Scope ${child})
     set(Scopes ${Scopes} ${child})
 
@@ -22,12 +25,12 @@ IF(IS_DIRECTORY ${ENGINE_DIR}/Source/${child})
             FILE(GLOB modules RELATIVE ${ENGINE_DIR}/Source/${child}/${plugin} ${ENGINE_DIR}/Source/${child}/${plugin}/*)
             IF(IS_DIRECTORY ${ENGINE_DIR}/Source/${child}/${plugin})
                 if(EXISTS "${ENGINE_DIR}/Source/${child}/${plugin}/CMakeLists.txt")
-
                     add_subdirectory(${ENGINE_DIR}/Source/${child}/${plugin})
                 endif()
             ENDIF()
     ENDIF()
     ENDFOREACH()
+    
 ENDIF()
 ENDFOREACH()
 

@@ -1,3 +1,5 @@
+project(RuntimeCore VERSION 0.0.1)
+
 if(__COMPILER_PS5)
 else()
     set(MARL marl)
@@ -6,7 +8,9 @@ endif()
 Module(
     NAME RuntimeCore
     TYPE Library
-    SRC_PATH  #Default as Source
+    SRC_PATH 
+        /Source/Common
+        /Source/Platform/${SAKURA_PLATFORM}
     DEPS
     DEPS_PUBLIC ${MARL} GSL crossguid
     INCLUDES_PUBLIC  
