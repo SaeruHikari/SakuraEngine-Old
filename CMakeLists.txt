@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.18.0)
 
 project(SakuraEngine VERSION 0.0.2)
 
+include(cmake/EngineVars.cmake)
 INCLUDE(cmake/Network.cmake)
 INCLUDE(cmake/Module.cmake)
 INCLUDE(cmake/Initialize.cmake)

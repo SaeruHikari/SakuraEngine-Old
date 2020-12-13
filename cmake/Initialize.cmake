@@ -6,7 +6,6 @@ else()
 endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS YES)
 
-set(DUMP_BUILD_MESSAGE OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(cmake/Configurations.cmake)
@@ -130,24 +129,6 @@ include(CPack)
 
 # Default Path Configuration
 
-set(ENGINE_DIR ${PROJECT_SOURCE_DIR}/SakuraEngine) 
-set(ENGINE_SRC_DIR ${ENGINE_DIR}/Source) 
-set(ENGINE_BIN_DIR ${ENGINE_DIR}/Binaries) 
-set(ENGINE_TOOLS_DIR ${ENGINE_DIR}/Binaries/Tools) 
-set(FILE_SERVER_DIR "http://139.59.27.159//SaeruHikari")
-if(web)
-else()
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${ENGINE_BIN_DIR}/Debug)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${ENGINE_BIN_DIR}/Debug)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${ENGINE_BIN_DIR}/Debug)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${ENGINE_BIN_DIR}/Release)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${ENGINE_BIN_DIR}/Release)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${ENGINE_BIN_DIR}/Release)
-endif()
-
-link_directories(${ENGINE_BIN_DIR}/$<$<CONFIG:Debug>:Release>$<$<CONFIG:Release>:Debug>)
-set(SAKURA_FINAL_BIN_DIR ${ENGINE_BIN_DIR}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>)
-
 set(CMAKE_DEBUG_POSTFIX "_d")
 
 if(windows OR prospero)
@@ -169,12 +150,5 @@ add_compile_definitions(
     HIDEEN_API=__attribute__\(\(visibility\(\"hidden\"\)\)\) 
 )
 endif()
-
-if(windows)
-find_package(Vulkan)
-if(${Vulkan_FOUND})
-    message(STATUS "Found VK SDK. Include Dir: ${Vulkan_INCLUDE_DIRS}")
-endif()
-endif(windows)
 
 
