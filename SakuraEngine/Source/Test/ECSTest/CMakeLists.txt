@@ -1,7 +1,7 @@
 Module(
     NAME ECSTest
     TYPE Test
-    SRC_PATH  ./#Default as Source
+    SRC_PATH  /#Default as Source
     DEPS
     DEPS_PUBLIC 
         RuntimeCore ECS
