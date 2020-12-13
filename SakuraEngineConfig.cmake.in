@@ -7,9 +7,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/Runtime/SakuraEngineRuntimeTargets.cmake)
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/../Extern)
 
-
 message(STATUS "Engine LinkDir: ${CMAKE_CURRENT_LIST_DIR}/../Binaries/Debug")
 link_directories(${CMAKE_CURRENT_LIST_DIR}/../Binaries/Debug)
+link_directories(${CMAKE_CURRENT_LIST_DIR}/../Installed)
 
 set(PROJECT_DIR ${PROJECT_SOURCE_DIR}) 
 set(PROJECT_BIN_DIR ${PROJECT_SOURCE_DIR}/Binaries) 
