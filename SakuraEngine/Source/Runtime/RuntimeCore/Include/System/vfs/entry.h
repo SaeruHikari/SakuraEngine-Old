@@ -1,8 +1,6 @@
 ﻿#pragma once
 #include "SakuraSTL.hpp"
 
-using namespace sakura;
-
 namespace sakura::vfs
 {
 	struct file;

@@ -12,6 +12,7 @@
 #include <System/VirtualFileSystem.h>
 #include <System/Log.h>
 #include <Base/GUID.h>
+#include "Module.h"
 #include "RuntimeCore/Resource.h"
 #include "Base/GenerationalId.h"
 #include "Module.h"

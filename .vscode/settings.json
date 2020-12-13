@@ -132,6 +132,7 @@
         "gsl_util": "cpp",
         "string_span": "cpp",
         "gsl_assert": "cpp",
-        "complex": "cpp"
+        "complex": "cpp",
+        "execution": "cpp"
     },
 }
