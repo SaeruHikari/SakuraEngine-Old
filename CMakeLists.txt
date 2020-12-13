@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.18.0)
 
+project(SakuraEngine VERSION 0.0.2)
+
 INCLUDE(cmake/Network.cmake)
 INCLUDE(cmake/Module.cmake)
 INCLUDE(cmake/Initialize.cmake)
-
-project(SakuraEngine VERSION 0.0.2)
 
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/SakuraEngine)
 set(CMAKE_INSTALL_DATADIR ${PROJECT_SOURCE_DIR}/SakuraEngine)
