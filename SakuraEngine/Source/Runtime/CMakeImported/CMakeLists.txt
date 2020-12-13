@@ -23,8 +23,6 @@ CMakeImportedModule(
     NAME DotsDatabase
     SELF_INSTALL FALSE
     INCLUDES_PUBLIC
-        Source/Runtime/CMakeImported/Dots/Codebase/include
-        Source/Runtime/CMakeImported/Dots/Database
         Source/Runtime/CMakeImported/Dots
 )
 
