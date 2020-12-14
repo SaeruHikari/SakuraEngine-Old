@@ -35,9 +35,9 @@ namespace sakura::task_system::ecs
 		bool force_no_parallel = false;
 	};
 
-	template<typename F, bool ForceParallel = false, bool ForceNoParallel = false>
+	template<bool ForceParallel = false, bool ForceNoParallel = false, class F>
 	FORCEINLINE task_system::Event schedule(
-		pipeline& pipeline, sakura::ecs::pass& pass, F&& t, int maxSlice = -1)
+		pipeline& pipeline, sakura::ecs::pass& pass, F&& t, int maxSlice = -1, std::vector<task_system::Event> externalDependencies = {})
 	{
 		static_assert(std::is_invocable_v<std::decay_t<F>, const task_system::ecs::pipeline&, const sakura::ecs::pass&, const sakura::ecs::task&>,
 			"F must be an invokable of void(const ecs::pipeline&, const ecs::pass&, const ecs::task&)>");
@@ -45,19 +45,21 @@ namespace sakura::task_system::ecs
 			"A schedule can not force both parallel and not parallel!");
 		if (pass.archetypeCount == 0)
 			return task_system::Event{};
-		task_system::schedule([&, maxSlice, t]()
+		task_system::schedule([&, maxSlice, t, externalDependencies = std::move(externalDependencies)]()
 		{
 			defer(pipeline.pass_events[pass.passIndex].signal());
 			//defer(tasks.reset());
 			forloop(i, 0, pass.dependencyCount)
 				pipeline.pass_events[pass.dependencies[i]->passIndex].wait();
-			auto tasks = pipeline.create_tasks(pass, maxSlice); //�� pass ��ȡ task
+			for (auto& ed : externalDependencies)
+				ed.wait();
+			auto tasks = pipeline.create_tasks(pass, maxSlice);
 
 			constexpr auto MinParallelTask = 10u;
 			const bool recommandParallel = !pass.hasRandomWrite && tasks.size > MinParallelTask;
 			if (pipeline.force_no_parallel)
 				goto FORCE_NO_PARALLEL;
-			if ((recommandParallel & !ForceNoParallel) || ForceParallel) // task����task_system
+			if ((recommandParallel & !ForceNoParallel) || ForceParallel)
 			{
 				task_system::WaitGroup tasksGroup((uint32_t)tasks.size);
 				forloop(tsk, 0, tasks.size)
@@ -67,11 +69,11 @@ namespace sakura::task_system::ecs
 						// Decrement the WaitGroup counter when the task has finished.
 						defer(tasksGroup.done());
 						t(pipeline, pass, tk);
-					});
+						});
 				}
 				tasksGroup.wait();
 			}
-			else // ����
+			else
 			{
 			FORCE_NO_PARALLEL:
 				std::for_each(
@@ -80,6 +82,7 @@ namespace sakura::task_system::ecs
 						t(pipeline, pass, tk);
 					});
 			}
+			delete& pass;
 		});
 		return pipeline.pass_events[pass.passIndex];
 	}
