@@ -8,7 +8,7 @@ Module(
     DEPS
     DEPS_PUBLIC 
         RuntimeCore 
-        CMakeImported::DotsCodebase CMakeImported::DotsDatabase
+        DotsCodebase DotsDatabase
     INCLUDES_PUBLIC 
         #Default as RuntimeCore
     LINKS
