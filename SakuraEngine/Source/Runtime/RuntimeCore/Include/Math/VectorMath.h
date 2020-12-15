@@ -36,6 +36,12 @@ namespace sakura::math
 	}
 
 	template<typename T, size_t N>
+	FORCEINLINE T length(const Vector<T, N> vec)
+	{
+		return vec.length();
+	}
+
+	template<typename T, size_t N>
 	FORCEINLINE Vector<T, N> add(const Vector<T, N> a, const Vector<T, N> b)
 	{
 		return a + b;
@@ -45,5 +51,11 @@ namespace sakura::math
 	FORCEINLINE Vector<T, N> subtract(const Vector<T, N> a, const Vector<T, N> b)
 	{
 		return a - b;
+	}
+
+	template<typename T, size_t N>
+	FORCEINLINE T distance(const Vector<T, N> a, const Vector<T, N> b)
+	{
+		return length(subtract(a, b));
 	}
 }
