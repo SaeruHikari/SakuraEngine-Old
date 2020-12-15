@@ -7,7 +7,8 @@ ECSModule* ECSModule::create()
 
 bool ECSModule::StartUp()
 {
-	sakura::ecs::initialize();
+	core::database::initialize();
+	core::codebase::initialize();
 
 	core::codebase::cid<core::database::group> = core::database::group_id;
 	core::codebase::cid<core::database::disable> = core::database::disable_id;
