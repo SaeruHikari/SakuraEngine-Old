@@ -250,6 +250,7 @@ int main(void)
 		math::quaternion_from_euler(0.f, 3.14159f * 2.f / 3.f, 0.f);
 	
 	auto lkAt1 = sakura::math::look_at_quaternion(Vector3f(0.f, 0.f, 0.f), Vector3f(sqrt(0.5f), sqrt(0.5f), 0));
+	auto lkAt2 = sakura::math::look_at_quaternion(Vector3f(sqrt(0.5f), sqrt(0.5f), 0));
 	
 	bool end = true;
 	if(end)

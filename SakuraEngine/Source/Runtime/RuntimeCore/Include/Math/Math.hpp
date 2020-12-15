@@ -71,6 +71,14 @@ namespace sakura::math
 		return sakura::math::quaternion_from_rotation(sakura::math::look_at_matrix(Eye, At));
 	}
 
+	FORCEINLINE Quaternion look_at_quaternion
+	(
+		const Vector3f direction
+	)
+	{
+		return look_at_quaternion(Vector3f(0.f, 0.f, 0.f), direction);
+	}
+
 	FORCEINLINE float4x4 make_transform
 	(
 		const Vector3f translation,
