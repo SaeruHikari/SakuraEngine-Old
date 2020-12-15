@@ -42,7 +42,7 @@ namespace sakura::task_system::ecs
 	template<class F>
 	FORCEINLINE task_system::Event schedule_custom(pipeline& pipeline, sakura::ecs::custom_pass& pass, F&& t, std::vector<task_system::Event> externalDependencies = {})
 	{
-		task_system::schedule([&, t]()
+		task_system::schedule([&, t]() mutable
 		{
 			defer(pipeline.pass_events[pass.passIndex].signal());
 			forloop(i, 0, pass.dependencyCount)
@@ -64,7 +64,7 @@ namespace sakura::task_system::ecs
 			"A schedule can not force both parallel and not parallel!");
 		if (pass.archetypeCount == 0)
 			return task_system::Event{};
-		task_system::schedule([&, maxSlice, t, externalDependencies = std::move(externalDependencies)]()
+		task_system::schedule([&, maxSlice, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
 			defer(pipeline.pass_events[pass.passIndex].signal());
 			//defer(tasks.reset());
@@ -96,7 +96,7 @@ namespace sakura::task_system::ecs
 			{
 			FORCE_NO_PARALLEL:
 				std::for_each(
-					tasks.begin(), tasks.end(), [&, t](auto& tk)
+					tasks.begin(), tasks.end(), [&, t](auto& tk) mutable
 					{
 						t(pipeline, pass, tk);
 					});
