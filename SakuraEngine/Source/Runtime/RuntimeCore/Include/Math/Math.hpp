@@ -20,40 +20,17 @@ FORCEINLINE void vector3_cross(const float a[4], const float b[4], float r[4])
 
 namespace sakura::math
 {
-	FORCEINLINE Quaternion quaternion_from_rotator
+	// Implementations
+
+	FORCEINLINE float4x4 make_transform
 	(
-		const Rotator rot
+		const Vector3f translation,
+		const Vector3f scale = Vector3f::vector_one(),
+		const Quaternion quaternion = Quaternion::identity()
 	)
 	{
-		Quaternion res;
-		vector::store_aligned(res.data_view(),
-			quaternion::quaternion_from_euler(rot.pitch(), rot.yaw(), rot.roll()));
-		return res;
-	}
-
-	template<typename T, size_t Dimension>
-	FORCEINLINE Vector<T, Dimension> normalize(const Vector<T, Dimension>& vec)
-	{
-		return vec / vec.length();
-	}
-
-	FORCEINLINE Quaternion quaternion_from_euler
-	(
-		const float pitch, const float yaw, const float roll
-	)
-	{
-		Quaternion res;
-		vector::store_aligned(res.data_view(), quaternion::quaternion_from_euler(pitch, yaw, roll));
-		return res;
-	}
-
-	FORCEINLINE Quaternion quaternion_from_rotation
-	(
-		const float4x4 rotation
-	)
-	{
-		Quaternion res;
-		vector::store_aligned(res.data_view(), quaternion::quaternion_from_rotation(rotation));
+		float4x4 res;
+		__transform::store_aligned(res.data_view(), __transform::make_transform(translation, scale, quaternion));
 		return res;
 	}
 
@@ -65,35 +42,6 @@ namespace sakura::math
 	{
 		float4x4 res;
 		__transform::store_aligned(res.data_view(), __transform::look_at(Eye, At));
-		return res;
-	}
-
-	FORCEINLINE Quaternion look_at_quaternion
-	(
-		const Vector3f Eye,
-		const Vector3f At
-	)
-	{
-		return sakura::math::quaternion_from_rotation(sakura::math::look_at_matrix(Eye, At));
-	}
-
-	FORCEINLINE Quaternion look_at_quaternion
-	(
-		const Vector3f direction
-	)
-	{
-		return look_at_quaternion(Vector3f(0.f, 0.f, 0.f), direction);
-	}
-
-	FORCEINLINE float4x4 make_transform
-	(
-		const Vector3f translation,
-		const Vector3f scale = Vector3f::vector_one(),
-		const Quaternion quaternion = Quaternion::identity()
-	)
-	{
-		float4x4 res;
-		__transform::store_aligned(res.data_view(), __transform::make_transform(translation, scale, quaternion));
 		return res;
 	}
 
@@ -121,5 +69,61 @@ namespace sakura::math
 			__transform::inverse(__transform::load_aligned(a.data_view()))
 		);
 		return res;
+	}
+
+
+
+
+
+
+
+	// Wrappers
+
+	FORCEINLINE Quaternion quaternion_from_rotator
+	(
+		const Rotator rot
+	)
+	{
+		Quaternion res;
+		vector::store_aligned(res.data_view(),
+			quaternion::quaternion_from_euler(rot.pitch(), rot.yaw(), rot.roll()));
+		return res;
+	}
+
+	FORCEINLINE Quaternion quaternion_from_euler
+	(
+		const float pitch, const float yaw, const float roll
+	)
+	{
+		Quaternion res;
+		vector::store_aligned(res.data_view(), quaternion::quaternion_from_euler(pitch, yaw, roll));
+		return res;
+	}
+
+	FORCEINLINE Quaternion quaternion_from_rotation
+	(
+		const float4x4 rotation
+	)
+	{
+		Quaternion res;
+		vector::store_aligned(res.data_view(), quaternion::quaternion_from_rotation(rotation));
+		return res;
+	}
+
+	FORCEINLINE Quaternion look_at_quaternion
+	(
+		const Vector3f Eye,
+		const Vector3f At
+	)
+	{
+		return sakura::math::quaternion_from_rotation(sakura::math::look_at_matrix(Eye, At));
+	}
+
+	FORCEINLINE Quaternion look_at_quaternion
+	(
+		const Vector3f direction
+	)
+	{
+		return look_at_quaternion(Vector3f(0.f, 0.f, 0.f), direction);
 	}
 }

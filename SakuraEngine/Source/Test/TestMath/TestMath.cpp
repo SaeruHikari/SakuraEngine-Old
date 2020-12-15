@@ -30,12 +30,12 @@ int main(void)
 		Vector3f div = v3 / v3;
 		Vector3f cross = v3 ^ v3;
 		float dot = v3 | v3;
-		bool normalized = v3.is_normalized();
-		bool normalize_success = v3.normalize();
+		bool is_normalized = v3.is_normalized();
+		auto normalized = math::normalize(v3);
 		bool is_zero = v3.is_zero();
 		bool is_nearly_zero = v3.is_nearly_zero();
 		float length = v3.length_squared();
-		v3.normalize();
+		math::normalize(v3);
 	}
 
 	// Expect 3, 4, 0, 0
@@ -118,6 +118,7 @@ int main(void)
 		sakura::math::vector::dot4(
 			load_aligned(permuted.data_view()), load_aligned(abs.data_view())
 	));
+	auto dot44 = sakura::math::dot_product(permuted, abs);
 
 	// Expect 0, -nan, 0, -nan
 	Vector4f eq;

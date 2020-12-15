@@ -164,16 +164,4 @@ namespace sakura
 		return (math::abs(1.f - length_squared()) < THRESH_VECTOR_NORMALIZED);
 	}
 
-	template<typename T>
-	FORCEINLINE bool Vector<T, 3>::normalize(T tolerance)
-	{
-		const float SquareSum = X * X + Y * Y + Z * Z;
-		if (SquareSum > tolerance)
-		{
-			const float Scale = math::rsqrt(SquareSum);
-			X *= Scale; Y *= Scale; Z *= Scale;
-			return true;
-		}
-		return false;
-	}
 }

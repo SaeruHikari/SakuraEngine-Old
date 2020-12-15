@@ -23,7 +23,20 @@ namespace sakura
         {
             return m_;
         }
-
+        T length_squared() const
+        {
+            T res = 0;
+            // TODO: unroll with index_sequence
+            for (auto i = 0u; i < N; i++)
+            {
+                res += m_.at(i) * m_.at(i);
+            }
+            return res;
+        }
+        T length() const
+        {
+            return math::sqrt(length_squared());
+        }
         static constexpr Vector<T, N> vector_one();
         static constexpr Vector<T, N> vector_zero();
     protected:
@@ -126,7 +139,6 @@ namespace sakura
         FORCEINLINE bool is_zero() const;
         FORCEINLINE bool is_nearly_zero(T tolerence = SMALL_NUMBER) const;
         FORCEINLINE bool is_normalized() const;
-        FORCEINLINE bool normalize(T tolerance = SMALL_NUMBER);
     protected:
 		union
 		{
@@ -165,6 +177,14 @@ namespace sakura
         {
             return m_;
         }
+        FORCEINLINE float length() const
+        {
+            return math::sqrt(X * X + Y * Y + Z * Z + W * W);
+        }
+		FORCEINLINE float length_squared() const
+		{
+			return X * X + Y * Y + Z * Z + W * W;
+		}
         FORCEINLINE static constexpr Vector<float, 4> vector_one();
         FORCEINLINE static constexpr Vector<float, 4> vector_zero();
     protected:
