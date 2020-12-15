@@ -16,7 +16,6 @@ sakura::graphics::webgpu::GPUShader::GPUShader(
 {
 	// Find From Created Modules
 	auto tryFindExisted = dev.shaderModules.find(description.name);
-	sakura::vector<uint32> readed;
 	if(tryFindExisted != dev.shaderModules.end())
 	{
 		module_ref = tryFindExisted->second;
@@ -25,29 +24,20 @@ sakura::graphics::webgpu::GPUShader::GPUShader(
 	{
 		const uint32_t* code = nullptr;
 		uint32_t size = 0;
-		if(desc.builtIn)
+		if(desc.code.empty())
 		{
-
+			assert(0 && "Only Support WithCode Mode!");
 		}
 		else
 		{ 
-			sakura::vfs::adapter* adpt_local_dev = sakura::vfs::adapter::mounted_adapters[u8"Project:"];
-			sakura::vfs::path shader_p(
-				desc.name == "triangle_vert" ? u8"/Resources/Shaders/spirv/Triangle.vs.spv" : u8"/Resources/Shaders/spirv/Triangle.ps.spv");
-			auto shader_entry = sakura::unique_ptr<vfs::entry>(adpt_local_dev->entry(shader_p));
-			auto shader_file = sakura::unique_ptr<vfs::file>(shader_entry->open_as_file("r"));
-			shader_file->seek(0, vfs::VFS_SEEK_END);
-			readed.resize(shader_file->tell());
-			shader_file->seek(0, vfs::VFS_SEEK_SET);
-			shader_file->read(readed.data(), sizeof(uint32), readed.size());
-			code = readed.data();
-			size = readed.size();
+			code = reinterpret_cast<const uint32*>(desc.code.data());
+			size = desc.code.size() * sizeof(std::byte) / sizeof(uint32);
 		}
 		const char* label = nullptr;
 
 		WGPUShaderModuleSPIRVDescriptor spirv = {};
 		spirv.chain.sType = WGPUSType_ShaderModuleSPIRVDescriptor;
-		spirv.codeSize = size / sizeof(uint32_t);
+		spirv.codeSize = size;
 		spirv.code = code;
 		WGPUShaderModuleDescriptor moduleDesc = {};
 		moduleDesc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(&spirv);

@@ -442,6 +442,7 @@ int main()
 		sakura::error("Failed to StartUp ECSModule!");
 		return -1;
 	}
+	render_system::initialize();
 
 	using namespace sakura::ecs;
 

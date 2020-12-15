@@ -698,10 +698,13 @@ namespace sakura::graphics
 		sakura::string name = "";
 		sakura::string entry = "";
 		EShaderFrequency frequency = EShaderFrequency::None;
-		bool builtIn = false;
+
+		const sakura::span<const std::byte> code;
+
 		ShaderDesc() = default;
 		explicit ShaderDesc(const sakura::string& name,
-			const sakura::string& entry, const EShaderFrequency frequency) noexcept;
+			const sakura::string& entry, const EShaderFrequency frequency,
+			const sakura::span<const std::byte> code = {}) noexcept;
 	};
 }
 

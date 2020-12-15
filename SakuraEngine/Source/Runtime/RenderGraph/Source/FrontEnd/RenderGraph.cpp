@@ -177,8 +177,8 @@ namespace sakura::graphics
 		:slot_index(_slot_index), size(_size), offset(_offset), buffer(_buffer)	{	}
 
 	ShaderDesc::ShaderDesc(const sakura::string& _name, const sakura::string& _entry,
-	                       const EShaderFrequency _frequency) noexcept
-		:name(_name), entry(_entry), frequency(_frequency)	{	}
+		const EShaderFrequency _frequency, const sakura::span<const std::byte> _code) noexcept
+		:code(_code), name(_name), entry(_entry), frequency(_frequency)	{	}
 
 	VertexLayout::Element::Element(string _semantic_name, EVertexFormat _format, uint32 _offset) noexcept
 		:semantic_name(_semantic_name), format(_format), offset(_offset) {	}

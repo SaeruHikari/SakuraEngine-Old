@@ -6,6 +6,7 @@ Module(
     DEPS_PUBLIC 
         RuntimeCore ECS 
         RenderGraph RenderGraphWebGPU
+        ShaderCompiler
     INCLUDES_PUBLIC 
     LINKS
     LINKS_PUBLIC
