@@ -220,7 +220,7 @@ task_system::Event World2LocalSystem(task_system::ecs::pipeline& ppl)
 }
 
 template<class C, class T>
-task_system::Event CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector)
+task_system::Event CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector, int maxSlice = -1)
 {
 	using namespace ecs;
 	def paramList = hana::tuple{ param<const C> };
@@ -235,7 +235,7 @@ task_system::Event CopyComponent(task_system::ecs::pipeline& ppl, const ecs::fil
 			auto comps = o.get_parameter<const C>();
 			forloop(i, 0, o.get_count())
 				(*vector)[index + i] = comps[i];
-		});
+		}, maxSlice);
 }
 
 struct BoidPosition
@@ -412,7 +412,7 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 					sakura::Vector3f newHeading = math::normalize(alignment * boid->AlignmentWeight + separation * boid->SeparationWeight + targeting * boid->TargetWeight);
 					(*newHeadings)[index + i] = math::normalize((hds[i] + (newHeading - hds[i]) * deltaTime));
 				}
-			}, -1);
+			}, 100);
 	}
 	//结果转换
 	{
@@ -446,8 +446,7 @@ int main()
 	using namespace sakura::ecs;
 
 	register_components<Translation, Rotation, RotationEuler, Scale, LocalToWorld, LocalToParent, 
-		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget>();
-	
+		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading>();
 	
 	{	
 		//创建 Boid 目标
@@ -455,16 +454,16 @@ int main()
 		{
 			complist<BoidTarget, Translation, LocalToWorld, MoveToward, RandomMoveTarget>
 		};
-		for (auto slice : ctx.allocate(type, 10))
+		for (auto slice : ctx.allocate(type, 500))
 		{
 			auto trs = init_component<Translation>(ctx, slice);
 			auto mts = init_component<MoveToward>(ctx, slice);
 			auto rmts = init_component<RandomMoveTarget>(ctx, slice);
 			forloop(i, 0, slice.count)
 			{
-				std::uniform_real_distribution<float> speedDst(10.f, 20.f);
+				std::uniform_real_distribution<float> speedDst(15.f, 25.f);
 				rmts[i].center = Vector3f::vector_zero();
-				rmts[i].radius = 100.f;
+				rmts[i].radius = 1000.f;
 				mts[i].Target = rmts[i].random_point(get_random_engine());
 				mts[i].MoveSpeed = speedDst(get_random_engine());
 				trs[i] = rmts[i].random_point(get_random_engine());
@@ -497,7 +496,7 @@ int main()
 		};
 		sphere s;
 		s.center = Vector3f::vector_zero();
-		s.radius = 100.f;
+		s.radius = 1000.f;
 		for (auto slice : ctx.allocate(type, 10000))
 		{
 			auto trs = init_component<Translation>(ctx, slice);
@@ -527,12 +526,12 @@ int main()
 			for(auto dp : dependencies)
 				ppl.pass_events[dp->passIndex].wait();
 		};
-		//RotationEulerSystem(ppl);
+		RotationEulerSystem(ppl);
 
-		//RandomTargetSystem(ppl);
-		//MoveTowardSystem(ppl, deltaTime);
+		RandomTargetSystem(ppl);
+		MoveTowardSystem(ppl, deltaTime);
 		BoidsSystem(ppl, deltaTime);
-		//HeadingSystem(ppl);
+		HeadingSystem(ppl);
 
 		filters wrd_filter;
 		wrd_filter.archetypeFilter = {
@@ -540,7 +539,7 @@ int main()
 			{complist<Translation, Scale, Rotation>},
 			{complist<LocalToParent, Parent>}
 		};
-		//Local2XSystem<LocalToWorld>(ppl, wrd_filter);
+		Local2XSystem<LocalToWorld>(ppl, wrd_filter);
 
 		filters c2p_filter;
 		c2p_filter.archetypeFilter = {
@@ -548,9 +547,9 @@ int main()
 			{complist<Translation, Scale, Rotation>},
 			{}
 		};
-		//Local2XSystem<LocalToParent>(ppl, c2p_filter); 
-		//Child2WorldSystem(ppl);
-		//World2LocalSystem(ppl);
+		Local2XSystem<LocalToParent>(ppl, c2p_filter); 
+		Child2WorldSystem(ppl);
+		World2LocalSystem(ppl);
 		
 		std::cout << "delta time: " << deltaTime << std::endl;
 		
