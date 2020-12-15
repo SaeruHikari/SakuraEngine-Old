@@ -2,7 +2,7 @@
 #include "SakuraDXMathVector.h"
 #include "SakuraDXMathQuaternion.h"
 
-namespace sakura::math::__transform
+namespace sakura::math::__matrix
 {
 	using MatrixRegister = DirectX::XMMATRIX;
 
@@ -44,10 +44,10 @@ namespace sakura::math::__transform
 		return DirectX::XMMatrixTransformation(
 			g_XMZero,
 			g_XMIdentityR3,
-			vector::load_float3_w0(scale.data_view()),
+			__vector::load_float3_w0(scale.data_view()),
 			g_XMZero,
-			vector::load_aligned(quaternion.data_view()),
-			vector::load_float3_w0(translation.data_view())
+			__vector::load_aligned(quaternion.data_view()),
+			__vector::load_float3_w0(translation.data_view())
 		);
 	}
 
@@ -58,8 +58,8 @@ namespace sakura::math::__transform
 	)
 	{
 		return DirectX::XMMatrixLookAtLH(
-			vector::load_float3_w0(Eye.data_view()),
-			vector::load_float3_w0(At.data_view()),
+			__vector::load_float3_w0(Eye.data_view()),
+			__vector::load_float3_w0(At.data_view()),
 			DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f)
 		);
 	}

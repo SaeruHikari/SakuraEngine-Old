@@ -9,12 +9,12 @@
 #pragma warning( pop )
 #include <DirectXPackedVector.h>
 
-namespace sakura::math::quaternion
+namespace sakura::math::__quaternion
 {
     using namespace sakura::math;
     using MatrixRegister = DirectX::XMMATRIX;
 
-	FORCEINLINE vector::VectorRegister quaternion_from_euler
+	FORCEINLINE __vector::VectorRegister quaternion_from_euler
 	(
 		const float pitch, const float yaw, const float roll
 	)
@@ -24,7 +24,7 @@ namespace sakura::math::quaternion
 		return Q;
 	}
 
-    FORCEINLINE vector::VectorRegister quaternion_from_rotation
+    FORCEINLINE __vector::VectorRegister quaternion_from_rotation
     (
         const sakura::float4x4 rotation
     )

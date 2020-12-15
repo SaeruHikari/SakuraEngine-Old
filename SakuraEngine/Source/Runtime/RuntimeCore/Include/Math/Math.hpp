@@ -11,13 +11,6 @@
 #include "Math/DXMath/SakuraDXMathTransform.h"
 #endif
 
-FORCEINLINE void vector3_cross(const float a[4], const float b[4], float r[4])
-{
-	r[0] = a[1] * b[2] - a[2] * b[1];
-	r[1] = a[2] * b[0] - a[0] * b[2];
-	r[2] = a[0] * b[1] - a[1] * b[0];
-}
-
 namespace sakura::math
 {
 	// Implementations
@@ -30,7 +23,7 @@ namespace sakura::math
 	)
 	{
 		float4x4 res;
-		__transform::store_aligned(res.data_view(), __transform::make_transform(translation, scale, quaternion));
+		__matrix::store_aligned(res.data_view(), __matrix::make_transform(translation, scale, quaternion));
 		return res;
 	}
 
@@ -41,7 +34,7 @@ namespace sakura::math
 	)
 	{
 		float4x4 res;
-		__transform::store_aligned(res.data_view(), __transform::look_at(Eye, At));
+		__matrix::store_aligned(res.data_view(), __matrix::look_at(Eye, At));
 		return res;
 	}
 
@@ -52,9 +45,9 @@ namespace sakura::math
 	)
 	{
 		float4x4 res;
-		__transform::store_aligned(
+		__matrix::store_aligned(
 			res.data_view(),
-			__transform::multiply(__transform::load_aligned(a.data_view()), __transform::load_aligned(b.data_view()))
+			__matrix::multiply(__matrix::load_aligned(a.data_view()), __matrix::load_aligned(b.data_view()))
 		);
 		return res;
 	}
@@ -65,8 +58,8 @@ namespace sakura::math
 	)
 	{
 		float4x4 res;
-		__transform::store_aligned(res.data_view(),
-			__transform::inverse(__transform::load_aligned(a.data_view()))
+		__matrix::store_aligned(res.data_view(),
+			__matrix::inverse(__matrix::load_aligned(a.data_view()))
 		);
 		return res;
 	}
@@ -85,8 +78,8 @@ namespace sakura::math
 	)
 	{
 		Quaternion res;
-		vector::store_aligned(res.data_view(),
-			quaternion::quaternion_from_euler(rot.pitch(), rot.yaw(), rot.roll()));
+		__vector::store_aligned(res.data_view(),
+			__quaternion::quaternion_from_euler(rot.pitch(), rot.yaw(), rot.roll()));
 		return res;
 	}
 
@@ -96,7 +89,7 @@ namespace sakura::math
 	)
 	{
 		Quaternion res;
-		vector::store_aligned(res.data_view(), quaternion::quaternion_from_euler(pitch, yaw, roll));
+		__vector::store_aligned(res.data_view(), __quaternion::quaternion_from_euler(pitch, yaw, roll));
 		return res;
 	}
 
@@ -106,7 +99,7 @@ namespace sakura::math
 	)
 	{
 		Quaternion res;
-		vector::store_aligned(res.data_view(), quaternion::quaternion_from_rotation(rotation));
+		__vector::store_aligned(res.data_view(), __quaternion::quaternion_from_rotation(rotation));
 		return res;
 	}
 

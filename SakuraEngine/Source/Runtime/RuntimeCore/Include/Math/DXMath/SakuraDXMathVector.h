@@ -7,7 +7,7 @@
 #pragma warning( pop )
 #include <DirectXPackedVector.h>
 
-namespace sakura::math::vector
+namespace sakura::math::__vector
 {
     using VectorRegister = DirectX::XMVECTOR;
     using VectorRegisterInt = __m128i;
@@ -337,7 +337,7 @@ namespace sakura::math::vector
         *VResult = quat_multiply(*VQuat1, *VQuat2);
     }
 
-    // Returns true if the vector contains a component that is either NAN or +/-infinite.
+    // Returns true if the __vector contains a component that is either NAN or +/-infinite.
     FORCEINLINE bool contains_nan_or_infinite(const VectorRegister& Vec)
     {
         // Mask off Exponent
