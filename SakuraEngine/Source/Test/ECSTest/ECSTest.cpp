@@ -252,10 +252,10 @@ int main()
 	while (1)
 	{
 		task_system::ecs::pipeline transform_pipeline(ctx);
-		transform_pipeline.on_sync = [&](pass** dependencies, int dependencyCount)
+		transform_pipeline.on_sync = [&](gsl::span<custom_pass*> dependencies)
 		{
-			forloop(i, 0, dependencyCount)
-				transform_pipeline.pass_events[dependencies[i]->passIndex].wait();
+			for (auto dp : dependencies)
+				transform_pipeline.pass_events[dp->passIndex].wait();
 		};
 		auto rotationEulerSystem = RotationEulerSystem(transform_pipeline);
 

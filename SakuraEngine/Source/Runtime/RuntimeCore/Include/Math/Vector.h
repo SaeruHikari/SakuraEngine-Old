@@ -73,6 +73,10 @@ namespace sakura
 		FORCEINLINE Vector operator-(T Bias) const;
 		FORCEINLINE Vector operator+(T Bias) const;
 		FORCEINLINE Vector operator*(T Scale) const;
+        FORCEINLINE friend Vector operator*(T Scale, const Vector vec)
+        {
+            return vec * Scale;
+        }
 
 		Vector operator/(T Scale) const;
 		bool operator==(const Vector V) const;
