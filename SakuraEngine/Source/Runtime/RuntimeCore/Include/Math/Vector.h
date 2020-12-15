@@ -138,7 +138,7 @@ namespace sakura
 		};
     };
     using Vector3f = Vector<float, 3>;
-
+	using Vector3lf = Vector<double, 3>;
 
 	
     // Vector4f
@@ -186,10 +186,7 @@ namespace sakura
     {
         return Vector4f(0.f, 0.f, 0.f, 0.f);
     }
-
-	
-    using Vector3d = Vector<double, 3>;
-    using Vector4d = Vector<double, 4>;
+    using Vector4lf = Vector<double, 4>;
 }
 
 
