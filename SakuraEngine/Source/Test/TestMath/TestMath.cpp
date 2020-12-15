@@ -30,6 +30,12 @@ int main(void)
 		Vector3f div = v3 / v3;
 		Vector3f cross = v3 ^ v3;
 		float dot = v3 | v3;
+		bool normalized = v3.is_normalized();
+		bool normalize_success = v3.normalize();
+		bool is_zero = v3.is_zero();
+		bool is_nearly_zero = v3.is_nearly_zero();
+		float length = v3.length_squared();
+		v3.normalize();
 	}
 
 	// Expect 3, 4, 0, 0

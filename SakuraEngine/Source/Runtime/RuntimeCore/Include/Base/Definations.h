@@ -103,7 +103,10 @@ namespace sakura
 			}
 		}
 	};
-#define KINDA_SMALL_NUMBER	(1.e-4f)
+
+#define KINDA_SMALL_NUMBER	(1.e-4)
+#define SMALL_NUMBER		(1.e-8)
+#define THRESH_VECTOR_NORMALIZED 0.01
 }
 
 #ifndef MAX_UINT8

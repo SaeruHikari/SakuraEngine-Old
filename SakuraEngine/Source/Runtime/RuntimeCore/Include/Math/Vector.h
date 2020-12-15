@@ -48,51 +48,28 @@ namespace sakura
     {
 	public:
 		FORCEINLINE constexpr Vector() = default;
-		FORCEINLINE constexpr Vector(const T x, const T y, const T z)
-			:m_({ x, y, z})
-		{
-
-		}
-		FORCEINLINE constexpr Vector(const std::array<T, 3> v)
-			: m_(v)
-		{
-
-		}
-		FORCEINLINE sakura::span<T, 3> data_view()
-		{
-			return m_;
-		}
-		FORCEINLINE sakura::span<const T, 3> data_view() const
-		{
-			return m_;
-		}
+		FORCEINLINE constexpr Vector(const T x, const T y, const T z);
+		FORCEINLINE constexpr Vector(const std::array<T, 3> v);
+        FORCEINLINE sakura::span<T, 3> data_view();
+        FORCEINLINE sakura::span<const T, 3> data_view() const;
 		FORCEINLINE static constexpr Vector<T, 3> vector_one();
 		FORCEINLINE static constexpr Vector<T, 3> vector_zero();
-
-        /**
-		 * Calculate cross product between this and another vector.
-		 *
-		 * @param V The other vector.
-		 * @return The cross product.
-		 */
-        FORCEINLINE Vector operator^(const Vector V) const;
-        FORCEINLINE static Vector cross_product(const Vector A, const Vector B);
-
-		/**
-		 * Calculate the dot product between this and another vector.
-		 *
-		 * @param V The other vector.
-		 * @return The dot product.
-		 */
-		FORCEINLINE T operator|(const Vector V) const;
-		FORCEINLINE static T dot_product(const Vector A, const Vector B);
 
 		FORCEINLINE Vector operator+(const Vector V) const;
 		FORCEINLINE Vector operator-(const Vector V) const;
 		FORCEINLINE Vector operator-(T Bias) const;
 		FORCEINLINE Vector operator+(T Bias) const;
 		FORCEINLINE Vector operator*(T Scale) const;
+
 		Vector operator/(T Scale) const;
+		bool operator==(const Vector V) const;
+		bool operator!=(const Vector V) const;
+		bool equals(const Vector V, T Tolerance = KINDA_SMALL_NUMBER) const;
+		FORCEINLINE Vector operator-() const;
+		FORCEINLINE Vector operator+=(const Vector V);
+		FORCEINLINE Vector operator-=(const Vector V);
+		FORCEINLINE Vector operator*=(T Scale);
+		Vector operator/=(T V);
 
 		/**
 		 * Gets the result of component-wise multiplication of this vector by another.
@@ -110,33 +87,46 @@ namespace sakura
 		 */
 		FORCEINLINE Vector operator/(const Vector V) const;
 
-		// Binary comparison operators.
-		bool operator==(const Vector V) const;
-		bool operator!=(const Vector V) const;
-		bool equals(const Vector V, T Tolerance = KINDA_SMALL_NUMBER) const;
+        /**
+         * Multiplies the vector with another vector, using component-wise multiplication.
+         *
+         * @param V What to multiply this vector with.
+         * @return Copy of the vector after multiplication.
+         */
+        Vector operator*=(const Vector V);
 
+        /**
+         * Divides the vector by another vector, using component-wise division.
+         *
+         * @param V What to divide vector by.
+         * @return Copy of the vector after division.
+         */
+        Vector operator/=(const Vector V);
 
-		FORCEINLINE Vector operator-() const;
-		FORCEINLINE Vector operator+=(const Vector V);
-		FORCEINLINE Vector operator-=(const Vector V);
-		FORCEINLINE Vector operator*=(T Scale);
-		Vector operator/=(T V);
-
-		/**
-		 * Multiplies the vector with another vector, using component-wise multiplication.
+        /**
+		 * Calculate cross product between this and another vector.
 		 *
-		 * @param V What to multiply this vector with.
-		 * @return Copy of the vector after multiplication.
+		 * @param V The other vector.
+		 * @return The cross product.
 		 */
-		Vector operator*=(const Vector V);
+        FORCEINLINE Vector operator^(const Vector V) const;
+        FORCEINLINE static Vector cross_product(const Vector A, const Vector B);
 
-		/**
-		 * Divides the vector by another vector, using component-wise division.
-		 *
-		 * @param V What to divide vector by.
-		 * @return Copy of the vector after division.
-		 */
-		Vector operator/=(const Vector V);
+        /**
+         * Calculate the dot product between this and another vector.
+         *
+         * @param V The other vector.
+         * @return The dot product.
+         */
+        FORCEINLINE T operator|(const Vector V) const;
+        FORCEINLINE static T dot_product(const Vector A, const Vector B);
+
+        FORCEINLINE T length() const;
+        FORCEINLINE T length_squared() const;
+        FORCEINLINE bool is_zero() const;
+        FORCEINLINE bool is_nearly_zero(T tolerence = SMALL_NUMBER) const;
+        FORCEINLINE bool is_normalized() const;
+        FORCEINLINE bool normalize(T tolerance = SMALL_NUMBER);
     protected:
 		union
 		{
@@ -147,21 +137,11 @@ namespace sakura
 			std::array<T, 3> m_ = { 0, 0, 0};
 		};
     };
-	template<typename T>
-	FORCEINLINE constexpr Vector<T, 3> Vector<T, 3>::vector_zero()
-	{
-		return Vector<T, 3>(0, 0, 0);
-	}
-	template<typename T>
-	FORCEINLINE constexpr Vector<T, 3> Vector<T, 3>::vector_one()
-	{
-		return Vector<T, 3>(1, 1, 1);
-	}
     using Vector3f = Vector<float, 3>;
 
 
 	
-    // Vector4
+    // Vector4f
     template<>
     struct alignas(16) Vector<float, 4>
     {

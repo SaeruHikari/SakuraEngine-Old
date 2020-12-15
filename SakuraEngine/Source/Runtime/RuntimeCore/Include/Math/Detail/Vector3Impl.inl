@@ -1,6 +1,44 @@
 namespace sakura
 {
 	template<typename T>
+	FORCEINLINE constexpr Vector<T, 3>::Vector(const T x, const T y, const T z)
+		:m_({ x, y, z })
+	{
+
+	}
+	
+	template<typename T>
+	FORCEINLINE constexpr Vector<T, 3>::Vector(const std::array<T, 3> v)
+		: m_(v)
+	{
+
+	}
+
+	template<typename T>
+	FORCEINLINE span<T, 3> Vector<T, 3>::data_view()
+	{
+		return m_;
+	}
+
+	template<typename T>
+	FORCEINLINE span<const T, 3> Vector<T, 3>::data_view() const
+	{
+		return m_;
+	}
+
+	template<typename T>
+	FORCEINLINE constexpr Vector<T, 3> Vector<T, 3>::vector_zero()
+	{
+		return Vector<T, 3>(0, 0, 0);
+	}
+
+	template<typename T>
+	FORCEINLINE constexpr Vector<T, 3> Vector<T, 3>::vector_one()
+	{
+		return Vector<T, 3>(1, 1, 1);
+	}
+
+	template<typename T>
 	FORCEINLINE Vector<T, 3> Vector<T, 3>::operator^(const Vector V) const
 	{
 		return Vector
@@ -93,7 +131,49 @@ namespace sakura
 	template<typename T>
 	FORCEINLINE bool Vector<T, 3>::equals(const Vector V, T Tolerance) const
 	{
-		return std::abs(X - V.X) <= Tolerance && std::abs(Y - V.Y) <= Tolerance && std::abs(Z - V.Z) <= Tolerance;
+		return math::abs(X - V.X) <= Tolerance && math::abs(Y - V.Y) <= Tolerance && math::abs(Z - V.Z) <= Tolerance;
 	}
 
+	template<typename T>
+	FORCEINLINE T Vector<T, 3>::length() const
+	{
+		return math::sqrt(X * X + Y * Y + Z * Z);
+	}
+
+	template<typename T>
+	FORCEINLINE T Vector<T, 3>::length_squared() const
+	{
+		return X * X + Y * Y + Z * Z;
+	}
+
+	template<typename T>
+	FORCEINLINE bool Vector<T, 3>::is_zero() const
+	{
+		return X == 0 && Y == 0 && Z == 0;
+	}
+
+	template<typename T>
+	FORCEINLINE bool Vector<T, 3>::is_nearly_zero(T tolerance) const
+	{
+		return math::abs(X) <= tolerance && math::abs(Y) <= tolerance && math::abs(Z) <= tolerance;
+	}
+
+	template<typename T>
+	FORCEINLINE bool Vector<T, 3>::is_normalized() const
+	{
+		return (math::abs(1.f - length_squared()) < THRESH_VECTOR_NORMALIZED);
+	}
+
+	template<typename T>
+	FORCEINLINE bool Vector<T, 3>::normalize(T tolerance)
+	{
+		const float SquareSum = X * X + Y * Y + Z * Z;
+		if (SquareSum > tolerance)
+		{
+			const float Scale = math::rsqrt(SquareSum);
+			X *= Scale; Y *= Scale; Z *= Scale;
+			return true;
+		}
+		return false;
+	}
 }
