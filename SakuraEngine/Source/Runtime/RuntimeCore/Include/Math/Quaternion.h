@@ -72,23 +72,22 @@ namespace sakura
 
 		if (SingularityTest < -SINGULARITY_THRESHOLD)
 		{
-			RotatorFromQuat.yaw = -90.f;
-			RotatorFromQuat.roll = sakura::math::atan2(YawY, YawX) * RAD_TO_DEG;
-			RotatorFromQuat.pitch = Rotator::normalize_axis(RotatorFromQuat.yaw + (2.f * sakura::math::atan2(X, W) * RAD_TO_DEG));
+			RotatorFromQuat.yaw(-90.f);
+			RotatorFromQuat.roll(sakura::math::atan2(YawY, YawX) * RAD_TO_DEG);
+			RotatorFromQuat.pitch(Rotator::normalize_axis(RotatorFromQuat.yaw() + (2.f * sakura::math::atan2(X, W) * RAD_TO_DEG)));
 		}
 		else if (SingularityTest > SINGULARITY_THRESHOLD)
 		{
-			RotatorFromQuat.yaw = 90.f;
-			RotatorFromQuat.roll = sakura::math::atan2(YawY, YawX) * RAD_TO_DEG;
-			RotatorFromQuat.pitch = Rotator::normalize_axis(- RotatorFromQuat.yaw + (2.f * sakura::math::atan2(X, W) * RAD_TO_DEG));
+			RotatorFromQuat.yaw(90.f);
+			RotatorFromQuat.roll(sakura::math::atan2(YawY, YawX) * RAD_TO_DEG);
+			RotatorFromQuat.pitch(Rotator::normalize_axis(- RotatorFromQuat.yaw() + (2.f * sakura::math::atan2(X, W) * RAD_TO_DEG)));
 		}
 		else
 		{
-			RotatorFromQuat.yaw = sakura::math::fast_asin(2.f * (SingularityTest)) * RAD_TO_DEG;
-			RotatorFromQuat.roll = sakura::math::atan2(YawY, YawX) * RAD_TO_DEG;
-			RotatorFromQuat.pitch = - sakura::math::atan2(-2.f * (W * X + Y * Z), (1.f - 2.f * (sakura::math::squire(X) + sakura::math::squire(Y)))) * RAD_TO_DEG;
+			RotatorFromQuat.yaw(sakura::math::fast_asin(2.f * (SingularityTest)) * RAD_TO_DEG);
+			RotatorFromQuat.roll(sakura::math::atan2(YawY, YawX) * RAD_TO_DEG);
+			RotatorFromQuat.pitch(- sakura::math::atan2(-2.f * (W * X + Y * Z), (1.f - 2.f * (sakura::math::squire(X) + sakura::math::squire(Y)))) * RAD_TO_DEG);
 		}
-
 		return RotatorFromQuat;
 	}
 

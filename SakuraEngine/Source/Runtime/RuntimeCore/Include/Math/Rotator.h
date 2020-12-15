@@ -1,16 +1,38 @@
 ﻿#pragma once
 #include "ScalarMath.h"
+#include "Vector.h"
 
 namespace sakura
 {
-    struct Rotator
+    struct Rotator : public sakura::Vector3f
     {
         /** Rotation around the right axis (around Y axis), Looking up and down (0=Straight Ahead, +Up, -Down) */
-        float pitch;
+		FORCEINLINE float pitch() const
+		{
+			return data_view()[0];
+		}
+		FORCEINLINE void pitch(float value)
+		{
+			m_[0] = value;
+		}
         /** Rotation around the up axis (around Z axis), Running in circles 0=East, +North, -South. */
-        float yaw;
+		FORCEINLINE float yaw() const
+		{
+			return data_view()[1];
+		}
+		FORCEINLINE void yaw(float value)
+		{
+			m_[1] = value;
+		}
         /** Rotation around the forward axis (around X axis), Tilting your head, 0=Straight, +Clockwise, -CCW. */
-        float roll;
+		FORCEINLINE float roll() const
+		{
+			return data_view()[2];
+		}
+		FORCEINLINE void roll(float value)
+		{
+			m_[2] = value;
+		}
 
 		FORCEINLINE static float clamp_axis(float Angle)
 		{

@@ -17,7 +17,7 @@ namespace sakura::math::quaternion
         const Rotator rot
     )
     {
-	    DirectX::XMVECTOR Angles = DirectX::XMVectorSet(rot.pitch, rot.yaw, rot.roll, 0.0f);
+	    DirectX::XMVECTOR Angles = DirectX::XMVectorSet(rot.pitch(), rot.yaw(), rot.roll(), 0.0f);
 	    DirectX::XMVECTOR Q = DirectX::XMQuaternionRotationRollPitchYawFromVector(Angles);
         return Q;
     }

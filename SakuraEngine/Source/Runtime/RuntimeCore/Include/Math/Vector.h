@@ -38,8 +38,6 @@ namespace sakura
     {
         return Vector<T, N>(sakura::create_array<T, N>( 0 ));
     }
-
-
     using Vector3f = Vector<float, 3>;
 
 	
