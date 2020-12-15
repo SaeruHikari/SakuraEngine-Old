@@ -13,6 +13,7 @@
 #include "ECS/ECS.h"
 
 #include "TransformComponents.h"
+#include "RenderSystem.h"
 #include "Boids.h"
 #include "TaskSystem/TaskSystem.h"
 #include "RuntimeCore/RuntimeCore.h"
@@ -33,6 +34,25 @@ using float4x4 = sakura::float4x4;
 using IModule = sakura::IModule;
 
 sakura::ecs::world ctx;
+
+struct Timer
+{
+	void start_up()
+	{
+		tmpt = std::chrono::system_clock::now();
+	}
+
+	double end()
+	{
+		auto dur = std::chrono::system_clock::now() - tmpt;
+		auto delta_time =
+			static_cast<double>(dur.count()) / static_cast<double>(decltype(dur)::period::den);
+		tmpt = std::chrono::system_clock::now();
+		return delta_time;
+	}
+	std::chrono::system_clock::time_point tmpt;
+};
+
 
 std::size_t calc_align(std::size_t n, std::size_t align)
 {
@@ -436,7 +456,7 @@ int main()
 	entity_type type = {
 		complist<Translation, RotationEuler, Rotation, Scale, LocalToWorld, WorldToLocal> }; 
 	{
-		for (auto c : ctx.allocate(type, 2000000))
+		for (auto c : ctx.allocate(type, 200000))
 		{
 			RotationEuler::value_type* rotators = init_component<RotationEuler>(ctx, c);
 			Scale::value_type* scales = init_component<Scale>(ctx, c);
@@ -490,9 +510,12 @@ int main()
 	
 	task_system::Scheduler scheduler(task_system::Scheduler::Config::allCores());
 	scheduler.bind();
-	defer(scheduler.unbind());  // Automatically unbind before returning.
+	defer(scheduler.unbind());  // Automatically unbind before returning.3
+	Timer timer; 
+	double delta_time = 1 / 60;
 	while(sakura::Core::yield())
 	{
+		timer.start_up();
 		task_system::ecs::pipeline transform_pipeline(ctx);
 		transform_pipeline.on_sync = [&](gsl::span<custom_pass*> dependencies)
 		{
@@ -521,19 +544,10 @@ int main()
 
 		auto world2LocalSystem = World2LocalSystem(transform_pipeline);
 		
-		// 等待pass
-		rotationEulerSystem.wait();
-		std::cout << "RotationEulerSystem Finished!" << std::endl;
-		parentWorldSystem.wait();
-		std::cout << "ParentWorldSystem Finished!" << std::endl;
-		child2ParentSystem.wait();
-		std::cout << "Child2ParentSystem Finished!" << std::endl;
-		child2WorldSystem.wait();
-		std::cout << "Child2WorldSystem Finished!" << std::endl;
-		world2LocalSystem.wait();
-		std::cout << "World2LocalSystem Finished!" << std::endl;
+		std::cout << "delta time: " << delta_time << std::endl;
 		
 		// 等待pipeline
 		transform_pipeline.wait();
+		delta_time = timer.end();
 	}
 }
