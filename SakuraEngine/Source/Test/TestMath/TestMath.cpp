@@ -21,6 +21,17 @@ int main(void)
 	Vector4f vector;
 	store_aligned(vector.data_view(), vec_reg);
 
+	Vector3f v3 = Vector3f(1.f, 1.f, 1.f);
+	// Vector3 Operators Test
+	{
+		Vector3f add = v3 + v3;
+		Vector3f sub = v3 - v3;
+		Vector3f mul = v3 * v3;
+		Vector3f div = v3 / v3;
+		Vector3f cross = v3 ^ v3;
+		float dot = v3 | v3;
+	}
+
 	// Expect 3, 4, 0, 0
 	Vector4f shuffled;
 	store_aligned(shuffled.data_view(), shuffle<2, 3, 2, 3>(vec_reg, vec2_reg));
