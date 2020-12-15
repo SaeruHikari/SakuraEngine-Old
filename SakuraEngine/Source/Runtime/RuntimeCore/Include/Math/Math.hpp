@@ -26,8 +26,49 @@ namespace sakura::math
 	)
 	{
 		Quaternion res;
-		vector::store_aligned(res.data_view(), quaternion::QuaternionFromRotator(rot));
+		vector::store_aligned(res.data_view(),
+			quaternion::quaternion_from_euler(rot.pitch(), rot.yaw(), rot.roll()));
 		return res;
+	}
+
+	FORCEINLINE Quaternion quaternion_from_euler
+	(
+		const float pitch, const float yaw, const float roll
+	)
+	{
+		Quaternion res;
+		vector::store_aligned(res.data_view(), quaternion::quaternion_from_euler(pitch, yaw, roll));
+		return res;
+	}
+
+	FORCEINLINE Quaternion quaternion_from_rotation
+	(
+		const float4x4 rotation
+	)
+	{
+		Quaternion res;
+		vector::store_aligned(res.data_view(), quaternion::quaternion_from_rotation(rotation));
+		return res;
+	}
+
+	FORCEINLINE float4x4 look_at_matrix
+	(
+		const Vector3f Eye,
+		const Vector3f At
+	)
+	{
+		float4x4 res;
+		__transform::store_aligned(res.data_view(), __transform::look_at(Eye, At));
+		return res;
+	}
+
+	FORCEINLINE Quaternion look_at_quaternion
+	(
+		const Vector3f Eye,
+		const Vector3f At
+	)
+	{
+		return sakura::math::quaternion_from_rotation(sakura::math::look_at_matrix(Eye, At));
 	}
 
 	FORCEINLINE float4x4 make_transform

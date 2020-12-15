@@ -240,19 +240,16 @@ int main(void)
 	Quaternion q2(0.f, 0.f, 0.500f, 0.866f); // quat roll 60
 	Quaternion q3(0.f, 0.866f, 0.f, 0.5f); // quat4 yaw 120
 	//Rotator rrr= q.rotator();
-	VectorRegister roll60  =  // 0, 0, 0.5, 0.866
-		DirectX::XMQuaternionRotationRollPitchYaw(0, 0, 3.14159f / 3.f);
-	VectorRegister pitch60 =  // 0.5, 0, 0, 0.866
-		DirectX::XMQuaternionRotationRollPitchYaw(3.14159f / 3.f, 0, 0);
-	VectorRegister yaw60 =  // 0, 0.5, 0, 0.866
-		DirectX::XMQuaternionRotationRollPitchYaw(0.f, 3.14159f / 3.f, 0.f);
-	VectorRegister yaw120 =  // 0, 0.866, 0, 0.5
-		DirectX::XMQuaternionRotationRollPitchYaw(0.f, 3.14159f * 2.f / 3.f, 0.f);
-
-	Rotator rot = q.rotator(); // yaw: 60
-	Rotator rot1 = q1.rotator(); // pitch: 60
-	Rotator rot2 = q2.rotator(); // roll: 60
-	Rotator rot3 = q3.rotator(); // yaw: 120
+	Quaternion roll60  =  // 0, 0, 0.5, 0.866
+		math::quaternion_from_euler(0, 0, 3.14159f / 3.f);
+	Quaternion pitch60 =  // 0.5, 0, 0, 0.866
+		math::quaternion_from_euler(3.14159f / 3.f, 0, 0);
+	Quaternion yaw60 =  // 0, 0.5, 0, 0.866
+		math::quaternion_from_euler(0.f, 3.14159f / 3.f, 0.f);
+	Quaternion yaw120 =  // 0, 0.866, 0, 0.5
+		math::quaternion_from_euler(0.f, 3.14159f * 2.f / 3.f, 0.f);
+	
+	auto lkAt1 = sakura::math::look_at_quaternion(Vector3f(0.f, 0.f, 0.f), Vector3f(sqrt(0.5f), sqrt(0.5f), 0));
 	
 	bool end = true;
 	if(end)

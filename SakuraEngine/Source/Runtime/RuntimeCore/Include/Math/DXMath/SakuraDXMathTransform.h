@@ -50,4 +50,17 @@ namespace sakura::math::__transform
 			vector::load_float3_w0(translation.data_view())
 		);
 	}
+
+	FORCEINLINE MatrixRegister look_at
+	(
+		const Vector3f Eye,
+		const Vector3f At
+	)
+	{
+		return DirectX::XMMatrixLookAtLH(
+			vector::load_float3_w0(Eye.data_view()),
+			vector::load_float3_w0(At.data_view()),
+			DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f)
+		);
+	}
 }

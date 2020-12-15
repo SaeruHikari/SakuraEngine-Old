@@ -10,13 +10,17 @@ namespace sakura
 	{
     public:
         constexpr Quaternion() = default;
-        constexpr Quaternion(float x, float y, float z, float w)
+		FORCEINLINE constexpr Quaternion(float x, float y, float z, float w)
             :Vector4f(x, y, z, w)
         {
 
         }
-		static constexpr Quaternion identity() noexcept;
+		FORCEINLINE Quaternion(const Vector4f& value)
+			: Vector4f(value)
+		{
 
+		}
+		static constexpr Quaternion identity() noexcept;
 	public:
 		Rotator rotator() const;
 		Quaternion conjugate(void) const;
@@ -29,6 +33,7 @@ namespace sakura
 
 	FORCEINLINE Rotator Quaternion::rotator() const
 	{
+		assert(0 && "Unimplemented!");
 		Rotator rot;
 		return rot;
 	}
