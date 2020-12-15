@@ -31,6 +31,12 @@ namespace sakura::math
 		return res;
 	}
 
+	template<typename T, size_t Dimension>
+	FORCEINLINE Vector<T, Dimension> normalize(const Vector<T, Dimension>& vec)
+	{
+		return vec / vec.length();
+	}
+
 	FORCEINLINE Quaternion quaternion_from_euler
 	(
 		const float pitch, const float yaw, const float roll

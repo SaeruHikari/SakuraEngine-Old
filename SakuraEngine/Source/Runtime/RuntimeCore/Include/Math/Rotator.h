@@ -6,6 +6,19 @@ namespace sakura
 {
     struct Rotator : public sakura::Vector3f
     {
+		Rotator() = default;
+		Rotator(const Vector3f& value)
+			:Vector3f(value) {}
+		Rotator(const float pitch, const float yaw, const float roll)
+			:Vector3f(pitch, yaw, roll) {}
+		FORCEINLINE Rotator& operator=(const Vector3f value)
+		{
+			X = value.data_view()[0];
+			Y = value.data_view()[1];
+			Z = value.data_view()[2];
+			return *this;
+		}
+
         /** Rotation around the right axis (around Y axis), Looking up and down (0=Straight Ahead, +Up, -Down) */
 		FORCEINLINE float pitch() const
 		{

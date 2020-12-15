@@ -252,6 +252,11 @@ int main(void)
 	auto lkAt1 = sakura::math::look_at_quaternion(Vector3f(0.f, 0.f, 0.f), Vector3f(sqrt(0.5f), sqrt(0.5f), 0));
 	auto lkAt2 = sakura::math::look_at_quaternion(Vector3f(sqrt(0.5f), sqrt(0.5f), 0));
 	
+	Rotator rr = Rotator{ 0.f, 0.f, 0.f };
+	rr = v3;
+
+	auto nt = sakura::math::normalize(Vector3f(1.f, 1.f, 1.f));
+
 	bool end = true;
 	if(end)
 	{
