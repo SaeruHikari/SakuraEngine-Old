@@ -76,13 +76,6 @@ namespace sakura
 		 * @return The cross product.
 		 */
         FORCEINLINE Vector operator^(const Vector V) const;
-        /**
-         * Calculate the cross product of two vectors.
-         *
-         * @param A The first vector.
-         * @param B The second vector.
-         * @return The cross product.
-         */
         FORCEINLINE static Vector cross_product(const Vector A, const Vector B);
 
 		/**
@@ -92,62 +85,13 @@ namespace sakura
 		 * @return The dot product.
 		 */
 		FORCEINLINE T operator|(const Vector V) const;
-
-		/**
-		 * Calculate the dot product of two vectors.
-		 *
-		 * @param A The first vector.
-		 * @param B The second vector.
-		 * @return The dot product.
-		 */
 		FORCEINLINE static T dot_product(const Vector A, const Vector B);
 
-		/**
-		 * Gets the result of component-wise addition of this and another vector.
-		 *
-		 * @param V The vector to add to this.
-		 * @return The result of vector addition.
-		 */
 		FORCEINLINE Vector operator+(const Vector V) const;
-
-		/**
-		 * Gets the result of component-wise subtraction of this by another vector.
-		 *
-		 * @param V The vector to subtract from this.
-		 * @return The result of vector subtraction.
-		 */
 		FORCEINLINE Vector operator-(const Vector V) const;
-
-		/**
-		 * Gets the result of subtracting from each component of the vector.
-		 *
-		 * @param Bias How much to subtract from each component.
-		 * @return The result of subtraction.
-		 */
 		FORCEINLINE Vector operator-(T Bias) const;
-
-		/**
-		 * Gets the result of adding to each component of the vector.
-		 *
-		 * @param Bias How much to add to each component.
-		 * @return The result of addition.
-		 */
 		FORCEINLINE Vector operator+(T Bias) const;
-
-		/**
-		 * Gets the result of scaling the vector (multiplying each component by a value).
-		 *
-		 * @param Scale What to multiply each component by.
-		 * @return The result of multiplication.
-		 */
 		FORCEINLINE Vector operator*(T Scale) const;
-
-		/**
-		 * Gets the result of dividing each component of the vector by a value.
-		 *
-		 * @param Scale What to divide each component by.
-		 * @return The result of division.
-		 */
 		Vector operator/(T Scale) const;
 
 		/**
@@ -167,71 +111,15 @@ namespace sakura
 		FORCEINLINE Vector operator/(const Vector V) const;
 
 		// Binary comparison operators.
-
-		/**
-		 * Check against another vector for equality.
-		 *
-		 * @param V The vector to check against.
-		 * @return true if the vectors are equal, false otherwise.
-		 */
 		bool operator==(const Vector V) const;
-
-		/**
-		 * Check against another vector for inequality.
-		 *
-		 * @param V The vector to check against.
-		 * @return true if the vectors are not equal, false otherwise.
-		 */
 		bool operator!=(const Vector V) const;
-
-		/**
-		 * Check against another vector for equality, within specified error limits.
-		 *
-		 * @param V The vector to check against.
-		 * @param Tolerance Error tolerance.
-		 * @return true if the vectors are equal within tolerance limits, false otherwise.
-		 */
 		bool equals(const Vector V, T Tolerance = KINDA_SMALL_NUMBER) const;
 
-		/**
-		 * Get a negated copy of the vector.
-		 *
-		 * @return A negated copy of the vector.
-		 */
+
 		FORCEINLINE Vector operator-() const;
-
-		/**
-		 * Adds another vector to this.
-		 * Uses component-wise addition.
-		 *
-		 * @param V Vector to add to this.
-		 * @return Copy of the vector after addition.
-		 */
 		FORCEINLINE Vector operator+=(const Vector V);
-
-		/**
-		 * Subtracts another vector from this.
-		 * Uses component-wise subtraction.
-		 *
-		 * @param V Vector to subtract from this.
-		 * @return Copy of the vector after subtraction.
-		 */
 		FORCEINLINE Vector operator-=(const Vector V);
-
-		/**
-		 * Scales the vector.
-		 *
-		 * @param Scale Amount to scale this vector by.
-		 * @return Copy of the vector after scaling.
-		 */
 		FORCEINLINE Vector operator*=(T Scale);
-
-		/**
-		 * Divides the vector by a number.
-		 *
-		 * @param V What to divide this vector by.
-		 * @return Copy of the vector after division.
-		 */
 		Vector operator/=(T V);
 
 		/**
