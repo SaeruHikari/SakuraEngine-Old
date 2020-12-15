@@ -80,6 +80,12 @@ namespace sakura
 	}
 
 	template<typename T>
+	FORCEINLINE Vector<T, 3> Vector<T, 3>::operator-() const
+	{
+		return Vector(-X, -Y, -Z);
+	}
+
+	template<typename T>
 	FORCEINLINE Vector<T, 3> Vector<T, 3>::operator-(T Bias) const
 	{
 		return Vector(X - Bias, Y - Bias, Z - Bias);
@@ -89,6 +95,52 @@ namespace sakura
 	FORCEINLINE Vector<T, 3> Vector<T, 3>::operator+(T Bias) const
 	{
 		return Vector(X + Bias, Y + Bias, Z + Bias);
+	}
+
+	template<typename T>
+	FORCEINLINE Vector<T, 3> sakura::Vector<T, 3>::operator+=(const Vector V)
+	{
+		X += V.X;
+		Y += V.Y;
+		Z += V.Z;
+		return *this;
+	}
+	
+	template<typename T>
+	FORCEINLINE Vector<T, 3> sakura::Vector<T, 3>::operator-=(const Vector V)
+	{
+		X -= V.X;
+		Y -= V.Y;
+		Z -= V.Z;
+		return *this;
+	}
+
+	template<typename T>
+	FORCEINLINE Vector<T, 3> sakura::Vector<T, 3>::operator*=(const Vector V)
+	{
+		*this = *this * V;
+		return *this;
+	}
+
+	template<typename T>
+	FORCEINLINE Vector<T, 3> sakura::Vector<T, 3>::operator*=(const T Scalar)
+	{
+		*this = *this * Scalar;
+		return *this;
+	}
+
+	template<typename T>
+	FORCEINLINE Vector<T, 3> sakura::Vector<T, 3>::operator/=(const T Scalar)
+	{
+		*this = *this / Scalar;
+		return *this;
+	}
+
+	template<typename T>
+	FORCEINLINE Vector<T, 3> sakura::Vector<T, 3>::operator/=(const Vector V)
+	{
+		*this = *this / V;
+		return *this;
 	}
 
 	template<typename T>

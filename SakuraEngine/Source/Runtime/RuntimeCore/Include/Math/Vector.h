@@ -85,8 +85,8 @@ namespace sakura
 		FORCEINLINE Vector operator-() const;
 		FORCEINLINE Vector operator+=(const Vector V);
 		FORCEINLINE Vector operator-=(const Vector V);
-		FORCEINLINE Vector operator*=(T Scale);
-		Vector operator/=(T V);
+		FORCEINLINE Vector operator*=(const T Scale);
+        FORCEINLINE Vector operator/=(T V);
 
 		/**
 		 * Gets the result of component-wise multiplication of this vector by another.
