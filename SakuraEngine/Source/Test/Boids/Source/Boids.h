@@ -1,6 +1,8 @@
 #include <set>
 #include "ECS/ECS.h"
 #include "Math/Math.hpp"
+#include <cmath>
+#include <random>
 
 using namespace core::guid_parse::literals;
 namespace ecs = sakura::ecs;
@@ -31,11 +33,28 @@ struct Heading
 struct MoveToward
 {
 	sakura::Vector3f Target;
+	static constexpr auto guid = "6A1B5112-1477-4624-A4C1-E1693F236D76"_guid;
 	float MoveSpeed;
+};
+
+struct sphere
+{
+	sakura::Vector3f center;
+	float radius;
+
+	template <class E>
+	sakura::Vector3f random_point(E& el)
+	{
+		std::uniform_real_distribution<float> uniform_dist(0, 1);
+		sakura::Vector3f vector{ uniform_dist(el), uniform_dist(el), uniform_dist(el) };
+		float scale = std::cbrt(uniform_dist(el)) * radius;
+		return center + vector * scale;
+	}
 };
 
 struct RandomMoveTarget
 {
-	sakura::Vector3f Center;
-	float Radius; 
+	using value_type = sphere;
+	sphere value;
+	static constexpr auto guid = "7C3EE662-B044-429E-9CF2-B03DC23B3AA4"_guid;
 };

@@ -64,7 +64,7 @@ task_system::Event ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& 
 {
 	using namespace ecs;
 	static_assert(std::is_invocable<F, value_type_t<T>, const value_type_t<Ts>...>(), "wrong signature of convert function");
-	static size_t timestamp = -1;
+	static size_t timestamp = 0;
 	filter.chunkFilter =
 	{
 		complist<Ts...>,
@@ -82,7 +82,7 @@ task_system::Event ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& 
 			hana::tuple arrays = { o.get_parameter<T>(), o.get_parameter<const Ts>()... };
 			forloop(i, 0, o.get_count())
 			{
-				auto params = hana::transform(arrays, [i](auto v) { return v + i; });
+				auto params = hana::transform(arrays, [i](auto v) { return v?v + i:nullptr; });
 				hana::unpack(params, f);
 			}
 		});
@@ -223,7 +223,7 @@ template<class C, class T>
 task_system::Event CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector)
 {
 	using namespace ecs;
-	def paramList = hana::tuple{ param<const T> };
+	def paramList = hana::tuple{ param<const C> };
 	shared_entry shareList[] = { write(vector) };
 	auto pass = ppl.create_pass(filter, paramList, shareList);
 	vector->resize(pass->entityCount);
@@ -232,7 +232,7 @@ task_system::Event CopyComponent(task_system::ecs::pipeline& ppl, const ecs::fil
 		{
 			auto o = operation{ paramList, pass, tk };
 			auto index = o.get_index();
-			auto comps = o.get_parameter<const T>();
+			auto comps = o.get_parameter<const C>();
 			forloop(i, 0, o.get_count())
 				(*vector)[index + i] = comps[i];
 		});
@@ -265,6 +265,13 @@ sakura::Vector3f nearest_position(const sakura::Vector3f& query, const std::vect
 	return result;
 }
 
+auto& get_random_engine()
+{
+	static std::random_device r;
+	static std::default_random_engine el(r());
+	return el;
+}
+
 task_system::Event RandomTargetSystem(task_system::ecs::pipeline& ppl)
 {
 	using namespace ecs;
@@ -276,8 +283,6 @@ task_system::Event RandomTargetSystem(task_system::ecs::pipeline& ppl)
 	def paramList = hana::tuple{
 		param<MoveToward>, param<const RandomMoveTarget>, param<const Translation>
 	};
-	static std::random_device r;
-	static std::default_random_engine el(r());
 	return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList), 
 		[](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
 		{
@@ -290,10 +295,7 @@ task_system::Event RandomTargetSystem(task_system::ecs::pipeline& ppl)
 				if (math::subtract(mts[i].Target, trs[i]).is_nearly_zero())
 				{
 					auto sphere = rmts[i];
-					std::uniform_real_distribution<float> uniform_dist(0, 1);
-					sakura::Vector3f vector{ uniform_dist(el), uniform_dist(el), uniform_dist(el) };
-					float scale = std::cbrt(uniform_dist(el)) * sphere.Radius;
-					mts[i].Target = vector * scale;
+					mts[i].Target = sphere.random_point(get_random_engine());
 				}
 			}
 		});
@@ -337,7 +339,7 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 
 	//构造 kdtree, 提取 headings
 	auto positions = make_resource<std::vector<BoidPosition>>();
-	auto headings = make_resource<std::vector<Heading>>();
+	auto headings = make_resource<std::vector<sakura::Vector3f>>();
 	auto kdtree = make_resource<core::algo::kdtree<BoidPosition>>();
 	{
 		auto copyPositionJob = CopyComponent<Translation>(ppl, boidFilter, positions);
@@ -391,7 +393,7 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 					separations[i] = sakura::Vector3f::vector_zero();
 					for (int ng : neighbers)
 					{
-						alignments[i] = alignments[i] + (*headings)[ng].value;
+						alignments[i] = alignments[i] + (*headings)[ng];
 						separations[i] = separations[i] +(*kdtree)[ng].value;
 					}
 				}
@@ -443,67 +445,70 @@ int main()
 
 	using namespace sakura::ecs;
 
-	cid<Translation> = register_component<Translation>();
-	cid<Rotation> = register_component<Rotation>();
-	cid<RotationEuler> = register_component<RotationEuler>();
-	cid<Scale> = register_component<Scale>();
-	cid<LocalToWorld> = register_component<LocalToWorld>();
-	cid<LocalToParent> = register_component<LocalToParent>();
-	cid<WorldToLocal> = register_component<WorldToLocal>();
-	cid<Child> = register_component<Child>();
-	cid<Parent> = register_component<Parent>();
+	register_components<Translation, Rotation, RotationEuler, Scale, LocalToWorld, LocalToParent, 
+		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget>();
 	
-	entity_type type = {
-		complist<Translation, RotationEuler, Rotation, Scale, LocalToWorld, WorldToLocal> }; 
-	{
-		for (auto c : ctx.allocate(type, 200000))
+	
+	{	
+		//创建 Boid 目标
+		entity_type type
 		{
-			RotationEuler::value_type* rotators = init_component<RotationEuler>(ctx, c);
-			Scale::value_type* scales = init_component<Scale>(ctx, c);
-			Translation::value_type* translations = init_component<Translation>(ctx, c);
-			auto l2ws = init_component<LocalToWorld>(ctx, c);
-			const entity* ents = ctx.get_entities(c.c);
-			auto ent_p = ents[0];
-			auto ent_c = ents[c.count - 1];
-			
-			forloop(i, 0, c.count)
+			complist<BoidTarget, Translation, LocalToWorld, MoveToward, RandomMoveTarget>
+		};
+		for (auto slice : ctx.allocate(type, 10))
+		{
+			auto trs = init_component<Translation>(ctx, slice);
+			auto mts = init_component<MoveToward>(ctx, slice);
+			auto rmts = init_component<RandomMoveTarget>(ctx, slice);
+			forloop(i, 0, slice.count)
 			{
-				rotators[i] = Rotator{ 0.f, 0.f, 0.f };
-				scales[i] = Vector3f::vector_one();
-				translations[i] = Vector3f(std::array<float, 3>{1.f, 2.f, 3.f});
-				l2ws[i] = float4x4();
+				std::uniform_real_distribution<float> speedDst(10.f, 20.f);
+				rmts[i].center = Vector3f::vector_zero();
+				rmts[i].radius = 100.f;
+				mts[i].Target = rmts[i].random_point(get_random_engine());
+				mts[i].MoveSpeed = speedDst(get_random_engine());
+				trs[i] = rmts[i].random_point(get_random_engine());
 			}
+		}
+	}
+	entity e;
+	{
+		//创建 Boid 设置
+		entity_type type
+		{
+			complist<Boid>
+		};
+		for (auto slice : ctx.allocate(type, 1))
+		{
+			auto bs = init_component<Boid>(ctx, slice);
+			bs->AlignmentWeight = bs->SeparationWeight = bs->TargetWeight = 1.f;
+			bs->MoveSpeed = 15.f;
+			bs->SightRadius = 5.f;
+			e = ctx.get_entities(slice.c)[slice.start];
+		}
+	}
 
-			forloop(i, 0, c.count)
+	{
+		//创建 Boid
+		entity_type type
+		{
+			complist<Translation, Heading>,
+			{&e, 1}
+		};
+		sphere s;
+		s.center = Vector3f::vector_zero();
+		s.radius = 100.f;
+		for (auto slice : ctx.allocate(type, 10000))
+		{
+			auto trs = init_component<Translation>(ctx, slice);
+			auto hds = init_component<Heading>(ctx, slice);
+			forloop(i, 0, slice.count)
 			{
-				chunk_slice cs;
-				cs.c = c.c;
-				cs.count = 1;
-				cs.start = c.start;
-				if (i == 0)
-				{
-					type_diff diff;
-					index_t extend[] = { cid<Child> };
-					diff.extend = entity_type{ {extend} };
-					ctx.cast(cs, diff);
-
-					auto p = (value_type_t<Child>)ctx.get_owned_rw(ent_p, cid<Child>);
-					p.push(ent_c);
-				}
-				else if (i == 1)
-				{
-					type_diff diff;
-					index_t extend[] = { cid<Parent>, cid<LocalToParent> };
-					diff.extend = entity_type{ {extend} };
-					ctx.cast(cs, diff);
-
-					auto p = (value_type_t<Parent>)ctx.get_owned_rw(ent_c, cid<Parent>);
-					auto l2p = (value_type_t<LocalToParent>)ctx.get_owned_rw(ent_c, cid<LocalToParent>);
-					auto l2w = (value_type_t<LocalToWorld>)ctx.get_owned_rw(ent_c, cid<LocalToWorld>);
-					*l2w = float4x4();
-					*l2p = float4x4();
-					*p = ent_p;
-				}
+				std::uniform_real_distribution<float> uniform_dist(0, 1);
+				auto& el = get_random_engine();
+				sakura::Vector3f vector{ uniform_dist(el), uniform_dist(el), uniform_dist(el) };
+				hds[i] = math::normalize(vector);
+				trs[i] = s.random_point(el);
 			}
 		}
 	}
@@ -512,17 +517,22 @@ int main()
 	scheduler.bind();
 	defer(scheduler.unbind());  // Automatically unbind before returning.3
 	Timer timer; 
-	double delta_time = 1 / 60;
+	double deltaTime = 0;
 	while(sakura::Core::yield())
 	{
 		timer.start_up();
-		task_system::ecs::pipeline transform_pipeline(ctx);
-		transform_pipeline.on_sync = [&](gsl::span<custom_pass*> dependencies)
+		task_system::ecs::pipeline ppl(ctx);
+		ppl.on_sync = [&](gsl::span<custom_pass*> dependencies)
 		{
 			for(auto dp : dependencies)
-				transform_pipeline.pass_events[dp->passIndex].wait();
+				ppl.pass_events[dp->passIndex].wait();
 		};
-		auto rotationEulerSystem = RotationEulerSystem(transform_pipeline);
+		//RotationEulerSystem(ppl);
+
+		//RandomTargetSystem(ppl);
+		//MoveTowardSystem(ppl, deltaTime);
+		BoidsSystem(ppl, deltaTime);
+		//HeadingSystem(ppl);
 
 		filters wrd_filter;
 		wrd_filter.archetypeFilter = {
@@ -530,7 +540,7 @@ int main()
 			{complist<Translation, Scale, Rotation>},
 			{complist<LocalToParent, Parent>}
 		};
-		auto parentWorldSystem = Local2XSystem<LocalToWorld>(transform_pipeline, wrd_filter);
+		//Local2XSystem<LocalToWorld>(ppl, wrd_filter);
 
 		filters c2p_filter;
 		c2p_filter.archetypeFilter = {
@@ -538,16 +548,14 @@ int main()
 			{complist<Translation, Scale, Rotation>},
 			{}
 		};
-		auto child2ParentSystem = Local2XSystem<LocalToParent>(transform_pipeline, c2p_filter);
-
-		auto child2WorldSystem = Child2WorldSystem(transform_pipeline);
-
-		auto world2LocalSystem = World2LocalSystem(transform_pipeline);
+		//Local2XSystem<LocalToParent>(ppl, c2p_filter); 
+		//Child2WorldSystem(ppl);
+		//World2LocalSystem(ppl);
 		
-		std::cout << "delta time: " << delta_time << std::endl;
+		std::cout << "delta time: " << deltaTime << std::endl;
 		
 		// 等待pipeline
-		transform_pipeline.wait();
-		delta_time = timer.end();
+		ppl.wait();
+		deltaTime = timer.end();
 	}
 }

@@ -42,7 +42,7 @@ namespace sakura::task_system::ecs
 	template<class F>
 	FORCEINLINE task_system::Event schedule_custom(pipeline& pipeline, sakura::ecs::custom_pass& pass, F&& t, std::vector<task_system::Event> externalDependencies = {})
 	{
-		task_system::schedule([&, t]() mutable
+		task_system::schedule([&, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
 			defer(pipeline.pass_events[pass.passIndex].signal());
 			forloop(i, 0, pass.dependencyCount)
@@ -62,8 +62,12 @@ namespace sakura::task_system::ecs
 			"F must be an invokable of void(const ecs::pipeline&, const ecs::pass&, const ecs::task&)>");
 		static_assert(!(ForceParallel & ForceNoParallel),
 			"A schedule can not force both parallel and not parallel!");
-		if (pass.archetypeCount == 0)
-			return task_system::Event{};
+		//if (pass.archetypeCount == 0)
+		//{
+		//	task_system::Event e{ task_system::Event::Mode::Auto };
+		//	e.signal();
+		//	return e;
+		//}
 		task_system::schedule([&, maxSlice, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
 			defer(pipeline.pass_events[pass.passIndex].signal());
