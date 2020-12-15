@@ -224,8 +224,8 @@ int main(void)
 
 	auto vec4_one = Vector4f::vector_one();
 	auto vec3_one = Vector3f::vector_one();
-	auto location0 = Vector3d::vector_zero();
-	auto location1 = Vector3d::vector_one();
+	auto location0 = Vector3lf::vector_zero();
+	auto location1 = Vector3lf::vector_one();
 	
 	sakura::Transform transform(
 		Quaternion(0.f, 0.500f, 0.f, 0.866f),
@@ -240,13 +240,13 @@ int main(void)
 	Quaternion q2(0.f, 0.f, 0.500f, 0.866f); // quat roll 60
 	Quaternion q3(0.f, 0.866f, 0.f, 0.5f); // quat4 yaw 120
 	//Rotator rrr= q.rotator();
-	VectorRegister quat  =  // 0, 0, 0.5, 0.866
+	VectorRegister roll60  =  // 0, 0, 0.5, 0.866
 		DirectX::XMQuaternionRotationRollPitchYaw(0, 0, 3.14159f / 3.f);
-	VectorRegister quat2 =  // 0.5, 0, 0, 0.866
+	VectorRegister pitch60 =  // 0.5, 0, 0, 0.866
 		DirectX::XMQuaternionRotationRollPitchYaw(3.14159f / 3.f, 0, 0);
-	VectorRegister quat3 =  // 0, 0.5, 0, 0.866
+	VectorRegister yaw60 =  // 0, 0.5, 0, 0.866
 		DirectX::XMQuaternionRotationRollPitchYaw(0.f, 3.14159f / 3.f, 0.f);
-	VectorRegister quat4 =  // 0, 0.866, 0, 0.5
+	VectorRegister yaw120 =  // 0, 0.866, 0, 0.5
 		DirectX::XMQuaternionRotationRollPitchYaw(0.f, 3.14159f * 2.f / 3.f, 0.f);
 
 	Rotator rot = q.rotator(); // yaw: 60

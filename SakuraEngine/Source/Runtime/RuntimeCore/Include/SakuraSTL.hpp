@@ -39,36 +39,16 @@
 
 namespace sakura
 {
-    template <typename ElementType, std::size_t Extent = gsl::dynamic_extent>
-    using span = gsl::span<ElementType, Extent>;
-
+    using gsl::span;
     using u8string = std::string;
     using u8string_view = std::string_view;
-
-    template <class _Kty, class _Ty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>,
-        class _Alloc = std::allocator<std::pair<const _Kty, _Ty>>>
-    using unordered_map = std::unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
-
-	template<typename T>
-    using vector = std::vector<T>;
-	
-    template <class _Ty, class _Dx = std::default_delete<_Ty>>
-    using unique_ptr = std::unique_ptr<_Ty, _Dx>;
-
-    using string_view = std::string_view;
-
-    template <class... _Types>
-    using variant = std::variant<_Types...>;
-
-	template<class _Ty, size_t _Size>
-    using array = std::array<_Ty, _Size>;
-
-    template<class _Ty1, class _Ty2>
-    using pair = std::pair<_Ty1, _Ty2>;
-
-	template<class _Fty>
-    using function = std::function<_Fty>;
-
+    
+    using std::unique_ptr;
+    using std::string_view;
+    using std::variant;
+    using std::array;
+    using std::pair;
+    using std::function;
     using std::make_pair;
     using std::move;
     using std::forward;
@@ -81,14 +61,18 @@ using char8_t = char;
 #include <memory_resource>
 namespace sakura
 {
-    using string = std::pmr::string;
-    using wstring = std::pmr::wstring;
+    using std::pmr::string;
+    using std::pmr::wstring;
+	using std::pmr::unordered_map;
+	using std::pmr::vector;
 }
 #else
 namespace sakura
 {
     using string = std::string;
     using wstring = std::wstring;
+	using std::unordered_map;
+	using std::vector;
 }
 #endif
 
