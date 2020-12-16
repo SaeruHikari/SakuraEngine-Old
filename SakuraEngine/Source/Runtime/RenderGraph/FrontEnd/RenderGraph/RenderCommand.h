@@ -102,7 +102,7 @@ namespace sakura::graphics
     {
         RenderCommandUpdateBinding(const Binding& binding) noexcept;
 
-        sakura::variant<Binding> binder = Binding();
+        Binding binder = Binding();
     };
 
     inline RenderCommandUpdateBinding::RenderCommandUpdateBinding(const Binding& binding) noexcept
@@ -135,6 +135,13 @@ namespace sakura::graphics
 
     }
 
+    struct RenderCommandDrawIndirect final
+        : public RenderCommandTyped<ERenderCommandType::draw_indirect, ERenderQueueType::Graphics>
+    {
+        RenderBufferHandle indirect_buffer;
+        size_t offset;
+    };
+
     struct RenderCommandDraw final
         : public RenderCommandTyped<ERenderCommandType::draw, ERenderQueueType::Graphics>
     {
@@ -145,8 +152,7 @@ namespace sakura::graphics
             RenderBufferHandle vertex_buffer;
             VB() = default;
             explicit VB(RenderBufferHandle vertex_buffer, size_t offset = 0, size_t stride = 0);
-        };
-        const sakura::vector<VB> vbs;
+        }vb;
         struct IB
         {
             size_t offset = 0;
@@ -162,13 +168,11 @@ namespace sakura::graphics
         uint32 first_index = 0;
         uint32 base_vertex = 0;
         uint32 first_instance = 0;
+        bool instance_draw = false;
 
-        explicit RenderCommandDraw(const VB& vbs, const IB& ib,
-            uint32 instanceCount = 1, uint32 firstIndex = 0, uint32 baseVertex = 0, uint32 firstInstance = 0);
-        explicit RenderCommandDraw(const sakura::initializer_list<VB>& vbs, const IB& ib,
-            uint32 instanceCount = 1, uint32 firstIndex = 0, uint32 baseVertex = 0, uint32 firstInstance = 0);
-        template<size_t N>
-        explicit RenderCommandDraw(const VB(&vbs)[N], const IB& ib,
+        explicit RenderCommandDraw(const uint32 index_count,
+            const uint32 instance_count = 1, const uint32 first_index = 0, uint32 baseVertex = 0, uint32 firstInstance = 0);
+        explicit RenderCommandDraw(const VB& vb, const IB& ib,
             uint32 instanceCount = 1, uint32 firstIndex = 0, uint32 baseVertex = 0, uint32 firstInstance = 0);
     };
 
@@ -185,31 +189,21 @@ namespace sakura::graphics
 
     }
 
+    inline RenderCommandDraw::RenderCommandDraw(const uint32 index_count,
+        const uint32 instanceCount, const uint32 firstIndex, uint32 baseVertex, uint32 firstInstance)
+        : instance_draw(true), instance_count(instanceCount), first_index(firstIndex), base_vertex(baseVertex), first_instance(firstInstance)
+    {
+        ib.index_count = index_count;
+    }
+
     inline RenderCommandDraw::RenderCommandDraw(const VB& _vbs, const IB& _ib,
         uint32 instanceCount, uint32 firstIndex, uint32 baseVertex, uint32 firstInstance)
-        : vbs({_vbs}), ib(_ib),
+        : instance_draw(false), vb(_vbs), ib(_ib),
         instance_count(instanceCount), first_index(firstIndex), base_vertex(baseVertex), first_instance(firstInstance)
     {
 
     }
 
-    template <size_t N>
-    RenderCommandDraw::RenderCommandDraw(
-        const VB(& _vbs)[N], const IB& _ib,
-        uint32 instanceCount, uint32 firstIndex, uint32 baseVertex, uint32 firstInstance)
-	        :vbs(_vbs, _vbs + N), ib(_ib),
-			instance_count(instanceCount), first_index(firstIndex), base_vertex(baseVertex), first_instance(firstInstance)
-    {
-    	
-    }
-
-    inline RenderCommandDraw::RenderCommandDraw(const sakura::initializer_list<VB>& _vbs, const IB& _ib,
-        uint32 instanceCount, uint32 firstIndex, uint32 baseVertex, uint32 firstInstance)
-	    :vbs(_vbs), ib(_ib),
-        instance_count(instanceCount), first_index(firstIndex), base_vertex(baseVertex), first_instance(firstInstance)
-    {
-        
-    }
 }
 
 

@@ -91,6 +91,8 @@ namespace sakura::graphics::webgpu
 			
 			WGPUFence committed_fence;
 			uint64 last_commited = 0;
+
+
 		};
 		struct PassCache
 		{
@@ -122,7 +124,9 @@ namespace sakura::graphics::webgpu
 		void processCommandUpdateBinding(PassCacheFrame& cache,
 			const RenderCommandUpdateBinding& command, WGPUCommandEncoder* encoder,
 			WGPURenderPassEncoder* pass, RenderPipeline* ppl) const;
-		void processCommandDraw(const RenderCommandDraw& command,
+		void processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command,
+			WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const;
+		void processCommandDrawIndirect(const RenderCommandDrawIndirect& command,
 			WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const;
 		RenderPipeline* processCommandBeginRenderPass(PassCacheFrame& cache,
 			const RenderCommandBeginRenderPass& command, WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const;

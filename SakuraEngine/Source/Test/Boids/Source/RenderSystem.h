@@ -25,11 +25,11 @@ namespace render_system
 			float4 position : SV_Position;\
 			float3 vCol : COLOR;\
 		};\
-		[[vk::binding(0, 0)]] cbuffer ub\
+		[[vk::binding(0, 1)]] cbuffer ub\
 		{\
 			float4x4 viewProj;\
 		};\
-		[[vk::binding(1, 0)]] cbuffer ub2\
+		[[vk::binding(0, 0)]] cbuffer ub2\
 		{\
 			float4x4 world;\
 			float4x4 world1;\
@@ -81,42 +81,58 @@ namespace render_system
 	{
 	public:
 		RenderPassSimple(const RenderPassHandle handle,
-			sakura::uint8 cycleCount = 3, size_t bufferSize = 4096 * 16 * 8)
+			sakura::uint8 cycleCount = 3, size_t bufferSize = 4096 * 16 * 32)
 			:RenderPass(handle, cycleCount, bufferSize) {}
 		bool execute(const RenderGraph& rg, const RenderGraph::Builder& builder, IRenderDevice& device) noexcept override
 		{
 			command_buffer().enqueue<RenderCommandBeginRenderPass>(renderPipeline, attachment);
-			for (auto i = 0u; i < targetWorlds.size() / 4; i++)
+			Binding binding0 = Binding({
+				Binding::Set({
+					Binding::Slot(uniformBufferPerObject, 0, sizeof(sakura::float4x4) * 4, 0)
+				}),
+				Binding::Set({
+					Binding::Slot(uniformBuffer, 0, sizeof(sakura::float4x4), 0)
+				})
+			});
+			command_buffer().enqueue<RenderCommandUpdateBinding>(binding0);
+			command_buffer().enqueue<RenderCommandDraw>(
+				RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBufferSphere")),
+				RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBufferSphere"),
+					60, EIndexFormat::UINT16)
+			);
+			for (auto i = 1u; i < targetWorlds.size() / 4; i++)
 			{
 				Binding binding = Binding({
 					Binding::Set({
-						Binding::Slot(uniformBuffer, 0, sizeof(sakura::float4x4), 0),
-						Binding::Slot(uniformBufferPerTarget, 1,
+						Binding::Slot(uniformBufferPerTarget, 0,
 							sizeof(sakura::float4x4) * 4, sizeof(sakura::float4x4) * i * 4)
 					})
 				});
 				command_buffer().enqueue<RenderCommandUpdateBinding>(binding);
-				command_buffer().enqueue<RenderCommandDraw>(
-					RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBufferSphere")),
-					RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBufferSphere"), 
-					60, EIndexFormat::UINT16)
-				);
+				command_buffer().enqueue<RenderCommandDraw>(60);
 			}
+			Binding binding00 = Binding({
+				Binding::Set({
+					Binding::Slot(uniformBufferPerObject, 0,
+						sizeof(sakura::float4x4) * 4, 0)
+				})
+			});
+			command_buffer().enqueue<RenderCommandUpdateBinding>(binding00);
+			command_buffer().enqueue<RenderCommandDraw>(
+				RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBuffer")),
+				RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBuffer"),
+					3, EIndexFormat::UINT16)
+			);
 			for (auto i = 0u; i < worlds.size() / 4; i++)
 			{
 				Binding binding = Binding({
 					Binding::Set({
-						Binding::Slot(uniformBuffer, 0, sizeof(sakura::float4x4), 0),
-						Binding::Slot(uniformBufferPerObject, 1,
+						Binding::Slot(uniformBufferPerObject, 0,
 							sizeof(sakura::float4x4) * 4, sizeof(sakura::float4x4) * i * 4)
 					})
-					});
+				});
 				command_buffer().enqueue<RenderCommandUpdateBinding>(binding);
-				command_buffer().enqueue<RenderCommandDraw>(
-					RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBuffer")),
-					RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBuffer"),
-						3, EIndexFormat::UINT16)
-					);
+				command_buffer().enqueue<RenderCommandDraw>(3);
 			}
 			command_buffer().enqueue<RenderCommandEndRenderPass>();
 			return device.execute(*this, handle()) && this->reset();
@@ -199,8 +215,11 @@ namespace render_system
 					BindingLayout::Set(
 					{
 						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
-						BindingLayout::Slot(1, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader)
-					})
+					}),
+					BindingLayout::Set(
+					{
+						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
+					}),
 				}),
 			AttachmentLayout(
 #ifndef SAKURA_TARGET_PLATFORM_EMSCRIPTEN

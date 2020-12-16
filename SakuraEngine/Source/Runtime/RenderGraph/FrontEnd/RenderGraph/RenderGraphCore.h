@@ -671,9 +671,9 @@ namespace sakura::graphics
 			Set() = default;
 			template<size_t N>
 			Set(const Slot(&slots)[N]) noexcept;
-			sakura::vector<Slot> slots;
+			const sakura::vector<Slot> slots;
 		};
-		sakura::vector<Set> sets;
+		const sakura::vector<Set> sets;
 		Binding() = default;
 		template<size_t N>
 		Binding(const Set(&sets)[N]) noexcept;

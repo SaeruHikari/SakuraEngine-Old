@@ -137,24 +137,36 @@ void RenderDevice::processCommandFence(const RenderCommandFence& command, WGPUCo
 	
 }
 
-void RenderDevice::processCommandDraw(const RenderCommandDraw& command,
+void RenderDevice::processCommandDrawIndirect(const RenderCommandDrawIndirect& command,
+    WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const
+{
+    const auto buf_hdl = command.indirect_buffer;
+    if (auto buf = static_cast<GPUBuffer*>(get(buf_hdl)); buf)
+    {
+        wgpuRenderPassEncoderDrawIndexedIndirect(*pass, buf->_buffer, command.offset);
+    }
+}
+
+void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, 
+    const RenderCommandDraw& command,
 	WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const
 {
-	for(auto i = 0u; i < command.vbs.size(); i++)
+    if (command.instance_draw)
+        goto DRAW_INSTANCE;
+
 	{
-        const auto& vb_src = command.vbs[i];
+        const auto& vb_src = command.vb;
+        const auto& ib_src = command.ib;
+
         if (auto vb = static_cast<GPUBuffer*>(get(vb_src.vertex_buffer)); vb)
         {
-            wgpuRenderPassEncoderSetVertexBuffer(
-                *pass, i, vb->_buffer, vb_src.offset, vb_src.stride);
+            wgpuRenderPassEncoderSetVertexBuffer(*pass, 0, vb->_buffer, vb_src.offset, vb_src.stride);
         }
         else
         {
             assert(0 && "VB NOT FOUND");
         }
-	}
-	{
-        const auto& ib_src = command.ib;
+
         if(auto ib = static_cast<GPUBuffer*>(get(ib_src.index_buffer));ib)
 		{
 #ifdef _____DESP // Emscripten hasn't yet caught up with the API changes
@@ -169,6 +181,7 @@ void RenderDevice::processCommandDraw(const RenderCommandDraw& command,
             assert(0 && "IB NOT FOUND");
         }
 	}
+DRAW_INSTANCE:
     wgpuRenderPassEncoderDrawIndexed(*pass,
         static_cast<uint32>(command.ib.index_count), command.instance_count, 
         command.first_index, command.base_vertex, command.first_instance);
@@ -192,7 +205,7 @@ void RenderDevice::processCommand(PassCacheFrame& cacheFrame, const RenderComman
     case ERenderCommandType::draw:
     {
         auto cmd = *static_cast<const RenderCommandDraw*>(command);
-        processCommandDraw(cmd, encoder, pass);
+        processCommandDraw(cacheFrame, cmd, encoder, pass);
     }break;
     case ERenderCommandType::end_render_pass:
     {
@@ -212,8 +225,8 @@ void RenderDevice::processCommandUpdateBinding(PassCacheFrame& cacheFrame,
     const RenderCommandUpdateBinding& command, WGPUCommandEncoder* encoder,
 	WGPURenderPassEncoder* pass, RenderPipeline* ppl) const
 {
-    if(auto bindingDesc = std::get_if<Binding>(&command.binder); bindingDesc)
     {
+        auto* bindingDesc = &command.binder;
     	if(cacheFrame.bindGroups.size() != bindingDesc->sets.size())
     	{
             cacheFrame.bindGroups.resize(bindingDesc->sets.size());
@@ -269,6 +282,7 @@ void RenderDevice::processCommandUpdateBinding(PassCacheFrame& cacheFrame,
                         if(bindGroup)
                             wgpuBindGroupRelease(bindGroup);
                         bindGroup = wgpuDeviceCreateBindGroup(device, &bgDesc);
+                        wgpuRenderPassEncoderSetBindGroup(*pass, i, bindGroup, 0u, 0u);
                     }
                 }
                 else
@@ -276,7 +290,6 @@ void RenderDevice::processCommandUpdateBinding(PassCacheFrame& cacheFrame,
                     assert(0 && "Pipeline as NULL is invalid!");
                 }
             }
-            wgpuRenderPassEncoderSetBindGroup(*pass, i, bindGroup, 0u, 0u);
     	}// End Foreach BindingGroup.
     }
 }

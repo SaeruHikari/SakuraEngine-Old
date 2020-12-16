@@ -523,7 +523,7 @@ int main()
 		{
 			complist<BoidTarget, Translation, LocalToWorld, MoveToward, RandomMoveTarget, Scale>
 		};
-		for (auto slice : ctx.allocate(type, 10))
+		for (auto slice : ctx.allocate(type, 100))
 		{
 			auto trs = init_component<Translation>(ctx, slice);
 			auto mts = init_component<MoveToward>(ctx, slice);
@@ -569,7 +569,7 @@ int main()
 		sphere s;
 		s.center = Vector3f::vector_zero();
 		s.radius = 1000.f;
-		for (auto slice : ctx.allocate(type, 500))
+		for (auto slice : ctx.allocate(type, 5000))
 		{
 			auto trs = init_component<Translation>(ctx, slice);
 			auto hds = init_component<Heading>(ctx, slice);
