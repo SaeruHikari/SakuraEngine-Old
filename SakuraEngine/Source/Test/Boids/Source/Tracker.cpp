@@ -2,6 +2,10 @@
 #define NOMINMAX
 #define TRACY_ENABLE
 
+#include "Tracker/Tracker.h"
+#include "tracy/Tracy.hpp"
+
+
 #include "tracy/common/TracySystem.cpp"
 #ifdef TRACY_ENABLE
 #ifdef _MSC_VER
@@ -23,3 +27,16 @@
 #  pragma warning(pop)
 #endif
 #endif
+
+void* operator new(std::size_t count)
+{
+	auto ptr = malloc(count);
+	TracyAlloc(ptr, count);
+	return ptr;
+}
+
+void operator delete(void* ptr) noexcept
+{
+	TracyFree(ptr);
+	free(ptr);
+}

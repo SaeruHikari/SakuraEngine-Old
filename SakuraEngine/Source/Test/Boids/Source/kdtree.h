@@ -87,18 +87,18 @@ namespace core
 				sakura::task_system::Event taska{ sakura::task_system::Event::Mode::Manual };
 				sakura::task_system::Event taskb{ sakura::task_system::Event::Mode::Manual };
 				sakura::task_system::schedule(
-					[&] {
+					[&, taska] {
+						defer(taska.signal());
 						n.children[0] = build_resursive_multithread({ indices.data(), mid }, depth + 1, id + 1);
-						taska.signal();
 					}
 				);
 				sakura::task_system::schedule(
-					[&] {
+					[&, taskb] {
+						defer(taskb.signal());
 						n.children[1] = build_resursive_multithread({ indices.data() + mid + 1, indices.size() - mid - 1 }, depth + 1, id + 1 + mid);
-						taskb.signal();
 					}
 				);
-				taska.wait(); taskb.wait();
+				defer(taska.wait(); taskb.wait(););
 				return &n;
 			}
 

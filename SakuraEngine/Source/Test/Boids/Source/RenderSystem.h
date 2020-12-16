@@ -69,13 +69,13 @@ namespace render_system
 	RenderBufferHandle indexBuffer = render_graph.RenderBuffer("IndexBuffer");
 
 	sakura::float4x4 viewProj;
-	std::vector<sakura::float4x4> worlds(10500 * 4);
+	std::vector<sakura::float4x4> worlds(42000 * 4);
 
 	class RenderPassSimple : public RenderPass
 	{
 	public:
 		RenderPassSimple(const RenderPassHandle handle,
-			sakura::uint8 cycleCount = 3, size_t bufferSize = 1024 * 16 * 16)
+			sakura::uint8 cycleCount = 3, size_t bufferSize = 4096 * 16 * 8)
 			:RenderPass(handle, cycleCount, bufferSize) {}
 		bool execute(const RenderGraph& rg, const RenderGraph::Builder& builder, IRenderDevice& device) noexcept override
 		{
@@ -232,6 +232,7 @@ namespace render_system
 			// read.
 			param<const LocalToWorld>
 		);
+		mainWindow.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());
 		worlds.clear();
 		return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList),
 			[](const task_system::ecs::pipeline& pipeline, const ecs::pass& task_pass, const ecs::task& tk)
