@@ -86,6 +86,7 @@ task_system::Event ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& 
 	return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList),
 		[f](const task_system::ecs::pipeline& pipeline, const pass& pass, const task& tk)
 		{
+			ZoneScopedN("ConvertSystem");
 			auto o = operation{ paramList, pass, tk };
 			hana::tuple arrays = { o.get_parameter<T>(), o.get_parameter<const Ts>()... };
 			forloop(i, 0, o.get_count())
@@ -93,7 +94,7 @@ task_system::Event ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& 
 				auto params = hana::transform(arrays, [i](auto v) { return v?v + i:nullptr; });
 				hana::unpack(params, f);
 			}
-		});
+		}, 500);
 }
 
 template<class T>
@@ -182,6 +183,7 @@ task_system::Event Child2WorldSystem(task_system::ecs::pipeline& ppl)
 		*ppl.create_pass(filter, paramList),
 		[](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
 		{
+			ZoneScopedN("Child2WorldSystem");
 			auto o = operation{ paramList, pass, tk };
 			const auto childrens = o.get_parameter<const Child>();
 			float4x4* l2ws = o.get_parameter<LocalToWorld>();
@@ -216,6 +218,7 @@ task_system::Event World2LocalSystem(task_system::ecs::pipeline& ppl)
 		*ppl.create_pass(filter, paramList),
 		[](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
 		{
+			ZoneScopedN("World2LocalSystem");
 			auto o = operation{ paramList, pass, tk };
 			const float4x4* l2ws = o.get_parameter<const LocalToWorld>();
 			float4x4* w2ls = o.get_parameter<WorldToLocal>();
@@ -238,6 +241,7 @@ task_system::Event CopyComponent(task_system::ecs::pipeline& ppl, const ecs::fil
 	return task_system::ecs::schedule(ppl, *pass,
 		[vector](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk) mutable
 		{
+			ZoneScopedN("CopyComponent");
 			auto o = operation{ paramList, pass, tk };
 			auto index = o.get_index();
 			auto comps = o.get_parameter<const C>();
@@ -294,6 +298,7 @@ task_system::Event RandomTargetSystem(task_system::ecs::pipeline& ppl)
 	return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList), 
 		[](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
 		{
+			ZoneScopedN("RandomTargetSystem");
 			auto o = operation{ paramList, pass, tk };
 			auto mts = o.get_parameter<MoveToward>();
 			auto trs = o.get_parameter<const Translation>();
@@ -325,6 +330,7 @@ task_system::Event MoveTowardSystem(task_system::ecs::pipeline& ppl, float delta
 	return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList),
 		[deltaTime](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
 		{
+			ZoneScopedN("MoveTowardSystem");
 			auto o = operation{ paramList, pass, tk };
 			auto mts = o.get_parameter<const MoveToward>();
 			auto trs = o.get_parameter<Translation>();
@@ -365,6 +371,7 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		shared_entry shareList[] = { read(positions), write(kdtree) };
 		task_system::ecs::schedule_custom(ppl, *ppl.create_custom_pass(shareList), [positions, kdtree]() mutable
 			{
+				ZoneScopedN("Build Boid KDTree");
 				kdtree->initialize(std::move(*positions));
 			});
 	}
@@ -382,6 +389,7 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		shared_entry shareList[] = { read(targets), write(targetTree) };
 		task_system::ecs::schedule_custom(ppl, *ppl.create_custom_pass(shareList), [targets, targetTree]() mutable
 			{
+				ZoneScopedN("Build Target KDTree");
 				targetTree->initialize(std::move(*targets));
 			});
 	}
@@ -395,6 +403,7 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		task_system::ecs::schedule(ppl, *pass,
 			[headings, kdtree, targetTree, newHeadings, deltaTime](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk) mutable
 			{
+				ZoneScopedN("Boid Main");
 				auto o = operation{ paramList, pass, tk };
 				auto index = o.get_index();
 				auto hds = o.get_parameter_owned<const Heading>();
@@ -408,35 +417,45 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 				alignments.resize(o.get_count());
 				separations.resize(o.get_count());
 				targetings.resize(o.get_count());
-				forloop(i, 0, o.get_count())
 				{
-					//收集附近单位的位置和朝向信息
-					neighbers.clear();
-					kdtree->search_k_radius(trs[i], boid->SightRadius, 10, neighbers);
-					alignments[i] = sakura::Vector3f::vector_zero();
-					separations[i] = sakura::Vector3f::vector_zero();
-					for (auto ng : neighbers)
+					ZoneScopedN("Collect Neighbors");
+					forloop(i, 0, o.get_count())
 					{
-						alignments[i] = alignments[i] + (*headings)[ng.second];
-						separations[i] = separations[i] +(*kdtree)[ng.second].value;
+						//收集附近单位的位置和朝向信息
+						neighbers.clear();
+						kdtree->search_k_radius(trs[i], boid->SightRadius, 10, neighbers);
+						alignments[i] = sakura::Vector3f::vector_zero();
+						separations[i] = sakura::Vector3f::vector_zero();
+						for (auto ng : neighbers)
+						{
+							alignments[i] = alignments[i] + (*headings)[ng.second];
+							separations[i] = separations[i] + (*kdtree)[ng.second].value;
+						}
+						averageNeighberCount += neighbers.size();
+						update_maximum(maxNeighberCount, neighbers.size());
 					}
-					averageNeighberCount += neighbers.size();
-					update_maximum(maxNeighberCount, neighbers.size());
 				}
-				forloop(i, 0, o.get_count())
-				{
-					//寻找一个目标
-					targetings[i] = (*targetTree)[targetTree->search_nearest(trs[i])].value;
-				}
-				forloop(i, 0, o.get_count())
-				{
-					//Boid 算法
 
-					sakura::Vector3f alignment = math::normalize(alignments[i] / (float)neighbers.size() - hds[i]);
-					sakura::Vector3f separation = math::normalize((float)neighbers.size() * trs[i] - separations[i]);
-					sakura::Vector3f targeting = math::normalize(targetings[i] - trs[i]);
-					sakura::Vector3f newHeading = math::normalize(alignment * boid->AlignmentWeight + separation * boid->SeparationWeight + targeting * boid->TargetWeight);
-					(*newHeadings)[index + i] = math::normalize((hds[i] + (newHeading - hds[i]) * deltaTime));
+				{
+					ZoneScopedN("Collect Targets");
+					forloop(i, 0, o.get_count())
+					{
+						//寻找一个目标
+						targetings[i] = (*targetTree)[targetTree->search_nearest(trs[i])].value;
+					}
+				}
+				
+				{
+					ZoneScopedN("Calculate Boids");
+					forloop(i, 0, o.get_count())
+					{
+						//Boid 算法
+						sakura::Vector3f alignment = math::normalize(alignments[i] / (float)neighbers.size() - hds[i]);
+						sakura::Vector3f separation = math::normalize((float)neighbers.size() * trs[i] - separations[i]);
+						sakura::Vector3f targeting = math::normalize(targetings[i] - trs[i]);
+						sakura::Vector3f newHeading = math::normalize(alignment * boid->AlignmentWeight + separation * boid->SeparationWeight + targeting * boid->TargetWeight);
+						(*newHeadings)[index + i] = math::normalize((hds[i] + (newHeading - hds[i]) * deltaTime));
+					}
 				}
 			}, 100);
 	}
@@ -447,6 +466,7 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		return task_system::ecs::schedule(ppl, *ppl.create_pass(boidFilter, paramList, shareList),
 			[newHeadings, deltaTime](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
 			{
+				ZoneScopedN("Apply Boid");
 				auto o = operation{ paramList, pass, tk };
 				auto index = o.get_index();
 				auto hds = o.get_parameter<Heading>();
@@ -457,7 +477,7 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 					hds[i] = (*newHeadings)[i + index];
 					trs[i] = trs[i] + hds[i] * deltaTime * boid->MoveSpeed;
 				}
-			});
+			}, 500);
 	}
 }
 
@@ -518,7 +538,7 @@ int main()
 		//创建 Boid
 		entity_type type
 		{
-			complist<Translation, Heading>,
+			complist<Translation, Heading, Rotation>,
 			{&e, 1}
 		};
 		sphere s;
@@ -550,46 +570,52 @@ int main()
 
 		timer.start_up();
 		task_system::ecs::pipeline ppl(ctx);
+		ppl.inc_timestamp();
 		ppl.on_sync = [&](gsl::span<custom_pass*> dependencies)
 		{
 			for(auto dp : dependencies)
 				ppl.pass_events[dp->passIndex].wait();
 		};
-		RotationEulerSystem(ppl);
+		{
+			ZoneScopedN("Schedule Systems")
+			RotationEulerSystem(ppl);
 
-		RandomTargetSystem(ppl);
-		MoveTowardSystem(ppl, deltaTime);
-		BoidsSystem(ppl, deltaTime);
-		HeadingSystem(ppl);
+			RandomTargetSystem(ppl);
+			MoveTowardSystem(ppl, deltaTime);
+			BoidsSystem(ppl, deltaTime);
+			HeadingSystem(ppl);
 
-		filters wrd_filter;
-		wrd_filter.archetypeFilter = {
-			{complist<LocalToWorld>},
-			{complist<Translation, Scale, Rotation>},
-			{complist<LocalToParent, Parent>}
-		};
-		Local2XSystem<LocalToWorld>(ppl, wrd_filter);
+			filters wrd_filter;
+			wrd_filter.archetypeFilter = {
+				{complist<LocalToWorld>},
+				{complist<Translation, Scale, Rotation>},
+				{complist<LocalToParent, Parent>}
+			};
+			Local2XSystem<LocalToWorld>(ppl, wrd_filter);
 
-		filters c2p_filter;
-		c2p_filter.archetypeFilter = {
-			{complist<LocalToParent, Parent>},
-			{complist<Translation, Scale, Rotation>},
-			{}
-		};
-		Local2XSystem<LocalToParent>(ppl, c2p_filter); 
-		Child2WorldSystem(ppl);
-		World2LocalSystem(ppl);
+			filters c2p_filter;
+			c2p_filter.archetypeFilter = {
+				{complist<LocalToParent, Parent>},
+				{complist<Translation, Scale, Rotation>},
+				{}
+			};
+			Local2XSystem<LocalToParent>(ppl, c2p_filter);
+			Child2WorldSystem(ppl);
+			World2LocalSystem(ppl);
+		}
 		
-		
-		// 等待pipeline
-		ppl.wait();
+		{
+			ZoneScopedN("Pipeline Sync")
+			// 等待pipeline
+			ppl.wait();
+		}
+
+		//std::cout << "delta time: " << deltaTime * 1000 << std::endl;
+		//std::cout << "average neighbor count: " << averageNeighberCount / 50000 << std::endl;
+		//std::cout << "maximum neighbor count: " << maxNeighberCount << std::endl;
+		//averageNeighberCount.store(0);
+		deltaTime = timer.end();
 
 		FrameMark;
-
-		std::cout << "delta time: " << deltaTime * 1000 << std::endl;
-		std::cout << "average neighbor count: " << averageNeighberCount / 50000 << std::endl;
-		std::cout << "maximum neighbor count: " << maxNeighberCount << std::endl;
-		averageNeighberCount.store(0);
-		deltaTime = timer.end();
 	}
 }

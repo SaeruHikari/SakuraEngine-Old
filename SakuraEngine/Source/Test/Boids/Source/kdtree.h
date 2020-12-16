@@ -4,6 +4,7 @@
 #include <cmath>
 #include <numeric>
 #include "gsl/span"
+#include "TaskSystem/TaskSystem.h"
 namespace core
 {
 	namespace algo
@@ -19,8 +20,8 @@ namespace core
 			{
 				std::vector<int> indices(points.size());
 				std::iota(indices.begin(), indices.end(), 0);
-				nodes.reserve(points.size());
-				build_recursive(indices, 0);
+				nodes.resize(points.size());
+				build_resursive_multithread(indices, 0, 0);
 			}
 
 			void initialize(std::vector<Point>&& inPoints)
@@ -28,8 +29,8 @@ namespace core
 				points = std::move(inPoints);
 				std::vector<int> indices(points.size());
 				std::iota(indices.begin(), indices.end(), 0);
-				nodes.reserve(points.size());
-				build_recursive(indices, 0);
+				nodes.resize(points.size());
+				build_resursive_multithread(indices, 0, 0);
 			}
 			
 			const Point& operator[](size_t i) const
@@ -67,7 +68,41 @@ namespace core
 				int axis = -1;
 			};
 
-			node* build_recursive(gsl::span<int> indices, int depth)
+			node* build_resursive_multithread(gsl::span<int> indices, int depth, int id)
+			{
+				ZoneScoped;
+				if (indices.empty())
+					return nullptr;
+				if (indices.size() < 500)
+					return build_recursive(indices , depth, id);
+				const int axis = depth % Point::dim;
+				const size_t mid = (indices.size() - 1) / 2;
+				std::nth_element(indices.begin(), indices.begin() + mid, indices.end(), [&](int lhs, int rhs)
+					{
+						return points[lhs][axis] < points[rhs][axis];
+					});
+				node& n = nodes[id];
+				n.index = indices[mid];
+				n.axis = axis;
+				sakura::task_system::Event taska{ sakura::task_system::Event::Mode::Manual };
+				sakura::task_system::Event taskb{ sakura::task_system::Event::Mode::Manual };
+				sakura::task_system::schedule(
+					[&] {
+						n.children[0] = build_resursive_multithread({ indices.data(), mid }, depth + 1, id + 1);
+						taska.signal();
+					}
+				);
+				sakura::task_system::schedule(
+					[&] {
+						n.children[1] = build_resursive_multithread({ indices.data() + mid + 1, indices.size() - mid - 1 }, depth + 1, id + 1 + mid);
+						taskb.signal();
+					}
+				);
+				taska.wait(); taskb.wait();
+				return &n;
+			}
+
+			node* build_recursive(gsl::span<int> indices, int depth, int id)
 			{
 				if (indices.empty())
 					return nullptr;
@@ -77,12 +112,11 @@ namespace core
 					{
 						return points[lhs][axis] < points[rhs][axis];
 					});
-				nodes.push_back({});
-				node& n = nodes.back();
+				node& n = nodes[id];
 				n.index = indices[mid];
 				n.axis = axis;
-				n.children[0] = build_recursive({ indices.data(), mid }, depth + 1);
-				n.children[1] = build_recursive({ indices.data() + mid + 1, indices.size() - mid - 1 }, depth + 1);
+				n.children[0] = build_recursive({ indices.data(), mid }, depth + 1, id + 1);
+				n.children[1] = build_recursive({ indices.data() + mid + 1, indices.size() - mid - 1 }, depth + 1, id + 1 + mid);
 				return &n;
 			}
 
