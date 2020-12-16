@@ -101,12 +101,14 @@ namespace render_system
 		}
 		bool construct(RenderGraph::Builder& rg) noexcept override
 		{
+			sakura::float4x4 offset = math::make_transform(sakura::Vector3f(-1.f, -1.f, -1.f) * 400);
 			sakura::float4x4 view = sakura::math::look_at_matrix(
-				sakura::Vector3f::vector_zero(), sakura::Vector3f(-1.f, -1.f, -1.f));
+				sakura::Vector3f(-1.f, -1.f, -1.f) * 1, Vector3f::vector_zero());
 			sakura::float4x4 proj =
-				sakura::math::perspective_fov(0.25f * 3.1415926f, 1920.f / 1080.f, 1.0f, 1000.0f);
+				sakura::math::perspective_fov(0.25f * 3.1415926f, 1080.f / 1920.f, 1.0f, 1000.0f);
 
-			viewProj = sakura::math::multiply(view, proj);
+			viewProj = sakura::math::multiply(offset, view);
+			viewProj = sakura::math::multiply(viewProj, proj);
 			viewProj = sakura::math::transpose(viewProj);
 
 			deviceGroup.update_buffer(uniformBuffer, 0, &viewProj, sizeof(viewProj));

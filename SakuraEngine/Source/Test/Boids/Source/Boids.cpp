@@ -1,6 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
-#define TRACY_ENABLE
+//#define TRACY_ENABLE
 #include "tracy/Tracy.hpp"
 
 #include "RuntimeCore/RuntimeCore.h"
@@ -116,6 +116,31 @@ task_system::Event RotationEulerSystem(task_system::ecs::pipeline& ppl)
 		[](sakura::Quaternion* dst, const sakura::Rotator* inRotator)
 		{
 			*dst = math::quaternion_from_rotator(*inRotator);
+		});
+}
+
+task_system::Event RotateByAxisSystem(task_system::ecs::pipeline& ppl, float deltaTime)
+{
+	using namespace ecs;
+	filters filter;
+	filter.archetypeFilter = {
+		{complist<BoidTarget, LocalToWorld>}
+	};
+	def paramList = hana::tuple{ param<LocalToWorld> };
+	auto quat = sakura::math::quaternion_from_axis(Vector3f{ 0.f,1.f,0.f }, 3.1415926f * 0.25f * deltaTime);
+	auto trans = math::make_transform(Vector3f::vector_zero(), Vector3f::vector_one(), quat);
+	return task_system::ecs::schedule(ppl,
+		*ppl.create_pass(filter, paramList),
+		[trans](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
+		{
+			ZoneScopedN("Child2WorldSystem");
+			auto o = operation{ paramList, pass, tk };
+			sakura::float4x4* mtx = o.get_parameter<LocalToWorld>();
+
+			forloop(i, 0, o.get_count())
+			{
+				mtx[i] = math::multiply(mtx[i], trans);
+			}
 		});
 }
 
@@ -503,8 +528,8 @@ int main()
 			forloop(i, 0, slice.count)
 			{
 				std::uniform_real_distribution<float> speedDst(5.f, 9.f);
-				rmts[i].center = Vector3f::vector_zero();
-				rmts[i].radius = 1000.f;
+				rmts[i].center = sakura::Vector3f::vector_zero();
+				rmts[i].radius = 500.f;
 				mts[i].Target = rmts[i].random_point(get_random_engine());
 				mts[i].MoveSpeed = speedDst(get_random_engine());
 				trs[i] = rmts[i].random_point(get_random_engine());
@@ -575,8 +600,8 @@ int main()
 			RotationEulerSystem(ppl);
 
 			RandomTargetSystem(ppl);
-			MoveTowardSystem(ppl, deltaTime);
-			BoidsSystem(ppl, deltaTime);
+			//MoveTowardSystem(ppl, deltaTime);
+			//BoidsSystem(ppl, deltaTime);
 			HeadingSystem(ppl);
 
 			filters wrd_filter;
@@ -596,6 +621,7 @@ int main()
 			Local2XSystem<LocalToParent>(ppl, c2p_filter);
 			Child2WorldSystem(ppl);
 			World2LocalSystem(ppl);
+			RotateByAxisSystem(ppl, deltaTime);
 		}
 		
 		{

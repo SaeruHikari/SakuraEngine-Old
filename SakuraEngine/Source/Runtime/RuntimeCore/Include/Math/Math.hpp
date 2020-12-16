@@ -142,4 +142,14 @@ namespace sakura::math
 	{
 		return look_at_quaternion(Vector3f(0.f, 0.f, 0.f), direction);
 	}
+
+	FORCEINLINE Quaternion quaternion_from_axis
+	(
+		const Vector3f axis, const float angle
+	)
+	{
+		Quaternion res;
+		__vector::store_aligned(res.data_view(), __quaternion::quaternion_from_axis(__vector::load_float3_w0(axis.data_view()), angle));
+		return res;
+	}
 }

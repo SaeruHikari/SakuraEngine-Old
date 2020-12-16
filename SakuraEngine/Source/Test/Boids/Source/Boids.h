@@ -45,10 +45,11 @@ struct sphere
 	template <class E>
 	sakura::Vector3f random_point(E& el)
 	{
-		std::uniform_real_distribution<float> uniform_dist(0, 1);
-		sakura::Vector3f vector{ uniform_dist(el), uniform_dist(el), uniform_dist(el) };
-		float scale = std::cbrt(uniform_dist(el)) * radius;
-		return center + vector * scale;
+		std::uniform_real_distribution<float> a(-1, 1);
+		std::uniform_real_distribution<float> b(0, 1);
+		sakura::Vector3f vector{ a(el), a(el), a(el) };
+		float scale = std::cbrt(b(el)) * radius;
+		return center + sakura::math::normalize(vector) * scale;
 	}
 };
 

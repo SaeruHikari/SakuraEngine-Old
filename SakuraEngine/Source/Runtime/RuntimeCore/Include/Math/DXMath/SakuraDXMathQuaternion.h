@@ -32,4 +32,14 @@ namespace sakura::math::__quaternion
         DirectX::XMMATRIX rot = DirectX::XMLoadFloat4x4A(reinterpret_cast<const DirectX::XMFLOAT4X4A*>(rotation.data_view().data()));
         return DirectX::XMQuaternionRotationMatrix(rot);
     }
+
+	FORCEINLINE __vector::VectorRegister quaternion_from_axis
+	(
+		__vector::VectorRegister axis, const float angle
+	)
+	{
+		DirectX::XMVECTOR Q = DirectX::XMQuaternionRotationAxis(axis, angle);
+		return Q;
+	}
+
 }
