@@ -1,3 +1,4 @@
+#pragma once
 #include <set>
 #include "ECS/ECS.h"
 #include "Math/Math.hpp"

@@ -521,21 +521,24 @@ int main()
 		//创建 Boid 目标
 		entity_type type
 		{
-			complist<BoidTarget, Translation, LocalToWorld, MoveToward, RandomMoveTarget>
+			complist<BoidTarget, Translation, LocalToWorld, MoveToward, RandomMoveTarget, Scale>
 		};
 		for (auto slice : ctx.allocate(type, 10))
 		{
 			auto trs = init_component<Translation>(ctx, slice);
 			auto mts = init_component<MoveToward>(ctx, slice);
 			auto rmts = init_component<RandomMoveTarget>(ctx, slice);
+			auto ss = init_component<Scale>(ctx, slice);
+
 			forloop(i, 0, slice.count)
 			{
 				std::uniform_real_distribution<float> speedDst(250.f, 300.f);
 				rmts[i].center = sakura::Vector3f::vector_zero();
-				rmts[i].radius = 500.f;
+				rmts[i].radius = 1000.f;
 				mts[i].Target = rmts[i].random_point(get_random_engine());
 				mts[i].MoveSpeed = speedDst(get_random_engine());
 				trs[i] = rmts[i].random_point(get_random_engine());
+				ss[i] = sakura::Vector3f(5.f, 5.f, 5.f);
 			}
 		}
 	}
@@ -630,10 +633,10 @@ int main()
 		{
 			ZoneScopedN("Pipeline Sync")
 
-			auto r = render_system::CollectSystem(ppl, deltaTime);
+			render_system::CollectSystem(ppl, deltaTime);
 			// 等待pipeline
 			ppl.wait();
-			render_system::RenderAndPresent(r).wait();
+			render_system::RenderAndPresent().wait();
 		}
 
 		std::cout << "delta time: " << deltaTime * 1000 << std::endl;
