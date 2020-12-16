@@ -265,8 +265,11 @@ void RenderDevice::processCommandUpdateBinding(PassCacheFrame& cacheFrame,
                     bgDesc.layout = ppl->bindingGroups[i]; // Get Layout.
                     bgDesc.entryCount = static_cast<uint32>(cacheFrame.entries[i].first.size());
                     bgDesc.entries = cacheFrame.entries[i].first.data();
-                    if(!bindGroup)
+                    {
+                        if(bindGroup)
+                            wgpuBindGroupRelease(bindGroup);
                         bindGroup = wgpuDeviceCreateBindGroup(device, &bgDesc);
+                    }
                 }
                 else
                 {

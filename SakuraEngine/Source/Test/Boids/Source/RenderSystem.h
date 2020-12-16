@@ -8,6 +8,7 @@
 
 namespace render_system
 {
+	using namespace sakura;
 	using namespace sakura::graphics;
 
 	sakura::vector<std::byte> vertexShaderSpirv;
@@ -15,7 +16,7 @@ namespace render_system
 	sakura::string vertexShaderHLSL = 
 		u8"struct VertexIn\
 		{\
-			float2 aPos : SV_Position;\
+			float3 aPos : SV_Position;\
 			float3 aCol : COLOR;\
 		};\
 		struct VertexOut\
@@ -25,17 +26,20 @@ namespace render_system
 		};\
 		[[vk::binding(0, 0)]] cbuffer ub\
 		{\
-			float uRot;\
+			float4x4 viewProj;\
+		};\
+		[[vk::binding(1, 0)]] cbuffer ub2\
+		{\
+			float4x4 world;\
+			float4x4 world1;\
+			float4x4 world2;\
+			float4x4 world3;\
 		};\
 		VertexOut main(VertexIn vin)\
 		{\
 			VertexOut vout;\
-			float cosA = cos(radians(uRot));\
-			float sinA = sin(radians(uRot));\
-			float3x3 rot = float3x3(cosA, sinA, 0.0,\
-								   -sinA, cosA, 0.0,\
-									0.0, 0.0, 1.0);\
-			vout.position = float4(mul(float3(vin.aPos, 1.0), rot), 1.0);\
+			float4 posW = mul(float4(vin.aPos, 1.0f), world);\
+			vout.position = mul(posW, viewProj);\
 			vout.vCol = vin.aCol;\
 			return vout;\
 		}";
@@ -57,47 +61,62 @@ namespace render_system
 	RenderShaderHandle vertexShader = render_graph.RenderShaderUnsafe("VertexShader");
 	RenderShaderHandle pixelShader = render_graph.RenderShaderUnsafe("PixelShader");
 	RenderPipelineHandle renderPipeline = render_graph.RenderPipeline("TrianglePipeline");
+
 	RenderBufferHandle uniformBuffer = render_graph.RenderBuffer("UniformBuffer");
+	RenderBufferHandle uniformBufferPerObject = render_graph.RenderBuffer("UniformBufferPerObject");
+
 	RenderBufferHandle vertexBuffer = render_graph.RenderBuffer("VertexBuffer");
 	RenderBufferHandle indexBuffer = render_graph.RenderBuffer("IndexBuffer");
-	float rotDeg = 0.f;
+
+	sakura::float4x4 viewProj;
+	std::vector<sakura::float4x4> worlds(10500 * 4);
 
 	class RenderPassSimple : public RenderPass
 	{
 	public:
-		RenderPassSimple(const RenderPassHandle handle)
-			:RenderPass(handle) {}
+		RenderPassSimple(const RenderPassHandle handle,
+			sakura::uint8 cycleCount = 3, size_t bufferSize = 1024 * 16 * 16)
+			:RenderPass(handle, cycleCount, bufferSize) {}
 		bool execute(const RenderGraph& rg, const RenderGraph::Builder& builder, IRenderDevice& device) noexcept override
 		{
 			command_buffer().enqueue<RenderCommandBeginRenderPass>(renderPipeline, attachment);
-			command_buffer().enqueue<RenderCommandUpdateBinding>(binding);
-			//command_buffer().enqueue<RenderCommandSetScissorRect>(
-			//	0, device.backend() == EBackend::WebGPU ? mainWindow.extent().width / 2 + 10 : 0,
-			//	mainWindow.extent().width / 2, mainWindow.extent().height
-			//);
-			command_buffer().enqueue<RenderCommandDraw>(
-				RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBuffer")),
-				RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBuffer"), 3, EIndexFormat::UINT16)
+			for (auto i = 0u; i < worlds.size() / 4; i++)
+			{
+				Binding binding = Binding({
+					Binding::Set({
+						Binding::Slot(uniformBuffer, 0, sizeof(sakura::float4x4), 0),
+						Binding::Slot(uniformBufferPerObject, 1,
+							sizeof(sakura::float4x4) * 4, sizeof(sakura::float4x4) * i * 4)
+					})
+				});
+				command_buffer().enqueue<RenderCommandUpdateBinding>(binding);
+				command_buffer().enqueue<RenderCommandDraw>(
+					RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBuffer")),
+					RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBuffer"), 
+					3, EIndexFormat::UINT16)
 				);
+			}
 			command_buffer().enqueue<RenderCommandEndRenderPass>();
 			return device.execute(*this, handle()) && this->reset();
 		}
 		bool construct(RenderGraph::Builder& rg) noexcept override
 		{
-			rotDeg += 0.1f;
-			deviceGroup.update_buffer(uniformBuffer, 0, &rotDeg, sizeof(rotDeg));
+			sakura::float4x4 view = sakura::math::look_at_matrix(
+				sakura::Vector3f::vector_zero(), sakura::Vector3f(-1.f, -1.f, -1.f));
+			sakura::float4x4 proj =
+				sakura::math::perspective_fov(0.25f * 3.1415926f, 800.f / 450.f, 1.0f, 1000.0f);
+
+			viewProj = sakura::math::multiply(view, proj);
+			viewProj = sakura::math::transpose(viewProj);
+
+			deviceGroup.update_buffer(uniformBuffer, 0, &viewProj, sizeof(viewProj));
 
 			attachment = Attachment({
 				Attachment::Slot(swapChain, sakura::double4(), ELoadOp::Clear, EStoreOp::Store)
-				});
-			binding = Binding({
-				Binding::Set({
-					Binding::Slot(uniformBuffer, 0, sizeof(float), 0)
-				})
-				});
+			});
+
 			return true;
 		}
-		Binding binding;
 		Attachment attachment;
 	};
 	RenderPassHandle pass = render_graph.create_render_pass<RenderPassSimple>();
@@ -147,15 +166,16 @@ namespace render_system
 				}),
 			VertexLayout(
 				{
-					VertexLayout::Element("POSITION", EVertexFormat::FLOAT2, 0),
-					VertexLayout::Element("COLOR", EVertexFormat::FLOAT3, 2 * sizeof(float))
-				}, VertexLayout::Frequency::PerVertexData, sizeof(float) * 5
+					VertexLayout::Element("POSITION", EVertexFormat::FLOAT3, 0),
+					VertexLayout::Element("COLOR", EVertexFormat::FLOAT3, 3 * sizeof(float))
+				}, VertexLayout::Frequency::PerVertexData, sizeof(float) * 6
 			),
 			BindingLayout(
 				{
 					BindingLayout::Set(
 					{
-						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader) //Rotation
+						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
+						BindingLayout::Slot(1, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader)
 					})
 				}),
 			AttachmentLayout(
@@ -171,17 +191,17 @@ namespace render_system
 		deviceGroup.create_render_pipeline(renderPipeline, pipelineDesc);
 		// create the buffers (x, y, r, g, b)
 		float const vertData[] = {
-			-0.8f, -0.8f, 0.0f, 0.0f, 1.0f, // BL
-			 0.8f, -0.8f, 0.0f, 1.0f, 0.0f, // BR
-			-0.0f,  0.8f, 1.0f, 0.0f, 0.0f, // top
-		};
-		uint16_t const indxData[] = {
-			0, 1, 2,
-			0 // padding (better way of doing this?)
-		};
+			 0.f, -4.f, -4.f,    1.0f, 0.0f, 1.0f, // BL
+			 0.f, -4.f, 4.f,    0.0f, 1.0f, 0.0f, // BR
+			 0.0f, 4.f, 0.f,    1.0f, 0.0f, 0.0f, // top
+		}; // triangle on XY-Plane.
+		uint16_t const indxData[] = { 0, 1, 2, 0 };
 		// Create Buffers.
 		deviceGroup.create_buffer(uniformBuffer,
-			BufferDesc(EBufferUsage::UniformBuffer, sizeof(float), &rotDeg));
+			BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4), &viewProj));
+		deviceGroup.create_buffer(uniformBufferPerObject,
+				BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * 10500 * 4, worlds.data()));
+
 		deviceGroup.create_buffer(vertexBuffer,
 			BufferDesc(EBufferUsage::VertexBuffer, sizeof(vertData), vertData));
 		deviceGroup.create_buffer(indexBuffer,
@@ -202,30 +222,52 @@ namespace render_system
 		using namespace sakura::graphics;
 		using namespace ecs;
 
-		RenderPass* pass_ptr = render_graph.render_pass(pass);
-		pass_ptr->construct(render_graph.builder(pass));
-		if (pass_ptr->execute(render_graph, render_graph.builder(pass), deviceGroup))
-		{		
-			deviceGroup.present(swapChain);
-		}
-
 		filters filter;
 		filter.archetypeFilter = {
-			{complist<LocalToWorld, WorldToLocal>}, //all
+			{complist<LocalToWorld>}, //all
 			{}, //any
 			{} //none
 		};
 		static constexpr auto paramList = boost::hana::make_tuple(
-			// write
-			param<WorldToLocal>,
 			// read.
 			param<const LocalToWorld>
 		);
+		worlds.clear();
 		return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList),
-			[](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
+			[](const task_system::ecs::pipeline& pipeline, const ecs::pass& task_pass, const ecs::task& tk)
 			{
-				auto o = operation{ paramList, pass, tk };
-				
+				auto o = operation{ paramList, task_pass, tk };
+				const float4x4* l2ws = o.get_parameter<const LocalToWorld>();
+
+				Vector3f pos = Vector3f::vector_zero();
+				for(auto i = 0u; i < o.get_count(); i++)
+				{
+					worlds.emplace_back(sakura::math::transpose(l2ws[i]));
+					worlds.emplace_back(sakura::math::transpose(l2ws[i]));
+					worlds.emplace_back(sakura::math::transpose(l2ws[i]));
+					worlds.emplace_back(sakura::math::transpose(l2ws[i]));
+				}
 			});
+	}
+
+	task_system::Event present(const task_system::Event at)
+	{
+		at.wait();
+		task_system::Event ev;
+		task_system::schedule(
+			[ev]() {
+				defer(ev.signal());
+				deviceGroup.update_buffer(
+					uniformBufferPerObject, 0, worlds.data(), sizeof(float4x4) * worlds.size());
+
+				RenderPass* pass_ptr = render_graph.render_pass(pass);
+				pass_ptr->construct(render_graph.builder(pass));
+				if (pass_ptr->execute(render_graph, render_graph.builder(pass), deviceGroup))
+				{
+					deviceGroup.present(swapChain);
+				}
+			}
+		);
+		return ev;
 	}
 }

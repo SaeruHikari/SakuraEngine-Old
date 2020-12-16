@@ -600,8 +600,11 @@ int main()
 		
 		{
 			ZoneScopedN("Pipeline Sync")
+
+			auto r = render_system::RenderSystem(ppl, deltaTime);
 			// 等待pipeline
 			ppl.wait();
+			render_system::present(r).wait();
 		}
 
 		//std::cout << "delta time: " << deltaTime * 1000 << std::endl;
