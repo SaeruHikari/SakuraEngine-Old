@@ -43,7 +43,13 @@ namespace core
 					return;
 				search_radius_recursive(query, &nodes[0], indices, radius * radius);
 			}
-
+			using sorted_vec = std::vector<std::pair<Distance, int>>;
+			void search_k_radius(const Point& query, Distance radius, int k, sorted_vec& indices) const
+			{
+				if (nodes.empty())
+					return;
+				search_k_radius_recursive(query, &nodes[0], indices, radius * radius, k);
+			}
 			int search_nearest(const Point& query) const
 			{
 				if (nodes.empty())
@@ -102,6 +108,27 @@ namespace core
 				search_radius_recursive(query, n->children[child], indices, sradius);
 				if(axisDist * axisDist < sradius) // crossing
 					search_radius_recursive(query, n->children[1 - child], indices, sradius);
+			}
+			void search_k_radius_recursive(const Point& query, const node* n, sorted_vec& queue, Distance sradius, int k) const
+			{
+				if (n == nullptr)
+					return;
+				const Point& train = points[n->index];
+				const Distance sdist = sdistance(query, train);
+				if (sdist < (queue.empty() ? sradius : queue.back().first))
+				{
+					auto pair = std::make_pair(sdist, n->index);
+					if (queue.size() == k)
+						queue.pop_back();
+					auto it = std::upper_bound(queue.begin(), queue.end(), pair);
+					queue.insert(it, pair);
+				}
+				const int axis = n->axis;
+				const Distance axisDist = query[axis] - train[axis];
+				const int child = axisDist < 0 ? 0 : 1;
+				search_k_radius_recursive(query, n->children[child], queue, sradius, k);
+				if (axisDist * axisDist < (queue.empty() ? sradius : queue.back().first)) // crossing
+					search_k_radius_recursive(query, n->children[1 - child], queue, sradius, k);
 			}
 			void search_nearest_recursive(const Point& query, const node* n, int& index, Distance& nearestDist) const
 			{

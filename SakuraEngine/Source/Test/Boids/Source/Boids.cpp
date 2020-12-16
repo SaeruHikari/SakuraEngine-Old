@@ -324,7 +324,18 @@ task_system::Event MoveTowardSystem(task_system::ecs::pipeline& ppl, float delta
 				trs[i] = trs[i] + math::normalize(mts[i].Target - trs[i]) * mts[i].MoveSpeed;
 		});
 }
+std::atomic<size_t> averageNeighberCount = 0;
+std::atomic<size_t> maxNeighberCount = 0;
 
+template<typename T>
+void update_maximum(std::atomic<T>& maximum_value, T const& value) noexcept
+{
+	T prev_value = maximum_value;
+	while (prev_value < value &&
+		!maximum_value.compare_exchange_weak(prev_value, value))
+	{
+	}
+}
 task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 {
 	using namespace ecs;
@@ -361,7 +372,6 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		};
 		CopyComponent<Translation>(ppl, targetFilter, targets);
 	}
-
 	//计算新的朝向
 	auto newHeadings = make_resource<chunk_vector<sakura::Vector3f>>();
 	{
@@ -377,7 +387,8 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 				auto hds = o.get_parameter_owned<const Heading>();
 				auto trs = o.get_parameter_owned<const Translation>();
 				auto boid = o.get_parameter<const Boid>(); //这玩意是 shared
-				std::vector<int> neighbers;
+				std::vector<std::pair<float, int>> neighbers;
+				neighbers.reserve(10);
 				chunk_vector<sakura::Vector3f> alignments;
 				chunk_vector<sakura::Vector3f> separations;
 				chunk_vector<sakura::Vector3f> targetings;
@@ -388,14 +399,16 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 				{
 					//收集附近单位的位置和朝向信息
 					neighbers.clear();
-					kdtree->search_radius(trs[i], boid->SightRadius, neighbers);
+					kdtree->search_k_radius(trs[i], boid->SightRadius, 10, neighbers);
 					alignments[i] = sakura::Vector3f::vector_zero();
 					separations[i] = sakura::Vector3f::vector_zero();
-					for (int ng : neighbers)
+					for (auto ng : neighbers)
 					{
-						alignments[i] = alignments[i] + (*headings)[ng];
-						separations[i] = separations[i] +(*kdtree)[ng].value;
+						alignments[i] = alignments[i] + (*headings)[ng.second];
+						separations[i] = separations[i] +(*kdtree)[ng.second].value;
 					}
+					averageNeighberCount += neighbers.size();
+					update_maximum(maxNeighberCount, neighbers.size());
 				}
 				forloop(i, 0, o.get_count())
 				{
@@ -412,7 +425,7 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 					sakura::Vector3f newHeading = math::normalize(alignment * boid->AlignmentWeight + separation * boid->SeparationWeight + targeting * boid->TargetWeight);
 					(*newHeadings)[index + i] = math::normalize((hds[i] + (newHeading - hds[i]) * deltaTime));
 				}
-			}, 100);
+			}, 128);
 	}
 	//结果转换
 	{
@@ -552,10 +565,13 @@ int main()
 		Child2WorldSystem(ppl);
 		World2LocalSystem(ppl);
 		
-		std::cout << "delta time: " << deltaTime << std::endl;
 		
 		// 等待pipeline
 		ppl.wait();
+		std::cout << "delta time: " << deltaTime * 1000 << std::endl;
+		std::cout << "average neighbor count: " << averageNeighberCount / 50000 << std::endl;
+		std::cout << "maximum neighbor count: " << maxNeighberCount << std::endl;
+		averageNeighberCount.store(0);
 		deltaTime = timer.end();
 	}
 }
