@@ -141,7 +141,7 @@ task_system::Event RotateByAxisSystem(task_system::ecs::pipeline& ppl, float del
 			{
 				mtx[i] = math::multiply(mtx[i], trans);
 			}
-		});
+		}, 500);
 }
 
 task_system::Event HeadingSystem(task_system::ecs::pipeline& ppl)
@@ -354,7 +354,7 @@ task_system::Event MoveTowardSystem(task_system::ecs::pipeline& ppl, float delta
 			auto mts = o.get_parameter<const MoveToward>();
 			auto trs = o.get_parameter<Translation>();
 			forloop(i, 0, o.get_count())
-				trs[i] = trs[i] + math::normalize(mts[i].Target - trs[i]) * mts[i].MoveSpeed;
+				trs[i] = trs[i] + math::normalize(mts[i].Target - trs[i]) * mts[i].MoveSpeed * deltaTime;
 		});
 }
 std::atomic<size_t> averageNeighberCount = 0;
@@ -520,14 +520,14 @@ int main()
 		{
 			complist<BoidTarget, Translation, LocalToWorld, MoveToward, RandomMoveTarget>
 		};
-		for (auto slice : ctx.allocate(type, 2000))
+		for (auto slice : ctx.allocate(type, 10))
 		{
 			auto trs = init_component<Translation>(ctx, slice);
 			auto mts = init_component<MoveToward>(ctx, slice);
 			auto rmts = init_component<RandomMoveTarget>(ctx, slice);
 			forloop(i, 0, slice.count)
 			{
-				std::uniform_real_distribution<float> speedDst(5.f, 9.f);
+				std::uniform_real_distribution<float> speedDst(250.f, 300.f);
 				rmts[i].center = sakura::Vector3f::vector_zero();
 				rmts[i].radius = 500.f;
 				mts[i].Target = rmts[i].random_point(get_random_engine());
@@ -547,7 +547,7 @@ int main()
 		{
 			auto bs = init_component<Boid>(ctx, slice);
 			bs->AlignmentWeight = bs->SeparationWeight = bs->TargetWeight = 1.f;
-			bs->MoveSpeed = 15.f;
+			bs->MoveSpeed = 250.f;
 			bs->SightRadius = 5.f;
 			e = ctx.get_entities(slice.c)[slice.start];
 		}
@@ -557,13 +557,13 @@ int main()
 		//创建 Boid
 		entity_type type
 		{
-			complist<Translation, Heading, Rotation>,
+			complist<Translation, Heading, Rotation, LocalToWorld>,
 			{&e, 1}
 		};
 		sphere s;
 		s.center = Vector3f::vector_zero();
 		s.radius = 1000.f;
-		for (auto slice : ctx.allocate(type, 40000))
+		for (auto slice : ctx.allocate(type, 500))
 		{
 			auto trs = init_component<Translation>(ctx, slice);
 			auto hds = init_component<Heading>(ctx, slice);
@@ -600,8 +600,8 @@ int main()
 			RotationEulerSystem(ppl);
 
 			RandomTargetSystem(ppl);
-			//MoveTowardSystem(ppl, deltaTime);
-			//BoidsSystem(ppl, deltaTime);
+			MoveTowardSystem(ppl, deltaTime);
+			BoidsSystem(ppl, deltaTime);
 			HeadingSystem(ppl);
 
 			filters wrd_filter;
@@ -621,7 +621,7 @@ int main()
 			Local2XSystem<LocalToParent>(ppl, c2p_filter);
 			Child2WorldSystem(ppl);
 			World2LocalSystem(ppl);
-			RotateByAxisSystem(ppl, deltaTime);
+			//RotateByAxisSystem(ppl, deltaTime);
 		}
 		
 		{

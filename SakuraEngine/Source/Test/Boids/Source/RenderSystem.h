@@ -236,7 +236,7 @@ namespace render_system
 		);
 		mainWindow.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());
 		worlds.clear();
-		return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList),
+		return task_system::ecs::schedule<false, true>(ppl, *ppl.create_pass(filter, paramList),
 			[](const task_system::ecs::pipeline& pipeline, const ecs::pass& task_pass, const ecs::task& tk)
 			{
 				auto o = operation{ paramList, task_pass, tk };
