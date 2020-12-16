@@ -299,7 +299,7 @@ task_system::Event RandomTargetSystem(task_system::ecs::pipeline& ppl)
 			auto rmts = o.get_parameter<const RandomMoveTarget>();
 			forloop(i, 0, o.get_count())
 			{
-				if (math::subtract(mts[i].Target, trs[i]).is_nearly_zero())
+				if (math::subtract(mts[i].Target, trs[i]).is_nearly_zero(40.f))
 				{
 					auto sphere = rmts[i];
 					mts[i].Target = sphere.random_point(get_random_engine());
@@ -502,7 +502,7 @@ int main()
 			auto rmts = init_component<RandomMoveTarget>(ctx, slice);
 			forloop(i, 0, slice.count)
 			{
-				std::uniform_real_distribution<float> speedDst(15.f, 25.f);
+				std::uniform_real_distribution<float> speedDst(5.f, 9.f);
 				rmts[i].center = Vector3f::vector_zero();
 				rmts[i].radius = 1000.f;
 				mts[i].Target = rmts[i].random_point(get_random_engine());

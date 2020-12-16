@@ -104,7 +104,7 @@ namespace render_system
 			sakura::float4x4 view = sakura::math::look_at_matrix(
 				sakura::Vector3f::vector_zero(), sakura::Vector3f(-1.f, -1.f, -1.f));
 			sakura::float4x4 proj =
-				sakura::math::perspective_fov(0.25f * 3.1415926f, 800.f / 450.f, 1.0f, 1000.0f);
+				sakura::math::perspective_fov(0.25f * 3.1415926f, 1920.f / 1080.f, 1.0f, 1000.0f);
 
 			viewProj = sakura::math::multiply(view, proj);
 			viewProj = sakura::math::transpose(viewProj);
@@ -142,8 +142,8 @@ namespace render_system
 		sakura::info("game thread id: {}", std::hash<std::thread::id>()(sakura::Core::get_main_thread_id()));
 		
 		sakura::Window::desc windDesc;
-		windDesc.height = 450;
-		windDesc.width = 800;
+		windDesc.height = 1080;
+		windDesc.width = 1920;
 		windDesc.name = "Sakura Engine";
 		mainWindow = sakura::Window::create(windDesc);
 
@@ -193,7 +193,7 @@ namespace render_system
 		float const vertData[] = {
 			 0.f, -4.f, -4.f,    1.0f, 0.0f, 1.0f, // BL
 			 0.f, -4.f, 4.f,    0.0f, 1.0f, 0.0f, // BR
-			 0.0f, 4.f, 0.f,    1.0f, 0.0f, 0.0f, // top
+			 0.0f, 10.f, 0.f,    1.0f, 0.0f, 0.0f, // top
 		}; // triangle on XY-Plane.
 		uint16_t const indxData[] = { 0, 1, 2, 0 };
 		// Create Buffers.
