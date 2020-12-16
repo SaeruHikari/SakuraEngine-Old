@@ -4,19 +4,20 @@ project(Tracker)
 download_and_extract(
     ${FILE_SERVER_DIR}/code/tracy-0.7.4.zip
     ${ENGINE_DIR}/Build/Code/tracy.zip
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/tracy-0.7.4
 )
 Module(
     NAME Tracker
     TYPE Library
     SRC_PATH  
-        #Default as Source
+        /Source
     DEPS 
         
     DEPS_PUBLIC 
         RuntimeCore 
     INCLUDES_PUBLIC 
-        #Default as RuntimeCore
+        /Include
+        /tracy-0.7.4
     LINKS
     LINKS_PUBLIC dxcompiler
 )
