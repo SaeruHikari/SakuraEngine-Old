@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "base/GUID.h"
-#include "base/GenerationalId.h"
-#include "system/VirtualFileSystem.h"
+#include "Base/GUID.h"
+#include "Base/GenerationalId.h"
+#include "System/VirtualFileSystem.h"
 
 namespace sakura
 {

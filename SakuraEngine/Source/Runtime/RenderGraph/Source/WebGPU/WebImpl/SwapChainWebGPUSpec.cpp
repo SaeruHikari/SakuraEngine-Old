@@ -1,6 +1,6 @@
 ﻿// WebGPU Implementation of WebGPU SwapChain.
 #include <RenderGraphWebGPU/RenderGraphWebGPU.h>
-#include <system/Log.h>
+#include <System/Log.h>
 
 using namespace sakura::graphics;
 using namespace sakura::graphics::webgpu;

@@ -1,8 +1,8 @@
 ﻿#pragma once
 #include "Base/GenerationalId.h"
 #include "Containers/constexpr_map.hpp"
-#include "system/vfs/path.h"
-#include "system/Window.h"
+#include "System/vfs/path.h"
+#include "System/Window.h"
 
 namespace sakura::graphics
 {

@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "RenderGraph/IRenderDevice.h"
-#include "system/Log.h"
+#include "System/Log.h"
 #ifdef SAKURA_TARGET_PLATFORM_EMSCRIPTEN
 #include <webgpu/webgpu.h>
 #else

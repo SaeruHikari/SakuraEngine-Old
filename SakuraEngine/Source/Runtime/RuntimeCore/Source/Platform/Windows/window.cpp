@@ -1,8 +1,8 @@
-﻿#include <system/Window.h>
+﻿#include <System/Window.h>
 #include <mmsystem.h>
 #include <shellapi.h>
 
-#include "system/Log.h"
+#include "System/Log.h"
 #if _WIN32_WINNT >= 0x0605
 #include <ShellScalingApi.h>
 #endif

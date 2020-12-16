@@ -1,5 +1,5 @@
 ﻿#include "RuntimeCore/Resource.h"
-#include "system/Log.h"
+#include "System/Log.h"
 
 using namespace sakura;
 

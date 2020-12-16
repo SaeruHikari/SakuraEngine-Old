@@ -7,7 +7,7 @@
 #include <RenderGraphWebGPU/BufferWebGPU.h>
 #include "RenderGraph/RenderGraph.h"
 
-#include "system/Log.h"
+#include "System/Log.h"
 
 namespace sakura::graphics::webgpu
 {

@@ -66,7 +66,10 @@ namespace render_system
 	RenderBufferHandle uniformBufferPerObject = render_graph.RenderBuffer("UniformBufferPerObject");
 
 	RenderBufferHandle vertexBuffer = render_graph.RenderBuffer("VertexBuffer");
-	RenderBufferHandle indexBuffer = render_graph.RenderBuffer("IndexBuffer");
+	RenderBufferHandle indexBuffer = render_graph.RenderBuffer("IndexBuffer");	
+
+	RenderBufferHandle vertexBufferSphere = render_graph.RenderBuffer("VertexBufferSphere");
+	RenderBufferHandle indexBufferSphere = render_graph.RenderBuffer("IndexBufferSphere");
 
 	sakura::float4x4 viewProj;
 	std::vector<sakura::float4x4> worlds(42000 * 4);
@@ -91,9 +94,9 @@ namespace render_system
 				});
 				command_buffer().enqueue<RenderCommandUpdateBinding>(binding);
 				command_buffer().enqueue<RenderCommandDraw>(
-					RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBuffer")),
-					RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBuffer"), 
-					3, EIndexFormat::UINT16)
+					RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBufferSphere")),
+					RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBufferSphere"), 
+					60, EIndexFormat::UINT16)
 				);
 			}
 			command_buffer().enqueue<RenderCommandEndRenderPass>();
@@ -105,7 +108,7 @@ namespace render_system
 			sakura::float4x4 view = sakura::math::look_at_matrix(
 				sakura::Vector3f(-1.f, -1.f, -1.f) * 1, Vector3f::vector_zero());
 			sakura::float4x4 proj =
-				sakura::math::perspective_fov(0.25f * 3.1415926f, 1080.f / 1920.f, 1.0f, 1000.0f);
+				sakura::math::perspective_fov(0.25f * 3.1415926f, 720.f / 1080.f, 1.0f, 1000.0f);
 
 			viewProj = sakura::math::multiply(offset, view);
 			viewProj = sakura::math::multiply(viewProj, proj);
@@ -144,8 +147,8 @@ namespace render_system
 		sakura::info("game thread id: {}", std::hash<std::thread::id>()(sakura::Core::get_main_thread_id()));
 		
 		sakura::Window::desc windDesc;
-		windDesc.height = 1080;
-		windDesc.width = 1920;
+		windDesc.height = 720;
+		windDesc.width = 1080;
 		windDesc.name = "Sakura Engine";
 		mainWindow = sakura::Window::create(windDesc);
 
@@ -198,6 +201,31 @@ namespace render_system
 			 0.0f, 10.f, 0.f,    1.0f, 0.0f, 0.0f, // top
 		}; // triangle on XY-Plane.
 		uint16_t const indxData[] = { 0, 1, 2, 0 };
+
+		const float X = 0.525731f * 7.f;
+		const float Z = 0.850651f * 7.f;
+		float const sphere_vertices[72] =
+		{
+			-X, 0.0f, Z,  1.0f, 0.0f, 1.0f,
+			X, 0.0f, Z,   0.0f, 1.0f, 0.0f,
+			-X, 0.0f, -Z, 1.0f, 0.0f, 0.0f,
+			X, 0.0f, -Z,  1.0f, 0.0f, 1.0f,
+			0.0f, Z, X,   0.0f, 1.0f, 0.0f,
+			0.0f, Z, -X,  1.0f, 0.0f, 0.0f,
+			0.0f, -Z, X,  1.0f, 0.0f, 1.0f,
+			0.0f, -Z, -X, 0.0f, 1.0f, 0.0f,
+			Z, X, 0.0f,   1.0f, 0.0f, 0.0f,
+			-Z, X, 0.0f,  1.0f, 0.0f, 1.0f,
+			Z, -X, 0.0f,  0.0f, 1.0f, 0.0f,
+			-Z, -X, 0.0f, 1.0f, 0.0f, 0.0f,
+		};
+		uint16_t sphere_indices[60] =
+		{
+			1,4,0,  4,9,0,  4,5,9,  8,5,4,  1,8,4,
+			1,10,8, 10,3,8, 8,3,5,  3,2,5,  3,7,2,
+			3,10,7, 10,6,7, 6,11,7, 6,0,11, 6,1,0,
+			10,1,6, 11,0,9, 2,11,9, 5,2,9,  11,2,7
+		};
 		// Create Buffers.
 		deviceGroup.create_buffer(uniformBuffer,
 			BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4), &viewProj));
@@ -208,6 +236,13 @@ namespace render_system
 			BufferDesc(EBufferUsage::VertexBuffer, sizeof(vertData), vertData));
 		deviceGroup.create_buffer(indexBuffer,
 			BufferDesc(EBufferUsage::IndexBuffer, sizeof(indxData), &indxData));
+
+
+		deviceGroup.create_buffer(vertexBufferSphere,
+			BufferDesc(EBufferUsage::VertexBuffer, sizeof(sphere_vertices), sphere_vertices));
+		deviceGroup.create_buffer(indexBufferSphere,
+			BufferDesc(EBufferUsage::IndexBuffer, sizeof(sphere_indices), &sphere_indices));
+
 		sakura::info("All Tests Passed!");
 	}
 
@@ -218,7 +253,7 @@ namespace render_system
 	using Rotator = sakura::Rotator;
 	using float4x4 = sakura::float4x4;
 	using IModule = sakura::IModule;
-	task_system::Event RenderSystem(task_system::ecs::pipeline& ppl, float deltaTime)
+	task_system::Event CollectSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	{
 		using namespace sakura;
 		using namespace sakura::graphics;
@@ -234,7 +269,11 @@ namespace render_system
 			// read.
 			param<const LocalToWorld>
 		);
-		mainWindow.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());
+		static size_t cycles = 0;
+		cycles += 1;
+		if(cycles % 60 == 0)
+			mainWindow.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());
+
 		worlds.clear();
 		return task_system::ecs::schedule<false, true>(ppl, *ppl.create_pass(filter, paramList),
 			[](const task_system::ecs::pipeline& pipeline, const ecs::pass& task_pass, const ecs::task& tk)
@@ -253,7 +292,7 @@ namespace render_system
 			});
 	}
 
-	task_system::Event present(const task_system::Event at)
+	task_system::Event RenderAndPresent(const task_system::Event at)
 	{
 		at.wait();
 		task_system::Event ev;
