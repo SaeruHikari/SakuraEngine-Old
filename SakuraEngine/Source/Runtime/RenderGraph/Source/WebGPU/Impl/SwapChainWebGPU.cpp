@@ -1,5 +1,5 @@
 ﻿#include "RenderGraphWebGPU/RenderGraphWebGPU.h"
-#include "system/Log.h"
+#include "System/Log.h"
 
 using namespace sakura::graphics::webgpu;
 

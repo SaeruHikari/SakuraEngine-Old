@@ -27,7 +27,7 @@
 #pragma once
 #include "RenderGraphCore.h"
 #include "RenderGraph/RenderCommandBuffer.h"
-#include "system/Window.h"
+#include "System/Window.h"
 
 namespace sakura::graphics
 {

@@ -28,6 +28,22 @@ Module(
 )
 endif(windows)
 
+if(vulkan)
+Module(
+    NAME RenderGraphVulkan
+    TYPE Library
+    SRC_PATH  
+        /Source/Vulkan
+    DEPS
+    DEPS_PUBLIC 
+        RenderGraph RuntimeCore
+    INCLUDES_PUBLIC  
+        /Vulkan
+    LINKS
+    LINKS_PUBLIC
+)
+endif(vulkan)
+
 if(windows OR macos OR web)
   
 if(windows OR macos)

@@ -72,17 +72,18 @@ task_system::Event ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& 
 		complist<Ts...>,
 		timestamp
 	};
-	def paramList = hana::tuple{
+	def paramList = boost::hana::make_tuple(
 		param<T>,
 		param<const Ts>...
-	};
+	);
 	timestamp = ppl.get_timestamp();
 	return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList),
 		[f](const task_system::ecs::pipeline& pipeline, const pass& pass, const task& tk)
 		{
 			ZoneScopedN("ConvertSystem");
 			auto o = operation{ paramList, pass, tk };
-			hana::tuple arrays = { o.get_parameter<T>(), o.get_parameter<const Ts>()... };
+			hana::tuple arrays = boost::hana::make_tuple(
+				o.get_parameter<T>(), o.get_parameter<const Ts>()...);
 			forloop(i, 0, o.get_count())
 			{
 				auto params = hana::transform(arrays, [i](auto v) { return v?v + i:nullptr; });
@@ -126,7 +127,7 @@ task_system::Event RotateByAxisSystem(task_system::ecs::pipeline& ppl, float del
 	filter.archetypeFilter = {
 		{complist<BoidTarget, LocalToWorld>}
 	};
-	def paramList = hana::tuple{ param<LocalToWorld> };
+	def paramList = boost::hana::make_tuple( param<LocalToWorld> );
 	auto quat = sakura::math::quaternion_from_axis(Vector3f{ 0.f,1.f,0.f }, 3.1415926f * 0.25f * deltaTime);
 	auto trans = math::make_transform(Vector3f::vector_zero(), Vector3f::vector_one(), quat);
 	return task_system::ecs::schedule(ppl,
@@ -253,7 +254,7 @@ template<class C, class T>
 task_system::Event CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector, int maxSlice = -1)
 {
 	using namespace ecs;
-	def paramList = hana::tuple{ param<const C> };
+	def paramList = boost::hana::make_tuple( param<const C> );
 	shared_entry shareList[] = { write(vector) };
 	auto pass = ppl.create_pass(filter, paramList, shareList);
 	vector->resize(pass->entityCount);
@@ -311,9 +312,9 @@ task_system::Event RandomTargetSystem(task_system::ecs::pipeline& ppl)
 	{
 		{complist<Translation, MoveToward, RandomMoveTarget>}
 	};
-	def paramList = hana::tuple{
+	def paramList = boost::hana::make_tuple(
 		param<MoveToward>, param<const RandomMoveTarget>, param<const Translation>
-	};
+	);
 	return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList), 
 		[](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
 		{
@@ -341,9 +342,9 @@ task_system::Event MoveTowardSystem(task_system::ecs::pipeline& ppl, float delta
 	{
 		{complist<Translation, MoveToward>}
 	};
-	def paramList = hana::tuple{
+	def paramList = boost::hana::make_tuple(
 		param<Translation>, param<const MoveToward>
-	};
+	);
 	static std::random_device r;
 	static std::default_random_engine el(r());
 	return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList),
@@ -416,7 +417,8 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	auto newHeadings = make_resource<chunk_vector<sakura::Vector3f>>();
 	{
 		shared_entry shareList[] = { read(kdtree), read(headings), read(targetTree), write(newHeadings) };
-		def paramList = hana::tuple{ param<const Heading>, param<const Translation>, param<const Boid> };
+		def paramList = 
+			boost::hana::make_tuple( param<const Heading>, param<const Translation>, param<const Boid> );
 		auto pass = ppl.create_pass(boidFilter, paramList, shareList);
 		newHeadings->resize(pass->entityCount);
 		task_system::ecs::schedule(ppl, *pass,
@@ -481,7 +483,8 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	//结果转换
 	{
 		shared_entry shareList[] = { read(newHeadings) };
-		def paramList = hana::tuple{ param<Heading>, param<Translation>, param<const Boid> };
+		def paramList = 
+			boost::hana::make_tuple( param<Heading>, param<Translation>, param<const Boid> );
 		return task_system::ecs::schedule(ppl, *ppl.create_pass(boidFilter, paramList, shareList),
 			[newHeadings, deltaTime](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
 			{
@@ -627,13 +630,13 @@ int main()
 		{
 			ZoneScopedN("Pipeline Sync")
 
-			auto r = render_system::RenderSystem(ppl, deltaTime);
+			auto r = render_system::CollectSystem(ppl, deltaTime);
 			// 等待pipeline
 			ppl.wait();
-			render_system::present(r).wait();
+			render_system::RenderAndPresent(r).wait();
 		}
 
-		//std::cout << "delta time: " << deltaTime * 1000 << std::endl;
+		std::cout << "delta time: " << deltaTime * 1000 << std::endl;
 		//std::cout << "average neighbor count: " << averageNeighberCount / 50000 << std::endl;
 		//std::cout << "maximum neighbor count: " << maxNeighberCount << std::endl;
 		//averageNeighberCount.store(0);

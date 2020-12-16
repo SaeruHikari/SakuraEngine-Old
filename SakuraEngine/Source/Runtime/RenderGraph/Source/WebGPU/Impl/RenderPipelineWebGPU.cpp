@@ -1,5 +1,5 @@
 ﻿#include "RenderGraphWebGPU/RenderGraphWebGPU.h"
-#include "system/Log.h"
+#include "System/Log.h"
 
 sakura::graphics::webgpu::RenderPipeline::RenderPipeline(RenderPipelineHandle handle,
 	const webgpu::RenderDevice& dev, const RenderPipelineDesc& desc)

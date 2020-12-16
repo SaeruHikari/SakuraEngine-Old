@@ -1,6 +1,6 @@
 ﻿// Dawn Implementation of WebGPU SwapChain.
 #include <RenderGraphWebGPU/RenderGraphWebGPU.h>
-#include "system/Log.h"
+#include "System/Log.h"
 
 #if __has_include("d3d12.h") || (_MSC_VER >= 1900)
 #define DAWN_ENABLE_BACKEND_D3D12

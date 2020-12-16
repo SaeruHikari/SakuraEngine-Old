@@ -1,5 +1,5 @@
-﻿#include <system/Window.h>
-#include <system/Log.h>
+﻿#include <System/Window.h>
+#include <System/Log.h>
 #include <emscripten/html5.h>
 
 static sakura::vector<sakura::string> registed_Windows;

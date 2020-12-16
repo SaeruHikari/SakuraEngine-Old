@@ -5,6 +5,7 @@
 
 /Debug-build
 /Release-build
+/RelWithDebInfo-build
 /build
 /Web-build
 /SakuraEngine/Binaries
