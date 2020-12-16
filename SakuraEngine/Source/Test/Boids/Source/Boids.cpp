@@ -363,7 +363,8 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	}
 
 	//收集目标和障碍物
-	auto targets = make_resource<std::vector<sakura::Vector3f>>();
+	auto targets = make_resource<std::vector<BoidPosition>>();
+	auto targetTree = make_resource<core::algo::kdtree<BoidPosition>>();
 	{
 		filters targetFilter;
 		targetFilter.archetypeFilter =
@@ -371,16 +372,21 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 			{complist<BoidTarget, Translation>}
 		};
 		CopyComponent<Translation>(ppl, targetFilter, targets);
+		shared_entry shareList[] = { read(targets), write(targetTree) };
+		task_system::ecs::schedule_custom(ppl, *ppl.create_custom_pass(shareList), [targets, targetTree]() mutable
+			{
+				targetTree->initialize(std::move(*targets));
+			});
 	}
 	//计算新的朝向
 	auto newHeadings = make_resource<chunk_vector<sakura::Vector3f>>();
 	{
-		shared_entry shareList[] = { read(kdtree), read(headings), read(targets), write(newHeadings) };
+		shared_entry shareList[] = { read(kdtree), read(headings), read(targetTree), write(newHeadings) };
 		def paramList = hana::tuple{ param<const Heading>, param<const Translation>, param<const Boid> };
 		auto pass = ppl.create_pass(boidFilter, paramList, shareList);
 		newHeadings->resize(pass->entityCount);
 		task_system::ecs::schedule(ppl, *pass,
-			[headings, kdtree, targets, newHeadings, deltaTime](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk) mutable
+			[headings, kdtree, targetTree, newHeadings, deltaTime](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk) mutable
 			{
 				auto o = operation{ paramList, pass, tk };
 				auto index = o.get_index();
@@ -413,7 +419,7 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 				forloop(i, 0, o.get_count())
 				{
 					//寻找一个目标
-					targetings[i] = nearest_position(trs[i], *targets);
+					targetings[i] = (*targetTree)[targetTree->search_nearest(trs[i])].value;
 				}
 				forloop(i, 0, o.get_count())
 				{
@@ -425,7 +431,7 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 					sakura::Vector3f newHeading = math::normalize(alignment * boid->AlignmentWeight + separation * boid->SeparationWeight + targeting * boid->TargetWeight);
 					(*newHeadings)[index + i] = math::normalize((hds[i] + (newHeading - hds[i]) * deltaTime));
 				}
-			}, 128);
+			}, 100);
 	}
 	//结果转换
 	{

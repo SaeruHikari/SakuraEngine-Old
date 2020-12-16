@@ -53,7 +53,7 @@ namespace core
 			int search_nearest(const Point& query) const
 			{
 				if (nodes.empty())
-					return;
+					return -1;
 				int index = -1;
 				Distance nearestDist = std::numeric_limits<Distance>::max();
 				search_nearest_recursive(query, &nodes[0], index, nearestDist);
@@ -144,9 +144,9 @@ namespace core
 				const int axis = n->axis;
 				const Distance axisDist = query[axis] - train[axis];
 				const int child = axisDist < 0 ? 0 : 1;
-				search_radius_recursive(query, n->children[child], index, nearestDist);
+				search_nearest_recursive(query, n->children[child], index, nearestDist);
 				if (axisDist * axisDist < nearestDist) // crossing
-					search_radius_recursive(query, n->children[1 - child], index, nearestDist);
+					search_nearest_recursive(query, n->children[1 - child], index, nearestDist);
 			}
 			std::vector<node> nodes;
 			std::vector<Point> points;
