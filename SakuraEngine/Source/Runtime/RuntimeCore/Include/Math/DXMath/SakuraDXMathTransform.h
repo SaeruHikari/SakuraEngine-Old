@@ -23,6 +23,14 @@ namespace sakura::math::__matrix
 	{
 		return DirectX::XMMatrixInverse(nullptr, a);
 	}
+
+	FORCEINLINE MatrixRegister transpose
+	(
+		const MatrixRegister a
+	)
+	{
+		return DirectX::XMMatrixTranspose(a);
+	}
 	
 	FORCEINLINE MatrixRegister multiply
 	(
@@ -61,6 +69,19 @@ namespace sakura::math::__matrix
 			__vector::load_float3_w0(Eye.data_view()),
 			__vector::load_float3_w0(At.data_view()),
 			DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f)
+		);
+	}
+
+	FORCEINLINE MatrixRegister perspective_fov
+	(
+		float FovAngleY,
+		float AspectRatio,
+		float NearZ,
+		float FarZ
+	)
+	{
+		return DirectX::XMMatrixPerspectiveFovLH(
+			FovAngleY, AspectRatio, NearZ, FarZ
 		);
 	}
 }

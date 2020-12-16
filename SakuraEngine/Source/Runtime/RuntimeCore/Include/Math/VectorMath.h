@@ -16,6 +16,7 @@ namespace sakura::math
 			const float Scale = math::rsqrt(SquareSum);
 			return vec * Scale;
 		}
+		return Vector<T, Dimension>::vector_zero();
 	}
 
 	template<typename T>

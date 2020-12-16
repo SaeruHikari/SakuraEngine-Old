@@ -27,6 +27,21 @@ namespace sakura::math
 		return res;
 	}
 
+	FORCEINLINE float4x4 perspective_fov
+	(
+		float FovAngleY,
+		float AspectRatio,
+		float NearZ,
+		float FarZ
+	)
+	{
+		float4x4 res;
+		__matrix::store_aligned(res.data_view(),
+			__matrix::inverse(__matrix::perspective_fov(FovAngleY, AspectRatio, NearZ, FarZ))
+		);
+		return res;
+	}
+
 	FORCEINLINE float4x4 look_at_matrix
 	(
 		const Vector3f Eye,
@@ -64,9 +79,17 @@ namespace sakura::math
 		return res;
 	}
 
-
-
-
+	FORCEINLINE float4x4 transpose
+	(
+		const float4x4 a
+	)
+	{
+		float4x4 res;
+		__matrix::store_aligned(res.data_view(),
+			__matrix::transpose(__matrix::load_aligned(a.data_view()))
+		);
+		return res;
+	}
 
 
 
