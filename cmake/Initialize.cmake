@@ -16,8 +16,10 @@ include(CMakeParseArguments)
 target_architecture(TARGET_ARCH)
 if((TARGET_ARCH MATCHES "x86_64" OR TARGET_ARCH MATCHES "ia64") AND NOT OF_32BIT)
     set(ARCH_BIT 64)
+    set(SAKURA_ARCH x64) #TODO: ARMS
 else()
     set(ARCH_BIT 32)
+    set(SAKURA_ARCH x86) #TODO: ARMS
 endif()
 message(STATUS "Target ARCH_BIT: ${ARCH_BIT}")
 

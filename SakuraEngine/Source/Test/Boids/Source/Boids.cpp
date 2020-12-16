@@ -1,3 +1,8 @@
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#define TRACY_ENABLE
+#include "tracy/Tracy.hpp"
+
 #include "RuntimeCore/RuntimeCore.h"
 #include "spdlog/spdlog.h"
 #include "marl/finally.h"
@@ -21,6 +26,9 @@
 #include <iostream>
 #include <random>
 #include <cmath>
+
+
+
 
 #define forloop(i, z, n) for(auto i = std::decay_t<decltype(n)>(z); i<(n); ++i)
 #define def static constexpr auto
@@ -347,7 +355,6 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		{}, //none
 		complist<Boid> //shared
 	};
-
 	//构造 kdtree, 提取 headings
 	auto positions = make_resource<std::vector<BoidPosition>>();
 	auto headings = make_resource<std::vector<sakura::Vector3f>>();
@@ -539,6 +546,8 @@ int main()
 	double deltaTime = 0;
 	while(sakura::Core::yield())
 	{
+		ZoneScoped;
+
 		timer.start_up();
 		task_system::ecs::pipeline ppl(ctx);
 		ppl.on_sync = [&](gsl::span<custom_pass*> dependencies)
@@ -574,6 +583,9 @@ int main()
 		
 		// 等待pipeline
 		ppl.wait();
+
+		FrameMark;
+
 		std::cout << "delta time: " << deltaTime * 1000 << std::endl;
 		std::cout << "average neighbor count: " << averageNeighberCount / 50000 << std::endl;
 		std::cout << "maximum neighbor count: " << maxNeighberCount << std::endl;
