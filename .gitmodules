@@ -7,6 +7,3 @@
 [submodule "SakuraEngine/Source/Runtime/CMakeImported/GSL"]
 	path = SakuraEngine/Source/Runtime/CMakeImported/GSL
 	url = git@github.com:microsoft/GSL.git
-[submodule "SakuraEngine/Source/Runtime/CMakeImported/tracy"]
-	path = SakuraEngine/Source/Runtime/CMakeImported/tracy
-	url = git@github.com:wolfpld/tracy.git
