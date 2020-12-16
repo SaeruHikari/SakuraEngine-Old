@@ -181,16 +181,76 @@ namespace sakura
         {
             return m_;
         }
-        FORCEINLINE float length() const
-        {
-            return math::sqrt(X * X + Y * Y + Z * Z + W * W);
-        }
-		FORCEINLINE float length_squared() const
-		{
-			return X * X + Y * Y + Z * Z + W * W;
-		}
+        FORCEINLINE float length() const;
+        FORCEINLINE float length_squared() const;
         FORCEINLINE static constexpr Vector<float, 4> vector_one();
         FORCEINLINE static constexpr Vector<float, 4> vector_zero();
+
+        FORCEINLINE Vector operator+(const Vector V) const;
+        FORCEINLINE Vector operator-(const Vector V) const;
+        FORCEINLINE Vector operator-(float Bias) const;
+        FORCEINLINE Vector operator+(float Bias) const;
+        FORCEINLINE Vector operator*(float Scale) const;
+        FORCEINLINE friend Vector operator*(float Scale, const Vector vec)
+        {
+            return vec * Scale;
+        }
+
+        Vector operator/(float Scale) const;
+        bool operator==(const Vector V) const;
+        bool operator!=(const Vector V) const;
+        bool equals(const Vector V, float Tolerance = KINDA_SMALL_NUMBER) const;
+        FORCEINLINE Vector operator-() const;
+        FORCEINLINE Vector operator+=(const Vector V);
+        FORCEINLINE Vector operator-=(const Vector V);
+        FORCEINLINE Vector operator*=(const float Scale);
+        FORCEINLINE Vector operator/=(float V);
+
+        /**
+         * Gets the result of component-wise multiplication of this vector by another.
+         *
+         * @param V The vector to multiply with.
+         * @return The result of multiplication.
+         */
+        FORCEINLINE Vector operator*(const Vector V) const;
+
+        /**
+         * Gets the result of component-wise division of this vector by another.
+         *
+         * @param V The vector to divide by.
+         * @return The result of division.
+         */
+        FORCEINLINE Vector operator/(const Vector V) const;
+
+        /**
+         * Multiplies the vector with another vector, using component-wise multiplication.
+         *
+         * @param V What to multiply this vector with.
+         * @return Copy of the vector after multiplication.
+         */
+        Vector operator*=(const Vector V);
+
+        /**
+         * Divides the vector by another vector, using component-wise division.
+         *
+         * @param V What to divide vector by.
+         * @return Copy of the vector after division.
+         */
+        Vector operator/=(const Vector V);
+
+        /**
+         * Calculate the dot product between this and another vector.
+         *
+         * @param V The other vector.
+         * @return The dot product.
+         */
+        FORCEINLINE float operator|(const Vector V) const;
+        FORCEINLINE static float dot_product(const Vector A, const Vector B);
+
+        FORCEINLINE bool is_zero() const;
+        FORCEINLINE bool is_nearly_zero(float tolerence = SMALL_NUMBER) const;
+        FORCEINLINE bool is_normalized() const;
+
     protected:
     	union
     	{
