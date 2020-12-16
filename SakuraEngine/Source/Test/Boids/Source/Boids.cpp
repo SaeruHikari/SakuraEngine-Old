@@ -11,10 +11,6 @@
 #include "System/VirtualFileSystem.h"
 #include "System/Log.h"
 
-#include "Base/GUID.h"
-
-#include "Codebase/Codebase.h"
-
 #include "ECS/ECS.h"
 
 #include "TransformComponents.h"
@@ -26,8 +22,6 @@
 #include <iostream>
 #include <random>
 #include <cmath>
-
-
 
 
 #define forloop(i, z, n) for(auto i = std::decay_t<decltype(n)>(z); i<(n); ++i)
@@ -574,6 +568,7 @@ int main()
 		Child2WorldSystem(ppl);
 		World2LocalSystem(ppl);
 		
+
 		
 		// 等待pipeline
 		ppl.wait();

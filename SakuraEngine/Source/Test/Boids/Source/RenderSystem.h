@@ -4,6 +4,8 @@
 #include "RenderGraph/RenderGraph.h"
 #include "RenderGraphWebGPU/RenderGraphWebGPU.h"
 
+#include "ECS/ECS.h"
+
 namespace render_system
 {
 	using namespace sakura::graphics;
@@ -59,6 +61,46 @@ namespace render_system
 	RenderBufferHandle vertexBuffer = render_graph.RenderBuffer("VertexBuffer");
 	RenderBufferHandle indexBuffer = render_graph.RenderBuffer("IndexBuffer");
 	float rotDeg = 0.f;
+
+	class RenderPassSimple : public RenderPass
+	{
+	public:
+		RenderPassSimple(const RenderPassHandle handle)
+			:RenderPass(handle) {}
+		bool execute(const RenderGraph& rg, const RenderGraph::Builder& builder, IRenderDevice& device) noexcept override
+		{
+			command_buffer().enqueue<RenderCommandBeginRenderPass>(renderPipeline, attachment);
+			command_buffer().enqueue<RenderCommandUpdateBinding>(binding);
+			//command_buffer().enqueue<RenderCommandSetScissorRect>(
+			//	0, device.backend() == EBackend::WebGPU ? mainWindow.extent().width / 2 + 10 : 0,
+			//	mainWindow.extent().width / 2, mainWindow.extent().height
+			//);
+			command_buffer().enqueue<RenderCommandDraw>(
+				RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBuffer")),
+				RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBuffer"), 3, EIndexFormat::UINT16)
+				);
+			command_buffer().enqueue<RenderCommandEndRenderPass>();
+			return device.execute(*this, handle()) && this->reset();
+		}
+		bool construct(RenderGraph::Builder& rg) noexcept override
+		{
+			rotDeg += 0.1f;
+			deviceGroup.update_buffer(uniformBuffer, 0, &rotDeg, sizeof(rotDeg));
+
+			attachment = Attachment({
+				Attachment::Slot(swapChain, sakura::double4(), ELoadOp::Clear, EStoreOp::Store)
+				});
+			binding = Binding({
+				Binding::Set({
+					Binding::Slot(uniformBuffer, 0, sizeof(float), 0)
+				})
+				});
+			return true;
+		}
+		Binding binding;
+		Attachment attachment;
+	};
+	RenderPassHandle pass = render_graph.create_render_pass<RenderPassSimple>();
 
 	void initialize()
 	{
@@ -145,7 +187,45 @@ namespace render_system
 		deviceGroup.create_buffer(indexBuffer,
 			BufferDesc(EBufferUsage::IndexBuffer, sizeof(indxData), &indxData));
 		sakura::info("All Tests Passed!");
+	}
 
+	namespace task_system = sakura::task_system;
+	namespace math = sakura::math;
+	using Vector3f = sakura::Vector3f;
+	using Quaternion = sakura::Quaternion;
+	using Rotator = sakura::Rotator;
+	using float4x4 = sakura::float4x4;
+	using IModule = sakura::IModule;
+	task_system::Event RenderSystem(task_system::ecs::pipeline& ppl, float deltaTime)
+	{
+		using namespace sakura;
+		using namespace sakura::graphics;
+		using namespace ecs;
 
+		RenderPass* pass_ptr = render_graph.render_pass(pass);
+		pass_ptr->construct(render_graph.builder(pass));
+		if (pass_ptr->execute(render_graph, render_graph.builder(pass), deviceGroup))
+		{		
+			deviceGroup.present(swapChain);
+		}
+
+		filters filter;
+		filter.archetypeFilter = {
+			{complist<LocalToWorld, WorldToLocal>}, //all
+			{}, //any
+			{} //none
+		};
+		static constexpr auto paramList = boost::hana::make_tuple(
+			// write
+			param<WorldToLocal>,
+			// read.
+			param<const LocalToWorld>
+		);
+		return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList),
+			[](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
+			{
+				auto o = operation{ paramList, pass, tk };
+				
+			});
 	}
 }

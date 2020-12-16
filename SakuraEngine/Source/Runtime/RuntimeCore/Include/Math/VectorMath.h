@@ -16,8 +16,7 @@ namespace sakura::math
 			const float Scale = math::rsqrt(SquareSum);
 			return vec * Scale;
 		}
-		sakura::error("vector with value of nearly zero can not be normalized, return zero!");
-		return Vector<T, Dimension>();
+		return Vector<T, Dimension>::vector_zero();
 	}
 
 	template<typename T>
