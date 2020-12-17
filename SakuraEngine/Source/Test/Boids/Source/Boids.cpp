@@ -503,6 +503,111 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	}
 }
 
+void SpawnBoidTargets(int Count)
+{
+	using namespace sakura::ecs;
+	//创建 Boid 目标
+	entity_type type
+	{
+		complist<BoidTarget, Translation, LocalToWorld, MoveToward, RandomMoveTarget, Scale>
+	};
+	for (auto slice : ctx.allocate(type, 5))
+	{
+		auto trs = init_component<Translation>(ctx, slice);
+		auto mts = init_component<MoveToward>(ctx, slice);
+		auto rmts = init_component<RandomMoveTarget>(ctx, slice);
+		auto ss = init_component<Scale>(ctx, slice);
+
+		forloop(i, 0, slice.count)
+		{
+			std::uniform_real_distribution<float> speedDst(150.f, 250.f);
+			rmts[i].center = sakura::Vector3f::vector_zero();
+			rmts[i].radius = 1000.f;
+			mts[i].Target = rmts[i].random_point(get_random_engine());
+			mts[i].MoveSpeed = speedDst(get_random_engine());
+			trs[i] = rmts[i].random_point(get_random_engine());
+			ss[i] = sakura::Vector3f(5.f, 5.f, 5.f);
+		}
+	}
+}
+
+sakura::ecs::entity BoidSetting;
+void SpawnBoidSetting()
+{
+	using namespace sakura::ecs;
+
+	//创建 Boid 设置
+	entity_type type
+	{
+		complist<Boid>
+	};
+	for (auto slice : ctx.allocate(type, 1))
+	{
+		auto bs = init_component<Boid>(ctx, slice);
+		bs->AlignmentWeight = bs->SeparationWeight = bs->TargetWeight = 1.f;
+		bs->MoveSpeed = 250.f;
+		bs->SightRadius = 5.f;
+		BoidSetting = ctx.get_entities(slice.c)[slice.start];
+	}
+}
+
+void SpawnBoids(int Count)
+{
+	using namespace sakura::ecs;
+	//创建 Boid
+	entity_type type
+	{
+		complist<Translation, Heading, Rotation, LocalToWorld>,
+		{&BoidSetting, 1}
+	};
+	sphere s;
+	s.center = Vector3f::vector_zero();
+	s.radius = 1000.f;
+	for (auto slice : ctx.allocate(type, 15000))
+	{
+		auto trs = init_component<Translation>(ctx, slice);
+		auto hds = init_component<Heading>(ctx, slice);
+		forloop(i, 0, slice.count)
+		{
+			std::uniform_real_distribution<float> uniform_dist(0, 1);
+			auto& el = get_random_engine();
+			sakura::Vector3f vector{ uniform_dist(el), uniform_dist(el), uniform_dist(el) };
+			hds[i] = math::normalize(vector);
+			trs[i] = s.random_point(el);
+		}
+	}
+}
+
+void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
+{
+	using namespace sakura::ecs;
+	ZoneScopedN("Schedule Systems")
+	RotationEulerSystem(ppl);
+
+	RandomTargetSystem(ppl);
+	MoveTowardSystem(ppl, deltaTime);
+	BoidsSystem(ppl, deltaTime);
+	HeadingSystem(ppl);
+
+	filters wrd_filter;
+	wrd_filter.archetypeFilter = {
+		{complist<LocalToWorld>},
+		{complist<Translation, Scale, Rotation>},
+		{complist<LocalToParent, Parent>}
+	};
+	Local2XSystem<LocalToWorld>(ppl, wrd_filter);
+
+	filters c2p_filter;
+	c2p_filter.archetypeFilter = {
+		{complist<LocalToParent, Parent>},
+		{complist<Translation, Scale, Rotation>},
+		{}
+	};
+	Local2XSystem<LocalToParent>(ppl, c2p_filter);
+	Child2WorldSystem(ppl);
+	World2LocalSystem(ppl);
+}
+
 int main()
 {
 	if (!IModule::Registry::regist("ECS", &ECSModule::create) || !sakura::IModule::StartUp("ECS"))
@@ -516,73 +621,9 @@ int main()
 
 	register_components<Translation, Rotation, RotationEuler, Scale, LocalToWorld, LocalToParent, 
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading>();
-	
-	{	
-		//创建 Boid 目标
-		entity_type type
-		{
-			complist<BoidTarget, Translation, LocalToWorld, MoveToward, RandomMoveTarget, Scale>
-		};
-		for (auto slice : ctx.allocate(type, 100))
-		{
-			auto trs = init_component<Translation>(ctx, slice);
-			auto mts = init_component<MoveToward>(ctx, slice);
-			auto rmts = init_component<RandomMoveTarget>(ctx, slice);
-			auto ss = init_component<Scale>(ctx, slice);
-
-			forloop(i, 0, slice.count)
-			{
-				std::uniform_real_distribution<float> speedDst(250.f, 300.f);
-				rmts[i].center = sakura::Vector3f::vector_zero();
-				rmts[i].radius = 1000.f;
-				mts[i].Target = rmts[i].random_point(get_random_engine());
-				mts[i].MoveSpeed = speedDst(get_random_engine());
-				trs[i] = rmts[i].random_point(get_random_engine());
-				ss[i] = sakura::Vector3f(5.f, 5.f, 5.f);
-			}
-		}
-	}
-	entity e;
-	{
-		//创建 Boid 设置
-		entity_type type
-		{
-			complist<Boid>
-		};
-		for (auto slice : ctx.allocate(type, 1))
-		{
-			auto bs = init_component<Boid>(ctx, slice);
-			bs->AlignmentWeight = bs->SeparationWeight = bs->TargetWeight = 1.f;
-			bs->MoveSpeed = 250.f;
-			bs->SightRadius = 5.f;
-			e = ctx.get_entities(slice.c)[slice.start];
-		}
-	}
-
-	{
-		//创建 Boid
-		entity_type type
-		{
-			complist<Translation, Heading, Rotation, LocalToWorld>,
-			{&e, 1}
-		};
-		sphere s;
-		s.center = Vector3f::vector_zero();
-		s.radius = 1000.f;
-		for (auto slice : ctx.allocate(type, 5000))
-		{
-			auto trs = init_component<Translation>(ctx, slice);
-			auto hds = init_component<Heading>(ctx, slice);
-			forloop(i, 0, slice.count)
-			{
-				std::uniform_real_distribution<float> uniform_dist(0, 1);
-				auto& el = get_random_engine();
-				sakura::Vector3f vector{ uniform_dist(el), uniform_dist(el), uniform_dist(el) };
-				hds[i] = math::normalize(vector);
-				trs[i] = s.random_point(el);
-			}
-		}
-	}
+	SpawnBoidSetting();
+	SpawnBoids(10000);
+	SpawnBoidTargets(10);
 	
 	task_system::Scheduler scheduler(task_system::Scheduler::Config::allCores());
 	scheduler.bind();
@@ -601,32 +642,10 @@ int main()
 			for(auto dp : dependencies)
 				ppl.pass_events[dp->passIndex].wait();
 		};
+		//for (auto object : objects)
+		//	object->tick();
 		{
-			ZoneScopedN("Schedule Systems")
-			RotationEulerSystem(ppl);
-
-			RandomTargetSystem(ppl);
-			MoveTowardSystem(ppl, deltaTime);
-			BoidsSystem(ppl, deltaTime);
-			HeadingSystem(ppl);
-
-			filters wrd_filter;
-			wrd_filter.archetypeFilter = {
-				{complist<LocalToWorld>},
-				{complist<Translation, Scale, Rotation>},
-				{complist<LocalToParent, Parent>}
-			};
-			Local2XSystem<LocalToWorld>(ppl, wrd_filter);
-
-			filters c2p_filter;
-			c2p_filter.archetypeFilter = {
-				{complist<LocalToParent, Parent>},
-				{complist<Translation, Scale, Rotation>},
-				{}
-			};
-			Local2XSystem<LocalToParent>(ppl, c2p_filter);
-			Child2WorldSystem(ppl);
-			World2LocalSystem(ppl);
+			BoidMainLoop(ppl, deltaTime);
 			//RotateByAxisSystem(ppl, deltaTime);
 		}
 		

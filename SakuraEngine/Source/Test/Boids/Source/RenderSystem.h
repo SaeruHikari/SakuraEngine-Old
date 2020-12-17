@@ -81,7 +81,7 @@ namespace render_system
 	{
 	public:
 		RenderPassSimple(const RenderPassHandle handle,
-			sakura::uint8 cycleCount = 3, size_t bufferSize = 4096 * 16 * 32)
+			sakura::uint8 cycleCount = 3, size_t bufferSize = 4096 * 8 * 16 * 32)
 			:RenderPass(handle, cycleCount, bufferSize) {}
 		bool execute(const RenderGraph& rg, const RenderGraph::Builder& builder, IRenderDevice& device) noexcept override
 		{
@@ -268,9 +268,9 @@ namespace render_system
 		deviceGroup.create_buffer(uniformBuffer,
 			BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4), &viewProj));
 		deviceGroup.create_buffer(uniformBufferPerTarget,
-				BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * 5000 * 4, targetWorlds.data()));
+				BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * 20000 * 4, targetWorlds.data()));
 		deviceGroup.create_buffer(uniformBufferPerObject,
-			BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * 5000 * 4, worlds.data()));
+			BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * 20000 * 4, worlds.data()));
 
 		deviceGroup.create_buffer(vertexBuffer,
 			BufferDesc(EBufferUsage::VertexBuffer, sizeof(vertData), vertData));
