@@ -511,7 +511,7 @@ void SpawnBoidTargets(int Count)
 	{
 		complist<BoidTarget, Translation, LocalToWorld, MoveToward, RandomMoveTarget, Scale>
 	};
-	for (auto slice : ctx.allocate(type, 5))
+	for (auto slice : ctx.allocate(type, Count))
 	{
 		auto trs = init_component<Translation>(ctx, slice);
 		auto mts = init_component<MoveToward>(ctx, slice);
@@ -563,7 +563,7 @@ void SpawnBoids(int Count)
 	sphere s;
 	s.center = Vector3f::vector_zero();
 	s.radius = 1000.f;
-	for (auto slice : ctx.allocate(type, 15000))
+	for (auto slice : ctx.allocate(type, Count))
 	{
 		auto trs = init_component<Translation>(ctx, slice);
 		auto hds = init_component<Heading>(ctx, slice);
@@ -622,7 +622,7 @@ int main()
 	register_components<Translation, Rotation, RotationEuler, Scale, LocalToWorld, LocalToParent, 
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading>();
 	SpawnBoidSetting();
-	SpawnBoids(10000);
+	SpawnBoids(30000);
 	SpawnBoidTargets(10);
 	
 	task_system::Scheduler scheduler(task_system::Scheduler::Config::allCores());

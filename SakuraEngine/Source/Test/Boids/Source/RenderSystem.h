@@ -74,8 +74,8 @@ namespace render_system
 	RenderBufferHandle indexBufferSphere = render_graph.RenderBuffer("IndexBufferSphere");
 
 	sakura::float4x4 viewProj;
-	std::vector<sakura::float4x4> targetWorlds(20000 * 4);
-	std::vector<sakura::float4x4> worlds(20000 * 4);
+	std::vector<sakura::float4x4> targetWorlds(500 * 4);
+	std::vector<sakura::float4x4> worlds(30500 * 4);
 
 	class RenderPassSimple : public RenderPass
 	{
@@ -143,7 +143,7 @@ namespace render_system
 			sakura::float4x4 view = sakura::math::look_at_matrix(
 				sakura::Vector3f(-1.f, -1.f, -1.f) * 1, Vector3f::vector_zero());
 			sakura::float4x4 proj =
-				sakura::math::perspective_fov(0.25f * 3.1415926f, 720.f / 1080.f, 1.0f, 1000.0f);
+				sakura::math::perspective_fov(0.25f * 3.1415926f * 2, 720.f / 1080.f, 1.0f, 1000.0f);
 
 			viewProj = sakura::math::multiply(offset, view);
 			viewProj = sakura::math::multiply(viewProj, proj);
@@ -268,9 +268,9 @@ namespace render_system
 		deviceGroup.create_buffer(uniformBuffer,
 			BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4), &viewProj));
 		deviceGroup.create_buffer(uniformBufferPerTarget,
-				BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * 20000 * 4, targetWorlds.data()));
+				BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * 500 * 4, targetWorlds.data()));
 		deviceGroup.create_buffer(uniformBufferPerObject,
-			BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * 20000 * 4, worlds.data()));
+			BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * 30500 * 4, worlds.data()));
 
 		deviceGroup.create_buffer(vertexBuffer,
 			BufferDesc(EBufferUsage::VertexBuffer, sizeof(vertData), vertData));
