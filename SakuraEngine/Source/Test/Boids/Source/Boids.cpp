@@ -699,10 +699,13 @@ int main()
 	defer(scheduler.unbind());  // Automatically unbind before returning.3
 	Timer timer; 
 	double deltaTime = 0;
+
+
+	task_system::Event renderTask(task_system::Event::Mode::Auto); renderTask.signal();
+	// Game & Rendering Logic
 	while(sakura::Core::yield())
 	{
 		ZoneScoped;
-
 		timer.start_up();
 		task_system::ecs::pipeline ppl(ctx);
 		ppl.inc_timestamp();
@@ -711,26 +714,16 @@ int main()
 			for(auto dp : dependencies)
 				ppl.pass_events[dp->passIndex].wait();
 		};
-		//for (auto object : objects)
-		//	object->tick();
-		{
-			BoidMainLoop(ppl, deltaTime);
-			//DebugHeadingLoop(ppl, deltaTime);
-			//RotateByAxisSystem(ppl, deltaTime);
-		}
-		
-		{
-			ZoneScopedN("Pipeline Sync")
+		BoidMainLoop(ppl, deltaTime);
+		ZoneScopedN("Pipeline Sync")
 
-			render_system::CollectSystem(ppl, deltaTime);
-			// 等待pipeline
-			ppl.wait();
-			render_system::RenderAndPresent().wait();
-		}
+		renderTask.wait();
+		render_system::CollectAndEndFrame(ppl, deltaTime);
+		// GamePlay Frame Ends
+
+		render_system::RenderAndPresent(renderTask);
 
 		//std::cout << "delta time: " << deltaTime * 1000 << std::endl;
-		//std::cout << "average neighbor count: " << averageNeighberCount / 50000 << std::endl;
-		//std::cout << "maximum neighbor count: " << maxNeighberCount << std::endl;
 		//averageNeighberCount.store(0);
 		deltaTime = timer.end();
 

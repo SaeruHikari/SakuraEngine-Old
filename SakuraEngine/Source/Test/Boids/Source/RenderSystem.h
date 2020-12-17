@@ -143,7 +143,7 @@ namespace render_system
 			sakura::float4x4 view = sakura::math::look_at_matrix(
 				sakura::Vector3f(0, 0, -1.f) * 1, Vector3f::vector_zero());
 			sakura::float4x4 proj =
-				sakura::math::perspective_fov(0.25f * 3.1415926f * 2, 720.f / 1080.f, 1.0f, 1000.0f);
+				sakura::math::perspective_fov(0.25f * 3.1415926f * 2, 1080.f / 1920.f, 1.0f, 1000.0f);
 
 			viewProj = sakura::math::multiply(offset, view);
 			viewProj = sakura::math::multiply(viewProj, proj);
@@ -182,8 +182,8 @@ namespace render_system
 		sakura::info("game thread id: {}", std::hash<std::thread::id>()(sakura::Core::get_main_thread_id()));
 		
 		sakura::Window::desc windDesc;
-		windDesc.height = 720;
-		windDesc.width = 1080;
+		windDesc.height = 1080;
+		windDesc.width = 1920;
 		windDesc.name = "Sakura Engine";
 		mainWindow = sakura::Window::create(windDesc);
 
@@ -293,7 +293,7 @@ namespace render_system
 	using Rotator = sakura::Rotator;
 	using float4x4 = sakura::float4x4;
 	using IModule = sakura::IModule;
-	void CollectSystem(task_system::ecs::pipeline& ppl, float deltaTime)
+	void CollectAndEndFrame(task_system::ecs::pipeline& ppl, float deltaTime)
 	{
 		using namespace sakura;
 		using namespace sakura::graphics;
@@ -362,14 +362,15 @@ namespace render_system
 					}
 				});
 		}
+		ppl.wait();
 	}
 
-	task_system::Event RenderAndPresent()
+	void RenderAndPresent(task_system::Event ev)
 	{
-		task_system::Event ev;
 		task_system::schedule(
 			[ev]() {
 				defer(ev.signal());
+
 				deviceGroup.update_buffer(
 					uniformBufferPerObject, 0, worlds.data(), sizeof(float4x4) * worlds.size());
 				deviceGroup.update_buffer(
@@ -383,6 +384,5 @@ namespace render_system
 				}
 			}
 		);
-		return ev;
 	}
 }
