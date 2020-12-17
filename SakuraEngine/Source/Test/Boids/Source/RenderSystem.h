@@ -373,22 +373,35 @@ namespace render_system
 		ppl.wait();
 	}
 
-	void RenderAndPresent(task_system::Event ev)
-	{
-		task_system::schedule(
-			[ev]() {
-				defer(ev.signal());
-				RenderCommandBuffer buffer("", 4096 * 8 * 16 * 32);
-				RenderPass* pass_ptr = render_graph.render_pass(pass);
-				pass_ptr->construct(render_graph.builder(pass));
-				auto& buf = pass_ptr->execute(buffer, render_graph, render_graph.builder(pass), deviceGroup);
-				deviceGroup.execute(buf, pass_ptr->handle(), 0);
-			}
-		);
-	}
-
 	void Present()
 	{
 		deviceGroup.present(swapChain);
+	}
+
+	void PrepareCommandBuffer(task_system::Event ev, RenderCommandBuffer& buffer)
+	{
+		task_system::schedule(
+			[ev, &buffer]() {
+				defer(ev.signal());
+
+				RenderPass* pass_ptr = render_graph.render_pass(pass);
+				pass_ptr->construct(render_graph.builder(pass));
+				buffer.reset();
+				pass_ptr->execute(buffer, render_graph, render_graph.builder(pass), deviceGroup);
+			});
+	}
+
+	void RenderAndPresent(task_system::Event ev, const RenderCommandBuffer& buffer)
+	{
+		task_system::schedule(
+			[ev, &buffer]() {
+				ev.wait();
+				defer(ev.signal());
+				
+				RenderPass* pass_ptr = render_graph.render_pass(pass);
+				deviceGroup.execute(buffer, pass_ptr->handle(), 0);
+				render_system::Present();
+			}
+		);
 	}
 }

@@ -701,7 +701,19 @@ int main()
 	double deltaTime = 0;
 
 
-	task_system::Event renderTask(task_system::Event::Mode::Auto); renderTask.signal();
+	task_system::Event renderTasks[2] =
+	{
+		task_system::Event::Mode::Auto,
+		task_system::Event::Mode::Auto
+	}; 
+	renderTasks[0].signal();
+	renderTasks[1].signal();
+	sakura::graphics::RenderCommandBuffer buffer[2]
+	{
+		sakura::graphics::RenderCommandBuffer("0", 4096 * 8 * 16 * 32),
+		sakura::graphics::RenderCommandBuffer("1", 4096 * 8 * 16 * 32)
+	};
+	size_t cycle = 0;
 	// Game & Rendering Logic
 	while(sakura::Core::yield())
 	{
@@ -719,13 +731,13 @@ int main()
 
 		render_system::CollectAndEndFrame(ppl, deltaTime);
 
-		renderTask.wait();
-		render_system::Present();
+		renderTasks[cycle % 2].wait();
+		render_system::PrepareCommandBuffer(renderTasks[cycle % 2], buffer[cycle % 2]);
 
-		render_system::RenderAndPresent(renderTask);
+		cycle += 1;
 
-		//std::cout << "delta time: " << deltaTime * 1000 << std::endl;
-		//averageNeighberCount.store(0);
+		render_system::RenderAndPresent(renderTasks[cycle % 2], buffer[cycle % 2]);
+
 		deltaTime = timer.end();
 
 		FrameMark;
