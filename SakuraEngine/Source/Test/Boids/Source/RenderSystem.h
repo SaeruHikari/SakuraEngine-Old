@@ -147,21 +147,7 @@ namespace render_system
 		}
 		bool construct(RenderGraph::Builder& rg) noexcept override
 		{
-			sakura::float4x4 offset = math::make_transform(sakura::Vector3f(0, 0, -1.f) * 400);
-			sakura::float4x4 view = sakura::math::look_at_matrix(
-				sakura::Vector3f(0, 0, -1.f) * 1, Vector3f::vector_zero());
-			sakura::float4x4 proj =
-				sakura::math::perspective_fov(0.25f * 3.1415926f * 2, 1080.f / 1920.f, 1.0f, 1000.0f);
 
-			viewProj = sakura::math::multiply(offset, view);
-			viewProj = sakura::math::multiply(viewProj, proj);
-			viewProj = sakura::math::transpose(viewProj);
-
-			deviceGroup.update_buffer(uniformBuffer, 0, &viewProj, sizeof(viewProj));
-			deviceGroup.update_buffer(
-				uniformBufferPerObject, 0, worlds.data(), sizeof(float4x4) * worlds.size());
-			deviceGroup.update_buffer(
-				uniformBufferPerTarget, 0, targetWorlds.data(), sizeof(float4x4) * targetWorlds.size());
 
 			attachment = Attachment({
 				Attachment::Slot(swapChain, sakura::double4(), ELoadOp::Clear, EStoreOp::Store)
@@ -380,6 +366,11 @@ namespace render_system
 
 	void PrepareCommandBuffer(task_system::Event ev, RenderCommandBuffer& buffer)
 	{
+		if (buffer.begin() != buffer.end())
+		{
+			ev.signal();
+			return;
+		}
 		task_system::schedule(
 			[ev, &buffer]() {
 				ZoneScopedN("PrepareCommandBuffer");
@@ -387,6 +378,7 @@ namespace render_system
 				defer(ev.signal());
 
 				RenderPass* pass_ptr = render_graph.render_pass(pass);
+
 				pass_ptr->construct(render_graph.builder(pass));
 				buffer.reset();
 				pass_ptr->execute(buffer, render_graph, render_graph.builder(pass), deviceGroup);
@@ -395,6 +387,22 @@ namespace render_system
 
 	void RenderAndPresent(task_system::Event ev, const RenderCommandBuffer& buffer)
 	{
+		sakura::float4x4 offset = math::make_transform(sakura::Vector3f(0, 0, -1.f) * 400);
+		sakura::float4x4 view = sakura::math::look_at_matrix(
+			sakura::Vector3f(0, 0, -1.f) * 1, Vector3f::vector_zero());
+		sakura::float4x4 proj =
+			sakura::math::perspective_fov(0.25f * 3.1415926f * 2, 1080.f / 1920.f, 1.0f, 1000.0f);
+
+		viewProj = sakura::math::multiply(offset, view);
+		viewProj = sakura::math::multiply(viewProj, proj);
+		viewProj = sakura::math::transpose(viewProj);
+
+		deviceGroup.update_buffer(uniformBuffer, 0, &viewProj, sizeof(viewProj));
+		deviceGroup.update_buffer(
+			uniformBufferPerObject, 0, worlds.data(), sizeof(float4x4) * worlds.size());
+		deviceGroup.update_buffer(
+			uniformBufferPerTarget, 0, targetWorlds.data(), sizeof(float4x4) * targetWorlds.size());
+
 		task_system::schedule(
 			[ev, &buffer]() {
 				ZoneScopedN("RenderAndPresent");
