@@ -325,7 +325,9 @@ namespace render_system
 						worlds[j + 3] = l2w;
 					}
 				}, maxSlice);
+			return pass;
 		};
+		std::shared_ptr<task_system::ecs::pass> passes[2];
 		{
 			filters filter;
 			filter.archetypeFilter = {
@@ -333,7 +335,7 @@ namespace render_system
 				{}, //any
 				{} //none
 			};
-			Collect(filter, targetWorlds);
+			passes[0] = Collect(filter, targetWorlds);
 		}
 		{
 			filters filter;
@@ -342,9 +344,11 @@ namespace render_system
 				{}, //any
 				{} //none
 			};
-			Collect(filter, worlds);
+			passes[1] = Collect(filter, worlds);
 		}
-		ppl.wait();
+		passes[0]->event.wait();
+		passes[1]->event.wait();
+		ppl.forget();
 	}
 
 	void Present()

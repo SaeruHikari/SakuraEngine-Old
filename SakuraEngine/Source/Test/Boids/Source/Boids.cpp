@@ -715,18 +715,18 @@ int main()
 		sakura::graphics::RenderCommandBuffer("", 4096 * 8 * 16 * 32)
 	};
 	size_t cycle = 0;
+	task_system::ecs::pipeline ppl(ctx);
+	ppl.on_sync = [&](gsl::span<custom_pass*> dependencies)
+	{
+		for (auto dp : dependencies)
+			((task_system::ecs::custom_pass*)dp)->event.wait();
+	};
 	// Game & Rendering Logic
 	while(sakura::Core::yield())
 	{
 		ZoneScoped;
 		timer.start_up();
-		task_system::ecs::pipeline ppl(ctx);
 		ppl.inc_timestamp();
-		ppl.on_sync = [&](gsl::span<custom_pass*> dependencies)
-		{
-			for(auto dp : dependencies)
-				((task_system::ecs::custom_pass*)dp)->event.wait();
-		};
 		BoidMainLoop(ppl, deltaTime);
 
 		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
