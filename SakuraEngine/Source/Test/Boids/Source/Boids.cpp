@@ -145,6 +145,22 @@ task_system::Event RotateByAxisSystem(task_system::ecs::pipeline& ppl, float del
 		}, 500);
 }
 
+sakura::Quaternion ToOrientationQuat(sakura::Vector3f dir)
+{
+	// Essentially an optimized Vector->Rotator->Quat made possible by knowing Roll == 0, and avoiding radians->degrees->radians.
+	// This is done to avoid adding any roll (which our API states as a constraint).
+	auto dv = dir.data_view();
+	float X = dv[0], Y = dv[1], Z = dv[2];
+	const float YawRad = math::atan2(Y, X);
+	const float PitchRad = math::atan2(Z, math::sqrt(X * X + Y * Y));
+
+	const float DIVIDE_BY_2 = 0.5f;
+	float SP = math::sin(PitchRad * DIVIDE_BY_2), SY = sin(YawRad * DIVIDE_BY_2);
+	float CP = math::cos(PitchRad * DIVIDE_BY_2), CY = cos(YawRad * DIVIDE_BY_2);
+
+	return { SP * SY, -SP * CY, CP * SY, CP * CY };
+}
+
 task_system::Event HeadingSystem(task_system::ecs::pipeline& ppl)
 {
 
@@ -156,7 +172,7 @@ task_system::Event HeadingSystem(task_system::ecs::pipeline& ppl)
 	return ConvertSystem<Rotation, Heading>(ppl, filter,
 		[](sakura::Quaternion* dst, const sakura::Vector3f* inHeading)
 		{
-			*dst = math::look_at_quaternion(*inHeading);
+			*dst = ToOrientationQuat(*inHeading);
 		});
 }
 
@@ -625,6 +641,9 @@ void DebugHeadingLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 	TimeRemain -= deltaTime;
 	if (TimeRemain < 0)
 	{
+		const auto index = dir % ARRAYSIZE(directions);
+		auto dd = directions[index].data_view();
+		std::cout << "direction " << index << " x:" <<dd[0]<<" y:"<<dd[1]<<" z:" << dd[2] << std::endl;
 		filters filter;
 		filter.archetypeFilter =
 		{
@@ -636,12 +655,12 @@ void DebugHeadingLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 		static std::random_device r;
 		static std::default_random_engine el(r());
 		task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList),
-			[](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
+			[index](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
 			{
 				auto o = operation{ paramList, pass, tk };
 				auto hds = o.get_parameter<Heading>();
 				forloop(i, 0, o.get_count())
-					hds[i] = directions[dir % ARRAYSIZE(directions)];
+					hds[i] = directions[index];
 			});
 
 		TimeRemain = Interval;
@@ -695,7 +714,8 @@ int main()
 		//for (auto object : objects)
 		//	object->tick();
 		{
-			DebugHeadingLoop(ppl, deltaTime);
+			BoidMainLoop(ppl, deltaTime);
+			//DebugHeadingLoop(ppl, deltaTime);
 			//RotateByAxisSystem(ppl, deltaTime);
 		}
 		
@@ -708,7 +728,7 @@ int main()
 			render_system::RenderAndPresent().wait();
 		}
 
-		std::cout << "delta time: " << deltaTime * 1000 << std::endl;
+		//std::cout << "delta time: " << deltaTime * 1000 << std::endl;
 		//std::cout << "average neighbor count: " << averageNeighberCount / 50000 << std::endl;
 		//std::cout << "maximum neighbor count: " << maxNeighberCount << std::endl;
 		//averageNeighberCount.store(0);
