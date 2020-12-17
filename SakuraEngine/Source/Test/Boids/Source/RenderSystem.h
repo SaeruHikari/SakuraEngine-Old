@@ -297,35 +297,43 @@ namespace render_system
 		using namespace sakura::graphics;
 		using namespace ecs;
 		ZoneScopedN("CollectAndUpload");
+		auto Collect = [&ppl](filters& filter, std::vector<sakura::float4x4>& world, int maxSlice = 500)
 		{
 
+			static constexpr auto paramList = boost::hana::make_tuple(
+				// read.
+				param<const LocalToWorld>
+			);
+			auto pass = ppl.create_pass(filter, paramList);
+			worlds.resize(pass->entityCount * 4);
+			task_system::ecs::schedule(ppl, pass,
+				[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
+				{
+					ZoneScopedN("CollectJob");
+					auto o = operation{ paramList, task_pass, tk };
+					auto index = o.get_index();
+					const float4x4* l2ws = o.get_parameter<const LocalToWorld>();
+
+					Vector3f pos = Vector3f::vector_zero();
+					for (auto i = 0u; i < o.get_count(); i++)
+					{
+						auto l2w = sakura::math::transpose(l2ws[i]);
+						int j = (i + index) * 4;
+						worlds[j] = l2w;
+						worlds[j + 1] = l2w;
+						worlds[j + 2] = l2w;
+						worlds[j + 3] = l2w;
+					}
+				}, maxSlice);
+		};
+		{
 			filters filter;
 			filter.archetypeFilter = {
 				{complist<LocalToWorld, BoidTarget>}, //all
 				{}, //any
 				{} //none
 			};
-			static constexpr auto paramList = boost::hana::make_tuple(
-				// read.
-				param<const LocalToWorld>
-			);
-
-			targetWorlds.clear();
-			task_system::ecs::schedule<false, true>(ppl, ppl.create_pass(filter, paramList),
-				[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
-				{
-					auto o = operation{ paramList, task_pass, tk };
-					const float4x4* l2ws = o.get_parameter<const LocalToWorld>();
-
-					Vector3f pos = Vector3f::vector_zero();
-					for (auto i = 0u; i < o.get_count(); i++)
-					{
-						targetWorlds.emplace_back(sakura::math::transpose(l2ws[i]));
-						targetWorlds.emplace_back(sakura::math::transpose(l2ws[i]));
-						targetWorlds.emplace_back(sakura::math::transpose(l2ws[i]));
-						targetWorlds.emplace_back(sakura::math::transpose(l2ws[i]));
-					}
-				});
+			Collect(filter, targetWorlds);
 		}
 		{
 			filters filter;
@@ -334,27 +342,7 @@ namespace render_system
 				{}, //any
 				{} //none
 			};
-			static constexpr auto paramList = boost::hana::make_tuple(
-				// read.
-				param<const LocalToWorld>
-			);
-
-			worlds.clear();
-			task_system::ecs::schedule<false, true>(ppl, ppl.create_pass(filter, paramList),
-				[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
-				{
-					auto o = operation{ paramList, task_pass, tk };
-					const float4x4* l2ws = o.get_parameter<const LocalToWorld>();
-
-					Vector3f pos = Vector3f::vector_zero();
-					for (auto i = 0u; i < o.get_count(); i++)
-					{
-						worlds.emplace_back(sakura::math::transpose(l2ws[i]));
-						worlds.emplace_back(sakura::math::transpose(l2ws[i]));
-						worlds.emplace_back(sakura::math::transpose(l2ws[i]));
-						worlds.emplace_back(sakura::math::transpose(l2ws[i]));
-					}
-				});
+			Collect(filter, worlds);
 		}
 		ppl.wait();
 	}

@@ -134,7 +134,6 @@ void RotateByAxisSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		ppl.create_pass(filter, paramList),
 		[trans](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
-			ZoneScopedN("Child2WorldSystem");
 			auto o = operation{ paramList, pass, tk };
 			sakura::float4x4* mtx = o.get_parameter<LocalToWorld>();
 
@@ -402,6 +401,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	auto headings = make_resource<std::vector<sakura::Vector3f>>();
 	auto kdtree = make_resource<core::algo::kdtree<BoidPosition>>();
 	{
+		ZoneScopedN("Schedule Copy Translation and Heading");
 		CopyComponent<Translation>(ppl, boidFilter, positions);
 		CopyComponent<Heading>(ppl, boidFilter, headings);
 		shared_entry shareList[] = { read(positions), write(kdtree) };
