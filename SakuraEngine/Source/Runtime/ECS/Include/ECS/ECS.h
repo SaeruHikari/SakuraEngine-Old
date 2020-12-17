@@ -14,51 +14,63 @@ namespace sakura
 // task_system support.
 namespace sakura::task_system::ecs
 {
+	struct custom_pass : core::codebase::custom_pass
+	{
+		task_system::Event event{ task_system::Event::Mode::Manual };
+	};
+	struct pass : core::codebase::pass_t<custom_pass> {};
 	struct pipeline final : public core::codebase::pipeline
 	{
 		using base_t = core::codebase::pipeline;
-		pipeline(sakura::ecs::world& ctx) :base_t(ctx) {
-			pass_events.reserve(100);
+		pipeline(sakura::ecs::world& ctx) :base_t(ctx) 
+		{
+			allpasses.reserve(10000);
 		};
 		template<class T>
-		sakura::ecs::pass* create_pass(const sakura::ecs::filters& v, T paramList, gsl::span<core::codebase::shared_entry> sharedEntries = {})
+		std::shared_ptr<pass> create_pass(const sakura::ecs::filters& v, T paramList, gsl::span<core::codebase::shared_entry> sharedEntries = {})
 		{
-			pass_events.emplace_back(task_system::Event::Mode::Manual);
-			return base_t::create_pass(v, paramList, sharedEntries);
+			auto p = base_t::create_pass<pass>(v, paramList, sharedEntries);
+			allpasses.push_back(p->event);
+			return p;
 		}
-		sakura::ecs::custom_pass* create_custom_pass(gsl::span<core::codebase::shared_entry> sharedEntries = {})
+		std::shared_ptr<custom_pass> create_custom_pass(gsl::span<core::codebase::shared_entry> sharedEntries = {})
 		{
-			pass_events.emplace_back(task_system::Event::Mode::Manual);
-			return base_t::create_custom_pass(sharedEntries);
+			auto p = base_t::create_custom_pass<custom_pass>(sharedEntries);
+			allpasses.push_back(p->event);
+			return p;
 		}
 		void wait()
 		{
-			forloop(i, 0u, pass_events.size())
-				pass_events[i].wait();
+			forloop(i, 0u, allpasses.size())
+				allpasses[i].wait();
+			allpasses.clear();
 		}
-		sakura::vector<task_system::Event> pass_events;
+		void forget()
+		{
+			allpasses.clear();
+		}
+		std::vector<task_system::Event> allpasses;
 		bool force_no_parallel = false;
 	};
 	template<class F>
-	FORCEINLINE task_system::Event schedule_custom(pipeline& pipeline, sakura::ecs::custom_pass& pass, F&& t, std::vector<task_system::Event> externalDependencies = {})
+	FORCEINLINE void schedule_custom(pipeline& pipeline, std::shared_ptr<custom_pass> p, F&& t, std::vector<task_system::Event> externalDependencies = {})
 	{
-		task_system::schedule([&, t, externalDependencies = std::move(externalDependencies)]() mutable
+		task_system::schedule([&, p, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
-			defer(pipeline.pass_events[pass.passIndex].signal());
-			forloop(i, 0, pass.dependencyCount)
-				pipeline.pass_events[pass.dependencies[i]->passIndex].wait();
+			defer(p->event.signal());
+			forloop(i, 0, p->dependencyCount)
+				((pass*)p->dependencies[i].get())->event.wait();
 			for (auto& ed : externalDependencies)
 				ed.wait();
 			t();
 		});
-		return pipeline.pass_events[pass.passIndex];
 	}
 
 	template<bool ForceParallel = false, bool ForceNoParallel = false, class F>
-	FORCEINLINE task_system::Event schedule(
-		pipeline& pipeline, sakura::ecs::pass& pass, F&& t, int maxSlice = -1, std::vector<task_system::Event> externalDependencies = {})
+	FORCEINLINE void schedule(
+		pipeline& pipeline, std::shared_ptr<pass> p, F&& t, int maxSlice = -1, std::vector<task_system::Event> externalDependencies = {})
 	{
-		static_assert(std::is_invocable_v<std::decay_t<F>, const task_system::ecs::pipeline&, const sakura::ecs::pass&, const sakura::ecs::task&>,
+		static_assert(std::is_invocable_v<std::decay_t<F>, const task_system::ecs::pipeline&, const pass&, const sakura::ecs::task&>,
 			"F must be an invokable of void(const ecs::pipeline&, const ecs::pass&, const ecs::task&)>");
 		static_assert(!(ForceParallel & ForceNoParallel),
 			"A schedule can not force both parallel and not parallel!");
@@ -68,18 +80,18 @@ namespace sakura::task_system::ecs
 		//	e.signal();
 		//	return e;
 		//}
-		task_system::schedule([&, maxSlice, t, externalDependencies = std::move(externalDependencies)]() mutable
+		task_system::schedule([&, p, maxSlice, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
-			defer(pipeline.pass_events[pass.passIndex].signal());
+			defer(p->event.signal());
 			//defer(tasks.reset());
-			forloop(i, 0, pass.dependencyCount)
-				pipeline.pass_events[pass.dependencies[i]->passIndex].wait();
+			forloop(i, 0, p->dependencyCount)
+				((pass*)p->dependencies[i].get())->event.wait();
 			for (auto& ed : externalDependencies)
 				ed.wait();
-			auto tasks = pipeline.create_tasks(pass, maxSlice);
+			auto tasks = pipeline.create_tasks(*p, maxSlice);
 
 			constexpr auto MinParallelTask = 10u;
-			const bool recommandParallel = !pass.hasRandomWrite && tasks.size > MinParallelTask;
+			const bool recommandParallel = !p->hasRandomWrite && tasks.size > MinParallelTask;
 			if (pipeline.force_no_parallel)
 				goto FORCE_NO_PARALLEL;
 			if ((recommandParallel & !ForceNoParallel) || ForceParallel)
@@ -91,7 +103,7 @@ namespace sakura::task_system::ecs
 					task_system::schedule([&, tasksGroup] {
 						// Decrement the WaitGroup counter when the task has finished.
 						defer(tasksGroup.done());
-						t(pipeline, pass, tk);
+						t(pipeline, *p, tk);
 						});
 				}
 				tasksGroup.wait();
@@ -102,11 +114,10 @@ namespace sakura::task_system::ecs
 				std::for_each(
 					tasks.begin(), tasks.end(), [&, t](auto& tk) mutable
 					{
-						t(pipeline, pass, tk);
+						t(pipeline, *p, tk);
 					});
 			}
 		});
-		return pipeline.pass_events[pass.passIndex];
 	}
 }
 

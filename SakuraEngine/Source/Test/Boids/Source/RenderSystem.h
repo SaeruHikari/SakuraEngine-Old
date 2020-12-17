@@ -311,8 +311,8 @@ namespace render_system
 			);
 
 			targetWorlds.clear();
-			task_system::ecs::schedule<false, true>(ppl, *ppl.create_pass(filter, paramList),
-				[](const task_system::ecs::pipeline& pipeline, const ecs::pass& task_pass, const ecs::task& tk)
+			task_system::ecs::schedule<false, true>(ppl, ppl.create_pass(filter, paramList),
+				[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
 				{
 					auto o = operation{ paramList, task_pass, tk };
 					const float4x4* l2ws = o.get_parameter<const LocalToWorld>();
@@ -340,8 +340,8 @@ namespace render_system
 			);
 
 			worlds.clear();
-			task_system::ecs::schedule<false, true>(ppl, *ppl.create_pass(filter, paramList),
-				[](const task_system::ecs::pipeline& pipeline, const ecs::pass& task_pass, const ecs::task& tk)
+			task_system::ecs::schedule<false, true>(ppl, ppl.create_pass(filter, paramList),
+				[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
 				{
 					auto o = operation{ paramList, task_pass, tk };
 					const float4x4* l2ws = o.get_parameter<const LocalToWorld>();

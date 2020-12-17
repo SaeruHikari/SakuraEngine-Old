@@ -62,7 +62,7 @@ std::size_t calc_align(std::size_t n, std::size_t align)
 }
 
 template<class T, class... Ts, class F>
-task_system::Event ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f)
+void ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f)
 {
 	using namespace ecs;
 	static_assert(std::is_invocable<F, value_type_t<T>, const value_type_t<Ts>...>(), "wrong signature of convert function");
@@ -77,8 +77,8 @@ task_system::Event ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& 
 		param<const Ts>...
 	);
 	timestamp = ppl.get_timestamp();
-	return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList),
-		[f](const task_system::ecs::pipeline& pipeline, const pass& pass, const task& tk)
+	return task_system::ecs::schedule(ppl, ppl.create_pass(filter, paramList),
+		[f](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const task& tk)
 		{
 			ZoneScopedN("ConvertSystem");
 			auto o = operation{ paramList, pass, tk };
@@ -93,7 +93,7 @@ task_system::Event ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& 
 }
 
 template<class T>
-task_system::Event Local2XSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter)
+void Local2XSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter)
 {
 	return ConvertSystem<T, Translation, Rotation, Scale>(ppl, filter,
 		[](typename T::value_type* dst, const sakura::Vector3f* inTranslation, const sakura::Quaternion* inQuaternion, const sakura::Vector3f* inScale)
@@ -106,7 +106,7 @@ task_system::Event Local2XSystem(task_system::ecs::pipeline& ppl, ecs::filters& 
 		});
 }
 
-task_system::Event RotationEulerSystem(task_system::ecs::pipeline& ppl)
+void RotationEulerSystem(task_system::ecs::pipeline& ppl)
 {
 	using namespace ecs;
 	filters filter;
@@ -120,7 +120,7 @@ task_system::Event RotationEulerSystem(task_system::ecs::pipeline& ppl)
 		});
 }
 
-task_system::Event RotateByAxisSystem(task_system::ecs::pipeline& ppl, float deltaTime)
+void RotateByAxisSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 {
 	using namespace ecs;
 	filters filter;
@@ -130,9 +130,9 @@ task_system::Event RotateByAxisSystem(task_system::ecs::pipeline& ppl, float del
 	def paramList = boost::hana::make_tuple( param<LocalToWorld> );
 	auto quat = sakura::math::quaternion_from_axis(Vector3f{ 0.f,1.f,0.f }, 3.1415926f * 0.25f * deltaTime);
 	auto trans = math::make_transform(Vector3f::vector_zero(), Vector3f::vector_one(), quat);
-	return task_system::ecs::schedule(ppl,
-		*ppl.create_pass(filter, paramList),
-		[trans](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
+	task_system::ecs::schedule(ppl,
+		ppl.create_pass(filter, paramList),
+		[trans](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
 			ZoneScopedN("Child2WorldSystem");
 			auto o = operation{ paramList, pass, tk };
@@ -161,7 +161,7 @@ sakura::Quaternion ToOrientationQuat(sakura::Vector3f dir)
 	return { SP * SY, -SP * CY, CP * SY, CP * CY };
 }
 
-task_system::Event HeadingSystem(task_system::ecs::pipeline& ppl)
+void HeadingSystem(task_system::ecs::pipeline& ppl)
 {
 
 	using namespace ecs;
@@ -169,14 +169,14 @@ task_system::Event HeadingSystem(task_system::ecs::pipeline& ppl)
 	filter.archetypeFilter = {
 		{complist<Heading, Rotation>}
 	};
-	return ConvertSystem<Rotation, Heading>(ppl, filter,
+	ConvertSystem<Rotation, Heading>(ppl, filter,
 		[](sakura::Quaternion* dst, const sakura::Vector3f* inHeading)
 		{
 			*dst = ToOrientationQuat(*inHeading);
 		});
 }
 
-task_system::Event Child2WorldSystem(task_system::ecs::pipeline& ppl)
+void Child2WorldSystem(task_system::ecs::pipeline& ppl)
 {
 	using namespace ecs;
 	filters filter;
@@ -216,8 +216,8 @@ task_system::Event Child2WorldSystem(task_system::ecs::pipeline& ppl)
 		}
 	};
 	return task_system::ecs::schedule(ppl,
-		*ppl.create_pass(filter, paramList),
-		[](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
+		ppl.create_pass(filter, paramList),
+		[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
 			ZoneScopedN("Child2WorldSystem");
 			auto o = operation{ paramList, pass, tk };
@@ -235,7 +235,7 @@ task_system::Event Child2WorldSystem(task_system::ecs::pipeline& ppl)
 		});
 }
 
-task_system::Event World2LocalSystem(task_system::ecs::pipeline& ppl)
+void World2LocalSystem(task_system::ecs::pipeline& ppl)
 {
 	using namespace ecs;
 	filters filter;
@@ -251,8 +251,8 @@ task_system::Event World2LocalSystem(task_system::ecs::pipeline& ppl)
 		param<const LocalToWorld>
 	);
 	return task_system::ecs::schedule(ppl,
-		*ppl.create_pass(filter, paramList),
-		[](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
+		ppl.create_pass(filter, paramList),
+		[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
 			ZoneScopedN("World2LocalSystem");
 			auto o = operation{ paramList, pass, tk };
@@ -267,15 +267,15 @@ task_system::Event World2LocalSystem(task_system::ecs::pipeline& ppl)
 }
 
 template<class C, class T>
-task_system::Event CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector, int maxSlice = -1)
+void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector, int maxSlice = -1)
 {
 	using namespace ecs;
 	def paramList = boost::hana::make_tuple( param<const C> );
 	shared_entry shareList[] = { write(vector) };
 	auto pass = ppl.create_pass(filter, paramList, shareList);
 	vector->resize(pass->entityCount);
-	return task_system::ecs::schedule(ppl, *pass,
-		[vector](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk) mutable
+	return task_system::ecs::schedule(ppl, pass,
+		[vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
 		{
 			ZoneScopedN("CopyComponent");
 			auto o = operation{ paramList, pass, tk };
@@ -320,7 +320,7 @@ auto& get_random_engine()
 	return el;
 }
 
-task_system::Event RandomTargetSystem(task_system::ecs::pipeline& ppl)
+void RandomTargetSystem(task_system::ecs::pipeline& ppl)
 {
 	using namespace ecs;
 	filters filter;
@@ -331,8 +331,8 @@ task_system::Event RandomTargetSystem(task_system::ecs::pipeline& ppl)
 	def paramList = boost::hana::make_tuple(
 		param<MoveToward>, param<const RandomMoveTarget>, param<const Translation>
 	);
-	return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList), 
-		[](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
+	return task_system::ecs::schedule(ppl, ppl.create_pass(filter, paramList), 
+		[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
 			ZoneScopedN("RandomTargetSystem");
 			auto o = operation{ paramList, pass, tk };
@@ -350,7 +350,7 @@ task_system::Event RandomTargetSystem(task_system::ecs::pipeline& ppl)
 		});
 }
 
-task_system::Event MoveTowardSystem(task_system::ecs::pipeline& ppl, float deltaTime)
+void MoveTowardSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 {
 	using namespace ecs;
 	filters filter;
@@ -363,8 +363,8 @@ task_system::Event MoveTowardSystem(task_system::ecs::pipeline& ppl, float delta
 	);
 	static std::random_device r;
 	static std::default_random_engine el(r());
-	return task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList),
-		[deltaTime](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
+	return task_system::ecs::schedule(ppl, ppl.create_pass(filter, paramList),
+		[deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
 			ZoneScopedN("MoveTowardSystem");
 			auto o = operation{ paramList, pass, tk };
@@ -386,7 +386,7 @@ void update_maximum(std::atomic<T>& maximum_value, T const& value) noexcept
 	{
 	}
 }
-task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
+void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 {
 	using namespace ecs;
 	filters boidFilter;
@@ -402,10 +402,10 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	auto headings = make_resource<std::vector<sakura::Vector3f>>();
 	auto kdtree = make_resource<core::algo::kdtree<BoidPosition>>();
 	{
-		auto copyPositionJob = CopyComponent<Translation>(ppl, boidFilter, positions);
+		CopyComponent<Translation>(ppl, boidFilter, positions);
 		CopyComponent<Heading>(ppl, boidFilter, headings);
 		shared_entry shareList[] = { read(positions), write(kdtree) };
-		task_system::ecs::schedule_custom(ppl, *ppl.create_custom_pass(shareList), [positions, kdtree]() mutable
+		task_system::ecs::schedule_custom(ppl, ppl.create_custom_pass(shareList), [positions, kdtree]() mutable
 			{
 				ZoneScopedN("Build Boid KDTree");
 				kdtree->initialize(std::move(*positions));
@@ -423,7 +423,7 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		};
 		CopyComponent<Translation>(ppl, targetFilter, targets);
 		shared_entry shareList[] = { read(targets), write(targetTree) };
-		task_system::ecs::schedule_custom(ppl, *ppl.create_custom_pass(shareList), [targets, targetTree]() mutable
+		task_system::ecs::schedule_custom(ppl, ppl.create_custom_pass(shareList), [targets, targetTree]() mutable
 			{
 				ZoneScopedN("Build Target KDTree");
 				targetTree->initialize(std::move(*targets));
@@ -437,8 +437,8 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 			boost::hana::make_tuple( param<const Heading>, param<const Translation>, param<const Boid> );
 		auto pass = ppl.create_pass(boidFilter, paramList, shareList);
 		newHeadings->resize(pass->entityCount);
-		task_system::ecs::schedule(ppl, *pass,
-			[headings, kdtree, targetTree, newHeadings, deltaTime](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk) mutable
+		task_system::ecs::schedule(ppl, pass,
+			[headings, kdtree, targetTree, newHeadings, deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
 			{
 				ZoneScopedN("Boid Main");
 				auto o = operation{ paramList, pass, tk };
@@ -460,7 +460,7 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 					{
 						//收集附近单位的位置和朝向信息
 						neighbers.clear();
-						kdtree->search_k_radius(trs[i], boid->SightRadius, 10, neighbers);
+						kdtree->search_k_radius(trs[i], boid->SightRadius, 20, neighbers);
 						alignments[i] = sakura::Vector3f::vector_zero();
 						separations[i] = sakura::Vector3f::vector_zero();
 						for (auto ng : neighbers)
@@ -501,8 +501,8 @@ task_system::Event BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		shared_entry shareList[] = { read(newHeadings) };
 		def paramList = 
 			boost::hana::make_tuple( param<Heading>, param<Translation>, param<const Boid> );
-		return task_system::ecs::schedule(ppl, *ppl.create_pass(boidFilter, paramList, shareList),
-			[newHeadings, deltaTime](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
+		return task_system::ecs::schedule(ppl, ppl.create_pass(boidFilter, paramList, shareList),
+			[newHeadings, deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
 			{
 				ZoneScopedN("Apply Boid");
 				auto o = operation{ paramList, pass, tk };
@@ -562,7 +562,7 @@ void SpawnBoidSetting()
 		auto bs = init_component<Boid>(ctx, slice);
 		bs->AlignmentWeight = bs->SeparationWeight = bs->TargetWeight = 1.f;
 		bs->MoveSpeed = 250.f;
-		bs->SightRadius = 5.f;
+		bs->SightRadius = 50.f;
 		BoidSetting = ctx.get_entities(slice.c)[slice.start];
 	}
 }
@@ -654,8 +654,8 @@ void DebugHeadingLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 		);
 		static std::random_device r;
 		static std::default_random_engine el(r());
-		task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList),
-			[index](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
+		task_system::ecs::schedule(ppl, ppl.create_pass(filter, paramList),
+			[index](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
 			{
 				auto o = operation{ paramList, pass, tk };
 				auto hds = o.get_parameter<Heading>();
@@ -725,7 +725,7 @@ int main()
 		ppl.on_sync = [&](gsl::span<custom_pass*> dependencies)
 		{
 			for(auto dp : dependencies)
-				ppl.pass_events[dp->passIndex].wait();
+				((task_system::ecs::custom_pass*)dp)->event.wait();
 		};
 		BoidMainLoop(ppl, deltaTime);
 
@@ -737,7 +737,7 @@ int main()
 		// 录制 CommandBuffer, 这个举动将在下一帧完成
 		render_system::PrepareCommandBuffer(renderTasks[cycle % cycle_count], buffer[cycle % cycle_count]);
 
-		cycle += 1;
+			cycle += 1;
 
 		// 编译 Command Buffer Cache. TODO: 是否在此处再次错帧？
 		// render_system::Compile(buffer)
