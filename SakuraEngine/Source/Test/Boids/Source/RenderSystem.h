@@ -65,7 +65,9 @@ namespace render_system
 
 	RenderBufferHandle uniformBuffer = render_graph.RenderBuffer("UniformBuffer");
 	RenderBufferHandle uniformBufferPerObject = render_graph.RenderBuffer("UniformBufferPerObject");
-	RenderBufferHandle uniformBufferPerTarget = render_graph.RenderBuffer("UniformBufferPerTarget");
+	RenderBufferHandle uniformBufferPerTarget = render_graph.RenderBuffer("UniformBufferPerTarget");	
+	RenderBufferHandle uniformBufferPerObject1 = render_graph.RenderBuffer("UniformBufferPerObject");
+	RenderBufferHandle uniformBufferPerTarget1 = render_graph.RenderBuffer("UniformBufferPerTarget");
 
 	RenderBufferHandle vertexBuffer = render_graph.RenderBuffer("VertexBuffer");
 	RenderBufferHandle indexBuffer = render_graph.RenderBuffer("IndexBuffer");	
@@ -83,8 +85,10 @@ namespace render_system
 		RenderPassSimple(const RenderPassHandle handle,
 			sakura::uint8 cycleCount = 3, size_t bufferSize = 4096 * 8 * 16 * 32)
 			:RenderPass(handle, cycleCount, bufferSize) {}
-		bool execute(const RenderGraph& rg, const RenderGraph::Builder& builder, IRenderDevice& device) noexcept override
+		const RenderCommandBuffer& execute(const RenderGraph& rg,
+			const RenderGraph::Builder& builder, IRenderDevice& device) noexcept override
 		{
+			this->reset();
 			command_buffer().enqueue<RenderCommandBeginRenderPass>(renderPipeline, attachment);
 			Binding binding0 = Binding({
 				Binding::Set({
@@ -100,7 +104,7 @@ namespace render_system
 				RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBufferSphere"),
 					60, EIndexFormat::UINT16)
 			);
-			for (auto i = 1u; i < targetWorlds.size() / 4; i++)
+			for (auto i = 1u; i < 10; i++)
 			{
 				Binding binding = Binding({
 					Binding::Set({
@@ -123,7 +127,7 @@ namespace render_system
 				RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBuffer"),
 					3, EIndexFormat::UINT16)
 			);
-			for (auto i = 0u; i < worlds.size() / 4; i++)
+			for (auto i = 0u; i < 30000; i++)
 			{
 				Binding binding = Binding({
 					Binding::Set({
@@ -135,7 +139,8 @@ namespace render_system
 				command_buffer().enqueue<RenderCommandDraw>(3);
 			}
 			command_buffer().enqueue<RenderCommandEndRenderPass>();
-			return device.execute(*this, handle()) && this->reset();
+			auto& c = command_buffer();
+			return c;
 		}
 		bool construct(RenderGraph::Builder& rg) noexcept override
 		{
@@ -150,6 +155,10 @@ namespace render_system
 			viewProj = sakura::math::transpose(viewProj);
 
 			deviceGroup.update_buffer(uniformBuffer, 0, &viewProj, sizeof(viewProj));
+			deviceGroup.update_buffer(
+				uniformBufferPerObject, 0, worlds.data(), sizeof(float4x4) * worlds.size());
+			deviceGroup.update_buffer(
+				uniformBufferPerTarget, 0, targetWorlds.data(), sizeof(float4x4) * targetWorlds.size());
 
 			attachment = Attachment({
 				Attachment::Slot(swapChain, sakura::double4(), ELoadOp::Clear, EStoreOp::Store)
@@ -371,18 +380,16 @@ namespace render_system
 			[ev]() {
 				defer(ev.signal());
 
-				deviceGroup.update_buffer(
-					uniformBufferPerObject, 0, worlds.data(), sizeof(float4x4) * worlds.size());
-				deviceGroup.update_buffer(
-					uniformBufferPerTarget, 0, targetWorlds.data(), sizeof(float4x4) * targetWorlds.size());
-
 				RenderPass* pass_ptr = render_graph.render_pass(pass);
 				pass_ptr->construct(render_graph.builder(pass));
-				if (pass_ptr->execute(render_graph, render_graph.builder(pass), deviceGroup))
-				{
-					deviceGroup.present(swapChain);
-				}
+				auto& buf = pass_ptr->execute(render_graph, render_graph.builder(pass), deviceGroup);
+				deviceGroup.execute(buf, pass_ptr->handle(), 0);
 			}
 		);
+	}
+
+	void Present()
+	{
+		deviceGroup.present(swapChain);
 	}
 }

@@ -339,19 +339,19 @@ bool RenderDevice::valid(const RenderShaderHandle shader) const
     return false;
 }
 
-bool RenderDevice::execute(const RenderPass& pass, const RenderPassHandle hdl)
+bool RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl, const size_t frame)
 {
 	// TODO: Move These to Constuction Phase.
     if (hdl.id().index() + 1 > passCache.size())
-        passCache.resize(hdl.id().index() + 1, {pass.total_cycle()}); // Create New Cache
+        passCache.resize(hdl.id().index() + 1, {3}); // Create New Cache
     // TODO: Generation Check & Validate
-    auto&& cacheFrame = passCache[hdl.id().index()].frame(pass.current_cycle());
+    auto&& cacheFrame = passCache[hdl.id().index()].frame(frame);
     {// create pass cache objects.
         cacheFrame.encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);// create encoder
     }
 
     // Evaluate.
-    for (auto& cmd : pass.command_buffer())
+    for (auto& cmd : cmdBuffer)
     {
         processCommand(cacheFrame, cmd, &cacheFrame.encoder, &cacheFrame.pass_encoder);
     }

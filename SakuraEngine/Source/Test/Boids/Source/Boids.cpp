@@ -717,9 +717,10 @@ int main()
 		BoidMainLoop(ppl, deltaTime);
 		ZoneScopedN("Pipeline Sync")
 
-		renderTask.wait();
 		render_system::CollectAndEndFrame(ppl, deltaTime);
-		// GamePlay Frame Ends
+
+		renderTask.wait();
+		render_system::Present();
 
 		render_system::RenderAndPresent(renderTask);
 

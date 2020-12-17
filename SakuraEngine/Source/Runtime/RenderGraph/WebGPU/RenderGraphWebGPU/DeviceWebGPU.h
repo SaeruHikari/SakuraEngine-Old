@@ -29,7 +29,7 @@ namespace sakura::graphics::webgpu
 		virtual EBackend backend() const override;
 		bool valid(const RenderShaderHandle shader) const override;
 		sakura::string_view get_name() const override;
-		bool execute(const RenderPass&, const RenderPassHandle) override;
+		bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl, const size_t frame) override;
 		bool execute(const RenderGraph& graph_to_execute) override;
 		bool present(const SwapChainHandle handle) override;
 		void terminate() override;

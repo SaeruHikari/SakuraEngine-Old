@@ -16,6 +16,6 @@ RenderCommandBuffer::RenderCommandBuffer(const sakura::string& _name, size_t siz
 RenderCommandBuffer::~RenderCommandBuffer()
 {
 	for (size_t i = 0u; i < commands.size(); i++)
-		delete commands[i];
+		commands[i]->~RenderCommand();
 	buffers_allocator.reset();
 }

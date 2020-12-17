@@ -45,23 +45,19 @@ namespace sakura::graphics
 
     RenderPass::~RenderPass()
     {
-	    for (auto i = 0u; i < cycle_count_; i++)
-			command_buffers_[i].~RenderCommandBuffer();
+		
     }
 
     bool RenderPass::reset()
     {
 		command_buffer().reset();
-		current_cycle_ = (current_cycle_ + 1) % cycle_count_;
 		return true;
     }
 
     RenderPass::RenderPass(const RenderPassHandle __handle, uint8 cycleCount, size_t bufferSize)
-		: cycle_count_(cycleCount), handle_(__handle)
+		: handle_(__handle), command_buffers_("", bufferSize)
 	{
-		command_buffers_ = static_cast<RenderCommandBuffer*>(::malloc(sizeof(RenderCommandBuffer) * cycleCount));
-		for(auto i = 0u; i < cycleCount; i++)
-	          new (command_buffers_ + i)RenderCommandBuffer("", bufferSize);
+
 	}
 
 	RenderPassLambda::RenderPassLambda(const RenderPassHandle __handle, const Constructor& _constructor)
@@ -76,14 +72,10 @@ namespace sakura::graphics
 		return true;
 	}
 
-	bool RenderPassLambda::execute(const RenderGraph& rg,
+	const RenderCommandBuffer& RenderPassLambda::execute(const RenderGraph& rg,
 		const RenderGraph::Builder& builder, IRenderDevice& device) noexcept
 	{
-		if(evaluator_(device, rg, command_buffer()) && device.execute(*this, handle()) && command_buffer().reset())
-		{
-			return this->reset();
-		}
-		return false;
+		return evaluator_(device, rg, command_buffer());
 	}
 
 	RenderGraphAPI IRenderDevice* RenderGraph::get_device(const sakura::string_view name) const
