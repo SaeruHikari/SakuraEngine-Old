@@ -148,34 +148,15 @@ namespace sakura::graphics
     struct RenderGraphAPI RenderPass
     {
 	    virtual ~RenderPass();
-	    virtual const RenderCommandBuffer& execute(const RenderGraph& rg,
+	    virtual const RenderCommandBuffer& execute(RenderCommandBuffer& command_buffer, const RenderGraph& rg,
           const RenderGraph::Builder& builder, IRenderDevice& device) noexcept = 0;
         virtual bool construct(RenderGraph::Builder& rg) noexcept = 0;
         RenderPassHandle handle() const
         {
             return handle_;
         }
-        const RenderCommandBuffer& command_buffer(const int currentCycle = -1) const
-        {
-            return command_buffers_;
-        }
-    	uint8 current_cycle() const
-        {
-            return 0;
-        }
-    	uint8 total_cycle() const
-        {
-            return 0;
-        }
     protected:
-        bool reset();
-        RenderCommandBuffer& command_buffer()
-        {
-            return command_buffers_;
-        }
-        // TODO: commandBuffer size management.
-        RenderCommandBuffer command_buffers_ ;
-        RenderPass(const RenderPassHandle __handle, uint8 cycleCount = 3, size_t bufferSize = 1024);
+        RenderPass(const RenderPassHandle __handle, uint8 cycleCount = 3);
         RenderPass() = delete;
         const RenderPassHandle handle_;
     };
@@ -188,7 +169,7 @@ namespace sakura::graphics
         RenderPassLambda(const RenderPassHandle __handle, const Constructor& constructor);
 
         bool construct(RenderGraph::Builder& builder) noexcept override;
-        const RenderCommandBuffer& execute(const RenderGraph& rg,
+        const RenderCommandBuffer& execute(RenderCommandBuffer& command_buffer, const RenderGraph& rg,
             const RenderGraph::Builder& builder, IRenderDevice& device) noexcept override;
     protected:
         Constructor constructor_;

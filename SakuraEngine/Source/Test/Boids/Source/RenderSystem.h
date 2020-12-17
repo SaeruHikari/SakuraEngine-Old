@@ -82,14 +82,14 @@ namespace render_system
 	class RenderPassSimple : public RenderPass
 	{
 	public:
-		RenderPassSimple(const RenderPassHandle handle,
-			sakura::uint8 cycleCount = 3, size_t bufferSize = 4096 * 8 * 16 * 32)
-			:RenderPass(handle, cycleCount, bufferSize) {}
-		const RenderCommandBuffer& execute(const RenderGraph& rg,
+		RenderPassSimple(const RenderPassHandle handle, sakura::uint8 cycleCount = 3)
+			:RenderPass(handle, cycleCount) {}
+		const RenderCommandBuffer& execute(
+			RenderCommandBuffer& command_buffer,
+			const RenderGraph& rg,
 			const RenderGraph::Builder& builder, IRenderDevice& device) noexcept override
 		{
-			this->reset();
-			command_buffer().enqueue<RenderCommandBeginRenderPass>(renderPipeline, attachment);
+			command_buffer.enqueue<RenderCommandBeginRenderPass>(renderPipeline, attachment);
 			Binding binding0 = Binding({
 				Binding::Set({
 					Binding::Slot(uniformBufferPerObject, 0, sizeof(sakura::float4x4) * 4, 0)
@@ -98,8 +98,8 @@ namespace render_system
 					Binding::Slot(uniformBuffer, 0, sizeof(sakura::float4x4), 0)
 				})
 			});
-			command_buffer().enqueue<RenderCommandUpdateBinding>(binding0);
-			command_buffer().enqueue<RenderCommandDraw>(
+			command_buffer.enqueue<RenderCommandUpdateBinding>(binding0);
+			command_buffer.enqueue<RenderCommandDraw>(
 				RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBufferSphere")),
 				RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBufferSphere"),
 					60, EIndexFormat::UINT16)
@@ -112,8 +112,8 @@ namespace render_system
 							sizeof(sakura::float4x4) * 4, sizeof(sakura::float4x4) * i * 4)
 					})
 				});
-				command_buffer().enqueue<RenderCommandUpdateBinding>(binding);
-				command_buffer().enqueue<RenderCommandDraw>(60);
+				command_buffer.enqueue<RenderCommandUpdateBinding>(binding);
+				command_buffer.enqueue<RenderCommandDraw>(60);
 			}
 			Binding binding00 = Binding({
 				Binding::Set({
@@ -121,8 +121,8 @@ namespace render_system
 						sizeof(sakura::float4x4) * 4, 0)
 				})
 			});
-			command_buffer().enqueue<RenderCommandUpdateBinding>(binding00);
-			command_buffer().enqueue<RenderCommandDraw>(
+			command_buffer.enqueue<RenderCommandUpdateBinding>(binding00);
+			command_buffer.enqueue<RenderCommandDraw>(
 				RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBuffer")),
 				RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBuffer"),
 					3, EIndexFormat::UINT16)
@@ -135,12 +135,11 @@ namespace render_system
 							sizeof(sakura::float4x4) * 4, sizeof(sakura::float4x4) * i * 4)
 					})
 				});
-				command_buffer().enqueue<RenderCommandUpdateBinding>(binding);
-				command_buffer().enqueue<RenderCommandDraw>(3);
+				command_buffer.enqueue<RenderCommandUpdateBinding>(binding);
+				command_buffer.enqueue<RenderCommandDraw>(3);
 			}
-			command_buffer().enqueue<RenderCommandEndRenderPass>();
-			auto& c = command_buffer();
-			return c;
+			command_buffer.enqueue<RenderCommandEndRenderPass>();
+			return command_buffer;
 		}
 		bool construct(RenderGraph::Builder& rg) noexcept override
 		{
@@ -379,10 +378,10 @@ namespace render_system
 		task_system::schedule(
 			[ev]() {
 				defer(ev.signal());
-
+				RenderCommandBuffer buffer("", 4096 * 8 * 16 * 32);
 				RenderPass* pass_ptr = render_graph.render_pass(pass);
 				pass_ptr->construct(render_graph.builder(pass));
-				auto& buf = pass_ptr->execute(render_graph, render_graph.builder(pass), deviceGroup);
+				auto& buf = pass_ptr->execute(buffer, render_graph, render_graph.builder(pass), deviceGroup);
 				deviceGroup.execute(buf, pass_ptr->handle(), 0);
 			}
 		);

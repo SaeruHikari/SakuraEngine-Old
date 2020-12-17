@@ -48,14 +48,8 @@ namespace sakura::graphics
 		
     }
 
-    bool RenderPass::reset()
-    {
-		command_buffer().reset();
-		return true;
-    }
-
-    RenderPass::RenderPass(const RenderPassHandle __handle, uint8 cycleCount, size_t bufferSize)
-		: handle_(__handle), command_buffers_("", bufferSize)
+    RenderPass::RenderPass(const RenderPassHandle __handle, uint8 cycleCount)
+		: handle_(__handle)
 	{
 
 	}
@@ -72,10 +66,10 @@ namespace sakura::graphics
 		return true;
 	}
 
-	const RenderCommandBuffer& RenderPassLambda::execute(const RenderGraph& rg,
-		const RenderGraph::Builder& builder, IRenderDevice& device) noexcept
+	const RenderCommandBuffer& RenderPassLambda::execute(RenderCommandBuffer& command_buffer, 
+		const RenderGraph& rg, const RenderGraph::Builder& builder, IRenderDevice& device) noexcept
 	{
-		return evaluator_(device, rg, command_buffer());
+		return evaluator_(device, rg, command_buffer);
 	}
 
 	RenderGraphAPI IRenderDevice* RenderGraph::get_device(const sakura::string_view name) const
