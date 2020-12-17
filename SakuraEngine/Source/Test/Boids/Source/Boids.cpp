@@ -701,20 +701,20 @@ int main()
 	double deltaTime = 0;
 
 
-	task_system::Event renderTasks[2] =
-	{
-		task_system::Event::Mode::Auto,
+	static constexpr size_t cycle_count = 1;
+	std::vector<task_system::Event> renderTasks(
+		cycle_count,
 		task_system::Event::Mode::Auto
-	}; 
-	renderTasks[0].signal();
-	renderTasks[1].signal();
-	sakura::graphics::RenderCommandBuffer buffer[2]
+	);
+	for (auto i = 0u; i < cycle_count; i++)
 	{
-		sakura::graphics::RenderCommandBuffer("0", 4096 * 8 * 16 * 32),
-		sakura::graphics::RenderCommandBuffer("1", 4096 * 8 * 16 * 32)
+		renderTasks[i].signal();
+	}
+	std::array<sakura::graphics::RenderCommandBuffer, cycle_count> buffer
+	{
+		sakura::graphics::RenderCommandBuffer("", 4096 * 8 * 16 * 32)
 	};
 	size_t cycle = 0;
-
 	// Game & Rendering Logic
 	while(sakura::Core::yield())
 	{
@@ -733,16 +733,16 @@ int main()
 		render_system::CollectAndUpload(ppl, deltaTime);
 
 		// 等待 Cycle 索要占用的 CommandBuffer 被使用完毕
-		renderTasks[cycle % 2].wait();
+		renderTasks[cycle % cycle_count].wait();
 		// 录制 CommandBuffer, 这个举动将在下一帧完成
-		render_system::PrepareCommandBuffer(renderTasks[cycle % 2], buffer[cycle % 2]);
+		render_system::PrepareCommandBuffer(renderTasks[cycle % cycle_count], buffer[cycle % cycle_count]);
 
 		cycle += 1;
 
 		// 编译 Command Buffer Cache. TODO: 是否在此处再次错帧？
 		// render_system::Compile(buffer)
 		// 开始渲染已经准备好的那帧 Command Buffer, 目前 Compile 内联在渲染系统中.
-		render_system::RenderAndPresent(renderTasks[cycle % 2], buffer[cycle % 2]);
+		render_system::RenderAndPresent(renderTasks[cycle % cycle_count], buffer[cycle % cycle_count]);
 
 		if (cycle % 60 == 0)
 			render_system::mainWindow.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());
