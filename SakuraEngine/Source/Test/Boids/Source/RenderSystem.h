@@ -234,30 +234,30 @@ namespace render_system
 		deviceGroup.create_render_pipeline(renderPipeline, pipelineDesc);
 		// create the buffers (x, y, r, g, b)
 		float const vertData[] = {
-			 0.f, -4.f, -4.f,    1.0f, 0.0f, 1.0f, // BL
-			 0.f, -4.f, 4.f,    0.0f, 1.0f, 0.0f, // BR
-			 0.0f, 10.f, 0.f,    1.0f, 0.0f, 0.0f, // top
+			 -4.f, 0.f, -4.f,    0.f / 256.f, 49.f / 256.f, 79.f / 256.f, // BL
+			 10.f, 0.f, 0.f,    137.f / 256.f, 190.f / 256.f, 178.f / 256.f, // top
+			 -4.f, 0.f, 4.f,     0.f / 256.f, 49.f / 256.f, 79.f / 256.f, // BR
 		}; // triangle on XY-Plane.
 		uint16_t const indxData[] = { 0, 1, 2, 0 };
 
-		const float X = 0.525731f * 7.f;
-		const float Z = 0.850651f * 7.f;
-		float const sphere_vertices[72] =
+		const float X = 0.525731f * 2.f;
+		const float Z = 0.850651f * 2.f;
+		float const sphere_vertices[] =
 		{
-			-X, 0.0f, Z,  1.0f, 0.0f, 1.0f,
-			X, 0.0f, Z,   0.0f, 1.0f, 0.0f,
-			-X, 0.0f, -Z, 1.0f, 0.0f, 0.0f,
-			X, 0.0f, -Z,  1.0f, 0.0f, 1.0f,
-			0.0f, Z, X,   0.0f, 1.0f, 0.0f,
-			0.0f, Z, -X,  1.0f, 0.0f, 0.0f,
-			0.0f, -Z, X,  1.0f, 0.0f, 1.0f,
-			0.0f, -Z, -X, 0.0f, 1.0f, 0.0f,
-			Z, X, 0.0f,   1.0f, 0.0f, 0.0f,
-			-Z, X, 0.0f,  1.0f, 0.0f, 1.0f,
-			Z, -X, 0.0f,  0.0f, 1.0f, 0.0f,
-			-Z, -X, 0.0f, 1.0f, 0.0f, 0.0f,
+			-X, 0.0f, Z,  137.f / 256.f, 190.f / 256.f, 178.f / 256.f,
+			X, 0.0f, Z,   137.f / 256.f, 190.f / 256.f, 178.f / 256.f,
+			-X, 0.0f, -Z, 137.f / 256.f, 190.f / 256.f, 178.f / 256.f,
+			X, 0.0f, -Z,  137.f / 256.f, 190.f / 256.f, 178.f / 256.f,
+			0.0f, Z, X,   137.f / 256.f, 190.f / 256.f, 178.f / 256.f,
+			0.0f, Z, -X,  137.f / 256.f, 190.f / 256.f, 178.f / 256.f,
+			0.0f, -Z, X,  137.f / 256.f, 190.f / 256.f, 178.f / 256.f,
+			0.0f, -Z, -X, 137.f / 256.f, 190.f / 256.f, 178.f / 256.f,
+			Z, X, 0.0f,   137.f / 256.f, 190.f / 256.f, 178.f / 256.f,
+			-Z, X, 0.0f,  137.f / 256.f, 190.f / 256.f, 178.f / 256.f,
+			Z, -X, 0.0f,  137.f / 256.f, 190.f / 256.f, 178.f / 256.f,
+			-Z, -X, 0.0f, 137.f / 256.f, 190.f / 256.f, 178.f / 256.f,
 		};
-		uint16_t sphere_indices[60] =
+		uint16_t sphere_indices[] =
 		{
 			1,4,0,  4,9,0,  4,5,9,  8,5,4,  1,8,4,
 			1,10,8, 10,3,8, 8,3,5,  3,2,5,  3,7,2,

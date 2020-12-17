@@ -227,7 +227,7 @@ void RenderDevice::processCommandUpdateBinding(PassCacheFrame& cacheFrame,
 {
     {
         auto* bindingDesc = &command.binder;
-    	if(cacheFrame.bindGroups.size() != bindingDesc->sets.size())
+    	if(cacheFrame.bindGroups.size() < bindingDesc->sets.size())
     	{
             cacheFrame.bindGroups.resize(bindingDesc->sets.size());
             cacheFrame.entries.resize(bindingDesc->sets.size());
@@ -282,7 +282,6 @@ void RenderDevice::processCommandUpdateBinding(PassCacheFrame& cacheFrame,
                         if(bindGroup)
                             wgpuBindGroupRelease(bindGroup);
                         bindGroup = wgpuDeviceCreateBindGroup(device, &bgDesc);
-                        wgpuRenderPassEncoderSetBindGroup(*pass, i, bindGroup, 0u, 0u);
                     }
                 }
                 else
@@ -290,6 +289,7 @@ void RenderDevice::processCommandUpdateBinding(PassCacheFrame& cacheFrame,
                     assert(0 && "Pipeline as NULL is invalid!");
                 }
             }
+			wgpuRenderPassEncoderSetBindGroup(*pass, i, bindGroup, 0u, 0u);
     	}// End Foreach BindingGroup.
     }
 }
