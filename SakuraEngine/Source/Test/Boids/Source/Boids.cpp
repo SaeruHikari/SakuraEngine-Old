@@ -608,6 +608,56 @@ void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 	World2LocalSystem(ppl);
 }
 
+void DebugHeadingLoop(task_system::ecs::pipeline& ppl, float deltaTime)
+{
+	using namespace sakura::ecs;
+	static Vector3f directions[] = {
+		{0, 1, 0},
+		{0, -1, 0},
+		{1, 0, 0},
+		{-1, 0, 0},
+		{0, 0, 1},
+		{0, 0, -1}
+	};
+	const float Interval = 3;
+	static int dir = 0;
+	static float TimeRemain = Interval;
+	TimeRemain -= deltaTime;
+	if (TimeRemain < 0)
+	{
+		filters filter;
+		filter.archetypeFilter =
+		{
+			{complist<Boid, Heading>}
+		};
+		def paramList = boost::hana::make_tuple(
+			param<Heading>
+		);
+		static std::random_device r;
+		static std::default_random_engine el(r());
+		task_system::ecs::schedule(ppl, *ppl.create_pass(filter, paramList),
+			[](const task_system::ecs::pipeline& pipeline, const ecs::pass& pass, const ecs::task& tk)
+			{
+				auto o = operation{ paramList, pass, tk };
+				auto hds = o.get_parameter<Heading>();
+				forloop(i, 0, o.get_count())
+					hds[i] = directions[dir % ARRAYSIZE(directions)];
+			});
+
+		TimeRemain = Interval;
+		dir++;
+	}
+	HeadingSystem(ppl);
+
+	filters wrd_filter;
+	wrd_filter.archetypeFilter = {
+		{complist<LocalToWorld>},
+		{complist<Translation, Scale, Rotation>},
+		{complist<LocalToParent, Parent>}
+	};
+	Local2XSystem<LocalToWorld>(ppl, wrd_filter);
+}
+
 int main()
 {
 	if (!IModule::Registry::regist("ECS", &ECSModule::create) || !sakura::IModule::StartUp("ECS"))
@@ -645,7 +695,7 @@ int main()
 		//for (auto object : objects)
 		//	object->tick();
 		{
-			BoidMainLoop(ppl, deltaTime);
+			DebugHeadingLoop(ppl, deltaTime);
 			//RotateByAxisSystem(ppl, deltaTime);
 		}
 		

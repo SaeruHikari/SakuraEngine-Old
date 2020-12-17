@@ -139,9 +139,9 @@ namespace render_system
 		}
 		bool construct(RenderGraph::Builder& rg) noexcept override
 		{
-			sakura::float4x4 offset = math::make_transform(sakura::Vector3f(-1.f, -1.f, -1.f) * 400);
+			sakura::float4x4 offset = math::make_transform(sakura::Vector3f(0, 0, -1.f) * 400);
 			sakura::float4x4 view = sakura::math::look_at_matrix(
-				sakura::Vector3f(-1.f, -1.f, -1.f) * 1, Vector3f::vector_zero());
+				sakura::Vector3f(0, 0, -1.f) * 1, Vector3f::vector_zero());
 			sakura::float4x4 proj =
 				sakura::math::perspective_fov(0.25f * 3.1415926f * 2, 720.f / 1080.f, 1.0f, 1000.0f);
 
