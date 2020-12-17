@@ -305,9 +305,9 @@ namespace render_system
 				param<const LocalToWorld>
 			);
 			auto pass = ppl.create_pass(filter, paramList);
-			worlds.resize(pass->entityCount * 4);
+			world.resize(pass->entityCount * 4);
 			task_system::ecs::schedule(ppl, pass,
-				[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
+				[&world](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
 				{
 					ZoneScopedN("CollectJob");
 					auto o = operation{ paramList, task_pass, tk };
@@ -319,10 +319,10 @@ namespace render_system
 					{
 						auto l2w = sakura::math::transpose(l2ws[i]);
 						int j = (i + index) * 4;
-						worlds[j] = l2w;
-						worlds[j + 1] = l2w;
-						worlds[j + 2] = l2w;
-						worlds[j + 3] = l2w;
+						world[j] = l2w;
+						world[j + 1] = l2w;
+						world[j + 2] = l2w;
+						world[j + 3] = l2w;
 					}
 				}, maxSlice);
 			return pass;
