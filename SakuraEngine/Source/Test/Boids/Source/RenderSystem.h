@@ -112,8 +112,7 @@ namespace render_system
 							sizeof(sakura::float4x4) * 4, sizeof(sakura::float4x4) * i * 4)
 					})
 				});
-				command_buffer.enqueue<RenderCommandUpdateBinding>(binding);
-				command_buffer.enqueue<RenderCommandDraw>(60);
+				command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 60);
 			}
 			Binding binding00 = Binding({
 				Binding::Set({
@@ -127,16 +126,21 @@ namespace render_system
 				RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBuffer"),
 					3, EIndexFormat::UINT16)
 			);
-			for (auto i = 0u; i < 30000; i++)
+			static constexpr size_t N = 10;
+			for (auto n = 0u; n < N; n++)
 			{
-				Binding binding = Binding({
-					Binding::Set({
-						Binding::Slot(uniformBufferPerObject, 0,
-							sizeof(sakura::float4x4) * 4, sizeof(sakura::float4x4) * i * 4)
-					})
-				});
-				command_buffer.enqueue<RenderCommandUpdateBinding>(binding);
-				command_buffer.enqueue<RenderCommandDraw>(3);
+				ZoneScopedN("RenderPassExecute");
+				for (auto i = 0u; i < 30000 / N; i++)
+				{
+					Binding binding = Binding({
+						Binding::Set({
+							Binding::Slot(uniformBufferPerObject, 0,
+								sizeof(sakura::float4x4) * 4, 
+								sizeof(sakura::float4x4) * (i + 30000 * n / N) * 4)
+						})
+					});
+					command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 3);
+				}
 			}
 			command_buffer.enqueue<RenderCommandEndRenderPass>();
 			return command_buffer;
@@ -301,16 +305,12 @@ namespace render_system
 	using Rotator = sakura::Rotator;
 	using float4x4 = sakura::float4x4;
 	using IModule = sakura::IModule;
-	void CollectAndEndFrame(task_system::ecs::pipeline& ppl, float deltaTime)
+	void CollectAndUpload(task_system::ecs::pipeline& ppl, float deltaTime)
 	{
 		using namespace sakura;
 		using namespace sakura::graphics;
 		using namespace ecs;
-		static size_t cycles = 0;
-		cycles += 1;
-		if (cycles % 60 == 0)
-			mainWindow.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());
-
+		ZoneScopedN("CollectAndUpload");
 		{
 
 			filters filter;
@@ -382,6 +382,8 @@ namespace render_system
 	{
 		task_system::schedule(
 			[ev, &buffer]() {
+				ZoneScopedN("PrepareCommandBuffer");
+
 				defer(ev.signal());
 
 				RenderPass* pass_ptr = render_graph.render_pass(pass);
@@ -395,6 +397,8 @@ namespace render_system
 	{
 		task_system::schedule(
 			[ev, &buffer]() {
+				ZoneScopedN("RenderAndPresent");
+
 				ev.wait();
 				defer(ev.signal());
 				

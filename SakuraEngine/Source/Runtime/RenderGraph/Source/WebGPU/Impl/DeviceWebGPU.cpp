@@ -194,104 +194,124 @@ void RenderDevice::processCommand(PassCacheFrame& cacheFrame, const RenderComman
     {
     case ERenderCommandType::begin_render_pass:
 	{
-        auto cmd = *static_cast<const RenderCommandBeginRenderPass*>(command);
+        auto& cmd = *static_cast<const RenderCommandBeginRenderPass*>(command);
         cacheFrame.pipeline = processCommandBeginRenderPass(cacheFrame, cmd, encoder, pass);
 	}break;
     case ERenderCommandType::set_scissor_rect:
     {
-        auto cmd = *static_cast<const RenderCommandSetScissorRect*>(command);
+        auto& cmd = *static_cast<const RenderCommandSetScissorRect*>(command);
         processCommandSetScissorRect(cmd, encoder, pass);
     }break;
     case ERenderCommandType::draw:
     {
-        auto cmd = *static_cast<const RenderCommandDraw*>(command);
+        auto& cmd = *static_cast<const RenderCommandDraw*>(command);
         processCommandDraw(cacheFrame, cmd, encoder, pass);
     }break;
     case ERenderCommandType::end_render_pass:
     {
-        auto cmd = *static_cast<const RenderCommandEndRenderPass*>(command);
+        auto& cmd = *static_cast<const RenderCommandEndRenderPass*>(command);
         processCommandEndRenderPass(cmd, encoder, pass);
     }break;
     case ERenderCommandType::update_binding:
     {
-        auto cmd = *static_cast<const RenderCommandUpdateBinding*>(command);
+        auto& cmd = *static_cast<const RenderCommandUpdateBinding*>(command);
         processCommandUpdateBinding(cacheFrame, cmd, encoder, pass, cacheFrame.pipeline);
     }break;
+	case ERenderCommandType::draw_instanced_with_args:
+	{
+		auto& cmd = *static_cast<const RenderCommandDrawInstancedWithArgs*>(command);
+        processCommandDrawInstancedWithArgs(cacheFrame, cmd, encoder, pass, cacheFrame.pipeline);
+	}break;
     default:break;
     }
+}
+
+void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cacheFrame, const sakura::graphics::Binding& binder,
+    WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass, RenderPipeline* ppl) const
+{
+	{
+		auto* bindingDesc = &binder;
+		if (cacheFrame.bindGroups.size() < bindingDesc->sets.size())
+		{
+			cacheFrame.bindGroups.resize(bindingDesc->sets.size());
+			cacheFrame.entries.resize(bindingDesc->sets.size());
+		}
+		// Foreach BindingGroup.
+		for (auto i = 0u; i < bindingDesc->sets.size(); i++)
+		{
+			auto& bindGroup = cacheFrame.bindGroups[i];
+			auto set = bindingDesc->sets[i];
+			// Matching Size.
+			if (cacheFrame.entries[i].first.size() != set.slots.size())
+			{
+				cacheFrame.entries[i].first.resize(set.slots.size());
+				goto CREATE_BINDINGS;
+			}
+			// Check Slot Differences.
+			for (auto j = 0u; j < set.slots.size(); j++)
+			{
+				auto& slot = set.slots[j];
+				auto& entry = cacheFrame.entries[i].first[j];
+				if (entry.binding == slot.slot_index && entry.offset == slot.offset && entry.size == slot.size)
+				{
+					if (auto buf = static_cast<GPUBuffer*>(get(slot.buffer)); buf)
+						if (entry.buffer == buf->_buffer) continue;
+				}
+				cacheFrame.entries[i].second = false;
+				goto CREATE_BINDINGS;
+			}
+			cacheFrame.entries[i].second = true;
+		CREATE_BINDINGS:
+			auto& unchanged = cacheFrame.entries[i].second;
+			// Optionally Create Bindings
+			if (!unchanged)
+			{
+				for (auto j = 0u; j < set.slots.size(); j++)
+				{
+					auto& slot = set.slots[j];
+					auto& entry = cacheFrame.entries[i].first[j];
+					entry.binding = slot.slot_index; entry.offset = slot.offset; entry.size = slot.size;
+					if (auto buf = static_cast<GPUBuffer*>(get(slot.buffer)); buf)
+						entry.buffer = buf->_buffer;
+					else
+						assert(0 && "Buffer Not Found!");
+				}
+				WGPUBindGroupDescriptor bgDesc = {};
+				if (ppl && !cacheFrame.entries.empty())
+				{
+					bgDesc.layout = ppl->bindingGroups[i]; // Get Layout.
+					bgDesc.entryCount = static_cast<uint32>(cacheFrame.entries[i].first.size());
+					bgDesc.entries = cacheFrame.entries[i].first.data();
+					{
+						if (bindGroup)
+							wgpuBindGroupRelease(bindGroup);
+						bindGroup = wgpuDeviceCreateBindGroup(device, &bgDesc);
+					}
+				}
+				else
+				{
+					assert(0 && "Pipeline as NULL is invalid!");
+				}
+			}
+			if (bindGroup && pass)
+				wgpuRenderPassEncoderSetBindGroup(*pass, i, bindGroup, 0u, 0u);
+		}// End Foreach BindingGroup.
+	}
 }
 
 void RenderDevice::processCommandUpdateBinding(PassCacheFrame& cacheFrame,
     const RenderCommandUpdateBinding& command, WGPUCommandEncoder* encoder,
 	WGPURenderPassEncoder* pass, RenderPipeline* ppl) const
 {
-    {
-        auto* bindingDesc = &command.binder;
-    	if(cacheFrame.bindGroups.size() < bindingDesc->sets.size())
-    	{
-            cacheFrame.bindGroups.resize(bindingDesc->sets.size());
-            cacheFrame.entries.resize(bindingDesc->sets.size());
-    	}
-    	// Foreach BindingGroup.
-    	for(auto i = 0u; i < bindingDesc->sets.size(); i++)
-    	{
-            auto& bindGroup = cacheFrame.bindGroups[i];
-            auto set = bindingDesc->sets[i];
-            // Matching Size.
-    		if(cacheFrame.entries[i].first.size() != set.slots.size())
-    		{
-                cacheFrame.entries[i].first.resize(set.slots.size());
-                goto CREATE_BINDINGS;
-    		}
-    		// Check Slot Differences.
-            for (auto j = 0u; j < set.slots.size(); j++)
-            {
-                auto& slot = set.slots[j];
-                auto& entry = cacheFrame.entries[i].first[j];
-            	if(entry.binding == slot.slot_index && entry.offset == slot.offset && entry.size == slot.size)
-            	{
-                    if (auto buf = static_cast<GPUBuffer*>(get(slot.buffer));buf)
-						if(entry.buffer == buf->_buffer) continue;
-            	}
-                cacheFrame.entries[i].second = false;
-                goto CREATE_BINDINGS;
-            }
-            cacheFrame.entries[i].second = true;
-        CREATE_BINDINGS:
-            auto& unchanged = cacheFrame.entries[i].second;
-            // Optionally Create Bindings
-    		if(!unchanged)
-            {
-                for (auto j = 0u; j < set.slots.size(); j++)
-                {
-                    auto& slot = set.slots[j];
-                    auto& entry = cacheFrame.entries[i].first[j];
-                    entry.binding = slot.slot_index; entry.offset = slot.offset; entry.size = slot.size;
-                    if (auto buf = static_cast<GPUBuffer*>(get(slot.buffer)); buf)
-                        entry.buffer = buf->_buffer;
-                    else
-                        assert(0 && "Buffer Not Found!");
-                }
-                WGPUBindGroupDescriptor bgDesc = {};
-                if (ppl && !cacheFrame.entries.empty())
-                {
-                    bgDesc.layout = ppl->bindingGroups[i]; // Get Layout.
-                    bgDesc.entryCount = static_cast<uint32>(cacheFrame.entries[i].first.size());
-                    bgDesc.entries = cacheFrame.entries[i].first.data();
-                    {
-                        if(bindGroup)
-                            wgpuBindGroupRelease(bindGroup);
-                        bindGroup = wgpuDeviceCreateBindGroup(device, &bgDesc);
-                    }
-                }
-                else
-                {
-                    assert(0 && "Pipeline as NULL is invalid!");
-                }
-            }
-			wgpuRenderPassEncoderSetBindGroup(*pass, i, bindGroup, 0u, 0u);
-    	}// End Foreach BindingGroup.
-    }
+    processCommandUpdateBinding(cacheFrame, command.binder, encoder, pass, ppl);
+}
+
+void RenderDevice::processCommandDrawInstancedWithArgs(PassCacheFrame& cacheFrame, const RenderCommandDrawInstancedWithArgs& command,
+    WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass, RenderPipeline* ppl) const
+{
+    processCommandUpdateBinding(cacheFrame, command.binder, encoder, pass, ppl);
+	wgpuRenderPassEncoderDrawIndexed(*pass, static_cast<uint32>(command.index_count), command.instance_count,
+		command.first_index, command.base_vertex, command.first_instance);
 }
 
 sakura::string_view RenderDevice::get_name() const
@@ -355,6 +375,7 @@ bool RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPas
     {
         processCommand(cacheFrame, cmd, &cacheFrame.encoder, &cacheFrame.pass_encoder);
     }
+
     if (cacheFrame.pass_encoder)
     {
         wgpuRenderPassEncoderRelease(cacheFrame.pass_encoder);
