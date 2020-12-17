@@ -1,6 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
-//#define TRACY_ENABLE
+#define TRACY_ENABLE
 #include "tracy/Tracy.hpp"
 
 #include "RuntimeCore/RuntimeCore.h"
@@ -714,6 +714,7 @@ int main()
 		sakura::graphics::RenderCommandBuffer("1", 4096 * 8 * 16 * 32)
 	};
 	size_t cycle = 0;
+
 	// Game & Rendering Logic
 	while(sakura::Core::yield())
 	{
@@ -727,16 +728,25 @@ int main()
 				((task_system::ecs::custom_pass*)dp)->event.wait();
 		};
 		BoidMainLoop(ppl, deltaTime);
-		ZoneScopedN("Pipeline Sync")
-			render_system::CollectAndEndFrame(ppl, deltaTime);
 
-			renderTasks[cycle % 2].wait();
-			render_system::PrepareCommandBuffer(renderTasks[cycle % 2], buffer[cycle % 2]);
+		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
+		render_system::CollectAndUpload(ppl, deltaTime);
+
+		// 等待 Cycle 索要占用的 CommandBuffer 被使用完毕
+		renderTasks[cycle % 2].wait();
+		// 录制 CommandBuffer, 这个举动将在下一帧完成
+		render_system::PrepareCommandBuffer(renderTasks[cycle % 2], buffer[cycle % 2]);
 
 			cycle += 1;
 
-			render_system::RenderAndPresent(renderTasks[cycle % 2], buffer[cycle % 2]);
-			//std::cout << deltaTime;
+		// 编译 Command Buffer Cache. TODO: 是否在此处再次错帧？
+		// render_system::Compile(buffer)
+		// 开始渲染已经准备好的那帧 Command Buffer, 目前 Compile 内联在渲染系统中.
+		render_system::RenderAndPresent(renderTasks[cycle % 2], buffer[cycle % 2]);
+
+		if (cycle % 60 == 0)
+			render_system::mainWindow.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());
+
 		deltaTime = timer.end();
 
 		FrameMark;

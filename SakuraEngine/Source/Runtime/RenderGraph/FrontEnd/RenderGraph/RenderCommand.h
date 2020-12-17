@@ -9,6 +9,8 @@ namespace sakura::graphics
         draw,
         draw_indirect,
 
+        draw_instanced_with_args,
+
         dispatch,
         dispatch_indirect,
 
@@ -135,12 +137,36 @@ namespace sakura::graphics
 
     }
 
-    struct RenderCommandDrawIndirect final
-        : public RenderCommandTyped<ERenderCommandType::draw_indirect, ERenderQueueType::Graphics>
+    struct RenderCommandDrawInstancedWithArgs final
+        : public RenderCommandTyped<ERenderCommandType::draw_instanced_with_args, ERenderQueueType::Graphics>
     {
-        RenderBufferHandle indirect_buffer;
-        size_t offset;
-    };
+        size_t index_count = 0;
+        size_t instance_count = 1;
+        size_t first_index = 0;
+        size_t base_vertex = 0;
+        size_t first_instance = 0;
+		Binding binder = Binding();
+
+		explicit RenderCommandDrawInstancedWithArgs(const Binding& binder, const uint32 index_count,
+			const uint32 instance_count = 1, const uint32 first_index = 0, uint32 baseVertex = 0, uint32 firstInstance = 0);
+	}; 
+
+	RenderCommandDrawInstancedWithArgs::RenderCommandDrawInstancedWithArgs(
+        const Binding& binder_, const uint32 index_count_, const uint32 instance_count_ /*= 1*/,
+        const uint32 first_index_ /*= 0*/, uint32 baseVertex_ /*= 0*/, uint32 firstInstance_ /*= 0*/)
+        :binder(binder_), index_count(index_count_), instance_count(instance_count_),
+        first_index(first_index_), base_vertex(baseVertex_), first_instance(firstInstance_)
+	{
+
+	}
+
+
+    struct RenderCommandDrawIndirect final
+		: public RenderCommandTyped<ERenderCommandType::draw_indirect, ERenderQueueType::Graphics>
+	{
+		RenderBufferHandle indirect_buffer;
+		size_t offset;
+	};
 
     struct RenderCommandDraw final
         : public RenderCommandTyped<ERenderCommandType::draw, ERenderQueueType::Graphics>
