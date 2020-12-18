@@ -60,6 +60,7 @@ namespace sakura::task_system::ecs
 			defer(p->event.signal());
 			forloop(i, 0, p->dependencyCount)
 				((pass*)p->dependencies[i].get())->event.wait();
+			p->release_dependencies();
 			for (auto& ed : externalDependencies)
 				ed.wait();
 			t();
@@ -86,6 +87,7 @@ namespace sakura::task_system::ecs
 			//defer(tasks.reset());
 			forloop(i, 0, p->dependencyCount)
 				((pass*)p->dependencies[i].get())->event.wait();
+			p->release_dependencies();
 			for (auto& ed : externalDependencies)
 				ed.wait();
 			auto tasks = pipeline.create_tasks(*p, maxSlice);
