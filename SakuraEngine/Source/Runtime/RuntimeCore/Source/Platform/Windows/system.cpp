@@ -13,7 +13,7 @@
  * paced struggle). 1-5 is a good choice (2 being a good compromise).
  */
 #ifndef WINDOW_SLEEP_PERIOD
-#define WINDOW_SLEEP_PERIOD 2
+#define WINDOW_SLEEP_PERIOD 1
 #endif
 
 bool sakura::Core::yield() noexcept

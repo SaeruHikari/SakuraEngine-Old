@@ -2,22 +2,6 @@
 #include "ShaderCompiler/ShaderCompiler.h"
 #include "dxc/dxcapi.h"
 #include <atlbase.h>
-#include <locale> 
-#include <codecvt> 
-namespace utf_converter
-{
-    using converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>;
-
-    std::string utf16_to_utf8(std::wstring utf16_string)
-    {
-        return converter{}.to_bytes(utf16_string);
-    }
-
-    std::wstring utf8_to_utf16(std::string utf8_string)
-    {
-        return converter{}.from_bytes(utf8_string);
-    }
-}
 
 using namespace sakura::development;
 
