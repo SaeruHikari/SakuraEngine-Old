@@ -358,31 +358,22 @@ namespace render_system
 		deviceGroup.present(swapChain);
 	}
 
-	void PrepareCommandBuffer(task_system::Event ev, RenderCommandBuffer& buffer)
+	void PrepareCommandBuffer(RenderCommandBuffer& buffer)
 	{
-		if (buffer.begin() != buffer.end())
-		{
-			ev.signal();
-			return;
-		}
-		task_system::schedule(
-			[ev, &buffer]() {
-				ZoneScopedN("PrepareCommandBuffer");
+			ZoneScopedN("PrepareCommandBuffer");
 
-				defer(ev.signal());
-
-				RenderPass* pass_ptr = render_graph.render_pass(pass);
-
-				pass_ptr->construct(render_graph.builder(pass));
-				buffer.reset();
-				pass_ptr->execute(buffer, render_graph, render_graph.builder(pass), deviceGroup);
-			});
+			RenderPass* pass_ptr = render_graph.render_pass(pass);
+		
+			pass_ptr->construct(render_graph.builder(pass));
+			buffer.reset();
+			pass_ptr->execute(buffer, render_graph, render_graph.builder(pass), deviceGroup);
 	}
 
-	void RenderAndPresent(task_system::Event ev, const RenderCommandBuffer& buffer)
+	void RenderAndPresent(const RenderCommandBuffer& buffer)
 	{
-		task_system::schedule(
-			[ev, &buffer]() {
+		//task_system::schedule(
+		//	[ev, &buffer]() {
+		//		defer(ev.signal());
 				{
 					ZoneScopedN("Upload");
 					sakura::float4x4 offset = math::make_transform(sakura::Vector3f(0, 0, -1.f) * 500);
@@ -401,17 +392,14 @@ namespace render_system
 					deviceGroup.update_buffer(
 						uniformBufferPerTarget, 0, targetWorlds.data(), sizeof(float4x4) * targetWorlds.size());
 				}
-
-				ev.wait();
-				defer(ev.signal());
 				
 				{
 					ZoneScopedN("RenderAndPresent");
 					RenderPass* pass_ptr = render_graph.render_pass(pass);
 					deviceGroup.execute(buffer, pass_ptr->handle(), 0);
-					render_system::Present();
+					deviceGroup.present(swapChain);
 				}
-			}
-		);
+		//	}
+		//);
 	}
 }
