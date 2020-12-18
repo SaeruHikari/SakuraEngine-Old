@@ -309,7 +309,8 @@ void RenderDevice::processCommandUpdateBinding(PassCacheFrame& cacheFrame,
 void RenderDevice::processCommandDrawInstancedWithArgs(PassCacheFrame& cacheFrame, const RenderCommandDrawInstancedWithArgs& command,
     WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass, RenderPipeline* ppl) const
 {
-    processCommandUpdateBinding(cacheFrame, command.binder, encoder, pass, ppl);
+    if(command.binder)
+        processCommandUpdateBinding(cacheFrame, *command.binder, encoder, pass, ppl);
 	wgpuRenderPassEncoderDrawIndexed(*pass, static_cast<uint32>(command.index_count), command.instance_count,
 		command.first_index, command.base_vertex, command.first_instance);
 }

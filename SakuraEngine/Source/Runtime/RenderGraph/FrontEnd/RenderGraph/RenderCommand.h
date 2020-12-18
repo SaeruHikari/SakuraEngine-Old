@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "RenderGraph/RenderGraphCore.h"
+#include <optional>
 
 namespace sakura::graphics
 {
@@ -145,9 +146,11 @@ namespace sakura::graphics
         size_t first_index = 0;
         size_t base_vertex = 0;
         size_t first_instance = 0;
-		Binding binder = Binding();
+		std::optional<Binding> binder = Binding();
 
 		explicit RenderCommandDrawInstancedWithArgs(const Binding& binder, const uint32 index_count,
+			const uint32 instance_count = 1, const uint32 first_index = 0, uint32 baseVertex = 0, uint32 firstInstance = 0);
+		explicit RenderCommandDrawInstancedWithArgs(const uint32 index_count,
 			const uint32 instance_count = 1, const uint32 first_index = 0, uint32 baseVertex = 0, uint32 firstInstance = 0);
 	}; 
 
@@ -156,6 +159,15 @@ namespace sakura::graphics
         const uint32 first_index_ /*= 0*/, uint32 baseVertex_ /*= 0*/, uint32 firstInstance_ /*= 0*/)
         :binder(binder_), index_count(index_count_), instance_count(instance_count_),
         first_index(first_index_), base_vertex(baseVertex_), first_instance(firstInstance_)
+	{
+
+	}
+
+	RenderCommandDrawInstancedWithArgs::RenderCommandDrawInstancedWithArgs(
+		const uint32 index_count_, const uint32 instance_count_ /*= 1*/,
+		const uint32 first_index_ /*= 0*/, uint32 baseVertex_ /*= 0*/, uint32 firstInstance_ /*= 0*/)
+		:binder(std::nullopt), index_count(index_count_), instance_count(instance_count_),
+		first_index(first_index_), base_vertex(baseVertex_), first_instance(firstInstance_)
 	{
 
 	}
