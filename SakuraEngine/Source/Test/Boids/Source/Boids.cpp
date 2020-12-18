@@ -1,6 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
-#define TRACY_ENABLE
+//#define TRACY_ENABLE
 #include "tracy/Tracy.hpp"
 
 #include "RuntimeCore/RuntimeCore.h"
@@ -460,7 +460,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 					{
 						//收集附近单位的位置和朝向信息
 						neighbers.clear();
-						kdtree->search_k_radius(trs[i], boid->SightRadius, 20, neighbers);
+						kdtree->search_k_radius(trs[i], boid->SightRadius, 10, neighbers);
 						alignments[i] = sakura::Vector3f::vector_zero();
 						separations[i] = sakura::Vector3f::vector_zero();
 						for (auto ng : neighbers)
@@ -491,7 +491,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 						sakura::Vector3f separation = math::normalize((float)neighbers.size() * trs[i] - separations[i]);
 						sakura::Vector3f targeting = math::normalize(targetings[i] - trs[i]);
 						sakura::Vector3f newHeading = math::normalize(alignment * boid->AlignmentWeight + separation * boid->SeparationWeight + targeting * boid->TargetWeight);
-						(*newHeadings)[index + i] = math::normalize((hds[i] + (newHeading - hds[i]) * deltaTime));
+						(*newHeadings)[index + i] = math::normalize((hds[i] + (newHeading - hds[i]) * deltaTime * boid->turnSpeed));
 					}
 				}
 			}, 100);
@@ -536,7 +536,7 @@ void SpawnBoidTargets(int Count)
 
 		forloop(i, 0, slice.count)
 		{
-			std::uniform_real_distribution<float> speedDst(150.f, 250.f);
+			std::uniform_real_distribution<float> speedDst(200.f, 300.f);
 			rmts[i].center = sakura::Vector3f::vector_zero();
 			rmts[i].radius = 1000.f;
 			mts[i].Target = rmts[i].random_point(get_random_engine());
@@ -560,9 +560,12 @@ void SpawnBoidSetting()
 	for (auto slice : ctx.allocate(type, 1))
 	{
 		auto bs = init_component<Boid>(ctx, slice);
-		bs->AlignmentWeight = bs->SeparationWeight = bs->TargetWeight = 1.f;
+		bs->AlignmentWeight = 1.f;
+		bs->TargetWeight = 1.f;
+		bs->SeparationWeight = 2.f;
+		bs->turnSpeed = 2.f;
 		bs->MoveSpeed = 250.f;
-		bs->SightRadius = 50.f;
+		bs->SightRadius = 10.f;
 		BoidSetting = ctx.get_entities(slice.c)[slice.start];
 	}
 }
@@ -578,7 +581,7 @@ void SpawnBoids(int Count)
 	};
 	sphere s;
 	s.center = Vector3f::vector_zero();
-	s.radius = 1000.f;
+	s.radius = 500.f;
 	for (auto slice : ctx.allocate(type, Count))
 	{
 		auto trs = init_component<Translation>(ctx, slice);
@@ -691,7 +694,7 @@ int main()
 	register_components<Translation, Rotation, RotationEuler, Scale, LocalToWorld, LocalToParent, 
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading>();
 	SpawnBoidSetting();
-	SpawnBoids(30000);
+	SpawnBoids(5000);
 	SpawnBoidTargets(10);
 	
 	task_system::Scheduler scheduler(task_system::Scheduler::Config::allCores());

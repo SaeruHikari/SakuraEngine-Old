@@ -1,4 +1,4 @@
-﻿#include "RuntimeCore/RuntimeCore.h"
+#include "RuntimeCore/RuntimeCore.h"
 #include <mmsystem.h>
 #include <shellapi.h>
 #if _WIN32_WINNT >= 0x0605
@@ -13,7 +13,7 @@
  * paced struggle). 1-5 is a good choice (2 being a good compromise).
  */
 #ifndef WINDOW_SLEEP_PERIOD
-#define WINDOW_SLEEP_PERIOD 2
+#define WINDOW_SLEEP_PERIOD 0//2
 #endif
 
 bool sakura::Core::yield() noexcept

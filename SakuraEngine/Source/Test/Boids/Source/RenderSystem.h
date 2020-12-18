@@ -76,8 +76,8 @@ namespace render_system
 	RenderBufferHandle indexBufferSphere = render_graph.RenderBuffer("IndexBufferSphere");
 
 	sakura::float4x4 viewProj;
-	std::vector<sakura::float4x4> targetWorlds(500 * 4);
-	std::vector<sakura::float4x4> worlds(30500 * 4);
+	std::vector<sakura::float4x4> worlds(5000 * 4);
+	std::vector<sakura::float4x4> targetWorlds(50 * 4);
 
 	class RenderPassSimple : public RenderPass
 	{
@@ -104,7 +104,8 @@ namespace render_system
 				RenderCommandDraw::IB(rg.blackboard<RenderBufferHandle>("IndexBufferSphere"),
 					60, EIndexFormat::UINT16)
 			);
-			for (auto i = 1u; i < 10; i++)
+			auto tn = targetWorlds.size() / 4;
+			for (auto i = 1u; i < tn; i++)
 			{
 				Binding binding = Binding({
 					Binding::Set({
@@ -127,16 +128,17 @@ namespace render_system
 					3, EIndexFormat::UINT16)
 			);
 			static constexpr size_t N = 10;
+			auto bn = worlds.size() / 4;
 			for (auto n = 0u; n < N; n++)
 			{
 				ZoneScopedN("RenderPassExecute");
-				for (auto i = 0u; i < 30000 / N; i++)
+				for (auto i = 0u; i < bn / N; i++)
 				{
 					Binding binding = Binding({
 						Binding::Set({
 							Binding::Slot(uniformBufferPerObject, 0,
 								sizeof(sakura::float4x4) * 4, 
-								sizeof(sakura::float4x4) * (i + 30000 * n / N) * 4)
+								sizeof(sakura::float4x4) * (i + bn * n / N) * 4)
 						})
 					});
 					command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 3);
@@ -266,9 +268,9 @@ namespace render_system
 		deviceGroup.create_buffer(uniformBuffer,
 			BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4), &viewProj));
 		deviceGroup.create_buffer(uniformBufferPerTarget,
-				BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * 500 * 4, targetWorlds.data()));
+				BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * targetWorlds.size(), targetWorlds.data()));
 		deviceGroup.create_buffer(uniformBufferPerObject,
-			BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * 30500 * 4, worlds.data()));
+			BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * worlds.size(), worlds.data()));
 
 		deviceGroup.create_buffer(vertexBuffer,
 			BufferDesc(EBufferUsage::VertexBuffer, sizeof(vertData), vertData));
@@ -383,7 +385,7 @@ namespace render_system
 			[ev, &buffer]() {
 				{
 					ZoneScopedN("Upload");
-					sakura::float4x4 offset = math::make_transform(sakura::Vector3f(0, 0, -1.f) * 400);
+					sakura::float4x4 offset = math::make_transform(sakura::Vector3f(0, 0, -1.f) * 500);
 					sakura::float4x4 view = sakura::math::look_at_matrix(
 						sakura::Vector3f(0, 0, -1.f) * 1, Vector3f::vector_zero());
 					sakura::float4x4 proj =
