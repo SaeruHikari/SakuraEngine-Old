@@ -19,6 +19,10 @@ namespace sakura::development
         graphics::EShaderFrequency freq;
         EShaderLanguage target_language;
     };
-    ShaderCompilerAPI sakura::vector<std::byte> compile_hlsl(
+
+	ShaderCompilerAPI sakura::vector<std::byte> compile_hlsl(
+        const sakura::string& code, const ShaderCompilerVariables& vars);
+
+    ShaderCompilerAPI sakura::vector<std::byte> compile_glsl(
         const sakura::string& code, const ShaderCompilerVariables& vars);
 }
