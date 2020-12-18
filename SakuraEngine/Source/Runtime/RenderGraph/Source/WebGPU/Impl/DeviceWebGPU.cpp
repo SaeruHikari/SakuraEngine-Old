@@ -72,7 +72,7 @@ RenderPipeline* RenderDevice::processCommandBeginRenderPass(
             if (auto get_wgpu_chain = get(*swapChain); get_wgpu_chain)
             {
                 auto wgpuChain = static_cast<webgpu::SwapChain*>(get_wgpu_chain);
-                texView = texView ? texView : wgpuSwapChainGetCurrentTextureView(wgpuChain->swapchain);
+                texView = wgpuSwapChainGetCurrentTextureView(wgpuChain->swapchain);
                 colorDesc.attachment = texView;
             }
             else

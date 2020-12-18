@@ -77,7 +77,7 @@ namespace render_system
 
 	sakura::float4x4 viewProj;
 	std::vector<sakura::float4x4> worlds(5000 * 4);
-	std::vector<sakura::float4x4> targetWorlds(50 * 4);
+	std::vector<sakura::float4x4> targetWorlds(10 * 4);
 
 	class RenderPassSimple : public RenderPass
 	{
