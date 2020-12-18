@@ -126,7 +126,8 @@ namespace sakura::graphics
 			}
 			return result;
 		}
-		FORCEINLINE bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl, const size_t frame) override
+		FORCEINLINE bool execute(const RenderCommandBuffer& cmdBuffer,
+			const RenderPassHandle hdl, const size_t frame) override
 		{
 			bool result = true;
 			for (auto i = 0; i < count(); i++)

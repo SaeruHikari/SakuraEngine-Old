@@ -17,11 +17,3 @@ link_directories(
 set(SAKURA_FINAL_BIN_DIR 
     ${ENGINE_BIN_DIR}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:Release>$<$<CONFIG:MinSizeRel>:Release>)
 
-set(vulkan FALSE)
-if(windows)
-find_package(Vulkan)
-if(${Vulkan_FOUND})
-    message(STATUS "Found VK SDK. Include Dir: ${Vulkan_INCLUDE_DIRS}")
-    set(vulkan TRUE)
-endif()
-endif(windows)

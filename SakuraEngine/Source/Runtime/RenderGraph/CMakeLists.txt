@@ -28,7 +28,7 @@ Module(
 )
 endif(windows)
 
-if(vulkan)
+if(${vulkan})
 Module(
     NAME RenderGraphVulkan
     TYPE Library
@@ -38,11 +38,13 @@ Module(
     DEPS_PUBLIC 
         RenderGraph RuntimeCore
     INCLUDES_PUBLIC  
-        /Vulkan
+        /Vulkan 
+    INCLUDES
+        
     LINKS
-    LINKS_PUBLIC
+    LINKS_PUBLIC ${Vulkan_LIBRARY}
 )
-endif(vulkan)
+endif(${vulkan})
 
 if(windows OR macos OR web)
   
@@ -72,9 +74,11 @@ Module(
     DEPS
     DEPS_PUBLIC RenderGraph RuntimeCore
     INCLUDES_PUBLIC  
-        /WebGPU
+        /WebGPU 
+    INCLUDES
+        
     LINKS ${WGPUNativeLib}
-    LINKS_PUBLIC
+    LINKS_PUBLIC ${Vulkan_LIBRARY}
 )
 
 endif()

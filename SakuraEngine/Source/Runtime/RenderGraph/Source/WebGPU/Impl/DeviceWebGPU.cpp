@@ -1,5 +1,6 @@
 ﻿#include <RenderGraphWebGPU/RenderGraphWebGPU.h>
 #include "System/Log.h"
+#include "TaskSystem/TaskSystem.h"
 
 namespace sakura {
 	namespace graphics {
@@ -362,13 +363,16 @@ bool RenderDevice::valid(const RenderShaderHandle shader) const
 
 bool RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl, const size_t frame)
 {
-	// TODO: Move These to Constuction Phase.
+    // TODO: Move These to Constuction Phase.
     if (hdl.id().index() + 1 > passCache.size())
-        passCache.resize(hdl.id().index() + 1, {3}); // Create New Cache
+        passCache.resize(hdl.id().index() + 1, { 3 }); // Create New Cache
     // TODO: Generation Check & Validate
     auto&& cacheFrame = passCache[hdl.id().index()].frame(frame);
     {// create pass cache objects.
         cacheFrame.encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);// create encoder
+        WGPUFenceDescriptor desc = {};
+        cacheFrame.committed_fence =
+            cacheFrame.committed_fence ? cacheFrame.committed_fence : wgpuQueueCreateFence(defaultQueue, &desc);
     }
 
     // Evaluate.
@@ -376,27 +380,28 @@ bool RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPas
     {
         processCommand(cacheFrame, cmd, &cacheFrame.encoder, &cacheFrame.pass_encoder);
     }
-
+	WGPUFenceDescriptor desc = {};
+	auto f = wgpuQueueCreateFence(defaultQueue, &desc);
     if (cacheFrame.pass_encoder)
     {
         wgpuRenderPassEncoderRelease(cacheFrame.pass_encoder);
         WGPUCommandBuffer commands = wgpuCommandEncoderFinish(cacheFrame.encoder, nullptr);// create commands
-        //cacheFrame.last_commited += 1;
-    	wgpuQueueSubmit(defaultQueue, 1, &commands);
-        //wgpuQueueSignal(defaultQueue, cacheFrame.committed_fence, cacheFrame.last_commited);
+        wgpuQueueSubmit(defaultQueue, 1, &commands);
+		wgpuQueueSignal(defaultQueue, f, 1);
         wgpuCommandBufferRelease(commands);
     }
-	for(size_t i = 0u; i < cacheFrame.texture_views.size(); i++)
-	{
+    for (size_t i = 0u; i < cacheFrame.texture_views.size(); i++)
+    {
         auto& view = cacheFrame.texture_views[i];
         if (view)
         {
             wgpuTextureViewRelease(view);
             view = nullptr;
         }
-	}
+    }
     wgpuCommandEncoderRelease(cacheFrame.encoder);
     cacheFrame.pass_encoder = nullptr;
+
     return true;
 }
 

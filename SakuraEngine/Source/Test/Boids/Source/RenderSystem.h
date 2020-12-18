@@ -3,9 +3,12 @@
 
 #include "RenderGraph/RenderGraph.h"
 #include "RenderGraphWebGPU/RenderGraphWebGPU.h"
+#include "RenderGraphVulkan/RenderGraphVulkan.h"
 
 #include "ECS/ECS.h"
 #include "Boids.h"
+
+#define TARGET_NUM 5000
 
 namespace render_system
 {
@@ -76,7 +79,7 @@ namespace render_system
 	RenderBufferHandle indexBufferSphere = render_graph.RenderBuffer("IndexBufferSphere");
 
 	sakura::float4x4 viewProj;
-	std::vector<sakura::float4x4> worlds(5000 * 4);
+	std::vector<sakura::float4x4> worlds(TARGET_NUM * 4);
 	std::vector<sakura::float4x4> targetWorlds(10 * 4);
 
 	class RenderPassSimple : public RenderPass
@@ -98,6 +101,10 @@ namespace render_system
 					Binding::Slot(uniformBuffer, 0, sizeof(sakura::float4x4), 0)
 				})
 			});
+			command_buffer.enqueue<RenderCommandSetScissorRect>(
+				0, device.backend() == EBackend::WebGPU ? mainWindow.extent().width / 2 + 10 : 0,
+				mainWindow.extent().width / 2, mainWindow.extent().height
+			);
 			command_buffer.enqueue<RenderCommandUpdateBinding>(binding0);
 			command_buffer.enqueue<RenderCommandDraw>(
 				RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBufferSphere")),
@@ -191,9 +198,16 @@ namespace render_system
 		DeviceConfiguration deviceConfig;
 		deviceConfig.name = "DawnDevice";
 		render_graph.emplace_device(new webgpu::RenderDevice(deviceConfig));
+		
+		deviceConfig.name = "VulkanDevice";
+		render_graph.emplace_device(new vk::RenderDevice(deviceConfig));
+
 		IRenderDevice* dawnDevice = render_graph.get_device("DawnDevice");
+		IRenderDevice* vulaknDevice = render_graph.get_device("VulkanDevice");
 		assert(dawnDevice != nullptr && "ERROR: Failed to create Dawn device!");
+		assert(vulaknDevice != nullptr && "ERROR: Failed to create Vulkan device!");
 		deviceGroup.emplace(dawnDevice);
+		deviceGroup.emplace(vulaknDevice);
 
 		// Create Swap Chains.
 		deviceGroup.create_swap_chain(swapChain, SwapChainDesc(EPresentMode::Mailbox, mainWindow, 3));
@@ -358,22 +372,26 @@ namespace render_system
 		deviceGroup.present(swapChain);
 	}
 
-	void PrepareCommandBuffer(RenderCommandBuffer& buffer)
+	void PrepareCommandBuffer(task_system::Event ev2, RenderCommandBuffer& buffer)
 	{
-			ZoneScopedN("PrepareCommandBuffer");
+		task_system::schedule(
+			[ev2, &buffer]() {
+				ZoneScopedN("PrepareCommandBuffer");
 
-			RenderPass* pass_ptr = render_graph.render_pass(pass);
-		
-			pass_ptr->construct(render_graph.builder(pass));
-			buffer.reset();
-			pass_ptr->execute(buffer, render_graph, render_graph.builder(pass), deviceGroup);
+				defer(ev2.signal());
+
+				RenderPass* pass_ptr = render_graph.render_pass(pass);
+
+				pass_ptr->construct(render_graph.builder(pass));
+				buffer.reset();
+				pass_ptr->execute(buffer, render_graph, render_graph.builder(pass), deviceGroup);
+			});
 	}
 
-	void RenderAndPresent(const RenderCommandBuffer& buffer)
+	void RenderAndPresent(task_system::Event ev, task_system::Event evc, const RenderCommandBuffer& buffer)
 	{
-		//task_system::schedule(
-		//	[ev, &buffer]() {
-		//		defer(ev.signal());
+		task_system::schedule(
+			[ev, evc, &buffer]() {
 				{
 					ZoneScopedN("Upload");
 					sakura::float4x4 offset = math::make_transform(sakura::Vector3f(0, 0, -1.f) * 500);
@@ -392,14 +410,16 @@ namespace render_system
 					deviceGroup.update_buffer(
 						uniformBufferPerTarget, 0, targetWorlds.data(), sizeof(float4x4) * targetWorlds.size());
 				}
-				
+
+				evc.wait();
+				defer(ev.signal());
+
 				{
 					ZoneScopedN("RenderAndPresent");
 					RenderPass* pass_ptr = render_graph.render_pass(pass);
 					deviceGroup.execute(buffer, pass_ptr->handle(), 0);
-					deviceGroup.present(swapChain);
 				}
-		//	}
-		//);
+			}
+		);
 	}
 }

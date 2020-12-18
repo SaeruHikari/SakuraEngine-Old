@@ -2,10 +2,10 @@
 #include <RenderGraphWebGPU/RenderGraphWebGPU.h>
 #include "System/Log.h"
 
+
 #if __has_include("d3d12.h") || (_MSC_VER >= 1900)
 #define DAWN_ENABLE_BACKEND_D3D12
-#endif
-#if __has_include("vulkan/vulkan.h") && (defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64))
+#elif __has_include("vulkan/vulkan.h") && (defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64))
 #define DAWN_ENABLE_BACKEND_VULKAN
 #endif
 
@@ -29,7 +29,7 @@
 using namespace sakura::graphics::webgpu;
 
 #ifdef DAWN_ENABLE_BACKEND_VULKAN
-static VkSurfaceKHR createVkSurface(WGPUDevice device, window::Handle window) {
+static VkSurfaceKHR createVkSurface(WGPUDevice device, void* window) {
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
 #ifdef WIN32
 	VkWin32SurfaceCreateInfoKHR info = {};
@@ -63,8 +63,8 @@ void SwapChain::initPlatformSpecific(const SwapChainHandle handle, const webgpu:
 	case WGPUBackendType_Vulkan:
 		if (dawnSwapChain.userData == nullptr) {
 			dawnSwapChain = dawn_native::vulkan::CreateNativeSwapChainImpl(
-				dev.device, createVkSurface(device, window.get_handle()));
-			_format = dawn_native::vulkan::GetNativeSwapChainPreferredFormat(&impl::swapImpl);
+				dev.device, createVkSurface(dev.device, window.handle()));
+			_format = dawn_native::vulkan::GetNativeSwapChainPreferredFormat(&dawnSwapChain);
 		}
 		break;
 #endif

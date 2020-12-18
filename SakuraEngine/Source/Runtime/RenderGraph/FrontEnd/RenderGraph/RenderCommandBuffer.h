@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <RenderGraph/RenderCommand.h>
 #include "Allocators/LinearAllocator.h"
+#include "TaskSystem/TaskSystem.h"
 
 namespace sakura::graphics
 {

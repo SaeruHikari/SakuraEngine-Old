@@ -154,3 +154,12 @@ add_compile_definitions(
 endif()
 
 
+set(vulkan FALSE)
+if(windows)
+find_package(Vulkan)
+if(${Vulkan_FOUND})
+    include_directories(${Vulkan_INCLUDE_DIRS})
+    message(STATUS "Found VK SDK. Include Dir: ${Vulkan_INCLUDE_DIRS}")
+    set(vulkan TRUE)
+endif()
+endif(windows)
