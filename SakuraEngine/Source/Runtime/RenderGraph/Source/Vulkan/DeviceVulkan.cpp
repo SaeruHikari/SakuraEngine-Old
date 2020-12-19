@@ -28,32 +28,39 @@ VulkanDeviceSet RenderDevice::findQueueFamilies(VkPhysicalDevice device, sakura:
 
 	VkSurfaceKHR surface = create_surface(wind);
 	uint32 i = 0u;
+	bool findPresentQueue = false;
 	for (const auto& queueFamily : pd.queue_families)
 	{
 		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) 
 		{
-			pd.graphics_avalables.emplace_back(VulkanQueue{ i, VK_NULL_HANDLE });
-		}
+			pd.graphics_families.emplace_back(i);
+			pd.graphics_queues.resize(queueFamily.queueCount, VulkanQueue{ i, VK_NULL_HANDLE });
 
-		if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
-		{
-			pd.compute_avalables.emplace_back(VulkanQueue{ i, VK_NULL_HANDLE });
 		}
-
-		if (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
+		else if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
 		{
-			pd.transfer_avalables.emplace_back(VulkanQueue{ i, VK_NULL_HANDLE });
+			pd.compute_families.emplace_back(i);
+			pd.compute_queues.resize(queueFamily.queueCount, VulkanQueue{ i, VK_NULL_HANDLE });
+		}
+		else if (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
+		{
+			pd.transfer_families.emplace_back(i);
+			pd.transfer_queues.resize(queueFamily.queueCount, VulkanQueue{ i, VK_NULL_HANDLE });
 		}
 
 		VkBool32 presentSupport = false;
 		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
-
-		if (presentSupport) 
+		if (presentSupport)
 		{
-			pd.present_avalables.emplace_back(VulkanQueue{ i, VK_NULL_HANDLE });
+			findPresentQueue = true;
+			pd.present_families.emplace_back(i);
 		}
 
 		i++;
+	}
+	if (!findPresentQueue)
+	{
+		sakura::error("Failed to find a present queue!");
 	}
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 	return pd;
@@ -152,11 +159,13 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 	// Create Logical Device 
 	{
 		bool findGfxQueue = false;
+		bool findCmptQueue = false;
+		bool findTransferQueue = false;
 		bool findPresentQueue = false;
 		for (auto& phy_dev : device_sets)
 		{
 			std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-			const float queuePriority = 1.0f;
+			std::vector<float> queuePriority; queuePriority.resize(100, 1.f);
 			// Create All Queues.
 			for(auto f = 0u; f < phy_dev.queue_families.size(); f++)
 			{
@@ -168,7 +177,7 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 					queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 					queueCreateInfo.queueFamilyIndex = f;
 					queueCreateInfo.queueCount = phy_dev.queue_families[f].queueCount;
-					queueCreateInfo.pQueuePriorities = &queuePriority;
+					queueCreateInfo.pQueuePriorities = queuePriority.data();
 					queueCreateInfos.push_back(queueCreateInfo);
 				}
 			}
@@ -199,33 +208,46 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 			}
 			else
 			{
-				for (auto gfxs = 0u; gfxs < phy_dev.graphics_avalables.size(); gfxs++)
+				for (auto gfxs = 0u; gfxs < phy_dev.graphics_queues.size(); gfxs++)
 				{
 					VkQueue q = VK_NULL_HANDLE;
-					vkGetDeviceQueue(phy_dev.logical_device, phy_dev.graphics_avalables[gfxs].family_index, 0, &q);
-					phy_dev.graphics_avalables[gfxs].queue = q;
+					vkGetDeviceQueue(phy_dev.logical_device, phy_dev.graphics_queues[gfxs].family_index, gfxs, &q);
+					phy_dev.graphics_queues[gfxs].queue = q;
 					findGfxQueue = true;
+
+					// cn: 尝试检查此queue对present的支持.
+					// en: Check ability of present of this queue.
+					if (!findPresentQueue)
+					{
+						for (const auto pf : phy_dev.present_families)
+						{
+							if (pf == phy_dev.graphics_queues[gfxs].family_index)
+							{
+								findPresentQueue = true;
+								phy_dev.master_queue = phy_dev.graphics_queues[gfxs];
+							}
+						}
+					}
 				}
-				for (auto gfxs = 0u; gfxs < phy_dev.present_avalables.size(); gfxs++)
+				for (auto gfxs = 0u; gfxs < phy_dev.compute_queues.size(); gfxs++)
 				{
 					VkQueue q = VK_NULL_HANDLE;
-					vkGetDeviceQueue(phy_dev.logical_device, phy_dev.present_avalables[gfxs].family_index, 0, &q);
-					phy_dev.present_avalables[gfxs].queue = q;
-					findPresentQueue = true;
+					vkGetDeviceQueue(phy_dev.logical_device, phy_dev.compute_queues[gfxs].family_index, gfxs, &q);
+					phy_dev.compute_queues[gfxs].queue = q;
+					findCmptQueue = true;
 				}
-				for (auto gfxs = 0u; gfxs < phy_dev.compute_avalables.size(); gfxs++)
+				for (auto gfxs = 0u; gfxs < phy_dev.transfer_queues.size(); gfxs++)
 				{
 					VkQueue q = VK_NULL_HANDLE;
-					vkGetDeviceQueue(phy_dev.logical_device, phy_dev.compute_avalables[gfxs].family_index, 0, &q);
-					phy_dev.compute_avalables[gfxs].queue = q;
-					findGfxQueue = true;
+					vkGetDeviceQueue(phy_dev.logical_device, phy_dev.transfer_queues[gfxs].family_index, gfxs, &q);
+					phy_dev.transfer_queues[gfxs].queue = q;
+					findTransferQueue = true;
 				}
-				for (auto gfxs = 0u; gfxs < phy_dev.transfer_avalables.size(); gfxs++)
+
+				if (!findPresentQueue)
 				{
-					VkQueue q = VK_NULL_HANDLE;
-					vkGetDeviceQueue(phy_dev.logical_device, phy_dev.transfer_avalables[gfxs].family_index, 0, &q);
-					phy_dev.transfer_avalables[gfxs].queue = q;
-					findPresentQueue = true;
+					sakura::error("Failed to find a proper master_queue! Maybe your graphics queues have no support for present, and currently it's not supported by engine!");
+					phy_dev.master_queue = phy_dev.graphics_queues[0];
 				}
 			}
 		}

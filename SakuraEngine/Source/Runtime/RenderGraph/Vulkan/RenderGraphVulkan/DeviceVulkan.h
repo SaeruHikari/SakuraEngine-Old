@@ -10,17 +10,27 @@ namespace sakura::graphics::vk
 		uint32_t family_index = 0;
 		VkQueue queue = VK_NULL_HANDLE;
 	};
+
 	struct VulkanDeviceSet
 	{
 		VkPhysicalDevice device;
 		VkDevice logical_device;
 		std::vector<VkQueueFamilyProperties> queue_families;
-		//std::optional<VulkanQueue> graphics_queue;
-		//std::optional<VulkanQueue> present_queue;
-		std::vector<VulkanQueue> graphics_avalables;
-		std::vector<VulkanQueue> present_avalables;
-		std::vector<VulkanQueue> compute_avalables;
-		std::vector<VulkanQueue> transfer_avalables;
+
+		std::vector<uint32_t> present_families;
+		std::vector<uint32_t> graphics_families;
+		std::vector<uint32_t> compute_families;
+		std::vector<uint32_t> transfer_families;
+
+		std::vector<VulkanQueue> graphics_queues;
+		std::vector<VulkanQueue> compute_queues;
+		std::vector<VulkanQueue> transfer_queues;
+
+		// cn: graphics_queues中一条支持GFX和Present的Queue.
+		//	   其index尽可能小，一般期望它是0.
+		// en: A queue in graphics_queues that supports GFX and Present.
+		//	   Its index is as small as possible, and it is generally expected to be 0.
+		VulkanQueue master_queue;
 	};
 
     class RenderGraphVulkanAPI RenderDevice final : public IRenderDevice
