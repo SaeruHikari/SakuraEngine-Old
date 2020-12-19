@@ -29,7 +29,7 @@ namespace sakura::graphics::webgpu
 		virtual EBackend backend() const override;
 		bool valid(const RenderShaderHandle shader) const override;
 		sakura::string_view get_name() const override;
-		bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl, const size_t frame) override;
+		bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl) override;
 		bool execute(const RenderGraph& graph_to_execute) override;
 		bool present(const SwapChainHandle handle) override;
 		void terminate() override;
@@ -58,8 +58,8 @@ namespace sakura::graphics::webgpu
 		ISwapChain* optional(const SwapChainHandle handle) const override;
 		IFence* optional(const FenceHandle handle) const override;
 		
-		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources;
-		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects;
+		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources_;
+		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects_;
 		
 	#ifndef SAKURA_TARGET_PLATFORM_EMSCRIPTEN
 		dawn_native::Adapter adapter;
@@ -72,8 +72,6 @@ namespace sakura::graphics::webgpu
 
 		struct PassCacheFrame
 		{
-			PassCacheFrame(const PassCacheFrame&) = delete;
-			PassCacheFrame& operator=(const PassCacheFrame&) = delete;
 			PassCacheFrame() = default;
 
 			void destroy();
@@ -92,19 +90,7 @@ namespace sakura::graphics::webgpu
 			WGPUFence committed_fence;
 			uint64 last_commited = 0;
 		};
-		struct PassCache
-		{
-			PassCache(uint8 frameCount);
-			~PassCache();
-			PassCache() = default;
-			PassCacheFrame& frame(uint8 currentFrame);
-			
-			void destroy();
-		protected:
-			PassCacheFrame* frames = nullptr;
-			uint8 frame_count = 0;
-		};
-		sakura::vector<PassCache> passCache;
+		sakura::vector<PassCacheFrame> passCache;
 	protected:
 		template <bool optional, typename ResourceType, typename Handle>
 		ResourceType* _get_resouce_impl(const Handle handle) const noexcept;
@@ -153,8 +139,7 @@ namespace sakura::graphics::webgpu
 		}
 		static void create_on_existed(const Handle handle)
 		{
-			sakura::error(
-				"[RenderDeviceWeb]: Resource with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
+			sakura::error("[RenderDeviceWeb]: Resource with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
 		}
 	};
 	template<> struct handle_error<RenderBufferHandle>
@@ -169,8 +154,7 @@ namespace sakura::graphics::webgpu
 		}
 		static void create_on_existed(const RenderBufferHandle handle)
 		{
-			sakura::error(
-				"[RenderDeviceWeb]: RenderBuffer with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
+			sakura::error("[RenderDeviceWeb]: RenderBuffer with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
 		}
 	};
 	template<> struct handle_error<RenderShaderHandle>
@@ -185,8 +169,7 @@ namespace sakura::graphics::webgpu
 		}
 		static void create_on_existed(const RenderShaderHandle handle)
 		{
-			sakura::error(
-				"[RenderDeviceWeb]: RenderShader with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
+			sakura::error("[RenderDeviceWeb]: RenderShader with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
 		}
 	};
 	template<> struct handle_error<SwapChainHandle>
@@ -201,8 +184,7 @@ namespace sakura::graphics::webgpu
 		}
 		static void create_on_existed(const SwapChainHandle handle)
 		{
-			sakura::error(
-				"[RenderDeviceWeb]: RenderSwapChain with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
+			sakura::error("[RenderDeviceWeb]: RenderSwapChain with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
 		}
 	};
 	template<> struct handle_error<RenderPipelineHandle>
@@ -217,8 +199,7 @@ namespace sakura::graphics::webgpu
 		}
 		static void create_on_existed(const RenderPipelineHandle handle)
 		{
-			sakura::error(
-				"[RenderDeviceWeb]: RenderPipeline with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
+			sakura::error("[RenderDeviceWeb]: RenderPipeline with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
 		}
 	};
 
@@ -228,7 +209,7 @@ namespace sakura::graphics::webgpu
 		static_assert(std::is_base_of_v<IGPUMemoryResource, ResourceType>, "[DeviceWebGPU::_get_resource_impl]: ResourceType must be derived from IGPUMemoryResource!");
 		static_assert(std::is_base_of_v<RenderResourceHandle, Handle>, "[DeviceWebGPU::_get_resource_impl]: Handle must be derived from RenderResourceHandle!");
 		static_assert(std::is_base_of_v<typename Handle::ResourceType, ResourceType>, "[DeviceWebGPU::_get_resource_impl]: Handle must match to it's ResourceType!");
-		if (created_resources.size() < handle.id().index() + 1)
+		if (created_resources_.size() < handle.id().index() + 1)
 		{
 			if constexpr (isOptional)
 				;
@@ -236,7 +217,7 @@ namespace sakura::graphics::webgpu
 				handle_error<Handle>::not_find(handle);
 			return nullptr;
 		}
-		auto& resource = created_resources[handle.id().index()];
+		auto& resource = created_resources_[handle.id().index()];
 		if (handle.id().generation() == resource.second)
 			return static_cast<ResourceType*>(resource.first);
 		else
@@ -260,10 +241,10 @@ namespace sakura::graphics::webgpu
 		}
 		else
 		{
-			if (created_resources.size() < handle.id().index() + 1)
-				created_resources.resize(handle.id().index() + 1);
+			if (created_resources_.size() < handle.id().index() + 1)
+				created_resources_.resize(handle.id().index() + 1);
 			auto newRes = new ResourceType(handle, std::forward<Args>(args)...);
-			created_resources[handle.id().index()] = sakura::make_pair(newRes, handle.id().generation());
+			created_resources_[handle.id().index()] = sakura::make_pair(newRes, handle.id().generation());
 		}
 		return handle;
 	}
@@ -274,14 +255,14 @@ namespace sakura::graphics::webgpu
 		static_assert(std::is_base_of_v<IGPUObject, ObjectType>, "[DeviceWebGPU::_get_object_impl]: ResourceType must be derived from IGPUObject!");
 		static_assert(std::is_base_of_v<RenderGraphHandle, Handle>, "[DeviceWebGPU::_get_object_impl]: Handle must be derived from RenderObjectHandle!");
 		static_assert(std::is_base_of_v<typename Handle::ObjectType, ObjectType>, "[DeviceWebGPU::_get_object_impl]: Handle must match to it's ObjectType!");
-		if (created_objects.size() < handle.id().index() + 1)
+		if (created_objects_.size() < handle.id().index() + 1)
 		{
 			if constexpr (isOptional);
 			else
 				handle_error<Handle>::not_find(handle);
 			return nullptr;
 		}
-		auto& object = created_objects[handle.id().index()];
+		auto& object = created_objects_[handle.id().index()];
 		if (handle.id().generation() == object.second)
 			return static_cast<ObjectType*>(object.first);
 		else
@@ -305,10 +286,10 @@ namespace sakura::graphics::webgpu
 		}
 		else
 		{
-			if (created_objects.size() < handle.id().index() + 1)
-				created_objects.resize(handle.id().index() + 1);
+			if (created_objects_.size() < handle.id().index() + 1)
+				created_objects_.resize(handle.id().index() + 1);
 			auto newRes = new ObjectType(handle, std::forward<Args>(args)...);
-			created_objects[handle.id().index()] = sakura::make_pair(newRes, handle.id().generation());
+			created_objects_[handle.id().index()] = sakura::make_pair(newRes, handle.id().generation());
 		}
 		return handle;
 	}

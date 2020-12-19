@@ -190,20 +190,18 @@ RenderGraphWebGPUAPI WGPUBlendDescriptor sakura::graphics::webgpu::translate(con
 	return result;
 }
 
-RenderGraphWebGPUAPI WGPUColorWriteMask sakura::graphics::webgpu::translate(const EColorMask mask)
+RenderGraphWebGPUAPI WGPUColorWriteMaskFlags sakura::graphics::webgpu::translate(const ColorMask mask)
 {
-	switch (mask)
-	{
-		case EColorMask::None: return WGPUColorWriteMask::WGPUColorWriteMask_None;
-		case EColorMask::R: return WGPUColorWriteMask::WGPUColorWriteMask_Red;
-		case EColorMask::G: return WGPUColorWriteMask::WGPUColorWriteMask_Green;
-		case EColorMask::B: return WGPUColorWriteMask::WGPUColorWriteMask_Blue;
-		case EColorMask::A: return WGPUColorWriteMask::WGPUColorWriteMask_Alpha;
-		case EColorMask::All: return WGPUColorWriteMask::WGPUColorWriteMask_All;
-		default:
-			sakura::error("ColorMask(Write) {} Not Supported By WebGPU!", mask);
-			return WGPUColorWriteMask::WGPUColorWriteMask_None;
-	}
+	WGPUColorWriteMaskFlags wgpuMask = WGPUColorWriteMask_None;
+	if (mask & EColorMaskBits::R)
+		wgpuMask |= WGPUColorWriteMask::WGPUColorWriteMask_Red;
+	if (mask & EColorMaskBits::G)
+		wgpuMask |= WGPUColorWriteMask::WGPUColorWriteMask_Green;	
+	if (mask & EColorMaskBits::B)
+		wgpuMask |= WGPUColorWriteMask::WGPUColorWriteMask_Blue;
+	if (mask & EColorMaskBits::A)
+		wgpuMask |= WGPUColorWriteMask::WGPUColorWriteMask_Alpha;
+	return wgpuMask;
 }
 
 RenderGraphWebGPUAPI WGPUVertexFormat sakura::graphics::webgpu::translate(const EVertexFormat vertex_format)

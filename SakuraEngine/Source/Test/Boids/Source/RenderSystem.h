@@ -156,8 +156,6 @@ namespace render_system
 		}
 		bool construct(RenderGraph::Builder& rg) noexcept override
 		{
-
-
 			attachment = Attachment({
 				Attachment::Slot(swapChain, sakura::double4(), ELoadOp::Clear, EStoreOp::Store)
 			});
@@ -241,7 +239,7 @@ namespace render_system
 #else
 		{ AttachmentLayout::Slot(ETextureFormat::B8G8R8A8_UNORM) }
 #endif
-		), EPrimitiveTopology::TriangleList, 1, 0xFFFFFFFF
+		), ECullMode::Back, EPrimitiveTopology::TriangleList, EPolygonMode::FILL, 1, 0xFFFFFFFF
 		);
 
 		// Create Render pipeline.
@@ -417,12 +415,12 @@ namespace render_system
 				{
 					ZoneScopedN("RenderAndPresent");
 					RenderPass* pass_ptr = render_graph.render_pass(pass);
-					task_system::blocking_call([&]()
-						{
-							deviceGroup.execute(buffer, pass_ptr->handle(), 0);
-						});
+					//task_system::blocking_call([&]()
+					//	{
+							deviceGroup.execute(buffer, pass_ptr->handle());
+					//	});
 				}
 			}
 		);
 	}
-}
+}	

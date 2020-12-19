@@ -1,6 +1,4 @@
-#include "RenderGraphVulkan/DeviceVulkan.h"
-#include "RenderGraphVulkan/SwapChainVulkan.h"
-
+#include "RenderGraphVulkan/RenderGraphVulkan.h"
 
 using namespace sakura::graphics;
 using namespace sakura::graphics::vk;
@@ -8,7 +6,7 @@ using namespace sakura::graphics::vk;
 bool checkValidationLayerSupport(const sakura::span<const char* const>);
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
 	const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
-void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debug_messenger_, const VkAllocationCallbacks* pAllocator);
 VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 	VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 bool checkDeviceExtensionSupport(VkPhysicalDevice device, std::set<std::string> requiredExtensions);
@@ -16,7 +14,7 @@ std::vector<const char*> getRequiredDeviceExtensions(bool asMainDevice);
 VkSurfaceKHR createSurface(sakura::Window window, VkInstance instance);
 
 sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& config)
-	:name(config.name)
+	:name_(config.name)
 {
 	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -92,7 +90,7 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 				// Collect Device Properties & Features.
 				vkGetPhysicalDeviceProperties(device, &dev.properties);
 				vkGetPhysicalDeviceFeatures(device, &dev.features);
-				device_sets.emplace_back(dev);
+				device_sets_.emplace_back(dev);
 
 				// TODO:
 				// cn: 选择最合适的一个设备作为主设备.
@@ -100,12 +98,12 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 				// jp: マスターデバイスとして最適なデバイスを選択する.
 				if (checkDeviceExtensionSupport(device, std::set<std::string>(main_device_exts.begin(), main_device_exts.end())))
 				{
-					main_device_index = device_sets.size() - 1;
+					master_device_index_ = device_sets_.size() - 1;
 				}
 			}
 		}
 
-		if (device_sets.empty())
+		if (device_sets_.empty())
 			sakura::error("failed to find a suitable GPU!");
 	}
 
@@ -117,9 +115,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 		bool findCmptQueue = false;
 		bool findTransferQueue = false;
 		bool findPresentQueue = false;
-		for (auto i = 0u; i < device_sets.size(); i++)
+		for (auto i = 0u; i < device_sets_.size(); i++)
 		{
-			auto& phy_dev = device_sets[i];
+			auto& phy_dev = device_sets_[i];
 			std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 			std::vector<float> queuePriority; queuePriority.resize(100, 1.f);
 			// Create All Queues.
@@ -150,7 +148,7 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 			createInfo.pEnabledFeatures = &deviceFeatures;
 
 			// Extensions
-			auto devExts = getRequiredDeviceExtensions(main_device_index == i);
+			auto devExts = getRequiredDeviceExtensions(master_device_index_ == i);
 			createInfo.enabledExtensionCount = devExts.size();
 			createInfo.ppEnabledExtensionNames = devExts.data();
 
@@ -239,10 +237,10 @@ void sakura::graphics::vk::RenderDevice::destroy_resource(const RenderShaderHand
 
 sakura::string_view sakura::graphics::vk::RenderDevice::get_name() const
 {
-	return name;
+	return name_;
 }
 
-bool sakura::graphics::vk::RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl, const size_t frame)
+bool sakura::graphics::vk::RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl)
 {
 	return false;
 }
@@ -259,13 +257,13 @@ bool sakura::graphics::vk::RenderDevice::present(const SwapChainHandle handle)
 
 void sakura::graphics::vk::RenderDevice::terminate()
 {
-	for (auto& phy_dev : device_sets)
+	for (auto& phy_dev : device_sets_)
 	{
 		vkDestroyDevice(phy_dev.logical_device, nullptr);
 	}
 	if (bEnableValidationLayers) 
 	{
-		DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+		DestroyDebugUtilsMessengerEXT(instance, debug_messenger_, nullptr);
 	}
 	vkDestroyInstance(instance, nullptr);
 	return;
@@ -274,14 +272,15 @@ void sakura::graphics::vk::RenderDevice::terminate()
 sakura::graphics::RenderShaderHandle sakura::graphics::vk::RenderDevice::create_shader(
 	const RenderShaderHandle handle, const ShaderDesc& config)
 {
-
-	return handle;
+	return _create_resouce_impl<vk::GPUShader, RenderShaderHandle>(handle, *this,
+		// TODO: mGPU Support.
+		master_device().logical_device, 
+		config);
 }
 
 sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::create_buffer(
 	const RenderBufferHandle handle, const BufferDesc& config)
 {
-
 	return handle;
 }
 
@@ -308,7 +307,10 @@ sakura::graphics::RenderPipelineHandle sakura::graphics::vk::RenderDevice::creat
 	const RenderPipelineHandle handle, const RenderPipelineDesc& desc)
 {
 
-	return handle;
+	return _create_object_impl<vk::RenderPipeline, RenderPipelineHandle>(handle, *this,
+		// TODO: mGPU Support.
+		master_device().logical_device, 
+		desc);
 }
 
 sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::update_buffer(
@@ -318,66 +320,56 @@ sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::update_
 	return handle;
 }
 
-sakura::graphics::IGPUBuffer* sakura::graphics::vk::RenderDevice::get(const RenderBufferHandle handle) const
-{
 
-	return nullptr;
+IGPUBuffer* RenderDevice::get(const RenderBufferHandle handle) const
+{
+	return _get_resouce_impl<false, IGPUBuffer>(handle);
 }
 
-sakura::graphics::IGPUShader* sakura::graphics::vk::RenderDevice::get(const RenderShaderHandle handle) const
+IGPUShader* RenderDevice::get(const RenderShaderHandle handle) const
 {
-
-	return nullptr;
+	return _get_resouce_impl<false, IGPUShader>(handle);
 }
 
-sakura::graphics::IRenderPipeline* sakura::graphics::vk::RenderDevice::get(const RenderPipelineHandle handle) const
+IGPUBuffer* RenderDevice::optional(const RenderBufferHandle handle) const
 {
-
-	return nullptr;
+	return _get_resouce_impl<true, IGPUBuffer>(handle);
 }
 
-sakura::graphics::ISwapChain* sakura::graphics::vk::RenderDevice::get(const SwapChainHandle handle) const
+IGPUShader* RenderDevice::optional(const RenderShaderHandle handle) const
 {
-
-	return nullptr;
+	return _get_resouce_impl<true, IGPUShader>(handle);
 }
 
-sakura::graphics::IFence* sakura::graphics::vk::RenderDevice::get(const FenceHandle handle) const
+IRenderPipeline* RenderDevice::optional(const RenderPipelineHandle handle) const
 {
-
-	return nullptr;
+	return _get_object_impl<true, IRenderPipeline, RenderPipelineHandle>(handle);
 }
 
-sakura::graphics::IGPUBuffer* sakura::graphics::vk::RenderDevice::optional(const RenderBufferHandle handle) const
+ISwapChain* RenderDevice::optional(const SwapChainHandle handle) const
 {
-
-	return nullptr;
+	return _get_object_impl<true, ISwapChain, SwapChainHandle>(handle);
 }
 
-sakura::graphics::IGPUShader* sakura::graphics::vk::RenderDevice::optional(const RenderShaderHandle handle) const
+IFence* RenderDevice::optional(const FenceHandle handle) const
 {
-
-	return nullptr;
+	return _get_object_impl<true, IFence, FenceHandle>(handle);
 }
 
-sakura::graphics::IRenderPipeline* sakura::graphics::vk::RenderDevice::optional(const RenderPipelineHandle handle) const
+IRenderPipeline* RenderDevice::get(const RenderPipelineHandle handle) const
 {
-
-	return nullptr;
+	return _get_object_impl<false, IRenderPipeline, RenderPipelineHandle>(handle);
 }
 
-sakura::graphics::ISwapChain* sakura::graphics::vk::RenderDevice::optional(const SwapChainHandle handle) const
+ISwapChain* RenderDevice::get(const SwapChainHandle handle) const
 {
-
-	return nullptr;
+	return _get_object_impl<false, ISwapChain, SwapChainHandle>(handle);
 }
 
-sakura::graphics::IFence* sakura::graphics::vk::RenderDevice::optional(const FenceHandle handle) const
+IFence* RenderDevice::get(const FenceHandle handle) const
 {
-
-	return nullptr;
+	return _get_object_impl<false, IFence, FenceHandle>(handle);
 }
-
 
 
 // vk-specified:
@@ -518,11 +510,11 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMes
 	}
 }
 
-void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
+void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debug_messenger_, const VkAllocationCallbacks* pAllocator)
 {
 	auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
 	if (func != nullptr) {
-		func(instance, debugMessenger, pAllocator);
+		func(instance, debug_messenger_, pAllocator);
 	}
 }
 
@@ -530,25 +522,20 @@ bool checkValidationLayerSupport(const sakura::span<const char* const> layers)
 {
 	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
 	for (const char* layerName : layers) {
 		bool layerFound = false;
-
 		for (const auto& layerProperties : availableLayers) {
 			if (strcmp(layerName, layerProperties.layerName) == 0) {
 				layerFound = true;
 				break;
 			}
 		}
-
 		if (!layerFound) {
 			return false;
 		}
 	}
-
 	return true;
 }
 

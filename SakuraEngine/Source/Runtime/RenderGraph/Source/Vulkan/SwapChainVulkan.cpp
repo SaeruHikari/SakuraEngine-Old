@@ -20,13 +20,13 @@ VkExtent2D chooseSwapExtent(sakura::Window window, const VkSurfaceCapabilitiesKH
 
 sakura::graphics::vk::SwapChain::SwapChain(
 	const SwapChainHandle handle, const vk::RenderDevice& dev, const SwapChainDesc& desc)
-	:_window(desc.window), _handle(handle), device(dev)
+	:window_(desc.window), handle_(handle), device_(dev)
 {
-	_extent = Window::extent(_window);
+	extent_ = Window::extent(window_);
 
-	surface = dev.create_and_validate_surface(_window);
+	surface_ = dev.create_and_validate_surface(window_);
 
-	auto swapChainSupport = querySwapChainSupport(device.master_device().device, surface);
+	auto swapChainSupport = querySwapChainSupport(device_.master_device().device, surface_);
 
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
 	VkPresentModeKHR presentMode = chooseSwapPresentMode(desc.present_mode, swapChainSupport.presentModes);
@@ -43,7 +43,7 @@ sakura::graphics::vk::SwapChain::SwapChain(
 
 	VkSwapchainCreateInfoKHR createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	createInfo.surface = surface;
+	createInfo.surface = surface_;
 
 	createInfo.minImageCount = imageCount;
 	createInfo.imageFormat = surfaceFormat.format;
@@ -73,49 +73,77 @@ sakura::graphics::vk::SwapChain::SwapChain(
 
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	if (vkCreateSwapchainKHR(device.master_device().logical_device, &createInfo, nullptr, &swap_chain) != VK_SUCCESS) 
+	if (vkCreateSwapchainKHR(device_.master_device().logical_device, &createInfo, nullptr, &swap_chain_) != VK_SUCCESS)
 	{
 		sakura::error("[VulkanSwapChain]: Failed to create swap chain!");
 	}
 
-	vkGetSwapchainImagesKHR(device.master_device().logical_device, swap_chain, &imageCount, nullptr);
-	swapchian_images.resize(imageCount);
-	vkGetSwapchainImagesKHR(device.master_device().logical_device, swap_chain, &imageCount, swapchian_images.data());
+	vkGetSwapchainImagesKHR(device_.master_device().logical_device, swap_chain_, &imageCount, nullptr);
+	images_.resize(imageCount);
+	vkGetSwapchainImagesKHR(device_.master_device().logical_device, swap_chain_, &imageCount, images_.data());
 
 	format_ = surfaceFormat.format;
-	_extent.width = extent.width;
-	_extent.height = extent.height;
+	extent_.width = extent_.width;
+	extent_.height = extent_.height;
+
+	image_views_.resize(images_.size());
+	for (size_t i = 0; i < image_views_.size(); i++) 
+	{
+		VkImageViewCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		createInfo.image = images_[i];
+		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		createInfo.format = format_;
+		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		createInfo.subresourceRange.baseMipLevel = 0;
+		createInfo.subresourceRange.levelCount = 1;
+		createInfo.subresourceRange.baseArrayLayer = 0;
+		createInfo.subresourceRange.layerCount = 1;
+
+		if (vkCreateImageView(device_.master_device().logical_device, &createInfo, nullptr, &image_views_[i]) != VK_SUCCESS)
+		{
+			sakura::error("failed to create image views!");
+		}
+	}
 }
 
 sakura::graphics::vk::SwapChain::~SwapChain()
 {
-	vkDestroySwapchainKHR(device.master_device().logical_device, swap_chain, nullptr);
-	vkDestroySurfaceKHR(device.instance, surface, nullptr);
+	for (size_t i = 0; i < image_views_.size(); i++) 
+	{
+		vkDestroyImageView(device_.master_device().logical_device, image_views_[i], nullptr);
+	}
+	vkDestroySwapchainKHR(device_.master_device().logical_device, swap_chain_, nullptr);
+	vkDestroySurfaceKHR(device_.instance, surface_, nullptr);
 }
 
 sakura::uint8 sakura::graphics::vk::SwapChain::buffer_count() const
 {
-	return static_cast<sakura::uint8>(swapchian_images.size());
+	return static_cast<sakura::uint8>(images_.size());
 }
 
 sakura::graphics::extent2d sakura::graphics::vk::SwapChain::extent() const
 {
-	return _extent;
+	return extent_;
 }
 
 sakura::Window sakura::graphics::vk::SwapChain::window() const
 {
-	return _window;
+	return window_;
 }
 
 sakura::graphics::RenderGraphHandle sakura::graphics::vk::SwapChain::handle() const
 {
-	return _handle;
+	return handle_;
 }
 
 sakura::graphics::ETextureFormat sakura::graphics::vk::SwapChain::render_format() const
 {
-	return transfer(format_);
+	return translate(format_);
 }
 
 bool sakura::graphics::vk::SwapChain::present()
@@ -142,7 +170,7 @@ VkPresentModeKHR chooseSwapPresentMode(EPresentMode presentMode, const std::vect
 {
 	for (const auto& availablePresentMode : availablePresentModes)
 	{
-		if (availablePresentMode == transfer(presentMode))
+		if (availablePresentMode == translate(presentMode))
 		{
 			return availablePresentMode;
 		}

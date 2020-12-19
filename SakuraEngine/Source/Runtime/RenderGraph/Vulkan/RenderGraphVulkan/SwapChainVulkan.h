@@ -18,18 +18,15 @@ namespace sakura::graphics::vk
 		ETextureFormat render_format() const override;
 		bool present() override;
 		
-		const SwapChainHandle _handle;
-		const Window _window;
-
-		VkSurfaceKHR surface = VK_NULL_HANDLE;
-		VkSwapchainKHR swap_chain = VK_NULL_HANDLE;
-		sakura::vector<VkImage> swapchian_images;
-
+		const SwapChainHandle handle_;
+		const Window window_;
+		VkSurfaceKHR surface_ = VK_NULL_HANDLE;
+		VkSwapchainKHR swap_chain_ = VK_NULL_HANDLE;
+		sakura::vector<VkImage> images_;
+		sakura::vector<VkImageView> image_views_;
 		VkFormat format_;
-
 	protected:
-		extent2d _extent;
-
-		const vk::RenderDevice& device;
+		extent2d extent_;
+		const vk::RenderDevice& device_;
 	};
 }

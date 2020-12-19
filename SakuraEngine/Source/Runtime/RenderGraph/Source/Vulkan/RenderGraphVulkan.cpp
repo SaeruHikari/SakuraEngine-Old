@@ -3,7 +3,7 @@
 using namespace sakura::graphics;
 using namespace sakura::graphics::vk;
 
-RenderGraphVulkanAPI VkPresentModeKHR sakura::graphics::vk::transfer(EPresentMode present_mode)
+RenderGraphVulkanAPI VkPresentModeKHR sakura::graphics::vk::translate(EPresentMode present_mode)
 {
 	switch (present_mode)
 	{
@@ -19,7 +19,7 @@ RenderGraphVulkanAPI VkPresentModeKHR sakura::graphics::vk::transfer(EPresentMod
 	}
 }
 
-RenderGraphVulkanAPI EPresentMode sakura::graphics::vk::transfer(VkPresentModeKHR present_mode)
+RenderGraphVulkanAPI EPresentMode sakura::graphics::vk::translate(VkPresentModeKHR present_mode)
 {
 	switch (present_mode)
 	{
@@ -46,7 +46,7 @@ case ETextureFormat::_format:\
 case ETextureFormat::_format:\
 	return VkFormat::VK_FORMAT_##_format
 
-RenderGraphVulkanAPI VkFormat sakura::graphics::vk::transfer(ETextureFormat format)
+RenderGraphVulkanAPI VkFormat sakura::graphics::vk::translate(ETextureFormat format)
 {
 	switch (format)
 	{
@@ -132,7 +132,7 @@ case VkFormat::VK_FORMAT_##_vkformat:\
 case VkFormat::VK_FORMAT_##_format:\
 	return ETextureFormat::_format
 
-RenderGraphVulkanAPI ETextureFormat sakura::graphics::vk::transfer(VkFormat format)
+RenderGraphVulkanAPI ETextureFormat sakura::graphics::vk::translate(VkFormat format)
 {
 	switch (format)
 	{
@@ -205,6 +205,125 @@ RenderGraphVulkanAPI ETextureFormat sakura::graphics::vk::transfer(VkFormat form
 	}
 	return ETextureFormat::Count;
 }
-
 #undef trans_case
 #undef trans_case2
+
+RenderGraphVulkanAPI VkShaderStageFlagBits sakura::graphics::vk::translate(EShaderFrequency frequency)
+{
+	switch (frequency)
+	{
+	case sakura::graphics::EShaderFrequency::VertexShader:
+		return VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
+	case sakura::graphics::EShaderFrequency::PixelShader:
+		return VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
+	case sakura::graphics::EShaderFrequency::ComputeShader:
+		return VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT;
+
+	case sakura::graphics::EShaderFrequency::AnyHitShader:
+		return VkShaderStageFlagBits::VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
+	case sakura::graphics::EShaderFrequency::CallableShader:
+		return VkShaderStageFlagBits::VK_SHADER_STAGE_CALLABLE_BIT_KHR;
+	case sakura::graphics::EShaderFrequency::ClosestHitShader:
+		return VkShaderStageFlagBits::VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+	case sakura::graphics::EShaderFrequency::IntersectionShader:
+		return VkShaderStageFlagBits::VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
+	case sakura::graphics::EShaderFrequency::MissShader:
+		return VkShaderStageFlagBits::VK_SHADER_STAGE_MISS_BIT_KHR;
+	case sakura::graphics::EShaderFrequency::RayGenerationShader:
+		return VkShaderStageFlagBits::VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+
+	// As Nvdia Extensions.
+	case sakura::graphics::EShaderFrequency::TaskShader:
+		return VkShaderStageFlagBits::VK_SHADER_STAGE_TASK_BIT_NV;
+	case sakura::graphics::EShaderFrequency::MeshShader:
+		return VkShaderStageFlagBits::VK_SHADER_STAGE_MESH_BIT_NV;
+	case sakura::graphics::EShaderFrequency::Count:
+	case sakura::graphics::EShaderFrequency::None:
+	default:
+		return VkShaderStageFlagBits::VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+	}
+}
+
+RenderGraphVulkanAPI VkColorComponentFlags sakura::graphics::vk::translate(ColorMask mask)
+{
+	VkColorComponentFlags wgpuMask = 0;
+	if (mask & EColorMaskBits::R)
+		wgpuMask |= VkColorComponentFlagBits::VK_COLOR_COMPONENT_R_BIT;
+	if (mask & EColorMaskBits::G)
+		wgpuMask |= VkColorComponentFlagBits::VK_COLOR_COMPONENT_G_BIT;
+	if (mask & EColorMaskBits::B)
+		wgpuMask |= VkColorComponentFlagBits::VK_COLOR_COMPONENT_B_BIT;
+	if (mask & EColorMaskBits::A)
+		wgpuMask |= VkColorComponentFlagBits::VK_COLOR_COMPONENT_A_BIT;
+	return wgpuMask;
+}
+
+RenderGraphVulkanAPI VkBlendOp sakura::graphics::vk::translate(EBlendOp blendOp)
+{
+	switch (blendOp)
+	{
+	case sakura::graphics::EBlendOp::Add:
+		return VkBlendOp::VK_BLEND_OP_ADD;
+	case sakura::graphics::EBlendOp::Subtract:
+		return VkBlendOp::VK_BLEND_OP_SUBTRACT;
+	case sakura::graphics::EBlendOp::ReverseSubtract:
+		return VkBlendOp::VK_BLEND_OP_REVERSE_SUBTRACT;
+	case sakura::graphics::EBlendOp::Min:
+		return VkBlendOp::VK_BLEND_OP_MIN;
+	case sakura::graphics::EBlendOp::Max:
+		return VkBlendOp::VK_BLEND_OP_MAX;
+	default:
+		return VkBlendOp::VK_BLEND_OP_MAX_ENUM;
+	}
+}
+
+RenderGraphVulkanAPI VkBlendFactor sakura::graphics::vk::translate(EBlendFactor blendFactor)
+{
+	switch (blendFactor)
+	{
+	case sakura::graphics::EBlendFactor::Zero:
+		return VkBlendFactor::VK_BLEND_FACTOR_ZERO;
+	case sakura::graphics::EBlendFactor::One:
+		return VkBlendFactor::VK_BLEND_FACTOR_ONE;
+	case sakura::graphics::EBlendFactor::SrcColor:
+		return VkBlendFactor::VK_BLEND_FACTOR_SRC_COLOR;
+	case sakura::graphics::EBlendFactor::OneMinusSrcColor:
+		return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+	case sakura::graphics::EBlendFactor::SrcAlpha:
+		return VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA;
+	case sakura::graphics::EBlendFactor::OneMinusSrcAlpha:
+		return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	case sakura::graphics::EBlendFactor::DstColor:
+		return VkBlendFactor::VK_BLEND_FACTOR_DST_COLOR;
+	case sakura::graphics::EBlendFactor::OneMinusDstColor:
+		return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+	case sakura::graphics::EBlendFactor::DstAlpha:
+		return VkBlendFactor::VK_BLEND_FACTOR_DST_ALPHA;
+	case sakura::graphics::EBlendFactor::OneMinusDstAlpha:
+		return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+	case sakura::graphics::EBlendFactor::SrcAlphaSaturated:
+		return VkBlendFactor::VK_BLEND_FACTOR_SRC_ALPHA_SATURATE;
+	case sakura::graphics::EBlendFactor::BlendColor:
+		return VkBlendFactor::VK_BLEND_FACTOR_CONSTANT_COLOR;
+	case sakura::graphics::EBlendFactor::OneMinusBlendColor:
+		return VkBlendFactor::VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR;
+	default:
+		return VkBlendFactor::VK_BLEND_FACTOR_MAX_ENUM;
+	}
+}
+
+RenderGraphVulkanAPI VkPolygonMode sakura::graphics::vk::translate(EPolygonMode polygonMode)
+{
+	switch (polygonMode)
+	{
+	case sakura::graphics::EPolygonMode::FILL:
+		return VkPolygonMode::VK_POLYGON_MODE_FILL;
+	case sakura::graphics::EPolygonMode::LINE:
+		return VkPolygonMode::VK_POLYGON_MODE_LINE;
+	case sakura::graphics::EPolygonMode::POINT:
+		return VkPolygonMode::VK_POLYGON_MODE_POINT;
+	default:
+		return VkPolygonMode::VK_POLYGON_MODE_FILL;
+	}
+	return VkPolygonMode::VK_POLYGON_MODE_FILL;
+}

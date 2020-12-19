@@ -187,10 +187,11 @@ namespace sakura::graphics
 
 	RenderPipelineDesc::RenderPipelineDesc(const ShaderLayout& _shader_layout, const VertexLayout& _vertex_layout,
 		const BindingLayout& _binding_layout, const AttachmentLayout& _attachment_layout,
-		EPrimitiveTopology _primitive_topology, uint8 _sample_count, uint32 _sample_mask)
+		const ECullMode _cull_mode,
+		const EPrimitiveTopology _primitive_topology, const EPolygonMode _polygon_mode, uint8 _sample_count, uint32 _sample_mask)
 		: primitive_topology(_primitive_topology), sample_count(_sample_count), sample_mask(_sample_mask),
 		shader_layout(_shader_layout), vertex_layout({ _vertex_layout }), binding_layout(_binding_layout),
-			attachment_layout(_attachment_layout) {	}
+			attachment_layout(_attachment_layout), polygon_mode(_polygon_mode), cull_mode(_cull_mode) {	}
 
 	BufferDesc::BufferDesc(EBufferUsage _usage, size_t _length,
 		const void* _data, const EBufferCPUAccess _access, EBufferOptions _options)

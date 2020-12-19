@@ -22,38 +22,6 @@ void RenderDevice::PassCacheFrame::destroy()
    
 }
 
-void RenderDevice::PassCache::destroy()
-{
-    for (size_t i = 0u; i < frame_count; i++)
-    {
-        frames[i].destroy();
-    }
-}
-
-RenderDevice::PassCache::PassCache(uint8 frameCount)
-    :frame_count(frameCount)
-{
-    frames = static_cast<PassCacheFrame*>(::malloc(sizeof(PassCacheFrame) * frameCount));
-	for(size_t i = 0u; i < frameCount; i++)
-	{
-        new (frames + i) PassCacheFrame();
-	}
-}
-
-RenderDevice::PassCache::~PassCache()
-{
-    for (size_t i = 0u; i < frame_count; i++)
-    {
-        frames[i].~PassCacheFrame();
-    }
-}
-
-RenderDevice::PassCacheFrame& RenderDevice::PassCache::frame(uint8 currentFrame)
-{
-    return frames[currentFrame];
-}
-
-
 RenderPipeline* RenderDevice::processCommandBeginRenderPass(
     PassCacheFrame& cacheFrame,
     const RenderCommandBeginRenderPass& cmd, WGPUCommandEncoder* encoder,
@@ -85,7 +53,7 @@ RenderPipeline* RenderDevice::processCommandBeginRenderPass(
         else if (auto attachment
             = std::get_if<RenderTextureHandle>(&slot_var); attachment)
         {
-            auto get_wgpu_res = created_resources[attachment->id().index()];
+            auto get_wgpu_res = created_resources_[attachment->id().index()];
             // TODO: Support This & Generation Check & Diff Check.
             assert(0 && "Unimplemented");
         }
@@ -361,13 +329,13 @@ bool RenderDevice::valid(const RenderShaderHandle shader) const
     return false;
 }
 
-bool RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl, const size_t frame)
+bool RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl)
 {
     // TODO: Move These to Constuction Phase.
     if (hdl.id().index() + 1 > passCache.size())
-        passCache.resize(hdl.id().index() + 1, { 3 }); // Create New Cache
+        passCache.resize(hdl.id().index() + 1); // Create New Cache
     // TODO: Generation Check & Validate
-    auto&& cacheFrame = passCache[hdl.id().index()].frame(frame);
+    auto&& cacheFrame = passCache[hdl.id().index()];
     {// create pass cache objects.
         cacheFrame.encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);// create encoder
         WGPUFenceDescriptor desc = {};
@@ -399,7 +367,6 @@ bool RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPas
     }
     wgpuCommandEncoderRelease(cacheFrame.encoder);
     cacheFrame.pass_encoder = nullptr;
-
     return true;
 }
 

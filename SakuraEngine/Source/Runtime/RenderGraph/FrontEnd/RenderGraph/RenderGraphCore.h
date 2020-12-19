@@ -212,6 +212,13 @@ namespace sakura::graphics
 		Count
 	};
 
+	enum class EPolygonMode
+	{
+		FILL = 0,
+		LINE = 1,
+		POINT = 2
+	};
+
 	enum class EBlendOp : uint8
 	{
 		Add,
@@ -238,7 +245,7 @@ namespace sakura::graphics
 		OneMinusBlendColor = 0x0C
 	};
 
-	enum class EColorMask : uint8
+	enum EColorMaskBits : uint8
 	{
 		None = 0x00,
 		R = 0x01,
@@ -247,6 +254,7 @@ namespace sakura::graphics
 		A = 0x08,
 		All = 0x0F,
 	};
+	using ColorMask = uint8;
 
 	enum class ELoadOp : uint8
 	{
@@ -259,6 +267,15 @@ namespace sakura::graphics
 	{
 		Store = 0,
 		Clear = 1,
+		Count
+	};
+
+	enum class ECullMode : uint8
+	{
+		None = 0,
+		Back = 1,
+		Front = 2,
+		FrontAndBack = 3,
 		Count
 	};
 
@@ -502,13 +519,14 @@ namespace sakura::graphics
 		struct RenderGraphAPI Slot
 		{
 			ETextureFormat format; // size = 16
+			bool blend_enable = false;
 			struct BlendDesc
 			{
 				EBlendOp operation = EBlendOp::Add;
 				EBlendFactor src_factor = EBlendFactor::SrcAlpha;
 				EBlendFactor dst_factor = EBlendFactor::OneMinusSrcAlpha;
 			} alpha_blend, color_blend; // size = 32 * 2
-			EColorMask write_mask = EColorMask::All; // size = 8
+			ColorMask write_mask = EColorMaskBits::All; // size = 8
 			Slot(ETextureFormat format) noexcept;
 			Slot() = default;
 		};
@@ -557,7 +575,11 @@ namespace sakura::graphics
 		EPrimitiveTopology primitive_topology = EPrimitiveTopology::TriangleList;
 		uint8 sample_count = 1;
 		uint32 sample_mask = 0xFFFFFFFF;
-		
+
+		ECullMode cull_mode = ECullMode::Back;
+		EPolygonMode polygon_mode = EPolygonMode::FILL;
+		float lineWidth = 1.f;
+
 		ShaderLayout shader_layout;
 		const sakura::vector<VertexLayout> vertex_layout;
 		BindingLayout binding_layout;
@@ -567,24 +589,30 @@ namespace sakura::graphics
 		explicit RenderPipelineDesc(
 			const ShaderLayout& shader_layout, const VertexLayout& vertex_layout,
 			const BindingLayout& binding_layout, const AttachmentLayout& attachment_layout,
-			EPrimitiveTopology primitive_topology = EPrimitiveTopology::TriangleList,
+			const ECullMode cull_mode = ECullMode::Back,
+			const EPrimitiveTopology primitive_topology = EPrimitiveTopology::TriangleList,
+			const EPolygonMode polygon_mode = EPolygonMode::FILL,
 			uint8 sample_count = 1, uint32 sample_mask = 0xFFFFFFFF);
 		
 		template<size_t N>
 		explicit RenderPipelineDesc(
 			const ShaderLayout& shader_layout, const VertexLayout(&vertex_layouts)[N],
 			const BindingLayout binding_layout, const AttachmentLayout& attachment_layout,
-			EPrimitiveTopology primitive_topology = EPrimitiveTopology::TriangleList,
+			const ECullMode cull_mode = ECullMode::Back,
+			const EPrimitiveTopology primitive_topology = EPrimitiveTopology::TriangleList,
+			const EPolygonMode polygon_mode = EPolygonMode::FILL,
 			uint8 sample_count = 1, uint32 sample_mask = 0xFFFFFFFF);
 	};
 	template <size_t N>
 	RenderPipelineDesc::RenderPipelineDesc(
 		const ShaderLayout& _shader_layout, const VertexLayout(&_vertex_layouts)[N],
 		const BindingLayout _binding_layout, const AttachmentLayout& _attachment_layout,
-		EPrimitiveTopology _primitive_topology, uint8 _sample_count, uint32 _sample_mask)
+		const ECullMode _cull_mode,
+		const EPrimitiveTopology _primitive_topology, const EPolygonMode _polygon_mode,
+		uint8 _sample_count, uint32 _sample_mask)
 		: primitive_topology(_primitive_topology), sample_count(_sample_count), sample_mask(_sample_mask),
 		shader_layout(_shader_layout), vertex_layout(_vertex_layouts, _vertex_layouts + N), binding_layout(_binding_layout),
-		attachment_layout(_attachment_layout)
+		attachment_layout(_attachment_layout), polygon_mode(_polygon_mode), cull_mode(_cull_mode)
 	{
 	}
 	
@@ -829,14 +857,14 @@ namespace sakura::graphics
 				{ sakura::graphics::EBlendFactor::OneMinusBlendColor, "OneMinusBlendColor" },
 			}
 		);
-		constexpr auto ColorMaskNameLut = sakura::map_c<sakura::graphics::EColorMask, sakura::string_view>(
+		constexpr auto ColorMaskNameLut = sakura::map_c<sakura::graphics::EColorMaskBits, sakura::string_view>(
 			{
-				{ sakura::graphics::EColorMask::None, "None" },
-				{ sakura::graphics::EColorMask::R, "R" },
-				{ sakura::graphics::EColorMask::G, "G" },
-				{ sakura::graphics::EColorMask::B, "B" },
-				{ sakura::graphics::EColorMask::A, "A" },
-				{ sakura::graphics::EColorMask::All, "All" },
+				{ sakura::graphics::EColorMaskBits::None, "None" },
+				{ sakura::graphics::EColorMaskBits::R, "R" },
+				{ sakura::graphics::EColorMaskBits::G, "G" },
+				{ sakura::graphics::EColorMaskBits::B, "B" },
+				{ sakura::graphics::EColorMaskBits::A, "A" },
+				{ sakura::graphics::EColorMaskBits::All, "All" },
 			}
 		);
 
@@ -945,14 +973,14 @@ namespace fmt
 			return fmt::formatter<sakura::string_view>::format(factorName, ctx);
 		}
 	};
-	template<> struct formatter<sakura::graphics::EColorMask> : fmt::formatter<sakura::string_view>
+	template<> struct formatter<sakura::graphics::EColorMaskBits> : fmt::formatter<sakura::string_view>
 	{
 		template<typename FormatContext>
-		auto format(sakura::graphics::EColorMask mask, FormatContext& ctx)
+		auto format(sakura::graphics::EColorMaskBits mask, FormatContext& ctx)
 		{
 			using namespace sakura::graphics;
 			using namespace sakura::graphics::detail;
-			sakura::string_view maskName = "EColorMask:Undefined";
+			sakura::string_view maskName = "EColorMaskBits:Undefined";
 			if (ColorMaskNameLut.find(mask) != ColorMaskNameLut.end())
 				maskName = ColorMaskNameLut.find(mask)->second;
 			return fmt::formatter<sakura::string_view>::format(maskName, ctx);
