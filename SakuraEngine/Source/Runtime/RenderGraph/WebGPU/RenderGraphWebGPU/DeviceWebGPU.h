@@ -60,22 +60,9 @@ namespace sakura::graphics::webgpu
 		
 		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources_;
 		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects_;
-		
-	#ifndef SAKURA_TARGET_PLATFORM_EMSCRIPTEN
-		dawn_native::Adapter adapter;
-	#endif
-		// devices
-		WGPUDevice device = nullptr;
-		WGPUQueue defaultQueue = nullptr;
 		sakura::unordered_map<sakura::string, WGPUShaderModule> shaderModules;
-		sakura::string name;
-
 		struct PassCacheFrame
 		{
-			PassCacheFrame() = default;
-
-			void destroy();
-			
 			sakura::vector<WGPUTextureView> texture_views = sakura::vector<WGPUTextureView>(0); // [NOT FINISHED] Clear Every Frame.
 			sakura::vector< sakura::pair<sakura::vector<WGPUBindGroupEntry>, bool> > entries
 				= sakura::vector< sakura::pair<sakura::vector<WGPUBindGroupEntry>, bool> >(0); // Finished
@@ -86,11 +73,17 @@ namespace sakura::graphics::webgpu
 			WGPUCommandEncoder encoder = nullptr;
 			WGPURenderPassEncoder pass_encoder = nullptr;
 			WGPUQueue queue = nullptr;
-			
-			WGPUFence committed_fence;
-			uint64 last_commited = 0;
 		};
 		sakura::vector<PassCacheFrame> passCache;
+
+#ifndef SAKURA_TARGET_PLATFORM_EMSCRIPTEN
+		dawn_native::Adapter adapter;
+#endif
+		// devices
+		WGPUDevice device = nullptr;
+		WGPUQueue defaultQueue = nullptr;
+		sakura::string name;
+
 	protected:
 		template <bool optional, typename ResourceType, typename Handle>
 		ResourceType* _get_resouce_impl(const Handle handle) const noexcept;

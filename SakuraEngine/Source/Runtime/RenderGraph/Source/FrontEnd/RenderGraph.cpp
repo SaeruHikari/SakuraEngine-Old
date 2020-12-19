@@ -67,7 +67,7 @@ namespace sakura::graphics
 	}
 
 	const RenderCommandBuffer& RenderPassLambda::execute(RenderCommandBuffer& command_buffer, 
-		const RenderGraph& rg, const RenderGraph::Builder& builder, IRenderDevice& device) noexcept
+		const RenderGraph& rg, IRenderDevice& device) noexcept
 	{
 		return evaluator_(device, rg, command_buffer);
 	}

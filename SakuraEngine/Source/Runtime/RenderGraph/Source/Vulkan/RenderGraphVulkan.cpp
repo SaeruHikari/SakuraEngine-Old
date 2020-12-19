@@ -73,6 +73,7 @@ RenderGraphVulkanAPI VkFormat sakura::graphics::vk::translate(ETextureFormat for
 		trans_case(R8G8B8A8_SINT);
 		trans_case2(R8G8B8A8_UNORM_SRGB, ETC2_R8G8B8A8_SRGB_BLOCK);
 		trans_case(B8G8R8A8_UNORM);
+		trans_case2(B8G8R8A8_UNORM_SRGB, B8G8R8A8_SRGB);
 		trans_case2(R11G11B10_FLOAT, B10G11R11_UFLOAT_PACK32);
 		trans_case(R16G16_UNORM);
 		trans_case(R16G16_SNORM);
@@ -159,6 +160,7 @@ RenderGraphVulkanAPI ETextureFormat sakura::graphics::vk::translate(VkFormat for
 		trans_case(R8G8B8A8_SINT);
 		trans_case2(R8G8B8A8_UNORM_SRGB, ETC2_R8G8B8A8_SRGB_BLOCK);
 		trans_case(B8G8R8A8_UNORM);
+		trans_case2(B8G8R8A8_UNORM_SRGB, B8G8R8A8_SRGB);
 		trans_case2(R11G11B10_FLOAT, B10G11R11_UFLOAT_PACK32);
 		trans_case(R16G16_UNORM);
 		trans_case(R16G16_SNORM);
@@ -326,4 +328,32 @@ RenderGraphVulkanAPI VkPolygonMode sakura::graphics::vk::translate(EPolygonMode 
 		return VkPolygonMode::VK_POLYGON_MODE_FILL;
 	}
 	return VkPolygonMode::VK_POLYGON_MODE_FILL;
+}
+
+RenderGraphVulkanAPI VkAttachmentLoadOp sakura::graphics::vk::translate(ELoadOp op)
+{
+	switch (op)
+	{
+	case sakura::graphics::ELoadOp::Clear:
+		return VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_CLEAR;
+	case sakura::graphics::ELoadOp::Load:
+		return VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_LOAD;
+	case sakura::graphics::ELoadOp::Count:
+	default:
+		return VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_MAX_ENUM;
+	}
+}
+
+RenderGraphVulkanAPI VkAttachmentStoreOp sakura::graphics::vk::translate(EStoreOp op)
+{
+	switch (op)
+	{
+	case sakura::graphics::EStoreOp::Store:
+		return VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_STORE;
+	case sakura::graphics::EStoreOp::Clear:
+		return VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	case sakura::graphics::EStoreOp::Count:
+	default:
+		return VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_MAX_ENUM;
+	}
 }

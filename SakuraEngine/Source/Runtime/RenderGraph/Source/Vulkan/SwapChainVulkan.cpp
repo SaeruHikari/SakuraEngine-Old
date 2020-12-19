@@ -83,8 +83,8 @@ sakura::graphics::vk::SwapChain::SwapChain(
 	vkGetSwapchainImagesKHR(device_.master_device().logical_device, swap_chain_, &imageCount, images_.data());
 
 	format_ = surfaceFormat.format;
-	extent_.width = extent_.width;
-	extent_.height = extent_.height;
+	extent_.width = extent.width;
+	extent_.height = extent.height;
 
 	image_views_.resize(images_.size());
 	for (size_t i = 0; i < image_views_.size(); i++) 
@@ -109,16 +109,43 @@ sakura::graphics::vk::SwapChain::SwapChain(
 			sakura::error("failed to create image views!");
 		}
 	}
+
+	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+	imagesInFlight.resize(images_.size(), VK_NULL_HANDLE);
+
+	VkSemaphoreCreateInfo semaphoreInfo{};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	VkFenceCreateInfo fenceInfo{};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		if (vkCreateSemaphore(device_.master_device().logical_device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+			vkCreateSemaphore(device_.master_device().logical_device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+			vkCreateFence(device_.master_device().logical_device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create synchronization objects for a frame!");
+		}
+	}
 }
 
 sakura::graphics::vk::SwapChain::~SwapChain()
 {
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) 
+	{
+		vkDestroySemaphore(device_.master_device().logical_device, renderFinishedSemaphores[i], nullptr);
+		vkDestroySemaphore(device_.master_device().logical_device, imageAvailableSemaphores[i], nullptr);
+		vkDestroyFence(device_.master_device().logical_device, inFlightFences[i], nullptr);
+	}
+
 	for (size_t i = 0; i < image_views_.size(); i++) 
 	{
 		vkDestroyImageView(device_.master_device().logical_device, image_views_[i], nullptr);
 	}
 	vkDestroySwapchainKHR(device_.master_device().logical_device, swap_chain_, nullptr);
-	vkDestroySurfaceKHR(device_.instance, surface_, nullptr);
+	vkDestroySurfaceKHR(device_.instance_, surface_, nullptr);
 }
 
 sakura::uint8 sakura::graphics::vk::SwapChain::buffer_count() const
@@ -148,9 +175,14 @@ sakura::graphics::ETextureFormat sakura::graphics::vk::SwapChain::render_format(
 
 bool sakura::graphics::vk::SwapChain::present()
 {
+	//vkQueuePresentKHR(presentQueue, &presentInfo);
 	return false;
 }
 
+VkImageView sakura::graphics::vk::SwapChain::back_buffer() const
+{
+	return image_views_[current_back_index_];
+}
 
 // vulkan-specific.
 

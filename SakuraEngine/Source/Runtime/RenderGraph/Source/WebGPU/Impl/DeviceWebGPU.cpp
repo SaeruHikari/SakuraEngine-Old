@@ -16,12 +16,6 @@ using namespace sakura::graphics::webgpu;
 //WGPUTextureView backBufView = nullptr;
 //static RenderPipeline* ppl = nullptr;
 //sakura::vector<WGPUBindGroup> bindGroups;
-
-void RenderDevice::PassCacheFrame::destroy()
-{
-   
-}
-
 RenderPipeline* RenderDevice::processCommandBeginRenderPass(
     PassCacheFrame& cacheFrame,
     const RenderCommandBeginRenderPass& cmd, WGPUCommandEncoder* encoder,
@@ -303,10 +297,6 @@ RenderDevice::RenderDevice(const DeviceConfiguration& config)
 
 RenderDevice::~RenderDevice()
 {
-	for(size_t i = 0; i < passCache.size(); i++)
-	{
-        passCache[i].destroy();
-	}
 	for(auto& iter : shaderModules)
 	{
         wgpuShaderModuleRelease(iter.second);
@@ -338,9 +328,9 @@ bool RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPas
     auto&& cacheFrame = passCache[hdl.id().index()];
     {// create pass cache objects.
         cacheFrame.encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);// create encoder
-        WGPUFenceDescriptor desc = {};
-        cacheFrame.committed_fence =
-            cacheFrame.committed_fence ? cacheFrame.committed_fence : wgpuQueueCreateFence(defaultQueue, &desc);
+        //WGPUFenceDescriptor desc = {};
+        //cacheFrame.committed_fence =
+        //    cacheFrame.committed_fence ? cacheFrame.committed_fence : wgpuQueueCreateFence(defaultQueue, &desc);
     }
 
     // Evaluate.

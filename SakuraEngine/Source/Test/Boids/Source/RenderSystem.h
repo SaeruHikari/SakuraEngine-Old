@@ -89,8 +89,7 @@ namespace render_system
 			:RenderPass(handle, cycleCount) {}
 		const RenderCommandBuffer& execute(
 			RenderCommandBuffer& command_buffer,
-			const RenderGraph& rg,
-			const RenderGraph::Builder& builder, IRenderDevice& device) noexcept override
+			const RenderGraph& rg, IRenderDevice& device) noexcept override
 		{
 			command_buffer.enqueue<RenderCommandBeginRenderPass>(renderPipeline, attachment);
 			Binding binding0 = Binding({
@@ -382,7 +381,7 @@ namespace render_system
 
 				pass_ptr->construct(render_graph.builder(pass));
 				buffer.reset();
-				pass_ptr->execute(buffer, render_graph, render_graph.builder(pass), deviceGroup);
+				pass_ptr->execute(buffer, render_graph, deviceGroup);
 			});
 	}
 

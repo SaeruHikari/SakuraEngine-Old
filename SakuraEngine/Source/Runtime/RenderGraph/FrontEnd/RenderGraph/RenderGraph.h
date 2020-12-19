@@ -106,6 +106,7 @@ namespace sakura::graphics
             RenderPipelineHandle _pipeline;
             const uint32 generation = 0;
         };
+
 		RenderGraph();
         ~RenderGraph();
 		[[nodiscard]] IRenderDevice* get_device(const sakura::string_view name) const;
@@ -148,8 +149,8 @@ namespace sakura::graphics
     struct RenderGraphAPI RenderPass
     {
 	    virtual ~RenderPass();
-	    virtual const RenderCommandBuffer& execute(RenderCommandBuffer& command_buffer, const RenderGraph& rg,
-          const RenderGraph::Builder& builder, IRenderDevice& device) noexcept = 0;
+	    virtual const RenderCommandBuffer& execute(RenderCommandBuffer& command_buffer,
+            const RenderGraph& rg, IRenderDevice& device) noexcept = 0;
         virtual bool construct(RenderGraph::Builder& rg) noexcept = 0;
         RenderPassHandle handle() const
         {
@@ -169,8 +170,8 @@ namespace sakura::graphics
         RenderPassLambda(const RenderPassHandle __handle, const Constructor& constructor);
 
         bool construct(RenderGraph::Builder& builder) noexcept override;
-        const RenderCommandBuffer& execute(RenderCommandBuffer& command_buffer, const RenderGraph& rg,
-            const RenderGraph::Builder& builder, IRenderDevice& device) noexcept override;
+        const RenderCommandBuffer& execute(RenderCommandBuffer& command_buffer, const RenderGraph& rg, 
+            IRenderDevice& device) noexcept override;
     protected:
         Constructor constructor_;
         mutable Evaluator evaluator_;

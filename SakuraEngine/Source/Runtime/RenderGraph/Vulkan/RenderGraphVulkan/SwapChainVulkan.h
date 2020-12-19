@@ -4,7 +4,7 @@
 namespace sakura::graphics::vk
 {
 	class RenderDevice;
-
+	const int MAX_FRAMES_IN_FLIGHT = 2;
 	class RenderGraphVulkanAPI SwapChain : public ISwapChain
 	{
 	public:
@@ -18,6 +18,8 @@ namespace sakura::graphics::vk
 		ETextureFormat render_format() const override;
 		bool present() override;
 		
+
+		VkImageView back_buffer() const;
 		const SwapChainHandle handle_;
 		const Window window_;
 		VkSurfaceKHR surface_ = VK_NULL_HANDLE;
@@ -25,8 +27,14 @@ namespace sakura::graphics::vk
 		sakura::vector<VkImage> images_;
 		sakura::vector<VkImageView> image_views_;
 		VkFormat format_;
+
+		sakura::vector<VkSemaphore> imageAvailableSemaphores;
+		sakura::vector<VkSemaphore> renderFinishedSemaphores;
+		sakura::vector<VkFence> inFlightFences;
+		sakura::vector<VkFence> imagesInFlight;
 	protected:
 		extent2d extent_;
 		const vk::RenderDevice& device_;
+		uint8_t current_back_index_ = 0;
 	};
 }

@@ -26,4 +26,8 @@ namespace sakura::graphics::vk
 	RenderGraphVulkanAPI VkBlendFactor translate(EBlendFactor blendFactor);
 
 	RenderGraphVulkanAPI VkPolygonMode translate(EPolygonMode polygonMode);
+
+	RenderGraphVulkanAPI VkAttachmentLoadOp translate(ELoadOp op);
+
+	RenderGraphVulkanAPI VkAttachmentStoreOp translate(EStoreOp op);
 }

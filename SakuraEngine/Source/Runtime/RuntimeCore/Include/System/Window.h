@@ -34,7 +34,7 @@ namespace sakura
         inline void hide() noexcept { return hide(*this); }
     	
         static extent2d extent(const Window wind) noexcept;
-        inline extent2d extent() noexcept { return extent(*this); }
+        inline extent2d extent() const noexcept { return extent(*this); }
     	
         static rectangle rect(const Window wind) noexcept;
         inline rectangle rect() noexcept { return rect(*this); }
