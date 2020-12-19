@@ -83,6 +83,8 @@ namespace sakura::graphics
 		virtual IFence* optional(const FenceHandle handle) const { return nullptr; }
 		
 		virtual void terminate() = 0;
+
+		//virtual const SwapChainSupportDetails& support_details() const = 0;
 	};
 
 	class RenderDeviceGroupProxy final : public IRenderDevice

@@ -34,7 +34,7 @@ namespace sakura::graphics
 		UINT16 = 0x00000001,
 		UINT32 = 0x00000002,
 	};
-	
+
 	enum class EVertexFormat : uint16
 	{
 		UCHAR2,
@@ -165,7 +165,7 @@ namespace sakura::graphics
 		Write,
 		ReadWrite
 	};
-	
+
 	// Shader Frequency
 	enum class EShaderFrequency : uint32
 	{
@@ -187,11 +187,11 @@ namespace sakura::graphics
 		// 1 + 3 + 2 + 6
 		Count = 12
 	};
-	
+
 	RenderGraphAPI bool isMeshPipelineStage(const EShaderFrequency freq);
 	RenderGraphAPI bool isRayTracingStage(const EShaderFrequency freq);
 	RenderGraphAPI bool isRenderPipelineStage(const EShaderFrequency freq);
-	
+
 	enum class EShaderCodeFormat
 	{
 		Spirv,
@@ -254,7 +254,7 @@ namespace sakura::graphics
 		Load = 1,
 		Count
 	};
-	
+
 	enum class EStoreOp : uint8
 	{
 		Store = 0,
@@ -380,7 +380,6 @@ namespace sakura::graphics
 		virtual sakura::Window window() const = 0;
 		virtual ETextureFormat render_format() const = 0;
 		virtual bool present() = 0;
-
 		//virtual RenderAttachmentHandle back_buffer() const = 0;
 	};
 	struct RenderGraphAPI IRenderPipeline : public IGPUObject
@@ -411,9 +410,9 @@ namespace sakura::graphics
 	constexpr ShaderLayout::ShaderLayout(const RenderShaderHandle(&_shaders)[N])
 		:shaders(_shaders), count(N)
 	{
-		
+
 	}
-	
+
 	struct RenderGraphAPI VertexLayout
 	{
 		enum class Frequency
@@ -706,7 +705,19 @@ namespace sakura::graphics
 			const sakura::string& entry, const EShaderFrequency frequency,
 			const sakura::span<const std::byte> code = {}) noexcept;
 	};
+
+
+	//struct RenderGraphAPI SwapChainSupportDetails
+	//{
+	//	uint32_t min_image_count = 2;
+	//	uint32_t max_image_count = 3;
+	//	sakura::vector<ETextureFormat> formats;
+	//	sakura::vector<EPresentMode> present_modes;
+	//};
 }
+
+
+
 
 
 

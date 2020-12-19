@@ -11,7 +11,7 @@ namespace sakura::graphics::vk
 	// cn: 启动引擎所需要的最小扩展集合.
 	// en: The minimum set of extensions required to start the engine.
 	// jp: エンジンをランチするために必要なエクステンション-セット.
-	std::vector<const char*> basic_exts =
+	const std::vector<const char*> basic_exts =
 	{
 		VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
 	#ifdef SAKURA_TARGET_PLATFORM_WIN
@@ -23,7 +23,7 @@ namespace sakura::graphics::vk
 	// cn: 拉起 physics device 对象所要求的最小设备扩展集合.
 	// en: The minimum set of device extensions required by the physics device object.
 	// jp: 物理デバイスオブジェクトによって必要とされるデバイス-エクステンションの最小集合.
-	std::vector<const char*> basic_device_exts =
+	const std::vector<const char*> basic_device_exts =
 	{
 		
 	};
@@ -31,12 +31,12 @@ namespace sakura::graphics::vk
 	// cn: 拉起 main device 对象所要求的最小设备扩展集合.
 	// en: The minimum set of device extensions required by the main device object.
 	// jp: メイン-デバイスオブジェクトによって必要とされるデバイス-エクステンションの最小集合.
-	std::vector<const char*> main_device_exts =
+	const std::vector<const char*> main_device_exts =
 	{
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
 
-	std::array<const char*, 1> validationLayers = {
+	const std::vector<const char*> validationLayers = {
 		"VK_LAYER_KHRONOS_validation"
 	};
 
@@ -64,7 +64,7 @@ namespace sakura::graphics::vk
 		std::vector<VulkanQueue> compute_queues;
 		std::vector<VulkanQueue> transfer_queues;
 
-		// cn: graphics_queues中一条支持GFX和Present的Queue.
+		// cn: graphics queues中一条支持GFX和present的queue.
 		//	   其index尽可能小，一般期望它是0.
 		// en: A queue in graphics_queues that supports GFX and Present.
 		//	   Its index is as small as possible, and is generally expected to be 0.
@@ -117,7 +117,12 @@ namespace sakura::graphics::vk
 		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects;
 		VkInstance instance;
 
-		uint32_t master_device_index = 0;
+		FORCEINLINE const VulkanDeviceSet& master_device() const
+		{
+			return device_sets[main_device_index];
+		}
+
+		uint32_t main_device_index = 0;
 		sakura::vector<VulkanDeviceSet> device_sets;
 		
 		VkSurfaceKHR create_surface(Window window) const;
@@ -125,7 +130,6 @@ namespace sakura::graphics::vk
 		VkDebugUtilsMessengerEXT debugMessenger;
 	protected:
 		VulkanDeviceSet findQueueFamilies(VkPhysicalDevice device, sakura::Window wind);
-
 
 		template <bool optional, typename ResourceType, typename Handle>
 		ResourceType* _get_resouce_impl(const Handle handle) const noexcept;

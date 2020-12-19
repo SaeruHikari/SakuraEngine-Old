@@ -21,10 +21,14 @@ namespace sakura::graphics::vk
 		const SwapChainHandle _handle;
 		const Window _window;
 
-		VkSurfaceKHR surface;
+		VkSurfaceKHR surface = VK_NULL_HANDLE;
+		VkSwapchainKHR swap_chain = VK_NULL_HANDLE;
+		sakura::vector<VkImage> swapchian_images;
+
+		VkFormat format_;
+
 	protected:
 		extent2d _extent;
-		uint8 _buffer_count = 0;
 
 		const vk::RenderDevice& device;
 	};

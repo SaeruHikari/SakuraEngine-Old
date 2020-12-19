@@ -6,13 +6,14 @@ using namespace sakura::graphics;
 using namespace sakura::graphics::vk;
 
 bool bEnableValidationLayers = true;
-bool checkValidationLayerSupport(sakura::span<const char*> layers);
+bool checkValidationLayerSupport(const sakura::span<const char* const>);
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
 	const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
 VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 	VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
-bool checkDeviceExtensionSupport(VkPhysicalDevice device, std::set<const char*> requiredExtensions);
+bool checkDeviceExtensionSupport(VkPhysicalDevice device, std::set<std::string> requiredExtensions);
+std::vector<const char*> getRequiredDeviceExtensions(bool asMainDevice);
 
 sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& config)
 	:name(config.name)
@@ -33,9 +34,8 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pApplicationInfo = &appInfo;
 
-		sakura::span<const char*> exts_sp = basic_exts;
-		createInfo.enabledExtensionCount = exts_sp.size();
-		createInfo.ppEnabledExtensionNames = exts_sp.data();
+		createInfo.enabledExtensionCount = basic_exts.size();
+		createInfo.ppEnabledExtensionNames = basic_exts.data();
 		if (bEnableValidationLayers && !checkValidationLayerSupport(validationLayers))
 		{
 			sakura::error("validation layers requested, but not available!");
@@ -87,7 +87,7 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 			// cn: 筛选掉特性不足的设备.
 			// en: Filter out devices with insufficient features.
 			// jp: 機能が不十分なデバイスを除外する
-			if (checkDeviceExtensionSupport(device, std::set<const char*>(basic_device_exts.begin(), basic_device_exts.end())))
+			if (checkDeviceExtensionSupport(device, std::set<std::string>(basic_device_exts.begin(), basic_device_exts.end())))
 			{
 				dev.device = device;
 
@@ -97,15 +97,16 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 				vkGetPhysicalDeviceFeatures(device, &dev.features);
 
 				device_sets.emplace_back(dev);
-			}
-		}
 
-		// TODO:
-		// cn: 选择最合适的一个设备作为主设备.
-		// en: Choose the most suitable device as the master_device.
-		// jp: マスターデバイスとして最適なデバイスを選択する.
-		{
-			master_device_index = 0;
+				// TODO:
+				// cn: 选择最合适的一个设备作为主设备.
+				// en: Choose the most suitable device as the master_device.
+				// jp: マスターデバイスとして最適なデバイスを選択する.
+				if (checkDeviceExtensionSupport(device, std::set<std::string>(main_device_exts.begin(), main_device_exts.end())))
+				{
+					main_device_index = device_sets.size() - 1;
+				}
+			}
 		}
 
 		if (device_sets.empty())
@@ -120,8 +121,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 		bool findCmptQueue = false;
 		bool findTransferQueue = false;
 		bool findPresentQueue = false;
-		for (auto& phy_dev : device_sets)
+		for (auto i = 0u; i < device_sets.size(); i++)
 		{
+			auto& phy_dev = device_sets[i];
 			std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 			std::vector<float> queuePriority; queuePriority.resize(100, 1.f);
 			// Create All Queues.
@@ -145,13 +147,19 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 			VkDeviceCreateInfo createInfo{};
 			createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
-			createInfo.pQueueCreateInfos = queueCreateInfos.data();
 			createInfo.queueCreateInfoCount = queueCreateInfos.size();
+			createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
+			// Features
 			createInfo.pEnabledFeatures = &deviceFeatures;
 
-			createInfo.enabledExtensionCount = 0;
+			// Extensions
+			auto devExts = getRequiredDeviceExtensions(main_device_index == i);
+			createInfo.enabledExtensionCount = devExts.size();
+			createInfo.ppEnabledExtensionNames = devExts.data();
 
+
+			// Layers
 			if (bEnableValidationLayers) {
 				createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 				createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -267,19 +275,22 @@ void sakura::graphics::vk::RenderDevice::terminate()
 	return;
 }
 
-sakura::graphics::RenderShaderHandle sakura::graphics::vk::RenderDevice::create_shader(const RenderShaderHandle handle, const ShaderDesc& config)
+sakura::graphics::RenderShaderHandle sakura::graphics::vk::RenderDevice::create_shader(
+	const RenderShaderHandle handle, const ShaderDesc& config)
 {
 
 	return handle;
 }
 
-sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::create_buffer(const RenderBufferHandle handle, const BufferDesc& config)
+sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::create_buffer(
+	const RenderBufferHandle handle, const BufferDesc& config)
 {
 
 	return handle;
 }
 
-sakura::graphics::RenderAttachmentHandle sakura::graphics::vk::RenderDevice::create_render_attachment(const RenderAttachmentHandle handle, const Attachment& config)
+sakura::graphics::RenderAttachmentHandle sakura::graphics::vk::RenderDevice::create_render_attachment(
+	const RenderAttachmentHandle handle, const Attachment& config)
 {
 
 	return handle;
@@ -291,18 +302,21 @@ sakura::graphics::FenceHandle sakura::graphics::vk::RenderDevice::create_fence(c
 	return handle;
 }
 
-sakura::graphics::SwapChainHandle sakura::graphics::vk::RenderDevice::create_swap_chain(const SwapChainHandle handle, const SwapChainDesc& desc)
+sakura::graphics::SwapChainHandle sakura::graphics::vk::RenderDevice::create_swap_chain(
+	const SwapChainHandle handle, const SwapChainDesc& desc)
 {
 	return _create_object_impl<SwapChain, SwapChainHandle>(handle, *this, desc);
 }
 
-sakura::graphics::RenderPipelineHandle sakura::graphics::vk::RenderDevice::create_render_pipeline(const RenderPipelineHandle handle, const RenderPipelineDesc& desc)
+sakura::graphics::RenderPipelineHandle sakura::graphics::vk::RenderDevice::create_render_pipeline(
+	const RenderPipelineHandle handle, const RenderPipelineDesc& desc)
 {
 
 	return handle;
 }
 
-sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::update_buffer(const RenderBufferHandle handle, size_t offset, void* data, size_t size)
+sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::update_buffer(
+	const RenderBufferHandle handle, size_t offset, void* data, size_t size)
 {
 
 	return handle;
@@ -371,11 +385,25 @@ sakura::graphics::IFence* sakura::graphics::vk::RenderDevice::optional(const Fen
 
 
 // vk-specified:
+std::vector<const char*> getRequiredDeviceExtensions(bool asMainDevice)
+{
+	uint32_t glfwExtensionCount = 0;
+
+	std::vector<const char*> extensions = basic_device_exts;
+
+	if (asMainDevice)
+	{
+		extensions.insert(extensions.end(), main_device_exts.begin(), main_device_exts.end());
+	}
+
+	return extensions;
+}
+
 
 // cn: 检查设备扩展的支持.
 // en: Check device extensions support.
 // jp: デバイス-エクステンションのチェック.
-bool checkDeviceExtensionSupport(VkPhysicalDevice device, std::set<const char*> requiredExtensions)
+bool checkDeviceExtensionSupport(VkPhysicalDevice device, std::set<std::string> requiredExtensions)
 {
 	uint32_t extensionCount;
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
@@ -478,7 +506,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 	}
 }
 
-bool checkValidationLayerSupport(sakura::span<const char*> layers)
+bool checkValidationLayerSupport(const sakura::span<const char* const> layers)
 {
 	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
