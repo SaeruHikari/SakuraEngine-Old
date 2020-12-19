@@ -1,10 +1,45 @@
 #pragma once
-#include "vulkan/vulkan.h"
 #include "RenderGraph/IRenderDevice.h"
 #include "System/Log.h"
+#include "vulkan/vulkan.h"
+#ifdef SAKURA_TARGET_PLATFORM_WIN
+#include "vulkan/vulkan_win32.h"
+#endif
 
 namespace sakura::graphics::vk
 {
+	// cn: 启动引擎所需要的最小扩展集合.
+	// en: The minimum set of extensions required to start the engine.
+	// jp: エンジンをランチするために必要なエクステンション-セット.
+	std::vector<const char*> basic_exts =
+	{
+		VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+	#ifdef SAKURA_TARGET_PLATFORM_WIN
+		VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+	#endif
+		VK_KHR_SURFACE_EXTENSION_NAME
+	};
+
+	// cn: 拉起 physics device 对象所要求的最小设备扩展集合.
+	// en: The minimum set of device extensions required by the physics device object.
+	// jp: 物理デバイスオブジェクトによって必要とされるデバイス-エクステンションの最小集合.
+	std::vector<const char*> basic_device_exts =
+	{
+		
+	};
+
+	// cn: 拉起 main device 对象所要求的最小设备扩展集合.
+	// en: The minimum set of device extensions required by the main device object.
+	// jp: メイン-デバイスオブジェクトによって必要とされるデバイス-エクステンションの最小集合.
+	std::vector<const char*> main_device_exts =
+	{
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
+
+	std::array<const char*, 1> validationLayers = {
+		"VK_LAYER_KHRONOS_validation"
+	};
+
 	struct VulkanQueue
 	{
 		uint32_t family_index = 0;
@@ -13,6 +48,9 @@ namespace sakura::graphics::vk
 
 	struct VulkanDeviceSet
 	{
+		VkPhysicalDeviceProperties properties;
+		VkPhysicalDeviceFeatures features;
+
 		VkPhysicalDevice device;
 		VkDevice logical_device;
 		std::vector<VkQueueFamilyProperties> queue_families;
@@ -29,7 +67,9 @@ namespace sakura::graphics::vk
 		// cn: graphics_queues中一条支持GFX和Present的Queue.
 		//	   其index尽可能小，一般期望它是0.
 		// en: A queue in graphics_queues that supports GFX and Present.
-		//	   Its index is as small as possible, and it is generally expected to be 0.
+		//	   Its index is as small as possible, and is generally expected to be 0.
+		// jp: グラフィックスとプレゼントの両方をサポートするグラフィックスキューのキュー.
+		//     そのインデックスはできるだけ小さい、一般に0であることになっています.
 		VulkanQueue master_queue;
 	};
 
@@ -77,7 +117,7 @@ namespace sakura::graphics::vk
 		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects;
 		VkInstance instance;
 
-		uint32_t main_device_index = 0;
+		uint32_t master_device_index = 0;
 		sakura::vector<VulkanDeviceSet> device_sets;
 		
 		VkSurfaceKHR create_surface(Window window) const;
