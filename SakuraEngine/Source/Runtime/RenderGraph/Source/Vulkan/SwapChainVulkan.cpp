@@ -24,7 +24,8 @@ sakura::graphics::vk::SwapChain::SwapChain(
 {
 	_extent = Window::extent(_window);
 
-	surface = dev.create_surface(_window);
+	surface = dev.create_and_validate_surface(_window);
+
 	auto swapChainSupport = querySwapChainSupport(device.master_device().device, surface);
 
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);

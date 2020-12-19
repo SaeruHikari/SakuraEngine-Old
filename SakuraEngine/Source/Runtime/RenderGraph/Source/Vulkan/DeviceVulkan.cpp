@@ -13,6 +13,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBits
 	VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 bool checkDeviceExtensionSupport(VkPhysicalDevice device, std::set<std::string> requiredExtensions);
 std::vector<const char*> getRequiredDeviceExtensions(bool asMainDevice);
+VkSurfaceKHR createSurface(sakura::Window window, VkInstance instance);
 
 sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& config)
 	:name(config.name)
@@ -380,6 +381,32 @@ sakura::graphics::IFence* sakura::graphics::vk::RenderDevice::optional(const Fen
 
 
 // vk-specified:
+
+bool sakura::graphics::vk::RenderDevice::validate_surface(VkSurfaceKHR surface) const
+{
+	// To Make Vulkan Happy.
+	VkBool32 presentSupport = false;
+	vkGetPhysicalDeviceSurfaceSupportKHR(master_device().device, master_device().master_queue.family_index, surface, &presentSupport);
+	if (!presentSupport)
+	{
+		sakura::error("master queue does not support present of this window surface!");
+	}
+	return presentSupport;
+}
+
+VkSurfaceKHR sakura::graphics::vk::RenderDevice::create_and_validate_surface(Window window) const
+{
+	VkSurfaceKHR surface = createSurface(window, instance);
+	bool sfcValid = validate_surface(surface); 
+	assert(sfcValid && "Surface Not Supported!");
+	return surface;
+}
+
+
+
+
+// vk-implementation:
+
 std::vector<const char*> getRequiredDeviceExtensions(bool asMainDevice)
 {
 	uint32_t glfwExtensionCount = 0;
@@ -423,7 +450,7 @@ VulkanDeviceSet RenderDevice::findQueueFamilies(VkPhysicalDevice device, sakura:
 	pd.queue_families.resize(queueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, pd.queue_families.data());
 
-	VkSurfaceKHR surface = create_surface(wind);
+	VkSurfaceKHR surface = createSurface(wind, instance);
 	uint32 i = 0u;
 	bool findPresentQueue = false;
 	for (const auto& queueFamily : pd.queue_families)
@@ -463,7 +490,7 @@ VulkanDeviceSet RenderDevice::findQueueFamilies(VkPhysicalDevice device, sakura:
 	return pd;
 }
 
-VkSurfaceKHR sakura::graphics::vk::RenderDevice::create_surface(Window window) const
+VkSurfaceKHR createSurface(sakura::Window window, VkInstance instance)
 {
 	VkSurfaceKHR surface;
 #ifdef SAKURA_TARGET_PLATFORM_WIN
@@ -480,8 +507,6 @@ VkSurfaceKHR sakura::graphics::vk::RenderDevice::create_surface(Window window) c
 #endif
 	return surface;
 }
-
-
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
 	auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");

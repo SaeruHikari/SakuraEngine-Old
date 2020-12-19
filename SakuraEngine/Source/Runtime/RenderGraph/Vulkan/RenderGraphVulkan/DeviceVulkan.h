@@ -133,7 +133,8 @@ namespace sakura::graphics::vk
 		uint32_t main_device_index = 0;
 		sakura::vector<VulkanDeviceSet> device_sets;
 		
-		VkSurfaceKHR create_surface(Window window) const;
+		VkSurfaceKHR create_and_validate_surface(Window window) const;
+		bool validate_surface(VkSurfaceKHR surface) const;
 		
 		VkDebugUtilsMessengerEXT debugMessenger;
 	protected:
