@@ -23,7 +23,6 @@ sakura::graphics::webgpu::GPUShader::GPUShader(
 	else //No Existed Shader Module, Create One.
 	{
 		const uint32_t* code = nullptr;
-		uint32_t size = 0;
 		if(desc.code.empty())
 		{
 			assert(0 && "Only Support WithCode Mode!");
@@ -31,13 +30,13 @@ sakura::graphics::webgpu::GPUShader::GPUShader(
 		else
 		{ 
 			code = reinterpret_cast<const uint32*>(desc.code.data());
-			size = desc.code.size() * sizeof(std::byte) / sizeof(uint32);
+			size_ = desc.code.size() * sizeof(std::byte);
 		}
 		const char* label = nullptr;
 
 		WGPUShaderModuleSPIRVDescriptor spirv = {};
 		spirv.chain.sType = WGPUSType_ShaderModuleSPIRVDescriptor;
-		spirv.codeSize = size;
+		spirv.codeSize = size_ / sizeof(uint32);
 		spirv.code = code;
 		WGPUShaderModuleDescriptor moduleDesc = {};
 		moduleDesc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(&spirv);
@@ -53,7 +52,7 @@ sakura::graphics::webgpu::GPUShader::GPUShader(
 
 sakura::graphics::webgpu::GPUShader::~GPUShader()
 {
-
+	
 }
 
 sakura::graphics::RenderResourceHandle sakura::graphics::webgpu::GPUShader::handle() const
@@ -63,7 +62,7 @@ sakura::graphics::RenderResourceHandle sakura::graphics::webgpu::GPUShader::hand
 
 size_t sakura::graphics::webgpu::GPUShader::size() const
 {
-	return 0;
+	return size_;
 }
 
 sakura::graphics::EShaderFrequency sakura::graphics::webgpu::GPUShader::frequency() const

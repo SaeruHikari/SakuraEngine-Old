@@ -25,7 +25,7 @@ namespace sakura::graphics::webgpu
 	
 	RenderGraphWebGPUAPI WGPUBlendDescriptor translate(const BlendDesc desc);
 	
-	RenderGraphWebGPUAPI WGPUColorWriteMask translate(const EColorMask mask);
+	RenderGraphWebGPUAPI WGPUColorWriteMaskFlags translate(const ColorMask mask);
 
 	RenderGraphWebGPUAPI WGPUVertexFormat translate(const EVertexFormat vertex_format);
 

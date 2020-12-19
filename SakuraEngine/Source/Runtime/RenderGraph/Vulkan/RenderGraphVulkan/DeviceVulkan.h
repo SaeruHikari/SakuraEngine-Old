@@ -93,7 +93,7 @@ namespace sakura::graphics::vk
 		void destroy_resource(const RenderShaderHandle to_destroy) override;
 
 		sakura::string_view get_name() const override;
-		bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl, const size_t frame) override;
+		bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl) override;
 		bool execute(const RenderGraph& graph_to_execute) override;
 		bool present(const SwapChainHandle handle) override;
 		void terminate() override;
@@ -109,6 +109,7 @@ namespace sakura::graphics::vk
 		RenderBufferHandle update_buffer(const RenderBufferHandle handle, size_t offset, void* data, size_t size) override;
 
 		// TODO: Share these implementations between backend devices.
+
 		IGPUBuffer* get(const RenderBufferHandle handle) const override;
 		IGPUShader* get(const RenderShaderHandle handle) const override;
 		IRenderPipeline* get(const RenderPipelineHandle handle) const override;
@@ -121,24 +122,31 @@ namespace sakura::graphics::vk
 		ISwapChain* optional(const SwapChainHandle handle) const override;
 		IFence* optional(const FenceHandle handle) const override;
 
-		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources;
-		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects;
-		VkInstance instance;
+		// vulkan-specific
 
 		FORCEINLINE const VulkanDeviceSet& master_device() const
 		{
-			return device_sets[main_device_index];
+			return device_sets_[master_device_index_];
 		}
 
-		uint32_t main_device_index = 0;
-		sakura::vector<VulkanDeviceSet> device_sets;
+		struct PassCache
+		{
+
+		};
+		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources_;
+		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects_;
+		sakura::vector<PassCache> pass_caches_;
+		VkInstance instance;
+
+		VkDebugUtilsMessengerEXT debug_messenger_;
+		uint32_t master_device_index_ = 0;
+		sakura::vector<VulkanDeviceSet> device_sets_;
 		
 		VkSurfaceKHR create_and_validate_surface(Window window) const;
 		bool validate_surface(VkSurfaceKHR surface) const;
 		
-		VkDebugUtilsMessengerEXT debugMessenger;
 	protected:
-		VulkanDeviceSet findQueueFamilies(VkPhysicalDevice device, sakura::Window wind);
+		sakura::string name_;
 
 		template <bool optional, typename ResourceType, typename Handle>
 		ResourceType* _get_resouce_impl(const Handle handle) const noexcept;
@@ -149,9 +157,8 @@ namespace sakura::graphics::vk
 		ObjectType* _get_object_impl(const Handle handle) const noexcept;
 		template <typename ObjectType, typename Handle, typename... Args>
 		Handle _create_object_impl(const Handle handle, Args&&... args) noexcept;
-
-	private:
-		sakura::string name;
+	protected:
+		VulkanDeviceSet findQueueFamilies(VkPhysicalDevice device, sakura::Window wind);
     };
 }
 
@@ -246,7 +253,7 @@ namespace sakura::graphics::vk
 		static_assert(std::is_base_of_v<IGPUMemoryResource, ResourceType>, "[DeviceVulkan::_get_resource_impl]: ResourceType must be derived from IGPUMemoryResource!");
 		static_assert(std::is_base_of_v<RenderResourceHandle, Handle>, "[DeviceVulkan::_get_resource_impl]: Handle must be derived from RenderResourceHandle!");
 		static_assert(std::is_base_of_v<typename Handle::ResourceType, ResourceType>, "[DeviceVulkan::_get_resource_impl]: Handle must match to it's ResourceType!");
-		if (created_resources.size() < handle.id().index() + 1)
+		if (created_resources_.size() < handle.id().index() + 1)
 		{
 			if constexpr (isOptional)
 				;
@@ -254,7 +261,7 @@ namespace sakura::graphics::vk
 				handle_error<Handle>::not_find(handle);
 			return nullptr;
 		}
-		auto& resource = created_resources[handle.id().index()];
+		auto& resource = created_resources_[handle.id().index()];
 		if (handle.id().generation() == resource.second)
 			return static_cast<ResourceType*>(resource.first);
 		else
@@ -278,10 +285,10 @@ namespace sakura::graphics::vk
 		}
 		else
 		{
-			if (created_resources.size() < handle.id().index() + 1)
-				created_resources.resize(handle.id().index() + 1);
+			if (created_resources_.size() < handle.id().index() + 1)
+				created_resources_.resize(handle.id().index() + 1);
 			auto newRes = new ResourceType(handle, std::forward<Args>(args)...);
-			created_resources[handle.id().index()] = sakura::make_pair(newRes, handle.id().generation());
+			created_resources_[handle.id().index()] = sakura::make_pair(newRes, handle.id().generation());
 		}
 		return handle;
 	}
@@ -292,14 +299,14 @@ namespace sakura::graphics::vk
 		static_assert(std::is_base_of_v<IGPUObject, ObjectType>, "[DeviceVulkan::_get_object_impl]: ResourceType must be derived from IGPUObject!");
 		static_assert(std::is_base_of_v<RenderGraphHandle, Handle>, "[DeviceVulkan::_get_object_impl]: Handle must be derived from RenderObjectHandle!");
 		static_assert(std::is_base_of_v<typename Handle::ObjectType, ObjectType>, "[DeviceVulkan::_get_object_impl]: Handle must match to it's ObjectType!");
-		if (created_objects.size() < handle.id().index() + 1)
+		if (created_objects_.size() < handle.id().index() + 1)
 		{
 			if constexpr (isOptional);
 			else
 				handle_error<Handle>::not_find(handle);
 			return nullptr;
 		}
-		auto& object = created_objects[handle.id().index()];
+		auto& object = created_objects_[handle.id().index()];
 		if (handle.id().generation() == object.second)
 			return static_cast<ObjectType*>(object.first);
 		else
@@ -323,10 +330,10 @@ namespace sakura::graphics::vk
 		}
 		else
 		{
-			if (created_objects.size() < handle.id().index() + 1)
-				created_objects.resize(handle.id().index() + 1);
+			if (created_objects_.size() < handle.id().index() + 1)
+				created_objects_.resize(handle.id().index() + 1);
 			auto newRes = new ObjectType(handle, std::forward<Args>(args)...);
-			created_objects[handle.id().index()] = sakura::make_pair(newRes, handle.id().generation());
+			created_objects_[handle.id().index()] = sakura::make_pair(newRes, handle.id().generation());
 		}
 		return handle;
 	}

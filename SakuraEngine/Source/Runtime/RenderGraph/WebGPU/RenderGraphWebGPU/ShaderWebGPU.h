@@ -25,6 +25,7 @@ namespace sakura::graphics::webgpu
 		EShaderCodeFormat code_format() const override;
 		
 		RenderShaderHandle _handle;
+		size_t size_ = 0;
 		WGPUShaderModule module_ref = nullptr;
 		ShaderDesc desc;
 	};

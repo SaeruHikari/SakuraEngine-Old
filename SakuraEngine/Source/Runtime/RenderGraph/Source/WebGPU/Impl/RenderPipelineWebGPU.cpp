@@ -33,7 +33,7 @@ sakura::graphics::webgpu::RenderPipeline::RenderPipeline(RenderPipelineHandle ha
     auto pipelineLayout = wgpuDeviceCreatePipelineLayout(dev.device, &layoutDesc);
 
     rpDesc.layout = pipelineLayout;
-
+    
     // Shader Stages Set-Up.
     WGPUProgrammableStageDescriptor fragStage = {};
 	if(desc.shader_layout.count != 2)
@@ -69,7 +69,6 @@ sakura::graphics::webgpu::RenderPipeline::RenderPipeline(RenderPipelineHandle ha
             assert(0);
         }
     }
-    // MSAA
     rpDesc.sampleCount = desc.sample_count;
     sakura::vector<WGPUVertexBufferLayoutDescriptor>vertDescs(desc.vertex_layout.size());
     sakura::vector<sakura::vector<WGPUVertexAttributeDescriptor>> vertexAttributesList(desc.vertex_layout.size());
@@ -114,7 +113,7 @@ sakura::graphics::webgpu::RenderPipeline::RenderPipeline(RenderPipelineHandle ha
         colorDesc.format = translate(attachment_slot.format);
         colorDesc.alphaBlend = translate(attachment_slot.alpha_blend);
         colorDesc.colorBlend = translate(attachment_slot.color_blend);
-        colorDesc.writeMask = translate(attachment_slot.write_mask);;
+        colorDesc.writeMask = translate(attachment_slot.write_mask);
     }
     rpDesc.colorStateCount = static_cast<uint32>(desc.attachment_layout.slots.size());
     rpDesc.colorStates = colorDescs.data();

@@ -55,7 +55,7 @@ namespace sakura::graphics
 		virtual EBackend backend() const = 0;
 		
 		// execute a command buffer
-		virtual bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl, const size_t frame) = 0;
+		virtual bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl) = 0;
 		virtual bool execute(const RenderGraph& graph_to_execute) = 0;
 		virtual bool present(const SwapChainHandle handle) { return true; }
 		virtual void destroy_resource(const RenderShaderHandle to_destroy) = 0;
@@ -128,13 +128,12 @@ namespace sakura::graphics
 			}
 			return result;
 		}
-		FORCEINLINE bool execute(const RenderCommandBuffer& cmdBuffer,
-			const RenderPassHandle hdl, const size_t frame) override
+		FORCEINLINE bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl) override
 		{
 			bool result = true;
 			for (auto i = 0; i < count(); i++)
 			{
-				result = result & devices[i]->execute(cmdBuffer, hdl, frame);
+				result = result & devices[i]->execute(cmdBuffer, hdl);
 			}
 			return result;
 		}
