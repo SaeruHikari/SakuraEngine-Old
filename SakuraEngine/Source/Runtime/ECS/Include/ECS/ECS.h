@@ -17,6 +17,16 @@ namespace sakura::task_system::ecs
 	struct custom_pass : core::codebase::custom_pass
 	{
 		task_system::Event event{ task_system::Event::Mode::Manual };
+		void wait_for_dependencies()
+		{
+			forloop(i, 0, dependencyCount)
+			{
+				auto& dep = dependencies[i];
+				if (auto ptr = std::static_pointer_cast<custom_pass>(dep.lock()))
+					ptr->event.wait();
+			}
+			release_dependencies();
+		}
 	};
 	struct pass : core::codebase::pass_t<custom_pass> {};
 	struct pipeline final : public core::codebase::pipeline
@@ -58,9 +68,7 @@ namespace sakura::task_system::ecs
 		task_system::schedule([&, p, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
 			defer(p->event.signal());
-			forloop(i, 0, p->dependencyCount)
-				((pass*)p->dependencies[i].get())->event.wait();
-			p->release_dependencies();
+			p->wait_for_dependencies();
 			for (auto& ed : externalDependencies)
 				ed.wait();
 			t();
@@ -85,9 +93,7 @@ namespace sakura::task_system::ecs
 		{
 			defer(p->event.signal());
 			//defer(tasks.reset());
-			forloop(i, 0, p->dependencyCount)
-				((pass*)p->dependencies[i].get())->event.wait();
-			p->release_dependencies();
+			p->wait_for_dependencies();
 			for (auto& ed : externalDependencies)
 				ed.wait();
 			auto tasks = pipeline.create_tasks(*p, maxSlice);
