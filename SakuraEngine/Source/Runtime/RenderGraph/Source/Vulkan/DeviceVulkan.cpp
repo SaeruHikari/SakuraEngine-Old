@@ -5,7 +5,6 @@
 using namespace sakura::graphics;
 using namespace sakura::graphics::vk;
 
-bool bEnableValidationLayers = true;
 bool checkValidationLayerSupport(const sakura::span<const char* const>);
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
 	const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
@@ -34,6 +33,7 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pApplicationInfo = &appInfo;
 
+		const auto basic_exts = basic_extentions();
 		createInfo.enabledExtensionCount = basic_exts.size();
 		createInfo.ppEnabledExtensionNames = basic_exts.data();
 		if (bEnableValidationLayers && !checkValidationLayerSupport(validationLayers))
@@ -57,17 +57,15 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 		}
 		else {
 			createInfo.enabledLayerCount = 0;
-
 			createInfo.pNext = nullptr;
 		}
-
 		if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
 		{
 			sakura::error("Vulkan: failed to create instance!");
 		}
 	}
 
-	// cn: 拾取PhysicalInstance.
+	// cn: 拾取PhysicalDevice.
 	// en: Pick physical device.
 	// jp: 物理デバイスを選択する.
 	{
@@ -90,12 +88,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 			if (checkDeviceExtensionSupport(device, std::set<std::string>(basic_device_exts.begin(), basic_device_exts.end())))
 			{
 				dev.device = device;
-
+				// Collect Device Properties & Features.
 				vkGetPhysicalDeviceProperties(device, &dev.properties);
-				sakura::info("EnumAllDeviceProperties: DeviceName is {}, VendorId is {}.",
-					dev.properties.deviceName, dev.properties.vendorID);
 				vkGetPhysicalDeviceFeatures(device, &dev.features);
-
 				device_sets.emplace_back(dev);
 
 				// TODO:

@@ -381,13 +381,11 @@ bool RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPas
         processCommand(cacheFrame, cmd, &cacheFrame.encoder, &cacheFrame.pass_encoder);
     }
 	WGPUFenceDescriptor desc = {};
-	auto f = wgpuQueueCreateFence(defaultQueue, &desc);
     if (cacheFrame.pass_encoder)
     {
         wgpuRenderPassEncoderRelease(cacheFrame.pass_encoder);
         WGPUCommandBuffer commands = wgpuCommandEncoderFinish(cacheFrame.encoder, nullptr);// create commands
         wgpuQueueSubmit(defaultQueue, 1, &commands);
-		wgpuQueueSignal(defaultQueue, f, 1);
         wgpuCommandBufferRelease(commands);
     }
     for (size_t i = 0u; i < cacheFrame.texture_views.size(); i++)

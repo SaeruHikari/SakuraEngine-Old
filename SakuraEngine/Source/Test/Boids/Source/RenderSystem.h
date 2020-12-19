@@ -417,7 +417,10 @@ namespace render_system
 				{
 					ZoneScopedN("RenderAndPresent");
 					RenderPass* pass_ptr = render_graph.render_pass(pass);
-					deviceGroup.execute(buffer, pass_ptr->handle(), 0);
+					task_system::blocking_call([&]()
+						{
+							deviceGroup.execute(buffer, pass_ptr->handle(), 0);
+						});
 				}
 			}
 		);

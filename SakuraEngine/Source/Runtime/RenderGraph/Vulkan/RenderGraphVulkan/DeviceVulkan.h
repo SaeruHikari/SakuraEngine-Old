@@ -8,17 +8,25 @@
 
 namespace sakura::graphics::vk
 {
+	const bool bEnableValidationLayers = true;
+
 	// cn: 启动引擎所需要的最小扩展集合.
 	// en: The minimum set of extensions required to start the engine.
 	// jp: エンジンをランチするために必要なエクステンション-セット.
-	const std::vector<const char*> basic_exts =
+	FORCEINLINE const std::vector<const char*> basic_extentions()
 	{
-		VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
-	#ifdef SAKURA_TARGET_PLATFORM_WIN
-		VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-	#endif
-		VK_KHR_SURFACE_EXTENSION_NAME
-	};
+		std::vector<const char*> res = {
+#ifdef SAKURA_TARGET_PLATFORM_WIN
+				VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+#endif
+				VK_KHR_SURFACE_EXTENSION_NAME
+		};
+		if (bEnableValidationLayers)
+		{
+			res.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		}
+		return res;
+	}
 
 	// cn: 拉起 physics device 对象所要求的最小设备扩展集合.
 	// en: The minimum set of device extensions required by the physics device object.
