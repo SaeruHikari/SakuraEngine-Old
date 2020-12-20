@@ -64,6 +64,8 @@ sakura::graphics::vk::SwapChain::SwapChain(
 	}
 	else {
 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		createInfo.pQueueFamilyIndices = NULL;
+		createInfo.queueFamilyIndexCount = 0;
 	}
 
 	createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
@@ -165,8 +167,7 @@ bool sakura::graphics::vk::SwapChain::present()
 	VkSwapchainKHR swapChains[] = { swap_chain_ };
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
-	auto topre = imageIndex;
-	presentInfo.pImageIndices = &topre;
+	presentInfo.pImageIndices = &imageIndex;
 	{
 		presentInfo.pWaitSemaphores = &render_to_screen_semaphores_[0];
 		presentInfo.waitSemaphoreCount = 1;
@@ -182,7 +183,7 @@ bool sakura::graphics::vk::SwapChain::present()
 
 VkImageView sakura::graphics::vk::SwapChain::back_buffer() const
 {
-	return image_views_[imageIndex];
+	return image_views_[(imageIndex + 1) % buffer_count()];
 }
 
 // vulkan-specific.

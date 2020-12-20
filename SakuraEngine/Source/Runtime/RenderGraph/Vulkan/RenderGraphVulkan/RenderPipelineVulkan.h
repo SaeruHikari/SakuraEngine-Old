@@ -26,14 +26,12 @@ namespace sakura::graphics::vk
 		sakura::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 		sakura::vector<VkPipelineColorBlendAttachmentState> attachmentStates;
 		sakura::vector<VkVertexInputAttributeDescription> vertexAttributes;
-		sakura::vector<VkVertexInputBindingDescription> vertexBingings;
+		sakura::vector<VkVertexInputBindingDescription> vertexBindings;
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		VkPipelineRasterizationStateCreateInfo rasterizer{};
 		VkPipelineMultisampleStateCreateInfo multisampling{};
 		VkPipelineColorBlendStateCreateInfo colorBlending{};
-		VkDescriptorSetLayoutCreateInfo layoutInfo{};
-
 	protected:
 		RenderPipelineHandle handle_;
 	};

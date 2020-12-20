@@ -727,7 +727,6 @@ int main()
 		// 开始渲染已经准备好的那帧 Command Buffer, 目前 Compile 内联在渲染系统中.
 		render_system::RenderAndPresent(buffer); // 0 + 1
 
-		render_system::Present(); // 0
 
 		if (cycle % 60 == 0)
 			render_system::mainWindow.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());

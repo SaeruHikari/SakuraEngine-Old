@@ -24,6 +24,7 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 			uboLayoutBinding.pImmutableSamplers = nullptr;
 			uboLayoutBinding.stageFlags = translate(slot_info.visibility);
 		}
+		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		layoutInfo.bindingCount = uboLayoutBindings.size();
 		layoutInfo.pBindings = uboLayoutBindings.data();
@@ -66,11 +67,11 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 
 	// vertex input information
 	{
-		vertexBingings.resize(desc.vertex_layout.size());
+		vertexBindings.resize(desc.vertex_layout.size());
 		for (size_t vbindex = 0u; vbindex < desc.vertex_layout.size(); vbindex++)
 		{
 			auto& vbbinding = desc.vertex_layout[vbindex];
-			auto& vertexBinding = vertexBingings[vbindex];
+			auto& vertexBinding = vertexBindings[vbindex];
 			vertexBinding.binding = vbindex;
 			vertexBinding.inputRate = translate(vbbinding.freq);
 			vertexBinding.stride = vbbinding.stride;
@@ -85,8 +86,8 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 			}
 		}
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexBindingDescriptionCount = vertexBingings.size();
-		vertexInputInfo.pVertexBindingDescriptions = vertexBingings.data();
+		vertexInputInfo.vertexBindingDescriptionCount = vertexBindings.size();
+		vertexInputInfo.pVertexBindingDescriptions = vertexBindings.data();
 		vertexInputInfo.pVertexAttributeDescriptions = vertexAttributes.data();
 		vertexInputInfo.vertexAttributeDescriptionCount = vertexAttributes.size();
 	}
@@ -100,7 +101,7 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	rasterizer.polygonMode = translate(desc.polygon_mode);
 	rasterizer.lineWidth = desc.lineWidth;
 	rasterizer.cullMode = VK_CULL_MODE_NONE; 
-	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -129,8 +130,7 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 			attachmentState.srcColorBlendFactor = translate(attachment_slot.color_blend.src_factor);
 		}
 	}
-	colorBlending.attachmentCount = attachmentStates.size();
-	colorBlending.pAttachments = attachmentStates.data();
+
 
 	// cn: RenderGraph暂时不支持logicOp以及blendConstants, 并且没有相应动机.
 	// en: RenderGraph does not support logicOp & blendConstants, no motivation to support currently.
@@ -140,6 +140,8 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlending.logicOpEnable = VK_FALSE;
 		colorBlending.logicOp = VK_LOGIC_OP_COPY;
+		colorBlending.attachmentCount = attachmentStates.size();
+		colorBlending.pAttachments = attachmentStates.data();
 		colorBlending.blendConstants[0] = 0.0f;
 		colorBlending.blendConstants[1] = 0.0f;
 		colorBlending.blendConstants[2] = 0.0f;
@@ -178,7 +180,7 @@ void sakura::graphics::vk::RenderPipeline::start(VkRenderPass render_pass)
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = (float)1920;
+	viewport.width = (float)1920.f;
 	viewport.height = (float)1080.f;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;

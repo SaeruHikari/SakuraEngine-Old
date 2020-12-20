@@ -31,7 +31,7 @@ namespace sakura::graphics::vk
 		VkSemaphore presentCompleteSemaphore;
 		sakura::vector<VkSemaphore> render_to_screen_semaphores_;
 
-		uint32_t imageIndex = 0;
+		uint32_t imageIndex = 2;
 	protected:
 		extent2d extent_;
 		const vk::RenderDevice& device_;
