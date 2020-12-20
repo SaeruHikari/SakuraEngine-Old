@@ -110,38 +110,23 @@ sakura::graphics::vk::SwapChain::SwapChain(
 		}
 	}
 
-	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-	imagesInFlight.resize(images_.size(), VK_NULL_HANDLE);
-
 	VkSemaphoreCreateInfo semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-	VkFenceCreateInfo fenceInfo{};
-	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		if (vkCreateSemaphore(device_.master_device().logical_device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-			vkCreateSemaphore(device_.master_device().logical_device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
-			vkCreateFence(device_.master_device().logical_device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create synchronization objects for a frame!");
-		}
+	render_to_screen_semaphores_.resize(images_.size());
+	vkCreateSemaphore(device_.master_device().logical_device, &semaphoreInfo, nullptr, &presentCompleteSemaphore);
+	for (size_t i = 0; i < image_views_.size(); i++)
+	{
+		vkCreateSemaphore(device_.master_device().logical_device, &semaphoreInfo, nullptr, &render_to_screen_semaphores_[i]);
 	}
 }
 
 sakura::graphics::vk::SwapChain::~SwapChain()
 {
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) 
-	{
-		vkDestroySemaphore(device_.master_device().logical_device, renderFinishedSemaphores[i], nullptr);
-		vkDestroySemaphore(device_.master_device().logical_device, imageAvailableSemaphores[i], nullptr);
-		vkDestroyFence(device_.master_device().logical_device, inFlightFences[i], nullptr);
-	}
-
+	vkDestroySemaphore(device_.master_device().logical_device, presentCompleteSemaphore, nullptr);
 	for (size_t i = 0; i < image_views_.size(); i++) 
 	{
+		vkDestroySemaphore(device_.master_device().logical_device, render_to_screen_semaphores_[i], nullptr);
+
 		vkDestroyImageView(device_.master_device().logical_device, image_views_[i], nullptr);
 	}
 	vkDestroySwapchainKHR(device_.master_device().logical_device, swap_chain_, nullptr);
@@ -175,13 +160,29 @@ sakura::graphics::ETextureFormat sakura::graphics::vk::SwapChain::render_format(
 
 bool sakura::graphics::vk::SwapChain::present()
 {
-	//vkQueuePresentKHR(presentQueue, &presentInfo);
-	return false;
+	VkPresentInfoKHR presentInfo{};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	VkSwapchainKHR swapChains[] = { swap_chain_ };
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = swapChains;
+	auto topre = imageIndex;
+	presentInfo.pImageIndices = &topre;
+	{
+		presentInfo.pWaitSemaphores = &render_to_screen_semaphores_[0];
+		presentInfo.waitSemaphoreCount = 1;
+	}
+	vkQueuePresentKHR(device_.master_device().master_queue.queue, &presentInfo);
+
+	// Get next image in the swap chain (back/front buffer)
+	// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
+	VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+	return true;
 }
 
 VkImageView sakura::graphics::vk::SwapChain::back_buffer() const
 {
-	return image_views_[current_back_index_];
+	return image_views_[imageIndex];
 }
 
 // vulkan-specific.

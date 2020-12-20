@@ -132,7 +132,7 @@ void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame,
 
         if(auto ib = static_cast<GPUBuffer*>(get(ib_src.index_buffer));ib)
 		{
-#ifdef _____DESP // Emscripten hasn't yet caught up with the API changes
+#ifdef _____DESPERATED // Emscripten hasn't yet caught up with the API changes
 	        wgpuRenderPassEncoderSetIndexBuffer(*pass, ib->_buffer, ib_src.offset, ib_src.stride);
 #else
             wgpuRenderPassEncoderSetIndexBufferWithFormat(
@@ -256,8 +256,9 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
 					assert(0 && "Pipeline as NULL is invalid!");
 				}
 			}
-			if (bindGroup && pass)
-				wgpuRenderPassEncoderSetBindGroup(*pass, i, bindGroup, 0u, 0u);
+            if (bindGroup && pass)
+                wgpuRenderPassEncoderSetBindGroup(*pass, i, bindGroup, 0, 0);
+                    //binder.dynamic_offsets.size(), binder.dynamic_offsets.size() == 0 ? nullptr :binder.dynamic_offsets.data());
 		}// End Foreach BindingGroup.
 	}
 }

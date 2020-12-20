@@ -9,7 +9,7 @@
 
 namespace sakura::graphics::vk
 {
-	const bool bEnableValidationLayers = true;
+	const bool bEnableValidationLayers = false;
 	class RenderPipeline;
 
 	// cn: 启动引擎所需要的最小扩展集合.
@@ -152,14 +152,19 @@ namespace sakura::graphics::vk
 			// ?
 			VkCommandPool command_pool_ = VK_NULL_HANDLE;
 			
-			VkCommandBuffer command_buffer_ = VK_NULL_HANDLE;
 			RenderPipeline* pipeline = nullptr;
 
+			// 易变: !!!Do Something!!!
+			VkDescriptorPool descripter_pool_;
 			VkFramebuffer frame_buffer_;
+			std::vector<VkDescriptorSet> binding_sets_;
+			VkCommandBuffer command_buffer_ = VK_NULL_HANDLE;
 
-			bool toScreen = false;
+			SwapChainHandle toScreen = GenerationalId::UNINITIALIZED;
 		};
 		sakura::vector<PassCacheFrame> pass_caches_;
+		
+
 	protected:
 		void processCommand(PassCacheFrame& cache, const RenderCommand* command) const;
 		void processCommandUpdateBinding(PassCacheFrame& cache, const RenderCommandUpdateBinding& command) const;

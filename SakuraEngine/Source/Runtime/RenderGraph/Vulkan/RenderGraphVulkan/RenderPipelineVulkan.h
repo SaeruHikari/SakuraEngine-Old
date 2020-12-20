@@ -21,13 +21,19 @@ namespace sakura::graphics::vk
 		VkPipelineLayout pipeline_layout_ = VK_NULL_HANDLE;
 		VkPipeline pipeline_ = VK_NULL_HANDLE;
 
+		std::vector<VkDescriptorSetLayout> binding_layouts_;
+
 		sakura::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 		sakura::vector<VkPipelineColorBlendAttachmentState> attachmentStates;
+		sakura::vector<VkVertexInputAttributeDescription> vertexAttributes;
+		sakura::vector<VkVertexInputBindingDescription> vertexBingings;
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		VkPipelineRasterizationStateCreateInfo rasterizer{};
 		VkPipelineMultisampleStateCreateInfo multisampling{};
 		VkPipelineColorBlendStateCreateInfo colorBlending{};
+		VkDescriptorSetLayoutCreateInfo layoutInfo{};
+
 	protected:
 		RenderPipelineHandle handle_;
 	};

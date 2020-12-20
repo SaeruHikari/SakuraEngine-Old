@@ -7,6 +7,33 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	const vk::RenderDevice& render_device, VkDevice device, const RenderPipelineDesc& desc)
 	:handle_(handle), owned_device_(device), render_device_(render_device)
 {
+	// Binding Layout
+	binding_layouts_.resize(desc.binding_layout.tables.size());
+	for (auto tbl = 0; tbl < desc.binding_layout.tables.size(); tbl++)
+	{
+		auto& set = desc.binding_layout.tables[tbl];
+		sakura::vector<VkDescriptorSetLayoutBinding> uboLayoutBindings;
+		uboLayoutBindings.resize(set.slots.size());
+		for (auto i = 0u; i < set.slots.size(); i++)
+		{
+			auto& slot_info = set.slots[i];
+			auto& uboLayoutBinding = uboLayoutBindings[i];
+			uboLayoutBinding.binding = slot_info.binding;
+			uboLayoutBinding.descriptorCount = slot_info.count;
+			uboLayoutBinding.descriptorType = translate(slot_info.binding_type);
+			uboLayoutBinding.pImmutableSamplers = nullptr;
+			uboLayoutBinding.stageFlags = translate(slot_info.visibility);
+		}
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.bindingCount = uboLayoutBindings.size();
+		layoutInfo.pBindings = uboLayoutBindings.data();
+		if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &binding_layouts_[tbl]) != VK_SUCCESS)
+		{
+			sakura::error("failed to create descriptor set layout!");
+		}
+	}
+
+	// Shader Stages Set-Up.
 	shaderStages.resize(desc.shader_layout.count);
 	for (auto i = 0u; i < desc.shader_layout.count; i++)
 	{
@@ -37,12 +64,34 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 		}
 	}
 
-	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
-
+	// vertex input information
+	{
+		vertexBingings.resize(desc.vertex_layout.size());
+		for (size_t vbindex = 0u; vbindex < desc.vertex_layout.size(); vbindex++)
+		{
+			auto& vbbinding = desc.vertex_layout[vbindex];
+			auto& vertexBinding = vertexBingings[vbindex];
+			vertexBinding.binding = vbindex;
+			vertexBinding.inputRate = translate(vbbinding.freq);
+			vertexBinding.stride = vbbinding.stride;
+			for (auto attr = 0u; attr < vbbinding.elements.size(); attr++)
+			{
+				VkVertexInputAttributeDescription attrib;
+				attrib.format = translate(vbbinding.elements[attr].format);
+				attrib.binding = vbindex;
+				attrib.location = attr;
+				attrib.offset = vbbinding.elements[attr].offset;
+				vertexAttributes.emplace_back(attrib);
+			}
+		}
+		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		vertexInputInfo.vertexBindingDescriptionCount = vertexBingings.size();
+		vertexInputInfo.pVertexBindingDescriptions = vertexBingings.data();
+		vertexInputInfo.pVertexAttributeDescriptions = vertexAttributes.data();
+		vertexInputInfo.vertexAttributeDescriptionCount = vertexAttributes.size();
+	}
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	inputAssembly.topology = translate(desc.primitive_topology);
 	inputAssembly.primitiveRestartEnable = VK_FALSE;
 
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -50,8 +99,8 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
 	rasterizer.polygonMode = translate(desc.polygon_mode);
 	rasterizer.lineWidth = desc.lineWidth;
-	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rasterizer.cullMode = VK_CULL_MODE_NONE; 
+	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -83,7 +132,7 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	colorBlending.attachmentCount = attachmentStates.size();
 	colorBlending.pAttachments = attachmentStates.data();
 
-	// cn: RenderGraph暂时不支持logicOp以及blendConstants, 因为没有动机.
+	// cn: RenderGraph暂时不支持logicOp以及blendConstants, 并且没有相应动机.
 	// en: RenderGraph does not support logicOp & blendConstants, no motivation to support currently.
 	// jp: レンダリンググラフは、ロジックオペレーションとブレンド定数をサポートしていません。
 	//     現在、サポートする動機はありません。
@@ -97,22 +146,24 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 		colorBlending.blendConstants[3] = 0.0f;
 	}
 
-
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 0;
+	pipelineLayoutInfo.setLayoutCount = binding_layouts_.size();
+	pipelineLayoutInfo.pSetLayouts = binding_layouts_.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 0;
+	pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
 	if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipeline_layout_) != VK_SUCCESS) 
 	{
 		sakura::error("[RenderGraphVulkan]: failed to create pipeline layout!");
 	}
-
-	
 }
 
 sakura::graphics::vk::RenderPipeline::~RenderPipeline()
 {
+	for(auto i = 0u; i < binding_layouts_.size(); i++)
+		vkDestroyDescriptorSetLayout(owned_device_, binding_layouts_[i], nullptr);
+	
 	vkDestroyPipelineLayout(owned_device_, pipeline_layout_, nullptr);
 	vkDestroyPipeline(owned_device_, pipeline_, nullptr);
 }
@@ -128,7 +179,7 @@ void sakura::graphics::vk::RenderPipeline::start(VkRenderPass render_pass)
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
 	viewport.width = (float)1920;
-	viewport.height = (float)1080;
+	viewport.height = (float)1080.f;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
@@ -145,7 +196,7 @@ void sakura::graphics::vk::RenderPipeline::start(VkRenderPass render_pass)
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipelineInfo.stageCount = 2;
+	pipelineInfo.stageCount = shaderStages.size();
 	pipelineInfo.pStages = shaderStages.data();
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
 	pipelineInfo.pInputAssemblyState = &inputAssembly;
