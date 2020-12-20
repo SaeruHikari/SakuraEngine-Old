@@ -89,8 +89,7 @@ namespace render_system
 			:RenderPass(handle, cycleCount) {}
 		const RenderCommandBuffer& execute(
 			RenderCommandBuffer& command_buffer,
-			const RenderGraph& rg,
-			const RenderGraph::Builder& builder, IRenderDevice& device) noexcept override
+			const RenderGraph& rg, IRenderDevice& device) noexcept override
 		{
 			command_buffer.enqueue<RenderCommandBeginRenderPass>(renderPipeline, attachment);
 			Binding binding0 = Binding({
@@ -196,16 +195,15 @@ namespace render_system
 		DeviceConfiguration deviceConfig;
 		deviceConfig.name = "DawnDevice";
 		render_graph.emplace_device(new webgpu::RenderDevice(deviceConfig));
-		
-		deviceConfig.name = "VulkanDevice";
-		render_graph.emplace_device(new vk::RenderDevice(deviceConfig));
-
 		IRenderDevice* dawnDevice = render_graph.get_device("DawnDevice");
-		IRenderDevice* vulaknDevice = render_graph.get_device("VulkanDevice");
 		assert(dawnDevice != nullptr && "ERROR: Failed to create Dawn device!");
-		assert(vulaknDevice != nullptr && "ERROR: Failed to create Vulkan device!");
 		deviceGroup.emplace(dawnDevice);
-		deviceGroup.emplace(vulaknDevice);
+
+		//deviceConfig.name = "VulkanDevice";
+		//render_graph.emplace_device(new vk::RenderDevice(deviceConfig));
+		//IRenderDevice* vulaknDevice = render_graph.get_device("VulkanDevice");
+		//assert(vulaknDevice != nullptr && "ERROR: Failed to create Vulkan device!");
+		//deviceGroup.emplace(vulaknDevice);
 
 		// Create Swap Chains.
 		deviceGroup.create_swap_chain(swapChain, SwapChainDesc(EPresentMode::Mailbox, mainWindow, 3));
@@ -382,7 +380,7 @@ namespace render_system
 
 				pass_ptr->construct(render_graph.builder(pass));
 				buffer.reset();
-				pass_ptr->execute(buffer, render_graph, render_graph.builder(pass), deviceGroup);
+				pass_ptr->execute(buffer, render_graph, deviceGroup);
 			});
 	}
 

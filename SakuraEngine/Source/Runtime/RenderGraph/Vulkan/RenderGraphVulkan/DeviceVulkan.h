@@ -5,10 +5,12 @@
 #ifdef SAKURA_TARGET_PLATFORM_WIN
 #include "vulkan/vulkan_win32.h"
 #endif
+#include "Containers/flat_map.hpp"
 
 namespace sakura::graphics::vk
 {
 	const bool bEnableValidationLayers = true;
+	class RenderPipeline;
 
 	// cn: 启动引擎所需要的最小扩展集合.
 	// en: The minimum set of extensions required to start the engine.
@@ -80,6 +82,8 @@ namespace sakura::graphics::vk
 		//     そのインデックスはできるだけ小さい、一般に0であることになっています.
 		VulkanQueue master_queue;
 	};
+	
+
 
     class RenderGraphVulkanAPI RenderDevice final : public IRenderDevice
     {
@@ -122,32 +126,56 @@ namespace sakura::graphics::vk
 		ISwapChain* optional(const SwapChainHandle handle) const override;
 		IFence* optional(const FenceHandle handle) const override;
 
-		// vulkan-specific
 
+		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources_;
+		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects_;
+
+		// vulkan-specific
+		
 		FORCEINLINE const VulkanDeviceSet& master_device() const
 		{
 			return device_sets_[master_device_index_];
 		}
-
-		struct PassCache
-		{
-
-		};
-		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources_;
-		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects_;
-		sakura::vector<PassCache> pass_caches_;
-		VkInstance instance;
-
+		
+		VkInstance instance_;
 		VkDebugUtilsMessengerEXT debug_messenger_;
 		uint32_t master_device_index_ = 0;
 		sakura::vector<VulkanDeviceSet> device_sets_;
-		
 		VkSurfaceKHR create_and_validate_surface(Window window) const;
 		bool validate_surface(VkSurfaceKHR surface) const;
-		
+
+		struct PassCacheFrame
+		{
+			VkRenderPassCreateInfo pass_info_ = {};
+			VkRenderPass pass_ = VK_NULL_HANDLE;
+			
+			// ?
+			VkCommandPool command_pool_ = VK_NULL_HANDLE;
+			
+			VkCommandBuffer command_buffer_ = VK_NULL_HANDLE;
+			RenderPipeline* pipeline = nullptr;
+
+			VkFramebuffer frame_buffer_;
+
+			bool toScreen = false;
+		};
+		sakura::vector<PassCacheFrame> pass_caches_;
+	protected:
+		void processCommand(PassCacheFrame& cache, const RenderCommand* command) const;
+		void processCommandUpdateBinding(PassCacheFrame& cache, const RenderCommandUpdateBinding& command) const;
+		void processCommandUpdateBinding(PassCacheFrame& cache, const sakura::graphics::Binding& binder) const;
+		void processCommandDrawInstancedWithArgs(
+			PassCacheFrame& cache, const RenderCommandDrawInstancedWithArgs& command) const;
+		void processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command) const;
+		void processCommandDrawIndirect(PassCacheFrame& cache, const RenderCommandDrawIndirect& command) const;
+		RenderPipeline* processCommandBeginRenderPass(
+			VkDevice device, PassCacheFrame& cache, const RenderCommandBeginRenderPass& command) const;
+		void processCommandEndRenderPass(PassCacheFrame& cache, const RenderCommandEndRenderPass& command) const;
+		void processCommandSetScissorRect(
+			PassCacheFrame& cache, const RenderCommandSetScissorRect& command) const;
+
 	protected:
 		sakura::string name_;
-
 		template <bool optional, typename ResourceType, typename Handle>
 		ResourceType* _get_resouce_impl(const Handle handle) const noexcept;
 		template <typename ResourceType, typename Handle, typename... Args>

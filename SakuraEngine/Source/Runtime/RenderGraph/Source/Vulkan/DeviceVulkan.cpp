@@ -58,7 +58,7 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 			createInfo.enabledLayerCount = 0;
 			createInfo.pNext = nullptr;
 		}
-		if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
+		if (vkCreateInstance(&createInfo, nullptr, &instance_) != VK_SUCCESS)
 		{
 			sakura::error("Vulkan: failed to create instance!");
 		}
@@ -69,14 +69,14 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 	// jp: ŒÔ¿Ì•«•–•§•π§Úﬂxík§π§Î.
 	{
 		uint32_t deviceCount = 0;
-		vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+		vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
 
 		if (deviceCount == 0) {
 			sakura::error("failed to find GPUs with Vulkan support!");
 		}
 
 		std::vector<VkPhysicalDevice> devices(deviceCount);
-		vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+		vkEnumeratePhysicalDevices(instance_, &deviceCount, devices.data());
 
 		for (const auto& device : devices) 
 		{
@@ -240,18 +240,16 @@ sakura::string_view sakura::graphics::vk::RenderDevice::get_name() const
 	return name_;
 }
 
-bool sakura::graphics::vk::RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl)
-{
-	return false;
-}
-
-bool sakura::graphics::vk::RenderDevice::execute(const RenderGraph& graph_to_execute)
-{
-	return false;
-}
-
 bool sakura::graphics::vk::RenderDevice::present(const SwapChainHandle handle)
 {
+	if (auto swapChain = static_cast<SwapChain*>(get(handle)); swapChain)
+	{
+		return swapChain->present();
+	}
+	else
+	{
+		assert(0 && "SwapChain not found!");
+	}
 	return false;
 }
 
@@ -263,9 +261,9 @@ void sakura::graphics::vk::RenderDevice::terminate()
 	}
 	if (bEnableValidationLayers) 
 	{
-		DestroyDebugUtilsMessengerEXT(instance, debug_messenger_, nullptr);
+		DestroyDebugUtilsMessengerEXT(instance_, debug_messenger_, nullptr);
 	}
-	vkDestroyInstance(instance, nullptr);
+	vkDestroyInstance(instance_, nullptr);
 	return;
 }
 
@@ -281,7 +279,10 @@ sakura::graphics::RenderShaderHandle sakura::graphics::vk::RenderDevice::create_
 sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::create_buffer(
 	const RenderBufferHandle handle, const BufferDesc& config)
 {
-	return handle;
+	return _create_resouce_impl<vk::GPUBuffer, RenderBufferHandle>(handle, *this,
+		// TODO: mGPU Support.
+		master_device().logical_device, master_device().device,
+		config);
 }
 
 sakura::graphics::RenderAttachmentHandle sakura::graphics::vk::RenderDevice::create_render_attachment(
@@ -316,7 +317,6 @@ sakura::graphics::RenderPipelineHandle sakura::graphics::vk::RenderDevice::creat
 sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::update_buffer(
 	const RenderBufferHandle handle, size_t offset, void* data, size_t size)
 {
-
 	return handle;
 }
 
@@ -372,6 +372,279 @@ IFence* RenderDevice::get(const FenceHandle handle) const
 }
 
 
+bool sakura::graphics::vk::RenderDevice::execute(const RenderGraph& graph_to_execute)
+{
+	return false;
+}
+
+bool sakura::graphics::vk::RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl)
+{
+	// TODO: Move These to Constuction Phase.
+	if (hdl.id().index() + 1 > pass_caches_.size())
+		pass_caches_.resize(hdl.id().index() + 1); // Create New Cache
+	// TODO: Generation Check & Validate
+	auto&& cacheFrame = pass_caches_[hdl.id().index()];
+	{// create pass cache objects.
+		//cacheFrame.pass_info_.
+		if (!cacheFrame.command_pool_)
+		{
+			VkCommandPoolCreateInfo poolInfo{};
+			poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+			poolInfo.queueFamilyIndex = master_device().master_queue.family_index;
+			poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+			if (vkCreateCommandPool(master_device().logical_device, &poolInfo, nullptr, &cacheFrame.command_pool_) != VK_SUCCESS)
+			{
+				sakura::error("failed to create command pool!");
+			}
+		}
+		// Alloc Per Frame Now.
+		VkCommandBufferAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.commandPool = cacheFrame.command_pool_;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandBufferCount = 1;
+
+		if (vkAllocateCommandBuffers(master_device().logical_device, &allocInfo, &cacheFrame.command_buffer_) != VK_SUCCESS) 
+		{
+			sakura::error("failed to allocate command buffers!");
+		}
+	}
+
+	// Evaluate.
+	for (auto& cmd : cmdBuffer)
+	{
+		processCommand(cacheFrame, cmd);
+	}
+
+	// TODO: Reset on Finish.
+	vkResetCommandBuffer(cacheFrame.command_buffer_, VkCommandBufferResetFlagBits::VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+	return false;
+}
+
+// vk-command processors:
+using PassCacheFrame = RenderDevice::PassCacheFrame;
+void sakura::graphics::vk::RenderDevice::processCommand(PassCacheFrame& cacheFrame, const RenderCommand* command) const
+{
+	switch (command->type())
+	{
+	case ERenderCommandType::begin_render_pass:
+	{
+		auto& cmd = *static_cast<const RenderCommandBeginRenderPass*>(command);
+		cacheFrame.pipeline = processCommandBeginRenderPass(master_device().logical_device, cacheFrame, cmd);
+	}break;
+	case ERenderCommandType::set_scissor_rect:
+	{
+		auto& cmd = *static_cast<const RenderCommandSetScissorRect*>(command);
+		processCommandSetScissorRect(cacheFrame, cmd);
+	}break;
+	case ERenderCommandType::draw:
+	{
+		auto& cmd = *static_cast<const RenderCommandDraw*>(command);
+		processCommandDraw(cacheFrame, cmd);
+	}break;
+	case ERenderCommandType::end_render_pass:
+	{
+		auto& cmd = *static_cast<const RenderCommandEndRenderPass*>(command);
+		processCommandEndRenderPass(cacheFrame, cmd);
+	}break;
+	case ERenderCommandType::update_binding:
+	{
+		auto& cmd = *static_cast<const RenderCommandUpdateBinding*>(command);
+		processCommandUpdateBinding(cacheFrame, cmd);
+	}break;
+	case ERenderCommandType::draw_instanced_with_args:
+	{
+		auto& cmd = *static_cast<const RenderCommandDrawInstancedWithArgs*>(command);
+		processCommandDrawInstancedWithArgs(cacheFrame, cmd);
+	}break;
+	default:break;
+	}
+}
+
+void sakura::graphics::vk::RenderDevice::processCommandUpdateBinding(PassCacheFrame& cache, const RenderCommandUpdateBinding& command) const
+{
+
+}
+
+void sakura::graphics::vk::RenderDevice::processCommandUpdateBinding(PassCacheFrame& cache, const sakura::graphics::Binding& binder) const
+{
+
+}
+
+void sakura::graphics::vk::RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command) const
+{
+	if (command.instance_draw)
+		goto DRAW_INSTANCE;
+	{
+		const auto& vb_src = command.vb;
+		const auto& ib_src = command.ib;
+		if (auto vb = static_cast<GPUBuffer*>(get(vb_src.vertex_buffer)); vb)
+		{
+			VkBuffer vertexBuffers[] = { vb->buffer_ };
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(cacheFrame.command_buffer_, 0, 1, vertexBuffers, offsets);
+		}
+		else
+		{
+			assert(0 && "VB NOT FOUND");
+		}
+
+	}
+DRAW_INSTANCE:
+	vkCmdDrawIndexed(cacheFrame.command_buffer_, command.ib.index_count, command.instance_count,
+		command.first_index, command.vb.offset, command.first_instance);
+}
+
+void sakura::graphics::vk::RenderDevice::processCommandDrawIndirect(PassCacheFrame& cache, const RenderCommandDrawIndirect& command) const
+{
+
+}
+void sakura::graphics::vk::RenderDevice::processCommandDrawInstancedWithArgs(PassCacheFrame& cache, const RenderCommandDrawInstancedWithArgs& command) const
+{
+
+}
+
+sakura::graphics::vk::RenderPipeline* sakura::graphics::vk::RenderDevice::processCommandBeginRenderPass(
+	VkDevice device, PassCacheFrame& cache, const RenderCommandBeginRenderPass& cmd) const
+{
+	if (cache.frame_buffer_)
+		vkDestroyFramebuffer(device, cache.frame_buffer_, nullptr);
+	sakura::vector<VkAttachmentDescription> attachDescs(cmd.attachments.slots.size());
+	sakura::vector<VkImageView> imageViews(cmd.attachments.slots.size());
+	extent2d extent = {};
+	for (size_t i = 0u; i < cmd.attachments.slots.size(); i++)
+	{
+		auto& attachDesc = attachDescs[i];
+		auto& attachment_slot = cmd.attachments.slots[i];
+		auto& slot_var = cmd.attachments.slots[i].attachment;
+
+		if (auto swapChain
+			= std::get_if<SwapChainHandle>(&slot_var); swapChain)
+		{
+			cache.toScreen = true;
+			if (auto native_chain = get(*swapChain); native_chain)
+			{
+				auto vkChain = static_cast<vk::SwapChain*>(native_chain);
+				attachDesc.format = translate(vkChain->render_format());
+				attachDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+				attachDesc.loadOp = translate(attachment_slot.load_op);
+				attachDesc.storeOp = translate(attachment_slot.store_op);
+				// TODO: ?
+				attachDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+				attachDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				attachDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				attachDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+				imageViews[i] = vkChain->back_buffer();
+				extent = vkChain->extent();
+			}
+			else
+			{
+				sakura::warn("SwapChain Not Found!");
+				assert(0 && "INVALID SwapChain Handle");
+			}
+		}
+		else if (auto attachment
+			= std::get_if<RenderTextureHandle>(&slot_var); attachment)
+		{
+			auto native_res = created_resources_[attachment->id().index()];
+			// TODO: Support This & Generation Check & Diff Check.
+			assert(0 && "Unimplemented");
+		}
+		else
+		{
+			assert(0 && "Unknown Handle Bound.");
+		}
+	}
+
+	cache.pipeline = (RenderPipeline*)get(cmd.pipeline);
+	
+	if (!cache.pass_)
+	{
+		VkAttachmentReference colorAttachmentRef{};
+		colorAttachmentRef.attachment = 0;
+		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		// NO IMPLEMENTATION.
+		VkSubpassDescription subpass{};
+		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		subpass.colorAttachmentCount = 1;
+		subpass.pColorAttachments = &colorAttachmentRef;
+
+		VkRenderPassCreateInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		renderPassInfo.attachmentCount = static_cast<uint32>(cmd.attachments.slots.size());
+		renderPassInfo.pAttachments = attachDescs.data();
+		renderPassInfo.subpassCount = 1;
+		renderPassInfo.pSubpasses = &subpass;
+
+		cache.pass_info_ = renderPassInfo;
+		
+		if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &cache.pass_) != VK_SUCCESS)
+		{
+			sakura::error("failed to create render pass!");
+		}
+		cache.pipeline->start(cache.pass_);
+	}
+
+
+	// !!!!!! REFACTOR THIS !!!!!!
+	{
+		VkFramebufferCreateInfo framebufferInfo{};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = cache.pass_;
+		framebufferInfo.attachmentCount = imageViews.size();
+		framebufferInfo.pAttachments = imageViews.data();
+		framebufferInfo.width = extent.width;
+		framebufferInfo.height = extent.height;
+		framebufferInfo.layers = 1;
+
+		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &cache.frame_buffer_) != VK_SUCCESS) {
+			sakura::error("[DeviceVulkan]: failed to create framebuffer!");
+		}
+	}
+	// !!!!!! REFACTOR THIS !!!!!!
+
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+	if (vkBeginCommandBuffer(cache.command_buffer_, &beginInfo) != VK_SUCCESS) 
+	{
+		sakura::error("failed to begin recording command buffer!");
+	}
+
+	VkRenderPassBeginInfo renderPassBeginInfo{};
+	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassBeginInfo.renderPass = cache.pass_;
+	renderPassBeginInfo.framebuffer = cache.frame_buffer_;
+	renderPassBeginInfo.renderArea.offset = { 0, 0 };
+	renderPassBeginInfo.renderArea.extent = { extent.width, extent.height };
+
+	VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+	renderPassBeginInfo.clearValueCount = 1;
+	renderPassBeginInfo.pClearValues = &clearColor;
+
+	vkCmdBeginRenderPass(cache.command_buffer_, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBindPipeline(cache.command_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, cache.pipeline->pipeline_);
+}
+
+void sakura::graphics::vk::RenderDevice::processCommandEndRenderPass(PassCacheFrame& cache, const RenderCommandEndRenderPass& command) const
+{
+	vkCmdEndRenderPass(cache.command_buffer_);
+
+	if (vkEndCommandBuffer(cache.command_buffer_) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to record command buffer!");
+	}
+}
+
+void sakura::graphics::vk::RenderDevice::processCommandSetScissorRect(PassCacheFrame& cache, const RenderCommandSetScissorRect& command) const
+{
+	VkRect2D rect = {};
+	rect.extent = { command.width, command.height };
+	rect.offset = { static_cast<int32>(command.x), static_cast<int32>(command.y) };
+	vkCmdSetScissor(cache.command_buffer_, 0, 1, &rect);
+}
+
 // vk-specified:
 
 bool sakura::graphics::vk::RenderDevice::validate_surface(VkSurfaceKHR surface) const
@@ -388,12 +661,11 @@ bool sakura::graphics::vk::RenderDevice::validate_surface(VkSurfaceKHR surface) 
 
 VkSurfaceKHR sakura::graphics::vk::RenderDevice::create_and_validate_surface(Window window) const
 {
-	VkSurfaceKHR surface = createSurface(window, instance);
-	bool sfcValid = validate_surface(surface); 
+	VkSurfaceKHR surface = createSurface(window, instance_);
+	bool sfcValid = validate_surface(surface);
 	assert(sfcValid && "Surface Not Supported!");
 	return surface;
 }
-
 
 
 
@@ -442,7 +714,7 @@ VulkanDeviceSet RenderDevice::findQueueFamilies(VkPhysicalDevice device, sakura:
 	pd.queue_families.resize(queueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, pd.queue_families.data());
 
-	VkSurfaceKHR surface = createSurface(wind, instance);
+	VkSurfaceKHR surface = createSurface(wind, instance_);
 	uint32 i = 0u;
 	bool findPresentQueue = false;
 	for (const auto& queueFamily : pd.queue_families)
@@ -478,7 +750,7 @@ VulkanDeviceSet RenderDevice::findQueueFamilies(VkPhysicalDevice device, sakura:
 	{
 		sakura::error("Failed to find a present queue!");
 	}
-	vkDestroySurfaceKHR(instance, surface, nullptr);
+	vkDestroySurfaceKHR(instance_, surface, nullptr);
 	return pd;
 }
 

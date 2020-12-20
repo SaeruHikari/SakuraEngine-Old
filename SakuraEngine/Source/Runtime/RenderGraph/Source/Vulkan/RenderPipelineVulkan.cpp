@@ -7,7 +7,6 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	const vk::RenderDevice& render_device, VkDevice device, const RenderPipelineDesc& desc)
 	:handle_(handle), owned_device_(device), render_device_(render_device)
 {
-	sakura::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	shaderStages.resize(desc.shader_layout.count);
 	for (auto i = 0u; i < desc.shader_layout.count; i++)
 	{
@@ -38,38 +37,14 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 		}
 	}
 
-	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.vertexBindingDescriptionCount = 0;
 	vertexInputInfo.vertexAttributeDescriptionCount = 0;
 
-	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-	/*
-	VkViewport viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = (float)swapChainExtent.width;
-	viewport.height = (float)swapChainExtent.height;
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-
-	VkRect2D scissor{};
-	scissor.offset = { 0, 0 };
-	scissor.extent = swapChainExtent;
-
-	VkPipelineViewportStateCreateInfo viewportState{};
-	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	viewportState.viewportCount = 1;
-	viewportState.pViewports = &viewport;
-	viewportState.scissorCount = 1;
-	viewportState.pScissors = &scissor;
-	*/
-
-	VkPipelineRasterizationStateCreateInfo rasterizer{};
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterizer.depthClampEnable = VK_FALSE;
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
@@ -79,7 +54,6 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 
-	VkPipelineMultisampleStateCreateInfo multisampling{};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
 	multisampling.rasterizationSamples = VkSampleCountFlagBits(desc.sample_count);
@@ -88,7 +62,7 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	// cn: Color Attachments µÄ×ªÒë.
 	// en: Translate Color Attachments.
 	// jp: ¥«¥é©`¥¢¥¿¥Ã¥Á¥á¥ó¥È¤ò·­ÔU¤¹¤ë.
-	sakura::vector<VkPipelineColorBlendAttachmentState> attachmentStates(desc.attachment_layout.slots.size());
+	attachmentStates.resize(desc.attachment_layout.slots.size());
 	for (size_t i = 0u; i < desc.attachment_layout.slots.size(); i++)
 	{
 		auto& attachmentState = attachmentStates[i];
@@ -106,7 +80,6 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 			attachmentState.srcColorBlendFactor = translate(attachment_slot.color_blend.src_factor);
 		}
 	}
-	VkPipelineColorBlendStateCreateInfo colorBlending{};
 	colorBlending.attachmentCount = attachmentStates.size();
 	colorBlending.pAttachments = attachmentStates.data();
 
@@ -134,15 +107,61 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	{
 		sakura::error("[RenderGraphVulkan]: failed to create pipeline layout!");
 	}
+
+	
 }
 
 sakura::graphics::vk::RenderPipeline::~RenderPipeline()
 {
 	vkDestroyPipelineLayout(owned_device_, pipeline_layout_, nullptr);
+	vkDestroyPipeline(owned_device_, pipeline_, nullptr);
 }
 
 sakura::graphics::RenderGraphHandle sakura::graphics::vk::RenderPipeline::handle() const
 {
 	return handle_;
+}
+
+void sakura::graphics::vk::RenderPipeline::start(VkRenderPass render_pass)
+{
+	VkViewport viewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = (float)1920;
+	viewport.height = (float)1080;
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+
+	VkRect2D scissor{};
+	scissor.offset = { 0, 0 };
+	scissor.extent = { 1920, 1080 };
+
+	VkPipelineViewportStateCreateInfo viewportState{};
+	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	viewportState.viewportCount = 1;
+	viewportState.pViewports = &viewport;
+	viewportState.scissorCount = 1;
+	viewportState.pScissors = &scissor;
+
+	VkGraphicsPipelineCreateInfo pipelineInfo{};
+	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipelineInfo.stageCount = 2;
+	pipelineInfo.pStages = shaderStages.data();
+	pipelineInfo.pVertexInputState = &vertexInputInfo;
+	pipelineInfo.pInputAssemblyState = &inputAssembly;
+	pipelineInfo.pViewportState = &viewportState;
+	pipelineInfo.pRasterizationState = &rasterizer;
+	pipelineInfo.pMultisampleState = &multisampling;
+	pipelineInfo.pColorBlendState = &colorBlending;
+	pipelineInfo.layout = pipeline_layout_;
+	pipelineInfo.renderPass = render_pass;
+	pipelineInfo.subpass = 0;
+	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+	if (vkCreateGraphicsPipelines(owned_device_, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline_)
+		!= VK_SUCCESS)
+	{
+		sakura::error("failed to create graphics pipeline!");
+	}
 }
 
