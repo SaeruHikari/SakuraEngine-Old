@@ -711,6 +711,8 @@ int main()
 		for (auto dp : dependencies)
 			((task_system::ecs::custom_pass*)dp)->event.wait();
 	};
+	// 录制 CommandBuffer, 只用跑一次
+	render_system::PrepareCommandBuffer(buffer); // 0 + 2
 	// Game & Rendering Logic
 	while(sakura::Core::yield())
 	{
@@ -721,9 +723,6 @@ int main()
 
 		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
 		render_system::CollectAndUpload(ppl, deltaTime);
-
-		// 录制 CommandBuffer, 这个举动将在下一帧完成
-		render_system::PrepareCommandBuffer(buffer); // 0 + 2
 
 		cycle += 1;
 

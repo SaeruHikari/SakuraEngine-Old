@@ -194,16 +194,16 @@ namespace render_system
 		// Create Devices
 		DeviceConfiguration deviceConfig;
 		deviceConfig.name = "DawnDevice";
-		//render_graph.emplace_device(new webgpu::RenderDevice(deviceConfig));
-		//IRenderDevice* dawnDevice = render_graph.get_device("DawnDevice");
-		//assert(dawnDevice != nullptr && "ERROR: Failed to create Dawn device!");
-		//deviceGroup.emplace(dawnDevice);
+		render_graph.emplace_device(new webgpu::RenderDevice(deviceConfig));
+		IRenderDevice* dawnDevice = render_graph.get_device("DawnDevice");
+		assert(dawnDevice != nullptr && "ERROR: Failed to create Dawn device!");
+		deviceGroup.emplace(dawnDevice);
 
 		deviceConfig.name = "VulkanDevice";
-		render_graph.emplace_device(new vk::RenderDevice(deviceConfig));
-		IRenderDevice* vulaknDevice = render_graph.get_device("VulkanDevice");
-		assert(vulaknDevice != nullptr && "ERROR: Failed to create Vulkan device!");
-		deviceGroup.emplace(vulaknDevice);
+		//render_graph.emplace_device(new vk::RenderDevice(deviceConfig));
+		//IRenderDevice* vulaknDevice = render_graph.get_device("VulkanDevice");
+		//assert(vulaknDevice != nullptr && "ERROR: Failed to create Vulkan device!");
+		//deviceGroup.emplace(vulaknDevice);
 
 		// Create Swap Chains.
 		deviceGroup.create_swap_chain(swapChain, SwapChainDesc(EPresentMode::Mailbox, mainWindow, 3));
