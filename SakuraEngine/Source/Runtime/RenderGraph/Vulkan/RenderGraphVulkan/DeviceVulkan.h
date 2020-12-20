@@ -1,4 +1,4 @@
-#pragma once
+я╗┐#pragma once
 #include "RenderGraph/IRenderDevice.h"
 #include "System/Log.h"
 #include "vulkan/vulkan.h"
@@ -12,9 +12,9 @@ namespace sakura::graphics::vk
 	const bool bEnableValidationLayers = false;
 	class RenderPipeline;
 
-	// cn: ╞Ї╢п╥¤╟ц╦∙╨ш╥к╡─╫ю╨б└й╒╣╝п║╧.
+	// cn: я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╥кя┐╜я┐╜я┐╜я┐╜╨бя┐╜я┐╜╒╣я┐╜я┐╜я┐╜я┐╜.
 	// en: The minimum set of extensions required to start the engine.
-	// jp: еиеєе╕еєдЄещеєе┴д╣дыд┐дсд╦▒╪╥кд╩еиепе╣е╞еєе╖ечеє-е╗е├е╚.
+	// jp: я┐╜я┐╜я┐╜єе╕ея┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ыд┐я┐╜я┐╜╦▒я┐╜╥кя┐╜╩ея┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╞еєе╖ея┐╜я┐╜-я┐╜я┐╜я┐╜├ея┐╜.
 	FORCEINLINE const std::vector<const char*> basic_extentions()
 	{
 		std::vector<const char*> res = {
@@ -30,17 +30,17 @@ namespace sakura::graphics::vk
 		return res;
 	}
 
-	// cn: └н╞Ё physics device ╢╘╧є╦∙╥к╟є╡─╫ю╨б╔ш▒╕└й╒╣╝п║╧.
+	// cn: я┐╜я┐╜я┐╜я┐╜ physics device я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╥кя┐╜я┐╜я┐╜я┐╜я┐╜╨бя┐╜ш▒╕я┐╜я┐╜╒╣я┐╜я┐╜я┐╜я┐╜.
 	// en: The minimum set of device extensions required by the physics device object.
-	// jp: ╬я└эе╟е╨еде╣еке╓е╕езепе╚д╦дшд├д╞▒╪╥кд╚д╡дьдые╟е╨еде╣-еиепе╣е╞еєе╖ечеєд╬╫ю╨б╝п║╧.
+	// jp: я┐╜я┐╜я┐╜я┐╜я┐╜╟е╨ея┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╓ея┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╚д╦дя┐╜├д╞▒я┐╜╥кя┐╜╚дя┐╜я┐╜я┐╜я┐╜╟е╨ея┐╜я┐╜я┐╜-я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╞еєе╖ея┐╜я┐╜я┐╜я┐╜я┐╜╨бя┐╜я┐╜я┐╜я┐╜.
 	const std::vector<const char*> basic_device_exts =
 	{
 		
 	};
 
-	// cn: └н╞Ё main device ╢╘╧є╦∙╥к╟є╡─╫ю╨б╔ш▒╕└й╒╣╝п║╧.
+	// cn: я┐╜я┐╜я┐╜я┐╜ main device я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╥кя┐╜я┐╜я┐╜я┐╜я┐╜╨бя┐╜ш▒╕я┐╜я┐╜╒╣я┐╜я┐╜я┐╜я┐╜.
 	// en: The minimum set of device extensions required by the main device object.
-	// jp: еседеє-е╟е╨еде╣еке╓е╕езепе╚д╦дшд├д╞▒╪╥кд╚д╡дьдые╟е╨еде╣-еиепе╣е╞еєе╖ечеєд╬╫ю╨б╝п║╧.
+	// jp: я┐╜седя┐╜я┐╜-я┐╜╟е╨ея┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╓ея┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╚д╦дя┐╜├д╞▒я┐╜╥кя┐╜╚дя┐╜я┐╜я┐╜я┐╜╟е╨ея┐╜я┐╜я┐╜-я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╞еєе╖ея┐╜я┐╜я┐╜я┐╜я┐╜╨бя┐╜я┐╜я┐╜я┐╜.
 	const std::vector<const char*> main_device_exts =
 	{
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -74,12 +74,12 @@ namespace sakura::graphics::vk
 		std::vector<VulkanQueue> compute_queues;
 		std::vector<VulkanQueue> transfer_queues;
 
-		// cn: graphics queues╓╨╥╗╠ї╓з│╓GFX║═present╡─queue.
-		//	   ╞фindex╛б┐╔─▄╨бгм╥╗░у╞┌═√╦№╩╟0.
+		// cn: graphics queuesя┐╜я┐╜╥╗я┐╜я┐╜╓зя┐╜я┐╜GFXя┐╜я┐╜presentя┐╜я┐╜queue.
+		//	   я┐╜я┐╜indexя┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╨бя┐╜я┐╜╥╗я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜0.
 		// en: A queue in graphics_queues that supports GFX and Present.
 		//	   Its index is as small as possible, and is generally expected to be 0.
-		// jp: е░еще╒еге├епе╣д╚е╫еье╝еєе╚д╬БI╖╜дЄе╡е▌й`е╚д╣дые░еще╒еге├епе╣енехй`д╬енехй`.
-		//     д╜д╬едеєе╟е├епе╣д╧д╟дндыд└д▒╨бд╡ддбв╥╗░уд╦0д╟двдыд│д╚д╦д╩д├д╞ддд▐д╣.
+		// jp: я┐╜я┐╜я┐╜я┐╜╒ея┐╜я┐╜├ея┐╜я┐╜я┐╜я┐╜╚е╫еье╝я┐╜я┐╜╚д╬БIя┐╜я┐╜я┐╜Єе╡е▌й`я┐╜╚дя┐╜я┐╜ые░я┐╜я┐╜╒ея┐╜я┐╜├ея┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜`я┐╜╬ея┐╜я┐╜я┐╜`.
+		//     я┐╜я┐╜я┐╜╬ея┐╜я┐╜я┐╜╟е├ея┐╜я┐╜я┐╜я┐╜╧д╟дя┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╨бя┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╥╗я┐╜я┐╜я┐╜0я┐╜╟дя┐╜я┐╜ыд│я┐╜╚д╦д╩д├д╞дя┐╜я┐╜▐дя┐╜.
 		VulkanQueue master_queue;
 	};
 	
@@ -154,7 +154,7 @@ namespace sakura::graphics::vk
 			
 			RenderPipeline* pipeline = nullptr;
 
-			// ╥╫▒ф: !!!Do Something!!!
+			// я┐╜╫▒я┐╜: !!!Do Something!!!
 			VkDescriptorPool descripter_pool_;
 			VkFramebuffer frame_buffer_;
 			std::vector<VkDescriptorSet> binding_sets_;
