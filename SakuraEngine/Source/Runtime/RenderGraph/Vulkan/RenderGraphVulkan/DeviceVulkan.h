@@ -12,9 +12,9 @@ namespace sakura::graphics::vk
 	const bool bEnableValidationLayers = false;
 	class RenderPipeline;
 
-	// cn: ������������Ҫ����С��չ����.
+	// cn: 启动引擎所需要的最小扩展集合.
 	// en: The minimum set of extensions required to start the engine.
-	// jp: ���󥸥��������뤿��˱�Ҫ�ʥ������ƥ󥷥��-���å�.
+	// jp: エンジンをランチするために必要なエクステンション-セット.
 	FORCEINLINE const std::vector<const char*> basic_extentions()
 	{
 		std::vector<const char*> res = {
@@ -30,17 +30,17 @@ namespace sakura::graphics::vk
 		return res;
 	}
 
-	// cn: ���� physics device ������Ҫ�����С�豸��չ����.
+	// cn: 拉起 physics device 对象所要求的最小设备扩展集合.
 	// en: The minimum set of device extensions required by the physics device object.
-	// jp: �����ǥХ������֥������Ȥˤ�äƱ�Ҫ�Ȥ����ǥХ���-�������ƥ󥷥�����С����.
+	// jp: 物理デバイスオブジェクトによって必要とされるデバイス-エクステンションの最小集合.
 	const std::vector<const char*> basic_device_exts =
 	{
 		
 	};
 
-	// cn: ���� main device ������Ҫ�����С�豸��չ����.
+	// cn: 拉起 main device 对象所要求的最小设备扩展集合.
 	// en: The minimum set of device extensions required by the main device object.
-	// jp: �ᥤ��-�ǥХ������֥������Ȥˤ�äƱ�Ҫ�Ȥ����ǥХ���-�������ƥ󥷥�����С����.
+	// jp: メイン-デバイスオブジェクトによって必要とされるデバイス-エクステンションの最小集合.
 	const std::vector<const char*> main_device_exts =
 	{
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -74,12 +74,12 @@ namespace sakura::graphics::vk
 		std::vector<VulkanQueue> compute_queues;
 		std::vector<VulkanQueue> transfer_queues;
 
-		// cn: graphics queues��һ��֧��GFX��present��queue.
-		//	   ��index������С��һ����������0.
+		// cn: graphics queues中一条支持GFX和present的queue.
+		//	   其index尽可能小，一般期望它是0.
 		// en: A queue in graphics_queues that supports GFX and Present.
 		//	   Its index is as small as possible, and is generally expected to be 0.
-		// jp: ����ե��å����ȥץ쥼��Ȥ΁I���򥵥ݩ`�Ȥ��륰��ե��å�������`�Υ���`.
-		//     ���Υ���ǥå����ϤǤ������С������һ���0�Ǥ��뤳�ȤˤʤäƤ��ޤ�.
+		// jp: グラフィックスとプレゼントの両方をサポートするグラフィックスキューのキュー.
+		//     そのインデックスはできるだけ小さい、一般に0であることになっています.
 		VulkanQueue master_queue;
 	};
 	
@@ -154,7 +154,7 @@ namespace sakura::graphics::vk
 			
 			RenderPipeline* pipeline = nullptr;
 
-			// �ױ�: !!!Do Something!!!
+			// 易变: !!!Do Something!!!
 			VkDescriptorPool descripter_pool_;
 			VkFramebuffer frame_buffer_;
 			std::vector<VkDescriptorSet> binding_sets_;
