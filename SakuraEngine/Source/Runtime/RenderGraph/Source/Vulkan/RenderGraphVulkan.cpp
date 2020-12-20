@@ -357,3 +357,171 @@ RenderGraphVulkanAPI VkAttachmentStoreOp sakura::graphics::vk::translate(EStoreO
 		return VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_MAX_ENUM;
 	}
 }
+
+RenderGraphVulkanAPI VkBufferUsageFlags sakura::graphics::vk::translate(EBufferUsage usage)
+{
+	VkBufferUsageFlags usages = 0;
+	switch (usage)
+	{
+	case sakura::graphics::EBufferUsage::IndexBuffer:
+		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		break;
+	case sakura::graphics::EBufferUsage::VertexBuffer:
+		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		break;
+	case sakura::graphics::EBufferUsage::UniformBuffer:
+		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		break;
+	case sakura::graphics::EBufferUsage::IndirectBuffer:
+		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		break;
+	case sakura::graphics::EBufferUsage::StorageBuffer:
+		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		break;
+	case sakura::graphics::EBufferUsage::RayTracingAccelerateStructure:
+		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_RAY_TRACING_BIT_KHR;
+		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		break;
+	case sakura::graphics::EBufferUsage::Unknown:
+	default:
+		break;
+	}
+	return usages;
+}
+
+RenderGraphVulkanAPI VkPrimitiveTopology sakura::graphics::vk::translate(EPrimitiveTopology topo)
+{
+	switch (topo)
+	{
+	case sakura::graphics::EPrimitiveTopology::PointList:
+		return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+	case sakura::graphics::EPrimitiveTopology::LineList:
+		return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+	case sakura::graphics::EPrimitiveTopology::LineStrip:
+		return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+	case sakura::graphics::EPrimitiveTopology::TriangleList:
+		return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	case sakura::graphics::EPrimitiveTopology::TriangleStrip:
+		return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+	case sakura::graphics::EPrimitiveTopology::Count:
+	default:
+		return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	}
+}
+
+RenderGraphVulkanAPI VkVertexInputRate sakura::graphics::vk::translate(VertexLayout::Frequency freq)
+{
+	switch (freq)
+	{
+	case sakura::graphics::VertexLayout::Frequency::PerVertexData:
+		return VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX;
+	case sakura::graphics::VertexLayout::Frequency::PerInstanceData:
+		return VkVertexInputRate::VK_VERTEX_INPUT_RATE_INSTANCE;
+	default:
+		return VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX;
+	}
+}
+
+RenderGraphVulkanAPI VkFormat sakura::graphics::vk::translate(EVertexFormat format)
+{
+	switch (format)
+	{
+	case sakura::graphics::EVertexFormat::CHAR2:
+		return VkFormat::VK_FORMAT_R8G8_SINT;
+	case sakura::graphics::EVertexFormat::UCHAR2:
+		return VkFormat::VK_FORMAT_R8G8_UINT;
+	case sakura::graphics::EVertexFormat::UCHAR4:
+		return VkFormat::VK_FORMAT_R8G8B8A8_UINT;
+	case sakura::graphics::EVertexFormat::CHAR4:
+		return VkFormat::VK_FORMAT_R8G8B8A8_SINT;
+	case sakura::graphics::EVertexFormat::UCHAR2_NORM:
+		return VkFormat::VK_FORMAT_R8G8_UNORM;
+	case sakura::graphics::EVertexFormat::UCHAR4_NORM:
+		return VkFormat::VK_FORMAT_R8G8B8A8_UNORM;
+	case sakura::graphics::EVertexFormat::CHAR2_NORM:
+		return VkFormat::VK_FORMAT_R8G8_SNORM;
+	case sakura::graphics::EVertexFormat::CHAR4_NORM:
+		return VkFormat::VK_FORMAT_R8G8B8A8_SNORM;
+	case sakura::graphics::EVertexFormat::USHORT2:
+		return VkFormat::VK_FORMAT_R16G16_UINT;
+	case sakura::graphics::EVertexFormat::USHORT4:
+		return VkFormat::VK_FORMAT_R16G16B16A16_UINT;
+	case sakura::graphics::EVertexFormat::SHORT2:
+		return VkFormat::VK_FORMAT_R16G16_SINT;
+	case sakura::graphics::EVertexFormat::SHORT4:
+		return VkFormat::VK_FORMAT_R16G16B16A16_SINT;
+	case sakura::graphics::EVertexFormat::USHORT2_NORM:
+		return VkFormat::VK_FORMAT_R16G16_UNORM;
+	case sakura::graphics::EVertexFormat::USHORT4_NORM:
+		return VkFormat::VK_FORMAT_R16G16B16A16_UNORM;
+	case sakura::graphics::EVertexFormat::SHORT2_NORM:
+		return VkFormat::VK_FORMAT_R16G16_SNORM;
+	case sakura::graphics::EVertexFormat::SHORT4_NORM:
+		return VkFormat::VK_FORMAT_R16G16B16A16_SNORM;
+	case sakura::graphics::EVertexFormat::HALF2:
+		return VkFormat::VK_FORMAT_R16G16_SFLOAT;
+	case sakura::graphics::EVertexFormat::HALF4:
+		return VkFormat::VK_FORMAT_R16G16B16A16_SFLOAT;
+	case sakura::graphics::EVertexFormat::FLOAT:
+		return VkFormat::VK_FORMAT_R32_SFLOAT;
+	case sakura::graphics::EVertexFormat::FLOAT2:
+		return VkFormat::VK_FORMAT_R32G32_SFLOAT;
+	case sakura::graphics::EVertexFormat::FLOAT3:
+		return VkFormat::VK_FORMAT_R32G32B32_SFLOAT;
+	case sakura::graphics::EVertexFormat::FLOAT4:
+		return VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
+	case sakura::graphics::EVertexFormat::UINT:
+		return VkFormat::VK_FORMAT_R32_UINT;
+	case sakura::graphics::EVertexFormat::UINT2:
+		return VkFormat::VK_FORMAT_R32G32_UINT;
+	case sakura::graphics::EVertexFormat::UINT3:
+		return VkFormat::VK_FORMAT_R32G32B32_UINT;
+	case sakura::graphics::EVertexFormat::UINT4:
+		return VkFormat::VK_FORMAT_R32G32B32A32_UINT;
+	case sakura::graphics::EVertexFormat::INT:
+		return VkFormat::VK_FORMAT_R32_SINT;
+	case sakura::graphics::EVertexFormat::INT2:
+		return VkFormat::VK_FORMAT_R32G32_SINT;
+	case sakura::graphics::EVertexFormat::INT3:
+		return VkFormat::VK_FORMAT_R32G32B32_SINT;
+	case sakura::graphics::EVertexFormat::INT4:
+		return VkFormat::VK_FORMAT_R32G32B32A32_SINT;
+	case sakura::graphics::EVertexFormat::COUNT:
+	default:
+		return VkFormat::VK_FORMAT_UNDEFINED;
+	}
+}
+
+RenderGraphVulkanAPI VkDescriptorType sakura::graphics::vk::translate(BindingLayout::EType type)
+{
+	switch (type)
+	{
+	case sakura::graphics::BindingLayout::UniformBuffer:
+		return VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+	case sakura::graphics::BindingLayout::StorageBuffer:
+		return VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+	case sakura::graphics::BindingLayout::ReadonlyStorageBuffer:
+		return VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	case sakura::graphics::BindingLayout::Sampler:
+		return VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+	case sakura::graphics::BindingLayout::ComparisonSampler:
+		return VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	case sakura::graphics::BindingLayout::SampledTexture:
+		return VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	
+	// TODO
+	case sakura::graphics::BindingLayout::MultisampledTexture:
+	case sakura::graphics::BindingLayout::ReadonlyStorageTexture:
+	case sakura::graphics::BindingLayout::WriteonlyStorageTexture:
+	// x
+	case sakura::graphics::BindingLayout::Count:
+	case sakura::graphics::BindingLayout::Invalid:
+	default:
+		return VkDescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
+	}
+}

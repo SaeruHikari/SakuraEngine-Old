@@ -701,9 +701,12 @@ namespace sakura::graphics
 			const sakura::vector<Slot> slots;
 		};
 		const sakura::vector<Set> sets;
+		const sakura::vector<uint32_t> dynamic_offsets;
 		Binding() = default;
 		template<size_t N>
 		Binding(const Set(&sets)[N]) noexcept;
+		template<typename I, size_t N>
+		Binding(const Set(&sets)[N], const I(&dynamic_offsets)[N]) noexcept;
 	};
 
 	template <size_t N>
@@ -714,7 +717,14 @@ namespace sakura::graphics
 	}
 	template <size_t N>
 	Binding::Binding(const Set(& _sets)[N]) noexcept
-		:sets(_sets, _sets + N)
+		:sets(_sets, _sets + N), dynamic_offsets(N, 0)
+	{
+
+	}
+
+	template <typename I, size_t N>
+	Binding::Binding(const Set(& _sets)[N], const I(&offsets)[N]) noexcept
+		:sets(_sets, _sets + N), dynamic_offsets(offsets, offsets + N)
 	{
 		
 	}

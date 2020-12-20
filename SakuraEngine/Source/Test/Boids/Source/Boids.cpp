@@ -702,29 +702,12 @@ int main()
 	defer(scheduler.unbind());  // Automatically unbind before returning.3
 	Timer timer; 
 	double deltaTime = 0;
-
-
-	static constexpr size_t cycle_count = 2;
-	std::vector<task_system::Event> renderTasks(
-		cycle_count,
-		task_system::Event::Mode::Auto
-	);
-	std::vector<task_system::Event> cmdTasks(
-		cycle_count,
-		task_system::Event::Mode::Auto
-	);
-	for (auto i = 0u; i < cycle_count; i++)
-	{
-		renderTasks[i].signal();
-		cmdTasks[i].signal();
-	}
-	std::array<sakura::graphics::RenderCommandBuffer, cycle_count> buffer
-	{
-		sakura::graphics::RenderCommandBuffer("", 4096 * 8 * 16 * 32),
-		sakura::graphics::RenderCommandBuffer("", 4096 * 8 * 16 * 32),
-	};
+	sakura::graphics::RenderCommandBuffer buffer =
+		sakura::graphics::RenderCommandBuffer("", 4096 * 8 * 16 * 32);
 	size_t cycle = 0;
+	
 	task_system::ecs::pipeline ppl(std::move(ctx));
+	render_system::PrepareCommandBuffer(buffer); // 0 + 2
 	// Game & Rendering Logic
 	while(sakura::Core::yield())
 	{
@@ -736,20 +719,15 @@ int main()
 		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
 		render_system::CollectAndUpload(ppl, deltaTime);
 
-		renderTasks[cycle % cycle_count].wait();
-		render_system::Present(); // 0
-
-		// 录制 CommandBuffer, 这个举动将在下一帧完成
-		render_system::PrepareCommandBuffer(cmdTasks[cycle % cycle_count], buffer[cycle % cycle_count]); // 0 + 2
-
 		cycle += 1;
 
 		//renderTask.wait();
 		// 编译 Command Buffer Cache. TODO: 是否在此处再次错帧？
 		// render_system::Compile(buffer)
 		// 开始渲染已经准备好的那帧 Command Buffer, 目前 Compile 内联在渲染系统中.
-		render_system::RenderAndPresent(
-			renderTasks[cycle % cycle_count], cmdTasks[cycle % cycle_count], buffer[cycle % cycle_count]); // 0 + 1
+		render_system::RenderAndPresent(buffer); // 0 + 1
+
+		render_system::Present(); // 0
 
 		if (cycle % 60 == 0)
 			render_system::mainWindow.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());

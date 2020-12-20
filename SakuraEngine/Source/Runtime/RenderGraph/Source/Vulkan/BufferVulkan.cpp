@@ -19,11 +19,12 @@ uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, Vk
 
 GPUBuffer::GPUBuffer(const RenderBufferHandle handle, const vk::RenderDevice& dev,
 	VkDevice device, VkPhysicalDevice physicalDevice, const BufferDesc& desc) noexcept
+	:owned_device_(device)
 {
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferInfo.size = desc.length;
-	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	bufferInfo.usage = translate(desc.usage);
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer_) != VK_SUCCESS) 

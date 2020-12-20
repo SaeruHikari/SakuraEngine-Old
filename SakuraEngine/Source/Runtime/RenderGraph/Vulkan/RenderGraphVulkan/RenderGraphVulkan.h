@@ -30,4 +30,14 @@ namespace sakura::graphics::vk
 	RenderGraphVulkanAPI VkAttachmentLoadOp translate(ELoadOp op);
 
 	RenderGraphVulkanAPI VkAttachmentStoreOp translate(EStoreOp op);
+
+	RenderGraphVulkanAPI VkBufferUsageFlags translate(EBufferUsage usage);
+
+	RenderGraphVulkanAPI VkPrimitiveTopology translate(EPrimitiveTopology topo);
+
+	RenderGraphVulkanAPI VkVertexInputRate translate(VertexLayout::Frequency freq);
+
+	RenderGraphVulkanAPI VkFormat translate(EVertexFormat format);
+
+	RenderGraphVulkanAPI VkDescriptorType translate(BindingLayout::EType type);
 }

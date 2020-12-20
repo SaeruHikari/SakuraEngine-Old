@@ -70,6 +70,8 @@ sakura::graphics::webgpu::RenderPipeline::RenderPipeline(RenderPipelineHandle ha
         }
     }
     rpDesc.sampleCount = desc.sample_count;
+
+    // Vertex Attributes.
     sakura::vector<WGPUVertexBufferLayoutDescriptor>vertDescs(desc.vertex_layout.size());
     sakura::vector<sakura::vector<WGPUVertexAttributeDescriptor>> vertexAttributesList(desc.vertex_layout.size());
 	for(size_t vbindex = 0u; vbindex < desc.vertex_layout.size(); vbindex++)

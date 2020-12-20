@@ -100,10 +100,10 @@ namespace render_system
 					Binding::Slot(uniformBuffer, 0, sizeof(sakura::float4x4), 0)
 				})
 			});
-			command_buffer.enqueue<RenderCommandSetScissorRect>(
-				0, device.backend() == EBackend::WebGPU ? mainWindow.extent().width / 2 + 10 : 0,
-				mainWindow.extent().width / 2, mainWindow.extent().height
-			);
+			//command_buffer.enqueue<RenderCommandSetScissorRect>(
+			//	0, device.backend() == EBackend::WebGPU ? mainWindow.extent().width / 2 + 10 : 0,
+			//	mainWindow.extent().width / 2, mainWindow.extent().height
+			//);
 			command_buffer.enqueue<RenderCommandUpdateBinding>(binding0);
 			command_buffer.enqueue<RenderCommandDraw>(
 				RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBufferSphere")),
@@ -118,15 +118,15 @@ namespace render_system
 						Binding::Slot(uniformBufferPerTarget, 0,
 							sizeof(sakura::float4x4) * 4, sizeof(sakura::float4x4) * i * 4)
 					})
-				});
+				}, { sizeof(sakura::float4x4) * i * 4 });
 				command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 60);
 			}
 			Binding binding00 = Binding({
 				Binding::Set({
 					Binding::Slot(uniformBufferPerObject, 0,
 						sizeof(sakura::float4x4) * 4, 0)
-				})
-			});
+				}) 
+			}, { 0 }/*dynamic_offsets*/);
 			command_buffer.enqueue<RenderCommandUpdateBinding>(binding00);
 			command_buffer.enqueue<RenderCommandDraw>(
 				RenderCommandDraw::VB(rg.blackboard<RenderBufferHandle>("VertexBuffer")),
@@ -146,7 +146,7 @@ namespace render_system
 								sizeof(sakura::float4x4) * 4, 
 								sizeof(sakura::float4x4) * (i + bn * n / N) * 4)
 						})
-					});
+					}, { sizeof(sakura::float4x4) * (i + bn * n / N) * 4 });
 					command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 3);
 				}
 			}
@@ -199,7 +199,7 @@ namespace render_system
 		assert(dawnDevice != nullptr && "ERROR: Failed to create Dawn device!");
 		deviceGroup.emplace(dawnDevice);
 
-		//deviceConfig.name = "VulkanDevice";
+		deviceConfig.name = "VulkanDevice";
 		//render_graph.emplace_device(new vk::RenderDevice(deviceConfig));
 		//IRenderDevice* vulaknDevice = render_graph.get_device("VulkanDevice");
 		//assert(vulaknDevice != nullptr && "ERROR: Failed to create Vulkan device!");
@@ -368,26 +368,26 @@ namespace render_system
 		deviceGroup.present(swapChain);
 	}
 
-	void PrepareCommandBuffer(task_system::Event ev2, RenderCommandBuffer& buffer)
+	void PrepareCommandBuffer(RenderCommandBuffer& buffer)
 	{
-		task_system::schedule(
-			[ev2, &buffer]() {
+		//task_system::schedule(
+		//	[ev2, &buffer]() {
 				ZoneScopedN("PrepareCommandBuffer");
 
-				defer(ev2.signal());
+		//		defer(ev2.signal());
 
 				RenderPass* pass_ptr = render_graph.render_pass(pass);
 
 				pass_ptr->construct(render_graph.builder(pass));
 				buffer.reset();
 				pass_ptr->execute(buffer, render_graph, deviceGroup);
-			});
+		//	});
 	}
 
-	void RenderAndPresent(task_system::Event ev, task_system::Event evc, const RenderCommandBuffer& buffer)
+	void RenderAndPresent(const RenderCommandBuffer& buffer)
 	{
-		task_system::schedule(
-			[ev, evc, &buffer]() {
+		//task_system::schedule(
+		//	[ev, evc, &buffer]() {
 				{
 					ZoneScopedN("Upload");
 					sakura::float4x4 offset = math::make_transform(sakura::Vector3f(0, 0, -1.f) * 500);
@@ -407,18 +407,18 @@ namespace render_system
 						uniformBufferPerTarget, 0, targetWorlds.data(), sizeof(float4x4) * targetWorlds.size());
 				}
 
-				evc.wait();
-				defer(ev.signal());
+				//evc.wait();
+				//defer(ev.signal());
 
 				{
 					ZoneScopedN("RenderAndPresent");
 					RenderPass* pass_ptr = render_graph.render_pass(pass);
 					//task_system::blocking_call([&]()
 					//	{
-							deviceGroup.execute(buffer, pass_ptr->handle());
+					deviceGroup.execute(buffer, pass_ptr->handle());
 					//	});
 				}
-			}
-		);
+		//	}
+		//);
 	}
 }	
