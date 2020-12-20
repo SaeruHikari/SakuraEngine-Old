@@ -107,7 +107,8 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
 	multisampling.rasterizationSamples = VkSampleCountFlagBits(desc.sample_count);
-	multisampling.pSampleMask = &desc.sample_mask;
+	sample_mask_ = desc.sample_mask;
+	multisampling.pSampleMask = &sample_mask_;
 
 	// cn: Color Attachments µÄ×ªÒë.
 	// en: Translate Color Attachments.

@@ -8,7 +8,7 @@
 #include "ECS/ECS.h"
 #include "Boids.h"
 
-#define TARGET_NUM 5000
+#define TARGET_NUM 50000
 
 namespace render_system
 {
@@ -193,7 +193,7 @@ namespace render_system
 
 		// Create Devices
 		DeviceConfiguration deviceConfig;
-		deviceConfig.name = "DawnDevice";
+		//deviceConfig.name = "DawnDevice";
 		//render_graph.emplace_device(new webgpu::RenderDevice(deviceConfig));
 		//IRenderDevice* dawnDevice = render_graph.get_device("DawnDevice");
 		//assert(dawnDevice != nullptr && "ERROR: Failed to create Dawn device!");

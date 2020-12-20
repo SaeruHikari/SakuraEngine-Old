@@ -32,6 +32,8 @@ namespace sakura::graphics::vk
 		VkPipelineRasterizationStateCreateInfo rasterizer{};
 		VkPipelineMultisampleStateCreateInfo multisampling{};
 		VkPipelineColorBlendStateCreateInfo colorBlending{};
+
+		uint32 sample_mask_;
 	protected:
 		RenderPipelineHandle handle_;
 	};

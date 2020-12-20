@@ -9,7 +9,7 @@
 
 namespace sakura::graphics::vk
 {
-	const bool bEnableValidationLayers = true;
+	const bool bEnableValidationLayers = false;
 	class RenderPipeline;
 
 	// cn: 启动引擎所需要的最小扩展集合.
