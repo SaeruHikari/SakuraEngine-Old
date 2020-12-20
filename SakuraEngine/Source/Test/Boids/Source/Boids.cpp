@@ -272,7 +272,7 @@ void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 	def paramList = boost::hana::make_tuple( param<const C> );
 	shared_entry shareList[] = { write(vector) };
 	auto pass = ppl.create_pass(filter, paramList, shareList);
-	vector->resize(pass->entityCount);
+	vector->resize(ppl.pass_size(*pass));
 	return task_system::ecs::schedule(ppl, pass,
 		[vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
 		{
@@ -436,7 +436,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		def paramList = 
 			boost::hana::make_tuple( param<const Heading>, param<const Translation>, param<const Boid> );
 		auto pass = ppl.create_pass(boidFilter, paramList, shareList);
-		newHeadings->resize(pass->entityCount);
+		newHeadings->resize(ppl.pass_size(*pass));
 		task_system::ecs::schedule(ppl, pass,
 			[headings, kdtree, targetTree, newHeadings, deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
 			{
