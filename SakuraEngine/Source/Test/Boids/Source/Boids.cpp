@@ -724,12 +724,7 @@ int main()
 		sakura::graphics::RenderCommandBuffer("", 4096 * 8 * 16 * 32),
 	};
 	size_t cycle = 0;
-	task_system::ecs::pipeline ppl(ctx);
-	ppl.on_sync = [&](gsl::span<custom_pass*> dependencies)
-	{
-		for (auto dp : dependencies)
-			((task_system::ecs::custom_pass*)dp)->event.wait();
-	};
+	task_system::ecs::pipeline ppl(std::move(ctx));
 	// Game & Rendering Logic
 	while(sakura::Core::yield())
 	{
@@ -763,4 +758,5 @@ int main()
 
 		FrameMark;
 	}
+	ctx = ppl.release();
 }

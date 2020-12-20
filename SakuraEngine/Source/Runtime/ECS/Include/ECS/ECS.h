@@ -1,7 +1,7 @@
 #pragma once
 #include "TaskSystem/TaskSystem.h"
 #include "RuntimeCore/RuntimeCore.h"
-#include "Codebase/Codebase.h"
+#include "Database/Codebase.h"
 
 #define forloop(i, z, n) for(auto i = std::decay_t<decltype(n)>(z); i<(n); ++i)
 #define def static constexpr auto
@@ -32,7 +32,7 @@ namespace sakura::task_system::ecs
 	struct pipeline final : public core::codebase::pipeline
 	{
 		using base_t = core::codebase::pipeline;
-		pipeline(sakura::ecs::world& ctx) :base_t(ctx) 
+		pipeline(sakura::ecs::world&& ctx) :base_t(std::move(ctx)) 
 		{
 			allpasses.reserve(10000);
 		};
@@ -40,26 +40,36 @@ namespace sakura::task_system::ecs
 		std::shared_ptr<pass> create_pass(const sakura::ecs::filters& v, T paramList, gsl::span<core::codebase::shared_entry> sharedEntries = {})
 		{
 			auto p = base_t::create_pass<pass>(v, paramList, sharedEntries);
-			allpasses.push_back(p->event);
+			allpasses.push_back(std::static_pointer_cast<custom_pass>(p));
 			return p;
 		}
 		std::shared_ptr<custom_pass> create_custom_pass(gsl::span<core::codebase::shared_entry> sharedEntries = {})
 		{
 			auto p = base_t::create_custom_pass<custom_pass>(sharedEntries);
-			allpasses.push_back(p->event);
+			allpasses.push_back(p);
 			return p;
 		}
-		void wait()
+		void wait() const
 		{
 			forloop(i, 0u, allpasses.size())
-				allpasses[i].wait();
+				if(auto pass = allpasses[i].lock())
+					pass->event.wait();
 			allpasses.clear();
 		}
 		void forget()
 		{
-			allpasses.clear();
+			allpasses.erase(remove_if(allpasses.begin(), allpasses.end(), [](auto& n) {return n.expired(); }), allpasses.end());
 		}
-		std::vector<task_system::Event> allpasses;
+		void sync_dependencies(gsl::span<custom_pass*> dependencies) const
+		{
+			for (auto dp : dependencies)
+				((custom_pass*)dp)->event.wait();
+		}
+		void sync_all() const
+		{
+			wait();
+		}
+		mutable std::vector<std::weak_ptr<custom_pass>> allpasses;
 		bool force_no_parallel = false;
 	};
 	template<class F>
