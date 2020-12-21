@@ -24,9 +24,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 	appInfo.apiVersion = VK_API_VERSION_1_0;
 
-	// cn: ����VkInstance.
+	// cn: 创建VkInstance.
 	// en: Create VkInstance.
-	// jp: VkInstance������.
+	// jp: VkInstanceを作る.
 	{
 		VkInstanceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -64,9 +64,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 		}
 	}
 
-	// cn: ʰȡPhysicalDevice.
+	// cn: 拾取PhysicalDevice.
 	// en: Pick physical device.
-	// jp: �����ǥХ������x�k����.
+	// jp: 物理デバイスを選択する.
 	{
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
@@ -81,9 +81,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 		for (const auto& device : devices) 
 		{
 			VulkanDeviceSet dev = findQueueFamilies(device, config.window_handle);
-			// cn: ɸѡ�����Բ�����豸.
+			// cn: 筛选掉特性不足的设备.
 			// en: Filter out devices with insufficient features.
-			// jp: �C�ܤ���ʮ�֤ʥǥХ�������⤹��
+			// jp: 機能が不十分なデバイスを除外する
 			if (checkDeviceExtensionSupport(device, std::set<std::string>(basic_device_exts.begin(), basic_device_exts.end())))
 			{
 				dev.device = device;
@@ -93,9 +93,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 				device_sets_.emplace_back(dev);
 
 				// TODO:
-				// cn: ѡ������ʵ�һ���豸��Ϊ���豸.
+				// cn: 选择最合适的一个设备作为主设备.
 				// en: Choose the most suitable device as the master_device.
-				// jp: �ޥ����`�ǥХ����Ȥ������m�ʥǥХ������x�k����.
+				// jp: マスターデバイスとして最適なデバイスを選択する.
 				if (checkDeviceExtensionSupport(device, std::set<std::string>(main_device_exts.begin(), main_device_exts.end())))
 				{
 					master_device_index_ = device_sets_.size() - 1;
@@ -107,9 +107,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 			sakura::error("failed to find a suitable GPU!");
 	}
 
-	// cn: �����߼��豸.
+	// cn: 创建逻辑设备.
 	// en: Create Logical Device.
-	// jp: ��������-�ǥХ���������.
+	// jp: ロジカル-デバイスを作る.
 	{
 		bool findGfxQueue = false;
 		bool findCmptQueue = false;
@@ -175,9 +175,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 					phy_dev.graphics_queues[gfxs].queue = q;
 					findGfxQueue = true;
 
-					// cn: ���Լ���queue��present��֧��.
+					// cn: 尝试检查此queue对present的支持.
 					// en: Try to check the present support for this queue.
-					// jp: ���Υ���`�Υץ쥼��ȤؤΥ��ݩ`�Ȥ�_�J���Ƥߤޤ�.
+					// jp: このキューのプレゼントへのサポートを確認してみます.
 					if (!findPresentQueue)
 					{
 						for (const auto pf : phy_dev.present_families)
@@ -859,9 +859,9 @@ std::vector<const char*> getRequiredDeviceExtensions(bool asMainDevice)
 }
 
 
-// cn: ����豸��չ��֧��.
+// cn: 检查设备扩展的支持.
 // en: Check device extensions support.
-// jp: �ǥХ���-�������ƥ󥷥��Υ����å�.
+// jp: デバイス-エクステンションのチェック.
 bool checkDeviceExtensionSupport(VkPhysicalDevice device, std::set<std::string> requiredExtensions)
 {
 	uint32_t extensionCount;

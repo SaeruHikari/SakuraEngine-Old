@@ -52,9 +52,9 @@ sakura::graphics::vk::SwapChain::SwapChain(
 	createInfo.imageArrayLayers = 1;
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-	// cn: �� queue �� shared mode, ��֧��, ����ʱû��֧�ֵĶ���.
+	// cn: 跨 queue 的 shared mode, 不支持, 且暂时没有支持的动机.
 	// en: concurrent-shared mode, not supported and no motivation to support currently.
-	// jp: �K�й��Х�`�ɡ����ݩ`�Ȥ���Ƥ��餺���F�ڥ��ݩ`�Ȥ���әC�Ϥ���ޤ���.
+	// jp: 並行共有モード、サポートされておらず、現在サポートする動機はありません.
 	const bool presentWithGfxQueue = true;
 	if (!presentWithGfxQueue) 
 	{

@@ -109,9 +109,9 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	sample_mask_ = desc.sample_mask;
 	multisampling.pSampleMask = &sample_mask_;
 
-	// cn: Color Attachments ��ת��.
+	// cn: Color Attachments 的转译.
 	// en: Translate Color Attachments.
-	// jp: ����`�����å����Ȥ��U����.
+	// jp: カラーアタッチメントを翻訳する.
 	attachmentStates.resize(desc.attachment_layout.slots.size());
 	for (size_t i = 0u; i < desc.attachment_layout.slots.size(); i++)
 	{
@@ -132,10 +132,10 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	}
 
 
-	// cn: RenderGraph��ʱ��֧��logicOp�Լ�blendConstants, ����û����Ӧ����.
+	// cn: RenderGraph暂时不支持logicOp以及blendConstants, 并且没有相应动机.
 	// en: RenderGraph does not support logicOp & blendConstants, no motivation to support currently.
-	// jp: ������󥰥���դϡ������å����ڥ�`�����ȥ֥��ɶ����򥵥ݩ`�Ȥ��Ƥ��ޤ���
-	//     �F�ڡ����ݩ`�Ȥ���әC�Ϥ���ޤ���
+	// jp: レンダリンググラフは、ロジックオペレーションとブレンド定数をサポートしていません。
+	//     現在、サポートする動機はありません。
 	{
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlending.logicOpEnable = VK_FALSE;
