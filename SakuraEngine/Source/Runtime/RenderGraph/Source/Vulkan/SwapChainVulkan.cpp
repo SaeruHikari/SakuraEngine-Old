@@ -1,4 +1,4 @@
-#include "RenderGraphVulkan/RenderGraphVulkan.h"
+ï»¿#include "RenderGraphVulkan/RenderGraphVulkan.h"
 #include "vulkan/vulkan_win32.h"
 #include "System/Log.h"
 
@@ -52,9 +52,9 @@ sakura::graphics::vk::SwapChain::SwapChain(
 	createInfo.imageArrayLayers = 1;
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-	// cn: ¿ç queue µÄ shared mode, ²»Ö§³Ö, ÇÒÔİÊ±Ã»ÓĞÖ§³ÖµÄ¶¯»ú.
+	// cn: è·¨ queue çš„ shared mode, ä¸æ”¯æŒ, ä¸”æš‚æ—¶æ²¡æœ‰æ”¯æŒçš„åŠ¨æœº.
 	// en: concurrent-shared mode, not supported and no motivation to support currently.
-	// jp: KĞĞ¹²ÓĞ¥â©`¥É¡¢¥µ¥İ©`¥È¤µ¤ì¤Æ¤ª¤é¤º¡¢¬FÔÚ¥µ¥İ©`¥È¤¹¤ë„Ó™C¤Ï¤¢¤ê¤Ş¤»¤ó.
+	// jp: ä¸¦è¡Œå…±æœ‰ãƒ¢ãƒ¼ãƒ‰ã€ã‚µãƒãƒ¼ãƒˆã•ã‚Œã¦ãŠã‚‰ãšã€ç¾åœ¨ã‚µãƒãƒ¼ãƒˆã™ã‚‹å‹•æ©Ÿã¯ã‚ã‚Šã¾ã›ã‚“.
 	const bool presentWithGfxQueue = true;
 	if (!presentWithGfxQueue) 
 	{

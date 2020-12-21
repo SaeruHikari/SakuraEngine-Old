@@ -1,4 +1,4 @@
-#include "RenderGraphVulkan/RenderGraphVulkan.h"
+ï»¿#include "RenderGraphVulkan/RenderGraphVulkan.h"
 
 using namespace sakura::graphics;
 using namespace sakura::graphics::vk;
@@ -109,9 +109,9 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	sample_mask_ = desc.sample_mask;
 	multisampling.pSampleMask = &sample_mask_;
 
-	// cn: Color Attachments µÄ×ªÒë.
+	// cn: Color Attachments çš„è½¬è¯‘.
 	// en: Translate Color Attachments.
-	// jp: ¥«¥é©`¥¢¥¿¥Ã¥Á¥á¥ó¥È¤ò·­ÔU¤¹¤ë.
+	// jp: ã‚«ãƒ©ãƒ¼ã‚¢ã‚¿ãƒƒãƒãƒ¡ãƒ³ãƒˆã‚’ç¿»è¨³ã™ã‚‹.
 	attachmentStates.resize(desc.attachment_layout.slots.size());
 	for (size_t i = 0u; i < desc.attachment_layout.slots.size(); i++)
 	{
@@ -132,10 +132,10 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	}
 
 
-	// cn: RenderGraphÔİÊ±²»Ö§³ÖlogicOpÒÔ¼°blendConstants, ²¢ÇÒÃ»ÓĞÏàÓ¦¶¯»ú.
+	// cn: RenderGraphæš‚æ—¶ä¸æ”¯æŒlogicOpä»¥åŠblendConstants, å¹¶ä¸”æ²¡æœ‰ç›¸åº”åŠ¨æœº.
 	// en: RenderGraph does not support logicOp & blendConstants, no motivation to support currently.
-	// jp: ¥ì¥ó¥À¥ê¥ó¥°¥°¥é¥Õ¤Ï¡¢¥í¥¸¥Ã¥¯¥ª¥Ú¥ì©`¥·¥ç¥ó¤È¥Ö¥ì¥ó¥É¶¨Êı¤ò¥µ¥İ©`¥È¤·¤Æ¤¤¤Ş¤»¤ó¡£
-	//     ¬FÔÚ¡¢¥µ¥İ©`¥È¤¹¤ë„Ó™C¤Ï¤¢¤ê¤Ş¤»¤ó¡£
+	// jp: ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ã‚°ãƒ©ãƒ•ã¯ã€ãƒ­ã‚¸ãƒƒã‚¯ã‚ªãƒšãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã¨ãƒ–ãƒ¬ãƒ³ãƒ‰å®šæ•°ã‚’ã‚µãƒãƒ¼ãƒˆã—ã¦ã„ã¾ã›ã‚“ã€‚
+	//     ç¾åœ¨ã€ã‚µãƒãƒ¼ãƒˆã™ã‚‹å‹•æ©Ÿã¯ã‚ã‚Šã¾ã›ã‚“ã€‚
 	{
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlending.logicOpEnable = VK_FALSE;

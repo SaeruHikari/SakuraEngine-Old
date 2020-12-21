@@ -8,7 +8,7 @@
 using namespace Microsoft;
 using namespace Microsoft::WRL;
 
-namespace sakura::graphics::d3d12
+namespace sakura::graphics::d3d12  
 {
 	class RenderGraphD3D12API RenderDevice : public IRenderDevice
 	{
@@ -20,7 +20,6 @@ namespace sakura::graphics::d3d12
 		virtual sakura::string_view get_name() const override;
 		EBackend backend() const override;
 		
-		virtual bool execute(const RenderPass&, const RenderPassHandle) override;
 		virtual bool execute(const RenderGraph& graph_to_execute) override;
 
 		void destroy_resource(const RenderShaderHandle to_destroy) override;

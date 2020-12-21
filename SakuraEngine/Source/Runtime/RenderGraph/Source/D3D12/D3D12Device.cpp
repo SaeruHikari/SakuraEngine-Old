@@ -133,11 +133,6 @@ bool RenderDevice::execute(const RenderGraph& graph_to_execute)
 	return true;
 }
 
-bool RenderDevice::execute(const RenderPass&, const RenderPassHandle)
-{
-	return true;
-}
-
 void RenderDevice::destroy_resource(const RenderShaderHandle to_destroy)
 {
 

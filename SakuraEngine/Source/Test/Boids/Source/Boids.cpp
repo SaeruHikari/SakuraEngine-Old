@@ -1,5 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 //#define TRACY_ENABLE
 #include "tracy/Tracy.hpp"
 
