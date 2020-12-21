@@ -1,4 +1,4 @@
-#include "RenderGraphVulkan/RenderGraphVulkan.h"
+ï»¿#include "RenderGraphVulkan/RenderGraphVulkan.h"
 
 using namespace sakura::graphics;
 using namespace sakura::graphics::vk;
@@ -24,9 +24,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 	appInfo.apiVersion = VK_API_VERSION_1_0;
 
-	// cn: ´´½¨VkInstance.
+	// cn: ï¿½ï¿½ï¿½ï¿½VkInstance.
 	// en: Create VkInstance.
-	// jp: VkInstance¤ò×÷¤ë.
+	// jp: VkInstanceï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
 	{
 		VkInstanceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -66,7 +66,7 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 
 	// cn: Ê°È¡PhysicalDevice.
 	// en: Pick physical device.
-	// jp: ÎïÀí¥Ç¥Ð¥¤¥¹¤òßx’k¤¹¤ë.
+	// jp: ï¿½ï¿½ï¿½ï¿½ï¿½Ç¥Ð¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½kï¿½ï¿½ï¿½ï¿½.
 	{
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
@@ -81,9 +81,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 		for (const auto& device : devices) 
 		{
 			VulkanDeviceSet dev = findQueueFamilies(device, config.window_handle);
-			// cn: É¸Ñ¡µôÌØÐÔ²»×ãµÄÉè±¸.
+			// cn: É¸Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½Ô²ï¿½ï¿½ï¿½ï¿½ï¿½è±¸.
 			// en: Filter out devices with insufficient features.
-			// jp: ™CÄÜ¤¬²»Ê®·Ö¤Ê¥Ç¥Ð¥¤¥¹¤ò³ýÍâ¤¹¤ë
+			// jp: ï¿½Cï¿½Ü¤ï¿½ï¿½ï¿½Ê®ï¿½Ö¤Ê¥Ç¥Ð¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½â¤¹ï¿½ï¿½
 			if (checkDeviceExtensionSupport(device, std::set<std::string>(basic_device_exts.begin(), basic_device_exts.end())))
 			{
 				dev.device = device;
@@ -93,9 +93,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 				device_sets_.emplace_back(dev);
 
 				// TODO:
-				// cn: Ñ¡Ôñ×îºÏÊÊµÄÒ»¸öÉè±¸×÷ÎªÖ÷Éè±¸.
+				// cn: Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½Ò»ï¿½ï¿½ï¿½è±¸ï¿½ï¿½Îªï¿½ï¿½ï¿½è±¸.
 				// en: Choose the most suitable device as the master_device.
-				// jp: ¥Þ¥¹¥¿©`¥Ç¥Ð¥¤¥¹¤È¤·¤Æ×îßm¤Ê¥Ç¥Ð¥¤¥¹¤òßx’k¤¹¤ë.
+				// jp: ï¿½Þ¥ï¿½ï¿½ï¿½ï¿½`ï¿½Ç¥Ð¥ï¿½ï¿½ï¿½ï¿½È¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½mï¿½Ê¥Ç¥Ð¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½kï¿½ï¿½ï¿½ï¿½.
 				if (checkDeviceExtensionSupport(device, std::set<std::string>(main_device_exts.begin(), main_device_exts.end())))
 				{
 					master_device_index_ = device_sets_.size() - 1;
@@ -107,9 +107,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 			sakura::error("failed to find a suitable GPU!");
 	}
 
-	// cn: ´´½¨Âß¼­Éè±¸.
+	// cn: ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½è±¸.
 	// en: Create Logical Device.
-	// jp: ¥í¥¸¥«¥ë-¥Ç¥Ð¥¤¥¹¤ò×÷¤ë.
+	// jp: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½-ï¿½Ç¥Ð¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
 	{
 		bool findGfxQueue = false;
 		bool findCmptQueue = false;
@@ -175,9 +175,9 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 					phy_dev.graphics_queues[gfxs].queue = q;
 					findGfxQueue = true;
 
-					// cn: ³¢ÊÔ¼ì²é´Ëqueue¶ÔpresentµÄÖ§³Ö.
+					// cn: ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½queueï¿½ï¿½presentï¿½ï¿½Ö§ï¿½ï¿½.
 					// en: Try to check the present support for this queue.
-					// jp: ¤³¤Î¥­¥å©`¤Î¥×¥ì¥¼¥ó¥È¤Ø¤Î¥µ¥Ý©`¥È¤ò´_ÕJ¤·¤Æ¤ß¤Þ¤¹.
+					// jp: ï¿½ï¿½ï¿½Î¥ï¿½ï¿½ï¿½`ï¿½Î¥×¥ì¥¼ï¿½ï¿½È¤Ø¤Î¥ï¿½ï¿½Ý©`ï¿½È¤ï¿½_ï¿½Jï¿½ï¿½ï¿½Æ¤ß¤Þ¤ï¿½.
 					if (!findPresentQueue)
 					{
 						for (const auto pf : phy_dev.present_families)
@@ -859,9 +859,9 @@ std::vector<const char*> getRequiredDeviceExtensions(bool asMainDevice)
 }
 
 
-// cn: ¼ì²éÉè±¸À©Õ¹µÄÖ§³Ö.
+// cn: ï¿½ï¿½ï¿½ï¿½è±¸ï¿½ï¿½Õ¹ï¿½ï¿½Ö§ï¿½ï¿½.
 // en: Check device extensions support.
-// jp: ¥Ç¥Ð¥¤¥¹-¥¨¥¯¥¹¥Æ¥ó¥·¥ç¥ó¤Î¥Á¥§¥Ã¥¯.
+// jp: ï¿½Ç¥Ð¥ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¥ó¥·¥ï¿½ï¿½Î¥ï¿½ï¿½ï¿½ï¿½Ã¥ï¿½.
 bool checkDeviceExtensionSupport(VkPhysicalDevice device, std::set<std::string> requiredExtensions)
 {
 	uint32_t extensionCount;
