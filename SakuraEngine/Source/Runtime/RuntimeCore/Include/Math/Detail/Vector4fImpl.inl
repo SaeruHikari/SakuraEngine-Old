@@ -2,7 +2,7 @@ namespace sakura
 {
 	FORCEINLINE float Vector<float, 4>::operator|(const Vector V) const
 	{
-		return X * V.X + Y * V.Y + Z * V.Z; + W * V.W;
+		return X * V.X + Y * V.Y + Z * V.Z + W * V.W;
 	}
 
 	FORCEINLINE float Vector<float, 4>::dot_product(const Vector A, const Vector B)

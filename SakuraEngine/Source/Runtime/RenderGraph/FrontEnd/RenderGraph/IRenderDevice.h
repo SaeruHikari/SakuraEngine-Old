@@ -69,19 +69,55 @@ namespace sakura::graphics
 		virtual RenderPipelineHandle create_render_pipeline(const RenderPipelineHandle handle, const RenderPipelineDesc& desc) = 0;
 
 		virtual RenderBufferHandle update_buffer(const RenderBufferHandle handle, size_t offset, void* data, size_t size) { return handle; };
-
-		virtual IGPUBuffer* get(const RenderBufferHandle handle) const { return nullptr; }
-		virtual IGPUShader* get(const RenderShaderHandle handle) const { return nullptr; }
-		virtual IRenderPipeline* get(const RenderPipelineHandle handle) const { return nullptr; }
-		virtual ISwapChain* get(const SwapChainHandle handle) const { return nullptr; }
-		virtual IFence* get(const FenceHandle handle) const { return nullptr; }
-
-		virtual IGPUBuffer* optional(const RenderBufferHandle handle) const { return nullptr; }
-		virtual IGPUShader* optional(const RenderShaderHandle handle) const { return nullptr; }
-		virtual IRenderPipeline* optional(const RenderPipelineHandle handle) const { return nullptr; }
-		virtual ISwapChain* optional(const SwapChainHandle handle) const { return nullptr; }
-		virtual IFence* optional(const FenceHandle handle) const { return nullptr; }
 		
+		virtual IGPUMemoryResource* get_unsafe(const RenderResourceHandle handle) const = 0;
+		virtual IGPUMemoryResource* optional_unsafe(const RenderResourceHandle handle) const = 0;
+		virtual IGPUObject* get_unsafe(const RenderGraphHandle handle) const = 0;
+		virtual IGPUObject* optional_unsafe(const RenderGraphHandle handle) const = 0;
+		
+		template<typename Type, typename Handle>
+		Type* get(const Handle handle) const noexcept
+		{
+			if constexpr (std::is_base_of_v<IGPUObject, Type>)
+			{
+				static_assert(std::is_base_of_v<RenderGraphHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderObjectHandle!");
+				static_assert(std::is_base_of_v<typename Handle::ObjectType, Type>, "[RGDevice::get]: Handle must match to it's ObjectType!");
+				return static_cast<Type*>(get_unsafe(handle));
+			}
+			else if constexpr (std::is_base_of_v<IGPUMemoryResource, Type>)
+			{
+				static_assert(std::is_base_of_v<RenderResourceHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderResourceHandle!");
+				static_assert(std::is_base_of_v<typename Handle::ResourceType, Type>, "[RGDevice::get]: Handle must match to it's ResourceType!");
+				return static_cast<Type*>(get_unsafe(handle));
+			}
+			else
+			{
+				static_assert(0, "Type & Handle not matching!");
+				return nullptr;
+			}
+		}
+		template<typename Type, typename Handle>
+		Type* optional(const Handle handle) const noexcept
+		{
+			if constexpr (std::is_base_of_v<IGPUObject, Type>)
+			{
+				static_assert(std::is_base_of_v<RenderGraphHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderObjectHandle!");
+				static_assert(std::is_base_of_v<typename Handle::ObjectType, Type>, "[RGDevice::get]: Handle must match to it's ObjectType!"); 
+				return static_cast<Type*>(optional_unsafe(handle));
+			}
+			else if constexpr (std::is_base_of_v<IGPUMemoryResource, Type>)
+			{
+				static_assert(std::is_base_of_v<RenderResourceHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderResourceHandle!");
+				static_assert(std::is_base_of_v<typename Handle::ResourceType, Type>, "[RGDevice::get]: Handle must match to it's ResourceType!");
+				return static_cast<Type*>(optional_unsafe(handle));
+			}
+			else
+			{
+				static_assert(0, "Type & Handle not matching!");
+				return nullptr;
+			}
+		}
+
 		virtual void terminate() = 0;
 
 		//virtual const SwapChainSupportDetails& support_details() const = 0;
@@ -233,6 +269,27 @@ namespace sakura::graphics
 		{
 			return devices[index];
 		}
+
+		virtual IGPUMemoryResource* get_unsafe(const RenderResourceHandle handle) const override
+		{
+			return nullptr;
+		}
+
+		virtual IGPUObject* get_unsafe(const RenderGraphHandle handle) const override
+		{
+			return nullptr;
+		}
+
+		virtual IGPUMemoryResource* optional_unsafe(const RenderResourceHandle handle) const override
+		{
+			return nullptr;
+		}
+
+		virtual IGPUObject* optional_unsafe(const RenderGraphHandle handle) const override
+		{
+			return nullptr;
+		}
+
 	private:
 		sakura::string name = "DeviceGroup:";
 		sakura::vector<IRenderDevice*> devices;

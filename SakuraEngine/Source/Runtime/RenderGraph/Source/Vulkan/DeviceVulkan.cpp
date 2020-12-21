@@ -304,7 +304,7 @@ sakura::graphics::RenderPipelineHandle sakura::graphics::vk::RenderDevice::creat
 sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::update_buffer(
 	const RenderBufferHandle handle, size_t offset, void* data, size_t size)
 {
-	auto buf = static_cast<GPUBuffer*>(get(handle));
+	auto buf = get<GPUBuffer>(handle);
 	void* data_ptr;
 	vkMapMemory(buf->owned_device_, buf->buffer_memory_, 0, size, 0, &data_ptr);
 		memcpy(data_ptr, data, size);
@@ -312,56 +312,70 @@ sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::update_
 	return handle;
 }
 
-
-IGPUBuffer* RenderDevice::get(const RenderBufferHandle handle) const
+sakura::graphics::IGPUMemoryResource* sakura::graphics::vk::RenderDevice::get_unsafe(const RenderResourceHandle handle) const
 {
-	return _get_resouce_impl<false, IGPUBuffer>(handle);
+	if (created_resources_.size() < handle.id().index() + 1)
+	{
+		handle_error<RenderResourceHandle>::not_find(handle);
+		return nullptr;
+	}
+	const auto& resource = created_resources_[handle.id().index()];
+	if (handle.id().generation() == resource.second)
+		return resource.first;
+	else
+	{
+		handle_error<RenderResourceHandle>::generation_dismatch(handle);
+		return nullptr;
+	}
 }
 
-IGPUShader* RenderDevice::get(const RenderShaderHandle handle) const
+sakura::graphics::IGPUMemoryResource* sakura::graphics::vk::RenderDevice::optional_unsafe(const RenderResourceHandle handle) const
 {
-	return _get_resouce_impl<false, IGPUShader>(handle);
+	if (created_resources_.size() < handle.id().index() + 1)
+	{
+		return nullptr;
+	}
+	const auto& resource = created_resources_[handle.id().index()];
+	if (handle.id().generation() == resource.second)
+		return resource.first;
+	else
+	{
+		return nullptr;
+	}
 }
 
-IGPUBuffer* RenderDevice::optional(const RenderBufferHandle handle) const
+sakura::graphics::IGPUObject* sakura::graphics::vk::RenderDevice::get_unsafe(const RenderGraphHandle handle) const
 {
-	return _get_resouce_impl<true, IGPUBuffer>(handle);
+	if (created_objects_.size() < handle.id().index() + 1)
+	{
+		handle_error<RenderGraphHandle>::not_find(handle);
+		return nullptr;
+	}
+	const auto& resource = created_objects_[handle.id().index()];
+	if (handle.id().generation() == resource.second)
+		return resource.first;
+	else
+	{
+		handle_error<RenderGraphHandle>::generation_dismatch(handle);
+		return nullptr;
+	}
 }
 
-IGPUShader* RenderDevice::optional(const RenderShaderHandle handle) const
+sakura::graphics::IGPUObject* sakura::graphics::vk::RenderDevice::optional_unsafe(const RenderGraphHandle handle) const
 {
-	return _get_resouce_impl<true, IGPUShader>(handle);
+	if (created_objects_.size() < handle.id().index() + 1)
+	{
+		return nullptr;
+	}
+	const auto& resource = created_objects_[handle.id().index()];
+	if (handle.id().generation() == resource.second)
+		return resource.first;
+	else
+	{
+		return nullptr;
+	}
 }
 
-IRenderPipeline* RenderDevice::optional(const RenderPipelineHandle handle) const
-{
-	return _get_object_impl<true, IRenderPipeline, RenderPipelineHandle>(handle);
-}
-
-ISwapChain* RenderDevice::optional(const SwapChainHandle handle) const
-{
-	return _get_object_impl<true, ISwapChain, SwapChainHandle>(handle);
-}
-
-IFence* RenderDevice::optional(const FenceHandle handle) const
-{
-	return _get_object_impl<true, IFence, FenceHandle>(handle);
-}
-
-IRenderPipeline* RenderDevice::get(const RenderPipelineHandle handle) const
-{
-	return _get_object_impl<false, IRenderPipeline, RenderPipelineHandle>(handle);
-}
-
-ISwapChain* RenderDevice::get(const SwapChainHandle handle) const
-{
-	return _get_object_impl<false, ISwapChain, SwapChainHandle>(handle);
-}
-
-IFence* RenderDevice::get(const FenceHandle handle) const
-{
-	return _get_object_impl<false, IFence, FenceHandle>(handle);
-}
 
 
 bool sakura::graphics::vk::RenderDevice::execute(const RenderGraph& graph_to_execute)
@@ -372,7 +386,7 @@ bool sakura::graphics::vk::RenderDevice::execute(const RenderGraph& graph_to_exe
 
 bool sakura::graphics::vk::RenderDevice::present(const SwapChainHandle handle)
 {
-	if (auto swapChain = static_cast<SwapChain*>(get(handle)); swapChain)
+	if (auto swapChain = get<SwapChain>(handle); swapChain)
 	{
 		return swapChain->present();
 	}
@@ -439,9 +453,8 @@ bool sakura::graphics::vk::RenderDevice::execute(const RenderCommandBuffer& cmdB
 
 		if (cacheFrame.toScreen.id() != GenerationalId::UNINITIALIZED)
 		{
-			if (auto native_chain = get(cacheFrame.toScreen); native_chain)
+			if (auto vkChain = get<vk::SwapChain>(cacheFrame.toScreen); vkChain)
 			{
-				auto vkChain = static_cast<vk::SwapChain*>(native_chain);
 				// Semaphore(s) to wait upon before the submitted command buffer starts executing
 				submitInfo.pWaitSemaphores = &vkChain->presentCompleteSemaphore;
 				 // One wait semaphore
@@ -570,7 +583,7 @@ void sakura::graphics::vk::RenderDevice::processCommandUpdateBinding(PassCacheFr
 			{
 				auto& slot = set.slots[j];
 				VkDescriptorBufferInfo bufferInfo = {};
-				if (auto buf = static_cast<GPUBuffer*>(get(slot.buffer)); buf)
+				if (auto buf = get<GPUBuffer>(slot.buffer); buf)
 					bufferInfo.buffer = buf->buffer_;
 				else
 				{
@@ -610,7 +623,7 @@ void sakura::graphics::vk::RenderDevice::processCommandDraw(PassCacheFrame& cach
 	{
 		const auto& vb_src = command.vb;
 		const auto& ib_src = command.ib;
-		if (auto vb = static_cast<GPUBuffer*>(get(vb_src.vertex_buffer)); vb)
+		if (auto vb = get<GPUBuffer>(vb_src.vertex_buffer); vb)
 		{
 			VkBuffer vertexBuffers[] = { vb->buffer_ };
 			VkDeviceSize offsets[] = { 0 };
@@ -621,7 +634,7 @@ void sakura::graphics::vk::RenderDevice::processCommandDraw(PassCacheFrame& cach
 			assert(0 && "VB NOT FOUND");
 		}
 
-		if (auto ib = static_cast<GPUBuffer*>(get(ib_src.index_buffer)); ib)
+		if (auto ib = get<GPUBuffer>(ib_src.index_buffer); ib)
 		{
 			VkIndexType indType = VkIndexType::VK_INDEX_TYPE_UINT16;
 			if (ib_src.stride == 32)
@@ -668,9 +681,8 @@ sakura::graphics::vk::RenderPipeline* sakura::graphics::vk::RenderDevice::proces
 			= std::get_if<SwapChainHandle>(&slot_var); swapChain)
 		{
 			cache.toScreen = *swapChain;
-			if (auto native_chain = get(*swapChain); native_chain)
+			if (auto vkChain = get<vk::SwapChain>(*swapChain); vkChain)
 			{
-				auto vkChain = static_cast<vk::SwapChain*>(native_chain);
 				attachDesc.format = translate(vkChain->render_format());
 				attachDesc.samples = VK_SAMPLE_COUNT_1_BIT;
 				attachDesc.loadOp = translate(attachment_slot.load_op);
@@ -703,7 +715,7 @@ sakura::graphics::vk::RenderPipeline* sakura::graphics::vk::RenderDevice::proces
 		}
 	}
 
-	cache.pipeline = (RenderPipeline*)get(cmd.pipeline);
+	cache.pipeline = get<RenderPipeline>(cmd.pipeline);
 	// !!!!!! REFACTOR THIS !!!!!!
 	if (!cache.pass_)
 	{
@@ -785,7 +797,7 @@ sakura::graphics::vk::RenderPipeline* sakura::graphics::vk::RenderDevice::proces
 	vkCmdBeginRenderPass(cache.command_buffer_, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 	vkCmdBindPipeline(cache.command_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, cache.pipeline->pipeline_);
 
-	return (RenderPipeline*)get(cmd.pipeline);
+	return get<RenderPipeline>(cmd.pipeline);
 }
 
 void sakura::graphics::vk::RenderDevice::processCommandEndRenderPass(PassCacheFrame& cache, const RenderCommandEndRenderPass& command) const

@@ -45,18 +45,10 @@ namespace sakura::graphics::webgpu
 
 		RenderBufferHandle update_buffer(const RenderBufferHandle handle, size_t offset, void* data, size_t size) override;
 
-		// TODO: Share these implementations between backend devices.
-		IGPUBuffer* get(const RenderBufferHandle handle) const override;
-		IGPUShader* get(const RenderShaderHandle handle) const override;
-		IRenderPipeline* get(const RenderPipelineHandle handle) const override;
-		ISwapChain* get(const SwapChainHandle handle) const override;
-		IFence* get(const FenceHandle handle) const override;
-		
-		IGPUBuffer* optional(const RenderBufferHandle handle) const override;
-		IGPUShader* optional(const RenderShaderHandle handle) const override;
-		IRenderPipeline* optional(const RenderPipelineHandle handle) const override;
-		ISwapChain* optional(const SwapChainHandle handle) const override;
-		IFence* optional(const FenceHandle handle) const override;
+		IGPUMemoryResource* get_unsafe(const RenderResourceHandle handle) const override;
+		IGPUMemoryResource* optional_unsafe(const RenderResourceHandle handle) const override;
+		IGPUObject* get_unsafe(const RenderGraphHandle handle) const override;
+		IGPUObject* optional_unsafe(const RenderGraphHandle handle) const override;
 		
 		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources_;
 		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects_;
@@ -85,13 +77,8 @@ namespace sakura::graphics::webgpu
 		sakura::string name;
 
 	protected:
-		template <bool optional, typename ResourceType, typename Handle>
-		ResourceType* _get_resouce_impl(const Handle handle) const noexcept;
 		template <typename ResourceType, typename Handle, typename... Args>
 		Handle _create_resouce_impl(const Handle handle, Args&&... args) noexcept;
-
-		template <bool optional, typename ObjectType, typename Handle>
-		ObjectType* _get_object_impl(const Handle handle) const noexcept;
 		template <typename ObjectType, typename Handle, typename... Args>
 		Handle _create_object_impl(const Handle handle, Args&&... args) noexcept;
 
@@ -196,39 +183,13 @@ namespace sakura::graphics::webgpu
 		}
 	};
 
-	template <bool isOptional, typename ResourceType, typename Handle>
-	ResourceType* RenderDevice::_get_resouce_impl(const Handle handle) const noexcept
-	{
-		static_assert(std::is_base_of_v<IGPUMemoryResource, ResourceType>, "[DeviceWebGPU::_get_resource_impl]: ResourceType must be derived from IGPUMemoryResource!");
-		static_assert(std::is_base_of_v<RenderResourceHandle, Handle>, "[DeviceWebGPU::_get_resource_impl]: Handle must be derived from RenderResourceHandle!");
-		static_assert(std::is_base_of_v<typename Handle::ResourceType, ResourceType>, "[DeviceWebGPU::_get_resource_impl]: Handle must match to it's ResourceType!");
-		if (created_resources_.size() < handle.id().index() + 1)
-		{
-			if constexpr (isOptional)
-				;
-			else
-				handle_error<Handle>::not_find(handle);
-			return nullptr;
-		}
-		auto& resource = created_resources_[handle.id().index()];
-		if (handle.id().generation() == resource.second)
-			return static_cast<ResourceType*>(resource.first);
-		else
-		{
-			if constexpr (isOptional);
-			else
-				handle_error<Handle>::generation_dismatch(handle);
-			return nullptr;
-		}
-	}
-
 	template <typename ResourceType, typename Handle, typename ... Args>
 	Handle RenderDevice::_create_resouce_impl(const Handle handle, Args&&... args) noexcept
 	{
 		static_assert(std::is_base_of_v<IGPUMemoryResource, ResourceType>, "[DeviceWebGPU::_create_resouce_impl]: ResourceType must be derived from IGPUMemoryResource!");
 		static_assert(std::is_base_of_v<RenderResourceHandle, Handle>, "[DeviceWebGPU::_create_resouce_impl]: Handle must be derived from RenderResourceHandle!");
 		static_assert(std::is_base_of_v<typename Handle::ResourceType, ResourceType>, "[DeviceWebGPU::_create_resouce_impl]: Handle must match to it's ResourceType!");
-		if (this->optional(handle))
+		if (this->optional<ResourceType>(handle))
 		{
 			handle_error<Handle>::create_on_existed(handle);
 		}
@@ -242,38 +203,13 @@ namespace sakura::graphics::webgpu
 		return handle;
 	}
 
-	template <bool isOptional, typename ObjectType, typename Handle>
-	ObjectType* RenderDevice::_get_object_impl(const Handle handle) const noexcept
-	{
-		static_assert(std::is_base_of_v<IGPUObject, ObjectType>, "[DeviceWebGPU::_get_object_impl]: ResourceType must be derived from IGPUObject!");
-		static_assert(std::is_base_of_v<RenderGraphHandle, Handle>, "[DeviceWebGPU::_get_object_impl]: Handle must be derived from RenderObjectHandle!");
-		static_assert(std::is_base_of_v<typename Handle::ObjectType, ObjectType>, "[DeviceWebGPU::_get_object_impl]: Handle must match to it's ObjectType!");
-		if (created_objects_.size() < handle.id().index() + 1)
-		{
-			if constexpr (isOptional);
-			else
-				handle_error<Handle>::not_find(handle);
-			return nullptr;
-		}
-		auto& object = created_objects_[handle.id().index()];
-		if (handle.id().generation() == object.second)
-			return static_cast<ObjectType*>(object.first);
-		else
-		{
-			if constexpr (isOptional);
-			else
-				handle_error<Handle>::generation_dismatch(handle);
-			return nullptr;
-		}
-	}
-
 	template <typename ObjectType, typename Handle, typename ... Args>
 	Handle RenderDevice::_create_object_impl(const Handle handle, Args&&... args) noexcept
 	{
 		static_assert(std::is_base_of_v<IGPUObject, ObjectType>, "[DeviceWebGPU::_create_object_impl]: ResourceType must be derived from IGPUObject!");
 		static_assert(std::is_base_of_v<RenderGraphHandle, Handle>, "[DeviceWebGPU::_create_object_impl]: Handle must be derived from RenderObjectHandle!");
 		static_assert(std::is_base_of_v<typename Handle::ObjectType, ObjectType>, "[DeviceWebGPU::_create_object_impl]: Handle must match to it's ObjectType!");
-		if (this->optional(handle))
+		if (this->optional<ObjectType>(handle))
 		{
 			handle_error<Handle>::create_on_existed(handle);
 		}

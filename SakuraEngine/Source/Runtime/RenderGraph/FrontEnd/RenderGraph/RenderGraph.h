@@ -137,6 +137,7 @@ namespace sakura::graphics
             auto& hdl = blackboard(name);
             return *static_cast<const T*>(&hdl);
     	}
+
     private:
         RenderDeviceGroupProxy devices;
         sakura::unordered_map<sakura::string, RenderResourceHandle> _blackboard;
@@ -204,10 +205,6 @@ namespace sakura::graphics
         ));
         return newHandle;
     }
-
-
-
-
 	
     class RenderGraphAPI RenderGraphModule : public IModule
     {

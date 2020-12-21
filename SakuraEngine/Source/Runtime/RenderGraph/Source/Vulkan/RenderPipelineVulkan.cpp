@@ -39,9 +39,8 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	for (auto i = 0u; i < desc.shader_layout.count; i++)
 	{
 		const auto& shaderHandle = desc.shader_layout.shaders[i];
-		if (auto tryFindShader = render_device.optional(shaderHandle); tryFindShader)
+		if (auto shaderFound = render_device.optional<vk::GPUShader>(shaderHandle); shaderFound)
 		{
-			vk::GPUShader* shaderFound = static_cast<vk::GPUShader*>(tryFindShader);
 			const auto freq = shaderFound->frequency();
 			shaderStages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 			shaderStages[i].module = shaderFound->shader_module_;

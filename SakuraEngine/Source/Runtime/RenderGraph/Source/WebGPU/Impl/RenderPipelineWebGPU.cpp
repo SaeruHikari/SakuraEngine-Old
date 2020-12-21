@@ -44,9 +44,8 @@ sakura::graphics::webgpu::RenderPipeline::RenderPipeline(RenderPipelineHandle ha
     for(auto i = 0u; i < desc.shader_layout.count; i++)
     {
         const auto& shaderHandle = desc.shader_layout.shaders[i];
-        if(auto tryFindShader = dev.optional(shaderHandle); tryFindShader)
+        if(auto shaderFound = dev.optional<webgpu::GPUShader>(shaderHandle); shaderFound)
         {
-            webgpu::GPUShader* shaderFound = static_cast<webgpu::GPUShader*>(tryFindShader);
             const auto freq = shaderFound->frequency();
             switch (freq)
             {

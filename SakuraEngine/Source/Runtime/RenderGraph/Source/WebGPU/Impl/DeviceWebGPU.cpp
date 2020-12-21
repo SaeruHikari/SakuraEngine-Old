@@ -32,9 +32,8 @@ RenderPipeline* RenderDevice::processCommandBeginRenderPass(
         if (auto swapChain
             = std::get_if<SwapChainHandle>(&slot_var); swapChain)
         {
-            if (auto get_wgpu_chain = get(*swapChain); get_wgpu_chain)
+            if (auto wgpuChain = get<webgpu::SwapChain>(*swapChain); wgpuChain)
             {
-                auto wgpuChain = static_cast<webgpu::SwapChain*>(get_wgpu_chain);
                 texView = wgpuSwapChainGetCurrentTextureView(wgpuChain->swapchain);
                 colorDesc.attachment = texView;
             }
@@ -67,7 +66,7 @@ RenderPipeline* RenderDevice::processCommandBeginRenderPass(
     renderPass.colorAttachments = colorDescs.data();
     *pass = wgpuCommandEncoderBeginRenderPass(*encoder, &renderPass);
 
-	if(auto ppl = static_cast<RenderPipeline*>(get(cmd.pipeline));ppl)
+	if(auto ppl = get<RenderPipeline>(cmd.pipeline);ppl)
 	{
         wgpuRenderPassEncoderSetPipeline(*pass, ppl->renderPipeline);
         return ppl;
@@ -104,7 +103,7 @@ void RenderDevice::processCommandDrawIndirect(const RenderCommandDrawIndirect& c
     WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const
 {
     const auto buf_hdl = command.indirect_buffer;
-    if (auto buf = static_cast<GPUBuffer*>(get(buf_hdl)); buf)
+    if (auto buf = get<GPUBuffer>(buf_hdl); buf)
     {
         wgpuRenderPassEncoderDrawIndexedIndirect(*pass, buf->_buffer, command.offset);
     }
@@ -121,7 +120,7 @@ void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame,
         const auto& vb_src = command.vb;
         const auto& ib_src = command.ib;
 
-        if (auto vb = static_cast<GPUBuffer*>(get(vb_src.vertex_buffer)); vb)
+        if (auto vb = get<GPUBuffer>(vb_src.vertex_buffer); vb)
         {
             wgpuRenderPassEncoderSetVertexBuffer(*pass, 0, vb->_buffer, vb_src.offset, vb_src.stride);
         }
@@ -130,7 +129,7 @@ void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame,
             assert(0 && "VB NOT FOUND");
         }
 
-        if(auto ib = static_cast<GPUBuffer*>(get(ib_src.index_buffer));ib)
+        if(auto ib = get<GPUBuffer>(ib_src.index_buffer);ib)
 		{
 #ifdef _____DESPERATED // Emscripten hasn't yet caught up with the API changes
 	        wgpuRenderPassEncoderSetIndexBuffer(*pass, ib->_buffer, ib_src.offset, ib_src.stride);
@@ -217,7 +216,7 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
 				auto& entry = cacheFrame.entries[i].first[j];
 				if (entry.binding == slot.slot_index && entry.offset == slot.offset && entry.size == slot.size)
 				{
-					if (auto buf = static_cast<GPUBuffer*>(get(slot.buffer)); buf)
+					if (auto buf = get<GPUBuffer>(slot.buffer); buf)
 						if (entry.buffer == buf->_buffer) continue;
 				}
 				cacheFrame.entries[i].second = false;
@@ -234,7 +233,7 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
 					auto& slot = set.slots[j];
 					auto& entry = cacheFrame.entries[i].first[j];
 					entry.binding = slot.slot_index; entry.offset = slot.offset; entry.size = slot.size;
-					if (auto buf = static_cast<GPUBuffer*>(get(slot.buffer)); buf)
+					if (auto buf = get<GPUBuffer>(slot.buffer); buf)
 						entry.buffer = buf->_buffer;
 					else
 						assert(0 && "Buffer Not Found!");
@@ -372,7 +371,7 @@ bool RenderDevice::present(const SwapChainHandle handle)
 #ifdef SAKURA_TARGET_PLATFORM_EMSCRIPTEN
     return true;
 #endif
-    if(auto swapChain = static_cast<SwapChain*>(get(handle));swapChain)
+    if(auto swapChain = get<SwapChain>(handle);swapChain)
     {
         return swapChain->present();
     }
@@ -390,59 +389,74 @@ void RenderDevice::destroy_resource(const RenderShaderHandle to_destroy)
 
 RenderBufferHandle RenderDevice::update_buffer(const RenderBufferHandle handle, size_t offset, void* data, size_t size)
 {
-    auto buf = static_cast<GPUBuffer*>(get(handle));
+    auto buf = get<GPUBuffer>(handle);
     wgpuQueueWriteBuffer(defaultQueue, buf->_buffer, offset, data, size);
     return handle;
 }
 
-IGPUBuffer* RenderDevice::get(const RenderBufferHandle handle) const
+
+sakura::graphics::IGPUMemoryResource* RenderDevice::get_unsafe(const RenderResourceHandle handle) const
 {
-    return _get_resouce_impl<false, IGPUBuffer>(handle);
+	if (created_resources_.size() < handle.id().index() + 1)
+	{
+		handle_error<RenderResourceHandle>::not_find(handle);
+		return nullptr;
+	}
+	const auto& resource = created_resources_[handle.id().index()];
+	if (handle.id().generation() == resource.second)
+		return resource.first;
+	else
+	{
+		handle_error<RenderResourceHandle>::generation_dismatch(handle);
+		return nullptr;
+	}
 }
 
-IGPUShader* RenderDevice::get(const RenderShaderHandle handle) const
+sakura::graphics::IGPUMemoryResource* RenderDevice::optional_unsafe(const RenderResourceHandle handle) const
 {
-    return _get_resouce_impl<false, IGPUShader>(handle);
+	if (created_resources_.size() < handle.id().index() + 1)
+	{
+		return nullptr;
+	}
+	const auto& resource = created_resources_[handle.id().index()];
+	if (handle.id().generation() == resource.second)
+		return resource.first;
+	else
+	{
+		return nullptr;
+	}
 }
 
-IGPUBuffer* RenderDevice::optional(const RenderBufferHandle handle) const
+sakura::graphics::IGPUObject* RenderDevice::get_unsafe(const RenderGraphHandle handle) const
 {
-    return _get_resouce_impl<true, IGPUBuffer>(handle);
+	if (created_resources_.size() < handle.id().index() + 1)
+	{
+		handle_error<RenderGraphHandle>::not_find(handle);
+		return nullptr;
+	}
+	const auto& resource = created_objects_[handle.id().index()];
+	if (handle.id().generation() == resource.second)
+		return resource.first;
+	else
+	{
+		handle_error<RenderGraphHandle>::generation_dismatch(handle);
+		return nullptr;
+	}
 }
 
-IGPUShader* RenderDevice::optional(const RenderShaderHandle handle) const
+sakura::graphics::IGPUObject* RenderDevice::optional_unsafe(const RenderGraphHandle handle) const
 {
-    return _get_resouce_impl<true, IGPUShader>(handle);
-}
-
-IRenderPipeline* RenderDevice::optional(const RenderPipelineHandle handle) const
-{
-    return _get_object_impl<true, IRenderPipeline, RenderPipelineHandle>(handle);
-}
-
-ISwapChain* RenderDevice::optional(const SwapChainHandle handle) const
-{
-    return _get_object_impl<true, ISwapChain, SwapChainHandle>(handle);
-}
-
-IFence* RenderDevice::optional(const FenceHandle handle) const
-{
-    return _get_object_impl<true, IFence, FenceHandle>(handle);
-}
-
-IRenderPipeline* RenderDevice::get(const RenderPipelineHandle handle) const
-{
-	return _get_object_impl<false, IRenderPipeline, RenderPipelineHandle>(handle);
-}
-
-ISwapChain* RenderDevice::get(const SwapChainHandle handle) const
-{
-    return _get_object_impl<false, ISwapChain, SwapChainHandle>(handle);
-}
-
-IFence* RenderDevice::get(const FenceHandle handle) const
-{
-    return _get_object_impl<false, IFence, FenceHandle>(handle);
+	if (created_resources_.size() < handle.id().index() + 1)
+	{
+		return nullptr;
+	}
+	const auto& resource = created_objects_[handle.id().index()];
+	if (handle.id().generation() == resource.second)
+		return resource.first;
+	else
+	{
+		return nullptr;
+	}
 }
 
 RenderShaderHandle RenderDevice::create_shader(const RenderShaderHandle handle, const ShaderDesc& config)
