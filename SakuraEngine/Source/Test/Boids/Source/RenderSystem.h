@@ -8,7 +8,7 @@
 #include "ECS/ECS.h"
 #include "Boids.h"
 
-#define TARGET_NUM 30000
+#define TARGET_NUM 20000
 
 namespace render_system
 {

@@ -45,10 +45,10 @@ namespace sakura::graphics::webgpu
 
 		RenderBufferHandle update_buffer(const RenderBufferHandle handle, size_t offset, void* data, size_t size) override;
 
-		IGPUMemoryResource* get(const RenderResourceHandle handle) const override;
-		IGPUMemoryResource* optional(const RenderResourceHandle handle) const override;
-		IGPUObject* get(const RenderGraphHandle handle) const override;
-		IGPUObject* optional(const RenderGraphHandle handle) const override;
+		IGPUMemoryResource* get_unsafe(const RenderResourceHandle handle) const override;
+		IGPUMemoryResource* optional_unsafe(const RenderResourceHandle handle) const override;
+		IGPUObject* get_unsafe(const RenderGraphHandle handle) const override;
+		IGPUObject* optional_unsafe(const RenderGraphHandle handle) const override;
 		
 		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources_;
 		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects_;
@@ -189,7 +189,7 @@ namespace sakura::graphics::webgpu
 		static_assert(std::is_base_of_v<IGPUMemoryResource, ResourceType>, "[DeviceWebGPU::_create_resouce_impl]: ResourceType must be derived from IGPUMemoryResource!");
 		static_assert(std::is_base_of_v<RenderResourceHandle, Handle>, "[DeviceWebGPU::_create_resouce_impl]: Handle must be derived from RenderResourceHandle!");
 		static_assert(std::is_base_of_v<typename Handle::ResourceType, ResourceType>, "[DeviceWebGPU::_create_resouce_impl]: Handle must match to it's ResourceType!");
-		if (this->optional(handle))
+		if (this->optional<ResourceType>(handle))
 		{
 			handle_error<Handle>::create_on_existed(handle);
 		}
@@ -209,7 +209,7 @@ namespace sakura::graphics::webgpu
 		static_assert(std::is_base_of_v<IGPUObject, ObjectType>, "[DeviceWebGPU::_create_object_impl]: ResourceType must be derived from IGPUObject!");
 		static_assert(std::is_base_of_v<RenderGraphHandle, Handle>, "[DeviceWebGPU::_create_object_impl]: Handle must be derived from RenderObjectHandle!");
 		static_assert(std::is_base_of_v<typename Handle::ObjectType, ObjectType>, "[DeviceWebGPU::_create_object_impl]: Handle must match to it's ObjectType!");
-		if (this->optional(handle))
+		if (this->optional<ObjectType>(handle))
 		{
 			handle_error<Handle>::create_on_existed(handle);
 		}
