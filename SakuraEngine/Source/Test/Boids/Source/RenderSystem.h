@@ -8,7 +8,7 @@
 #include "ECS/ECS.h"
 #include "Boids.h"
 
-#define TARGET_NUM 50000
+#define TARGET_NUM 30000
 
 namespace render_system
 {
@@ -60,7 +60,7 @@ namespace render_system
 
 	sakura::Window mainWindow;
 	RenderGraph render_graph;
-	RenderDeviceGroupProxy deviceGroup(render_graph);
+	RenderDeviceGroupProxy deviceGroup = RenderDeviceGroupProxy(render_graph);
 	SwapChainHandle swapChain = render_graph.SwapChain("DefaultSwapChain");
 	RenderShaderHandle vertexShader = render_graph.RenderShaderUnsafe("VertexShader");
 	RenderShaderHandle pixelShader = render_graph.RenderShaderUnsafe("PixelShader");

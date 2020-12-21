@@ -395,54 +395,69 @@ RenderBufferHandle RenderDevice::update_buffer(const RenderBufferHandle handle, 
     return handle;
 }
 
-IGPUBuffer* RenderDevice::get(const RenderBufferHandle handle) const
+
+sakura::graphics::IGPUMemoryResource* RenderDevice::get(const RenderResourceHandle handle) const
 {
-    return _get_resouce_impl<false, IGPUBuffer>(handle);
+	if (created_resources_.size() < handle.id().index() + 1)
+	{
+		handle_error<RenderResourceHandle>::not_find(handle);
+		return nullptr;
+	}
+	const auto& resource = created_resources_[handle.id().index()];
+	if (handle.id().generation() == resource.second)
+		return resource.first;
+	else
+	{
+		handle_error<RenderResourceHandle>::generation_dismatch(handle);
+		return nullptr;
+	}
 }
 
-IGPUShader* RenderDevice::get(const RenderShaderHandle handle) const
+sakura::graphics::IGPUMemoryResource* RenderDevice::optional(const RenderResourceHandle handle) const
 {
-    return _get_resouce_impl<false, IGPUShader>(handle);
+	if (created_resources_.size() < handle.id().index() + 1)
+	{
+		return nullptr;
+	}
+	const auto& resource = created_resources_[handle.id().index()];
+	if (handle.id().generation() == resource.second)
+		return resource.first;
+	else
+	{
+		return nullptr;
+	}
 }
 
-IGPUBuffer* RenderDevice::optional(const RenderBufferHandle handle) const
+sakura::graphics::IGPUObject* RenderDevice::get(const RenderGraphHandle handle) const
 {
-    return _get_resouce_impl<true, IGPUBuffer>(handle);
+	if (created_resources_.size() < handle.id().index() + 1)
+	{
+		handle_error<RenderGraphHandle>::not_find(handle);
+		return nullptr;
+	}
+	const auto& resource = created_objects_[handle.id().index()];
+	if (handle.id().generation() == resource.second)
+		return resource.first;
+	else
+	{
+		handle_error<RenderGraphHandle>::generation_dismatch(handle);
+		return nullptr;
+	}
 }
 
-IGPUShader* RenderDevice::optional(const RenderShaderHandle handle) const
+sakura::graphics::IGPUObject* RenderDevice::optional(const RenderGraphHandle handle) const
 {
-    return _get_resouce_impl<true, IGPUShader>(handle);
-}
-
-IRenderPipeline* RenderDevice::optional(const RenderPipelineHandle handle) const
-{
-    return _get_object_impl<true, IRenderPipeline, RenderPipelineHandle>(handle);
-}
-
-ISwapChain* RenderDevice::optional(const SwapChainHandle handle) const
-{
-    return _get_object_impl<true, ISwapChain, SwapChainHandle>(handle);
-}
-
-IFence* RenderDevice::optional(const FenceHandle handle) const
-{
-    return _get_object_impl<true, IFence, FenceHandle>(handle);
-}
-
-IRenderPipeline* RenderDevice::get(const RenderPipelineHandle handle) const
-{
-	return _get_object_impl<false, IRenderPipeline, RenderPipelineHandle>(handle);
-}
-
-ISwapChain* RenderDevice::get(const SwapChainHandle handle) const
-{
-    return _get_object_impl<false, ISwapChain, SwapChainHandle>(handle);
-}
-
-IFence* RenderDevice::get(const FenceHandle handle) const
-{
-    return _get_object_impl<false, IFence, FenceHandle>(handle);
+	if (created_resources_.size() < handle.id().index() + 1)
+	{
+		return nullptr;
+	}
+	const auto& resource = created_objects_[handle.id().index()];
+	if (handle.id().generation() == resource.second)
+		return resource.first;
+	else
+	{
+		return nullptr;
+	}
 }
 
 RenderShaderHandle RenderDevice::create_shader(const RenderShaderHandle handle, const ShaderDesc& config)

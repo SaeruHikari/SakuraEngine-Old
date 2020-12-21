@@ -69,18 +69,11 @@ namespace sakura::graphics
 		virtual RenderPipelineHandle create_render_pipeline(const RenderPipelineHandle handle, const RenderPipelineDesc& desc) = 0;
 
 		virtual RenderBufferHandle update_buffer(const RenderBufferHandle handle, size_t offset, void* data, size_t size) { return handle; };
-
-		virtual IGPUBuffer* get(const RenderBufferHandle handle) const { return nullptr; }
-		virtual IGPUShader* get(const RenderShaderHandle handle) const { return nullptr; }
-		virtual IRenderPipeline* get(const RenderPipelineHandle handle) const { return nullptr; }
-		virtual ISwapChain* get(const SwapChainHandle handle) const { return nullptr; }
-		virtual IFence* get(const FenceHandle handle) const { return nullptr; }
-
-		virtual IGPUBuffer* optional(const RenderBufferHandle handle) const { return nullptr; }
-		virtual IGPUShader* optional(const RenderShaderHandle handle) const { return nullptr; }
-		virtual IRenderPipeline* optional(const RenderPipelineHandle handle) const { return nullptr; }
-		virtual ISwapChain* optional(const SwapChainHandle handle) const { return nullptr; }
-		virtual IFence* optional(const FenceHandle handle) const { return nullptr; }
+		
+		virtual IGPUMemoryResource* get(const RenderResourceHandle handle) const = 0;
+		virtual IGPUMemoryResource* optional(const RenderResourceHandle handle) const = 0;
+		virtual IGPUObject* get(const RenderGraphHandle handle) const = 0;
+		virtual IGPUObject* optional(const RenderGraphHandle handle) const = 0;
 		
 		virtual void terminate() = 0;
 
@@ -233,6 +226,27 @@ namespace sakura::graphics
 		{
 			return devices[index];
 		}
+
+		virtual IGPUMemoryResource* get(const RenderResourceHandle handle) const override
+		{
+			return nullptr;
+		}
+
+		virtual IGPUObject* get(const RenderGraphHandle handle) const override
+		{
+			return nullptr;
+		}
+
+		virtual IGPUMemoryResource* optional(const RenderResourceHandle handle) const override
+		{
+			return nullptr;
+		}
+
+		virtual IGPUObject* optional(const RenderGraphHandle handle) const override
+		{
+			return nullptr;
+		}
+
 	private:
 		sakura::string name = "DeviceGroup:";
 		sakura::vector<IRenderDevice*> devices;
