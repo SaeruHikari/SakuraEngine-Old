@@ -361,38 +361,42 @@ RenderGraphVulkanAPI VkAttachmentStoreOp sakura::graphics::vk::translate(EStoreO
 	}
 }
 
-RenderGraphVulkanAPI VkBufferUsageFlags sakura::graphics::vk::translate(EBufferUsage usage)
+RenderGraphVulkanAPI VkBufferUsageFlags sakura::graphics::vk::translate(const BufferUsages usage, const EBufferCPUAccess access)
 {
+	using namespace sakura::graphics;
 	VkBufferUsageFlags usages = 0;
-	switch (usage)
+	usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	if(usage & EBufferUsage::IndexBuffer)
 	{
-	case sakura::graphics::EBufferUsage::IndexBuffer:
 		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		break;
-	case sakura::graphics::EBufferUsage::VertexBuffer:
+	}
+	if (usage & EBufferUsage::VertexBuffer)
+	{
 		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		break;
-	case sakura::graphics::EBufferUsage::UniformBuffer:
+	}
+	if (usage & EBufferUsage::UniformBuffer)
+	{
 		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		break;
-	case sakura::graphics::EBufferUsage::IndirectBuffer:
+	}
+	if (usage & EBufferUsage::IndirectBuffer)
+	{
 		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
-		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		break;
-	case sakura::graphics::EBufferUsage::StorageBuffer:
+	}
+	if (usage & EBufferUsage::StorageBuffer)
+	{
 		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		break;
-	case sakura::graphics::EBufferUsage::RayTracingAccelerateStructure:
+	}
+	if (usage & EBufferUsage::RayTracingAccelerateStructure)
+	{
 		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_RAY_TRACING_BIT_KHR;
+	}
+	if (usage & EBufferUsage::CopySrc)
+	{
+		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+	}
+	if (usage & EBufferUsage::CopyDst)
+	{
 		usages |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		break;
-	case sakura::graphics::EBufferUsage::Unknown:
-	default:
-		break;
 	}
 	return usages;
 }

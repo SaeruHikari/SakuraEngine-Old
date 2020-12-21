@@ -463,10 +463,11 @@ RenderBufferHandle RenderDevice::create_buffer(const RenderBufferHandle handle, 
 	return _create_resouce_impl<webgpu::GPUBuffer, RenderBufferHandle>(handle, *this, config);
 }
 
-RenderAttachmentHandle RenderDevice::create_render_attachment(const RenderAttachmentHandle handle, const Attachment& config)
+RenderTextureHandle RenderDevice::create_texture(const RenderTextureHandle handle, const TextureDesc& desc)
 {
-    return handle;
+	return _create_resouce_impl<webgpu::GpuTexture, RenderTextureHandle>(handle, *this, desc);
 }
+
 
 SwapChainHandle RenderDevice::create_swap_chain(
     const SwapChainHandle handle, const SwapChainDesc& desc)

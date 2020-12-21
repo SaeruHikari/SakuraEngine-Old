@@ -35,6 +35,12 @@ namespace sakura::graphics
 		UINT32 = 0x00000002,
 	};
 
+	enum class ESharingMode : uint8
+	{
+		Exclusive = 0,
+		Concurrent = 1
+	};
+	
 	enum class EVertexFormat : uint16
 	{
 		UCHAR2,
@@ -138,24 +144,6 @@ namespace sakura::graphics
 		BC7_UNORM = 64,
 		BC7_UNORM_SRGB = 65,
 		Count = BC7_UNORM_SRGB + 1
-	};
-
-	enum class EBufferUsage : uint8
-	{
-		Unknown,
-		IndexBuffer,
-		VertexBuffer,
-		UniformBuffer,
-		IndirectBuffer,
-		StorageBuffer,
-		RayTracingAccelerateStructure
-	};
-
-	enum class EBufferOptions : uint8
-	{
-		Upload,
-		Query,
-		None
 	};
 
 	enum class EBufferCPUAccess : uint8
@@ -325,6 +313,7 @@ namespace sakura::graphics
 	}
 
 	using extent2d = sakura::extent2d;
+	using extent3d = sakura::extent3d;
 
 	struct RenderGraphAPI IGPUObject
 	{
@@ -366,6 +355,88 @@ namespace sakura::graphics
 		static_assert(std::is_base_of_v<IGPUObject, ObjectType>, "GPUObject Handle must be used with GPU Objects!");
 	};
 
+
+
+
+
+
+	using BufferUsages = uint32;
+	struct RenderGraphAPI BufferDesc
+	{
+		enum Usage
+		{
+			Unknown,
+
+			CopySrc,
+			CopyDst,
+
+			IndexBuffer,
+			VertexBuffer,
+			UniformBuffer,
+			IndirectBuffer,
+			StorageBuffer,
+			Query,
+			RayTracingAccelerateStructure
+		};
+		const BufferUsages usages = Usage::UniformBuffer;
+		const EBufferCPUAccess access = EBufferCPUAccess::None;
+		const size_t length = 0;
+		const void* data = nullptr;
+		BufferDesc(Usage usage = Usage::UniformBuffer,
+			size_t length = 0, const void* data = nullptr,
+			const EBufferCPUAccess access = EBufferCPUAccess::None);
+	};
+	using EBufferUsage = BufferDesc::Usage;
+
+	using TextureUsages = uint32;
+	struct RenderGraphAPI TextureDesc
+	{
+		enum Usage
+		{
+			None = 0,
+			CopySrc = 0x00000001,
+			CopyDst = 0x00000002,
+			Sampled = 0x00000004,
+			Storage = 0x00000008,
+			Attachment = 0x00000010,
+			Present = 0x00000020
+		};
+		enum Dimension
+		{
+			Texture1D = 0,
+			Texture2D = 1,
+			Texture3D = 2
+		};
+		using Flags = uint32;
+		using Usages = uint32;
+
+		ETextureFormat format;
+		Dimension dimension = Dimension::Texture2D;
+		Usages usages = 0;
+		uint32 sample_count = 1;
+		uint32 mip_levels = 1;
+		extent3d size;
+
+		// Advanced Features
+		enum Flag
+		{
+			SparseBinding = 0x00000001,
+			SparseResidency = 0x00000002,
+			SparseAliased = 0x00000004,
+			MutableFormat = 0x00000008,
+			Cube = 0x00000010,
+			T2DArray = 0x00000020,
+			Alias = 0x00000400,
+			BlockButBitCompatible = 0x00000080,
+		};
+		Flags flags = 0;
+		bool force_linear = false;
+		uint32 array_layers = 1;
+		// multi-queue support.
+		ESharingMode sharing_mode = ESharingMode::Exclusive;
+	};
+	using ETextureUsage = TextureDesc::Usage;
+	
 	struct RenderGraphAPI IGPUShader : public IGPUMemoryResource
 	{
 		virtual EShaderFrequency frequency() const = 0;
@@ -374,23 +445,22 @@ namespace sakura::graphics
 	};
 	struct RenderGraphAPI IGPUBuffer : public IGPUMemoryResource
 	{
-		virtual EBufferUsage usage() const = 0;
-		virtual EBufferOptions options() const = 0;
+		virtual BufferUsages usages() const = 0;
 	};
 	struct RenderGraphAPI IGPUTexture : public IGPUMemoryResource
 	{
 		virtual uint32 width() const = 0;
 		virtual uint32 height() const = 0;
+		virtual uint32 depth() const = 0;
 		virtual ETextureFormat render_format() const = 0;
-	};
-	struct RenderGraphAPI IRenderAttachment : public IGPUTexture
-	{
 
+		virtual RenderResourceHandle handle() const = 0;
+		
+		virtual TextureUsages usages() const = 0;
 	};
 	using RenderShaderHandle = TypedRenderResourceHandle<IGPUShader>;
 	using RenderBufferHandle = TypedRenderResourceHandle<IGPUBuffer>;
 	using RenderTextureHandle = TypedRenderResourceHandle<IGPUTexture>;
-	using RenderAttachmentHandle = TypedRenderResourceHandle<IRenderAttachment>;
 
 	struct RenderGraphAPI ISwapChain : public IGPUObject
 	{
@@ -624,26 +694,8 @@ namespace sakura::graphics
 		attachment_layout(_attachment_layout), polygon_mode(_polygon_mode), cull_mode(_cull_mode)
 	{
 	}
-	
-	struct RenderGraphAPI BufferDesc
-	{
-		const EBufferUsage usage = EBufferUsage::UniformBuffer;
-		const EBufferOptions options = EBufferOptions::None;
-		const EBufferCPUAccess access = EBufferCPUAccess::None;
-		const size_t length = 0;
-		const void* data = nullptr;
-		BufferDesc(EBufferUsage usage = EBufferUsage::UniformBuffer,
-			size_t length = 0, const void* data = nullptr,
-			const EBufferCPUAccess access = EBufferCPUAccess::None,
-			EBufferOptions options = EBufferOptions::None);
-	};
 
-	struct RenderGraphAPI TextureDesc
-	{
-		uint32 width;
-		uint32 height;
-		ETextureFormat format;
-	};
+
 	
 	struct RenderGraphAPI Attachment
 	{
@@ -744,14 +796,6 @@ namespace sakura::graphics
 			const sakura::span<const std::byte> code = {}) noexcept;
 	};
 
-
-	//struct RenderGraphAPI SwapChainSupportDetails
-	//{
-	//	uint32_t min_image_count = 2;
-	//	uint32_t max_image_count = 3;
-	//	sakura::vector<ETextureFormat> formats;
-	//	sakura::vector<EPresentMode> present_modes;
-	//};
 }
 
 
@@ -1075,19 +1119,22 @@ namespace fmt
 		{
 			constexpr sakura::string_view widthTitle = "Texture Width";
 			constexpr sakura::string_view heightTitle = "Texture Height";
-			constexpr int widthLeft = sakura::max(widthTitle.size(), heightTitle.size());
+			constexpr sakura::string_view depthTitle = "Texture Depth";
+			constexpr int widthLeft = sakura::max(widthTitle.size(), heightTitle.size(), depthTitle.size());
 			int widthRight = 30;
 			return fmt::format_to(
 				ctx.out(),
 				"***{4:*^{2}}***\n"
 				"* {5: <{0}}   {6: >{1}} *\n"
 				"* {7: <{0}}   {8: >{1}} *\n"
+				"* {9: <{0}}   {10: >{1}} *\n"
 				"***{3:*^{2}}***\n",
 				widthLeft, widthRight, widthRight + widthLeft + 1,
 				"", //3 : none
 				" Texture Desc ",//4 : TotalTitle
-				widthTitle, desc.width,//5, 6
-				heightTitle, desc.height //7,8
+				widthTitle, desc.size.width,//5, 6
+				heightTitle, desc.size.height, //7,8
+				depthTitle, desc.size.depth //9,10
 			);
 		}
 	};
@@ -1128,6 +1175,5 @@ namespace fmt
 			);
 		}
 	};
-
 
 }

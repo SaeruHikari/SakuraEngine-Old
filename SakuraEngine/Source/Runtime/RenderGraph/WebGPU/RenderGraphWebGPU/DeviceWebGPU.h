@@ -37,8 +37,8 @@ namespace sakura::graphics::webgpu
 
 		RenderShaderHandle create_shader(const RenderShaderHandle handle, const ShaderDesc& config) override;
 		RenderBufferHandle create_buffer(const RenderBufferHandle handle, const BufferDesc& config) override;
-		RenderAttachmentHandle create_render_attachment(const RenderAttachmentHandle handle, const Attachment& config) override;
-
+		RenderTextureHandle create_texture(const RenderTextureHandle handle, const TextureDesc& desc) override;
+		
 		FenceHandle create_fence(const FenceHandle handle, const FenceDesc& desc) override;
 		SwapChainHandle create_swap_chain(const SwapChainHandle handle, const SwapChainDesc& desc) override;
 		RenderPipelineHandle create_render_pipeline(const RenderPipelineHandle handle, const RenderPipelineDesc& desc) override;

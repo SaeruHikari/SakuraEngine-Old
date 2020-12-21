@@ -276,40 +276,57 @@ RenderGraphWebGPUAPI WGPUPrimitiveTopology sakura::graphics::webgpu::translate(c
 	}
 }
 
-WGPUBufferUsageFlags sakura::graphics::webgpu::translate(
-	const EBufferUsage _usage, const EBufferOptions option, const EBufferCPUAccess access)
+WGPUBufferUsageFlags sakura::graphics::webgpu::translate(const BufferUsages usage, const EBufferCPUAccess access)
 {
-	WGPUBufferUsageFlags usage = WGPUBufferUsage_None;
-	switch(_usage)
+	using namespace sakura::graphics;
+	WGPUBufferUsageFlags usages = WGPUBufferUsage_None;
+	if (usage & EBufferUsage::IndexBuffer)
 	{
-	case EBufferUsage::UniformBuffer: usage = WGPUBufferUsage_Uniform; break;
-	case EBufferUsage::IndexBuffer: usage = WGPUBufferUsage_Index; break;
-	case EBufferUsage::VertexBuffer: usage = WGPUBufferUsage_Vertex; break;
-	case EBufferUsage::IndirectBuffer: usage = WGPUBufferUsage_Indirect; break;
-	case EBufferUsage::StorageBuffer: usage = WGPUBufferUsage_Storage; break;
-	default:
-		sakura::error("EBufferUsage {} Not Supported By WebGPU!", usage);
+		usages |= WGPUBufferUsage_Index;
 	}
-	switch (option)
+	if (usage & EBufferUsage::VertexBuffer)
 	{
-	case EBufferOptions::Upload: 
-		usage = usage | WGPUBufferUsage_CopySrc; break;
-	case EBufferOptions::Query:
-		usage = usage | WGPUBufferUsage_QueryResolve; break;
-	case EBufferOptions::None:
-	default:
-		break;
+		usages |= WGPUBufferUsage_Vertex;
 	}
+	if (usage & EBufferUsage::UniformBuffer)
+	{
+		usages |= WGPUBufferUsage_Uniform;
+	}
+	if (usage & EBufferUsage::IndirectBuffer)
+	{
+		usages |= WGPUBufferUsage_Indirect;
+	}
+	if (usage & EBufferUsage::StorageBuffer)
+	{
+		usages |= WGPUBufferUsage_Storage;
+	}
+	if (usage & EBufferUsage::RayTracingAccelerateStructure)
+	{
+		
+	}
+	if (usage & EBufferUsage::CopySrc)
+	{
+		usages |= WGPUBufferUsage_CopySrc;
+	}
+	if (usage & EBufferUsage::CopyDst)
+	{
+		usages |= WGPUBufferUsage_CopyDst;
+	}
+	if (usage & EBufferUsage::Query)
+	{
+		usages |= WGPUBufferUsage_QueryResolve;
+	}
+	
 	switch (access)
 	{
 	case EBufferCPUAccess::None:
-		usage = usage | WGPUBufferUsage_None; break;
+		usages = usages | WGPUBufferUsage_None; break;
 	case EBufferCPUAccess::Read:
-		usage = usage | WGPUBufferUsage_MapRead; break;
+		usages = usages | WGPUBufferUsage_MapRead; break;
 	case EBufferCPUAccess::Write:
-		usage = usage | WGPUBufferUsage_MapWrite; break;
+		usages = usages | WGPUBufferUsage_MapWrite; break;
 	case EBufferCPUAccess::ReadWrite:
-		usage = usage | WGPUBufferUsage_MapWrite | WGPUBufferUsage_MapRead; break;
+		usages = usages | WGPUBufferUsage_MapWrite | WGPUBufferUsage_MapRead; break;
 	}
 	return usage;
 }

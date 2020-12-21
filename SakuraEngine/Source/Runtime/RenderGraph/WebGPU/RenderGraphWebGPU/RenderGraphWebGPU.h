@@ -5,6 +5,7 @@
 #include <RenderGraphWebGPU/FenceWebGPU.h>
 #include <RenderGraphWebGPU/RenderPipelineWebGPU.h>
 #include <RenderGraphWebGPU/BufferWebGPU.h>
+#include <RenderGraphWebGPU/TextureWebGPU.h>
 #include "RenderGraph/RenderGraph.h"
 
 #include "System/Log.h"
@@ -35,8 +36,7 @@ namespace sakura::graphics::webgpu
 	
 	RenderGraphWebGPUAPI WGPUPrimitiveTopology translate(const EPrimitiveTopology vertex_format);
 
-	RenderGraphWebGPUAPI WGPUBufferUsageFlags translate(
-		const EBufferUsage usage, const EBufferOptions option, const EBufferCPUAccess access);
+	RenderGraphWebGPUAPI WGPUBufferUsageFlags translate(const BufferUsages usage, const EBufferCPUAccess access);
 
 	RenderGraphWebGPUAPI WGPULoadOp translate(const ELoadOp op);
 	RenderGraphWebGPUAPI WGPUStoreOp translate(const EStoreOp op);
@@ -128,14 +128,14 @@ namespace fmt
 
 /*
  
-set_scissor_rect, // ��
-draw, // ��
+set_scissor_rect, // 
+draw, //  
 draw_indirect,
 
 dispatch,
 dispatch_indirect,
 
-update_binding, // ��
+update_binding, //  
 
 copy_buffer,
 copy_texture,
@@ -150,8 +150,8 @@ resolve_timings,
 begin_event,
 end_event,
 
-begin_render_pass, // ��
-end_render_pass,   // ��
+begin_render_pass, // 
+end_render_pass,   //  
 
 ray_trace,
 update_top_level,

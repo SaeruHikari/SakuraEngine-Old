@@ -20,8 +20,7 @@ namespace sakura::graphics::webgpu
 		RenderResourceHandle handle() const override;
 		size_t size() const override;
 
-		EBufferUsage usage() const override;
-		EBufferOptions options() const override;
+		BufferUsages usages() const override;
 		WGPUBuffer _buffer = nullptr;
 	protected:
 		BufferDesc _desc;
