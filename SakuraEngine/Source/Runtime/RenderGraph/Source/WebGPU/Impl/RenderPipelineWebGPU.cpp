@@ -140,7 +140,7 @@ sakura::graphics::webgpu::RenderPipeline::~RenderPipeline()
     }
 }
 
-sakura::graphics::RenderGraphHandle sakura::graphics::webgpu::RenderPipeline::handle() const
+sakura::graphics::RenderObjectHandle sakura::graphics::webgpu::RenderPipeline::handle() const
 {
 	return _handle;
 }

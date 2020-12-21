@@ -731,7 +731,7 @@ int main()
 
 
 		if (cycle % 60 == 0)
-			render_system::mainWindow.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());
+			render_system::main_window.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());
 
 		deltaTime = timer.end();
 

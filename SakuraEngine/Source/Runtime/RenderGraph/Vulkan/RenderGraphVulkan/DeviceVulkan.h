@@ -114,8 +114,8 @@ namespace sakura::graphics::vk
 
 		IGPUMemoryResource* get_unsafe(const RenderResourceHandle handle) const override;
 		IGPUMemoryResource* optional_unsafe(const RenderResourceHandle handle) const override;
-		IGPUObject* get_unsafe(const RenderGraphHandle handle) const override;
-		IGPUObject* optional_unsafe(const RenderGraphHandle handle) const override;
+		IGPUObject* get_unsafe(const RenderObjectHandle handle) const override;
+		IGPUObject* optional_unsafe(const RenderObjectHandle handle) const override;
 
 
 		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources_;
@@ -291,7 +291,7 @@ namespace sakura::graphics::vk
 	Handle RenderDevice::_create_object_impl(const Handle handle, Args&&... args) noexcept
 	{
 		static_assert(std::is_base_of_v<IGPUObject, ObjectType>, "[DeviceVulkan::_create_object_impl]: ResourceType must be derived from IGPUObject!");
-		static_assert(std::is_base_of_v<RenderGraphHandle, Handle>, "[DeviceVulkan::_create_object_impl]: Handle must be derived from RenderObjectHandle!");
+		static_assert(std::is_base_of_v<RenderObjectHandle, Handle>, "[DeviceVulkan::_create_object_impl]: Handle must be derived from RenderObjectHandle!");
 		static_assert(std::is_base_of_v<typename Handle::ObjectType, ObjectType>, "[DeviceVulkan::_create_object_impl]: Handle must match to it's ObjectType!");
 		if (this->optional<ObjectType>(handle))
 		{

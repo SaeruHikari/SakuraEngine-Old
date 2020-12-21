@@ -47,8 +47,8 @@ namespace sakura::graphics::webgpu
 
 		IGPUMemoryResource* get_unsafe(const RenderResourceHandle handle) const override;
 		IGPUMemoryResource* optional_unsafe(const RenderResourceHandle handle) const override;
-		IGPUObject* get_unsafe(const RenderGraphHandle handle) const override;
-		IGPUObject* optional_unsafe(const RenderGraphHandle handle) const override;
+		IGPUObject* get_unsafe(const RenderObjectHandle handle) const override;
+		IGPUObject* optional_unsafe(const RenderObjectHandle handle) const override;
 		
 		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources_;
 		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects_;
@@ -71,7 +71,7 @@ namespace sakura::graphics::webgpu
 #ifndef SAKURA_TARGET_PLATFORM_EMSCRIPTEN
 		dawn_native::Adapter adapter;
 #endif
-		// devices
+		// devices_
 		WGPUDevice device = nullptr;
 		WGPUQueue defaultQueue = nullptr;
 		sakura::string name;
@@ -84,22 +84,17 @@ namespace sakura::graphics::webgpu
 
 		
 		void initPlatformSpecific(const DeviceConfiguration& config);
-		void processCommand(PassCacheFrame& cache, const RenderCommand* command, WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const;
-		void processCommandUpdateBinding(PassCacheFrame& cache,
-			const RenderCommandUpdateBinding& command, WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass, RenderPipeline* ppl) const;
-		void processCommandUpdateBinding(PassCacheFrame& cache,
-			const sakura::graphics::Binding& binder, WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass, RenderPipeline* ppl) const;
 
-		void processCommandDrawInstancedWithArgs(PassCacheFrame& cache, const RenderCommandDrawInstancedWithArgs& command,
-			WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass, RenderPipeline* ppl) const;
-		void processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command,
-			WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const;
-		void processCommandDrawIndirect(const RenderCommandDrawIndirect& command,
-			WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const;
-		RenderPipeline* processCommandBeginRenderPass(PassCacheFrame& cache,
-			const RenderCommandBeginRenderPass& command, WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const;
-		void processCommandEndRenderPass(const RenderCommandEndRenderPass& command, WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const;
-		void processCommandSetScissorRect(const RenderCommandSetScissorRect& command, WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const;
+		
+		void processCommand(PassCacheFrame& cache, const RenderCommand* command) const;
+		void processCommandUpdateBinding(PassCacheFrame& cache, const RenderCommandUpdateBinding& command) const;
+		void processCommandUpdateBinding(PassCacheFrame& cache, const sakura::graphics::Binding& binder) const;
+		void processCommandDrawInstancedWithArgs(PassCacheFrame& cache, const RenderCommandDrawInstancedWithArgs& command) const;
+		void processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command) const;
+		void processCommandDrawIndirect(PassCacheFrame& cache, const RenderCommandDrawIndirect& command) const;
+		void processCommandBeginRenderPass(PassCacheFrame& cache, const RenderCommandBeginRenderPass& command) const;
+		void processCommandEndRenderPass(PassCacheFrame& cache, const RenderCommandEndRenderPass& command) const;
+		void processCommandSetScissorRect(PassCacheFrame& cache, const RenderCommandSetScissorRect& command) const;
 		void processCommandFence(const RenderCommandFence& command, WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const;
 	};
 }
@@ -207,7 +202,7 @@ namespace sakura::graphics::webgpu
 	Handle RenderDevice::_create_object_impl(const Handle handle, Args&&... args) noexcept
 	{
 		static_assert(std::is_base_of_v<IGPUObject, ObjectType>, "[DeviceWebGPU::_create_object_impl]: ResourceType must be derived from IGPUObject!");
-		static_assert(std::is_base_of_v<RenderGraphHandle, Handle>, "[DeviceWebGPU::_create_object_impl]: Handle must be derived from RenderObjectHandle!");
+		static_assert(std::is_base_of_v<RenderObjectHandle, Handle>, "[DeviceWebGPU::_create_object_impl]: Handle must be derived from RenderObjectHandle!");
 		static_assert(std::is_base_of_v<typename Handle::ObjectType, ObjectType>, "[DeviceWebGPU::_create_object_impl]: Handle must match to it's ObjectType!");
 		if (this->optional<ObjectType>(handle))
 		{

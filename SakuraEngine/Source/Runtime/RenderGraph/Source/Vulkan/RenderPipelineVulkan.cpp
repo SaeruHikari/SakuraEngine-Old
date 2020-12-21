@@ -170,7 +170,7 @@ sakura::graphics::vk::RenderPipeline::~RenderPipeline()
 	vkDestroyPipeline(owned_device_, pipeline_, nullptr);
 }
 
-sakura::graphics::RenderGraphHandle sakura::graphics::vk::RenderPipeline::handle() const
+sakura::graphics::RenderObjectHandle sakura::graphics::vk::RenderPipeline::handle() const
 {
 	return handle_;
 }

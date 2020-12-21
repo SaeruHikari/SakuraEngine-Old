@@ -39,7 +39,7 @@ sakura::Window SwapChain::window() const
 	return _window;
 }
 
-sakura::graphics::RenderGraphHandle SwapChain::handle() const
+sakura::graphics::RenderObjectHandle SwapChain::handle() const
 {
 	return _handle;
 }

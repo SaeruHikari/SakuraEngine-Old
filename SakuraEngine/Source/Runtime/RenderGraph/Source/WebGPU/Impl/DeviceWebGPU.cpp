@@ -16,11 +16,10 @@ using namespace sakura::graphics::webgpu;
 //WGPUTextureView backBufView = nullptr;
 //static RenderPipeline* ppl = nullptr;
 //sakura::vector<WGPUBindGroup> bindGroups;
-RenderPipeline* RenderDevice::processCommandBeginRenderPass(
-    PassCacheFrame& cacheFrame,
-    const RenderCommandBeginRenderPass& cmd, WGPUCommandEncoder* encoder,
-    WGPURenderPassEncoder* pass) const
+void RenderDevice::processCommandBeginRenderPass(PassCacheFrame& cacheFrame, const RenderCommandBeginRenderPass& cmd) const
 {
+    auto& pass = cacheFrame.pass_encoder;
+    auto& encoder = cacheFrame.encoder;
     sakura::vector<WGPURenderPassColorAttachmentDescriptor> colorDescs(cmd.attachments.slots.size());
     cacheFrame.texture_views.resize(cmd.attachments.slots.size());
     for (size_t i = 0u; i < cmd.attachments.slots.size(); i++)
@@ -64,31 +63,27 @@ RenderPipeline* RenderDevice::processCommandBeginRenderPass(
     WGPURenderPassDescriptor renderPass = {};
     renderPass.colorAttachmentCount = static_cast<uint32>(cmd.attachments.slots.size());
     renderPass.colorAttachments = colorDescs.data();
-    *pass = wgpuCommandEncoderBeginRenderPass(*encoder, &renderPass);
+    pass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPass);
 
 	if(auto ppl = get<RenderPipeline>(cmd.pipeline);ppl)
 	{
-        wgpuRenderPassEncoderSetPipeline(*pass, ppl->renderPipeline);
-        return ppl;
+        wgpuRenderPassEncoderSetPipeline(pass, ppl->renderPipeline);
+        cacheFrame.pipeline = ppl;
 	}
     else
     {
         assert(0 && "Render Pipeline Not Found!");
     }
-    return nullptr;
 }
 
-void RenderDevice::processCommandEndRenderPass(const RenderCommandEndRenderPass& command, WGPUCommandEncoder* encoder,
-	WGPURenderPassEncoder* pass) const
+void RenderDevice::processCommandEndRenderPass(PassCacheFrame& cache, const RenderCommandEndRenderPass& command) const
 {
-    wgpuRenderPassEncoderEndPass(*pass);
+    wgpuRenderPassEncoderEndPass(cache.pass_encoder);
 }
 
-void RenderDevice::processCommandSetScissorRect(
-    const RenderCommandSetScissorRect& command, WGPUCommandEncoder* encoder,
-	WGPURenderPassEncoder* pass) const
+void RenderDevice::processCommandSetScissorRect(PassCacheFrame& cache, const RenderCommandSetScissorRect& command) const
 {
-    wgpuRenderPassEncoderSetScissorRect(*pass,
+    wgpuRenderPassEncoderSetScissorRect(cache.pass_encoder,
         command.x, command.y, command.width, command.height);
 }
 
@@ -99,19 +94,16 @@ void RenderDevice::processCommandFence(const RenderCommandFence& command, WGPUCo
 	
 }
 
-void RenderDevice::processCommandDrawIndirect(const RenderCommandDrawIndirect& command,
-    WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const
+void RenderDevice::processCommandDrawIndirect(PassCacheFrame& cache, const RenderCommandDrawIndirect& command) const
 {
     const auto buf_hdl = command.indirect_buffer;
     if (auto buf = get<GPUBuffer>(buf_hdl); buf)
     {
-        wgpuRenderPassEncoderDrawIndexedIndirect(*pass, buf->_buffer, command.offset);
+        wgpuRenderPassEncoderDrawIndexedIndirect(cache.pass_encoder, buf->_buffer, command.offset);
     }
 }
 
-void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, 
-    const RenderCommandDraw& command,
-	WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const
+void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command) const
 {
     if (command.instance_draw)
         goto DRAW_INSTANCE;
@@ -122,7 +114,7 @@ void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame,
 
         if (auto vb = get<GPUBuffer>(vb_src.vertex_buffer); vb)
         {
-            wgpuRenderPassEncoderSetVertexBuffer(*pass, 0, vb->_buffer, vb_src.offset, vb_src.stride);
+            wgpuRenderPassEncoderSetVertexBuffer(cacheFrame.pass_encoder, 0, vb->_buffer, vb_src.offset, vb_src.stride);
         }
         else
         {
@@ -135,7 +127,7 @@ void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame,
 	        wgpuRenderPassEncoderSetIndexBuffer(*pass, ib->_buffer, ib_src.offset, ib_src.stride);
 #else
             wgpuRenderPassEncoderSetIndexBufferWithFormat(
-                *pass, ib->_buffer, translate(ib_src.format), ib_src.offset, ib_src.stride);
+                cacheFrame.pass_encoder, ib->_buffer, translate(ib_src.format), ib_src.offset, ib_src.stride);
 #endif
         }
         else
@@ -144,52 +136,55 @@ void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame,
         }
 	}
 DRAW_INSTANCE:
-    wgpuRenderPassEncoderDrawIndexed(*pass,
+    wgpuRenderPassEncoderDrawIndexed(cacheFrame.pass_encoder,
         static_cast<uint32>(command.ib.index_count), command.instance_count, 
         command.first_index, command.base_vertex, command.first_instance);
 }
 
-void RenderDevice::processCommand(PassCacheFrame& cacheFrame, const RenderCommand* command,
-    WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const
+void RenderDevice::processCommand(PassCacheFrame& cacheFrame, const RenderCommand* command) const
 {
     switch (command->type())
     {
     case ERenderCommandType::begin_render_pass:
 	{
         auto& cmd = *static_cast<const RenderCommandBeginRenderPass*>(command);
-        cacheFrame.pipeline = processCommandBeginRenderPass(cacheFrame, cmd, encoder, pass);
+        processCommandBeginRenderPass(cacheFrame, cmd);
 	}break;
+    case ERenderCommandType::draw_indirect:
+    {
+        auto& cmd = *static_cast<const RenderCommandDrawIndirect*>(command);
+        processCommandDrawIndirect(cacheFrame, cmd);
+    }break;
     case ERenderCommandType::set_scissor_rect:
     {
         auto& cmd = *static_cast<const RenderCommandSetScissorRect*>(command);
-        processCommandSetScissorRect(cmd, encoder, pass);
+        processCommandSetScissorRect(cacheFrame, cmd);
     }break;
     case ERenderCommandType::draw:
     {
         auto& cmd = *static_cast<const RenderCommandDraw*>(command);
-        processCommandDraw(cacheFrame, cmd, encoder, pass);
+        processCommandDraw(cacheFrame, cmd);
     }break;
     case ERenderCommandType::end_render_pass:
     {
         auto& cmd = *static_cast<const RenderCommandEndRenderPass*>(command);
-        processCommandEndRenderPass(cmd, encoder, pass);
+        processCommandEndRenderPass(cacheFrame, cmd);
     }break;
     case ERenderCommandType::update_binding:
     {
         auto& cmd = *static_cast<const RenderCommandUpdateBinding*>(command);
-        processCommandUpdateBinding(cacheFrame, cmd, encoder, pass, cacheFrame.pipeline);
+        processCommandUpdateBinding(cacheFrame, cmd);
     }break;
 	case ERenderCommandType::draw_instanced_with_args:
 	{
 		auto& cmd = *static_cast<const RenderCommandDrawInstancedWithArgs*>(command);
-        processCommandDrawInstancedWithArgs(cacheFrame, cmd, encoder, pass, cacheFrame.pipeline);
+        processCommandDrawInstancedWithArgs(cacheFrame, cmd);
 	}break;
     default:break;
     }
 }
 
-void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cacheFrame, const sakura::graphics::Binding& binder,
-    WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass, RenderPipeline* ppl) const
+void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cacheFrame, const sakura::graphics::Binding& binder) const
 {
 	{
 		auto* bindingDesc = &binder;
@@ -239,9 +234,9 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
 						assert(0 && "Buffer Not Found!");
 				}
 				WGPUBindGroupDescriptor bgDesc = {};
-				if (ppl && !cacheFrame.entries.empty())
+				if (cacheFrame.pipeline && !cacheFrame.entries.empty())
 				{
-					bgDesc.layout = ppl->bindingGroups[i]; // Get Layout.
+					bgDesc.layout = cacheFrame.pipeline->bindingGroups[i]; // Get Layout.
 					bgDesc.entryCount = static_cast<uint32>(cacheFrame.entries[i].first.size());
 					bgDesc.entries = cacheFrame.entries[i].first.data();
 					{
@@ -255,26 +250,23 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
 					assert(0 && "Pipeline as NULL is invalid!");
 				}
 			}
-            if (bindGroup && pass)
-                wgpuRenderPassEncoderSetBindGroup(*pass, i, bindGroup, 0, 0);
+            if (bindGroup && cacheFrame.pass_encoder)
+                wgpuRenderPassEncoderSetBindGroup(cacheFrame.pass_encoder, i, bindGroup, 0, 0);
                     //binder.dynamic_offsets.size(), binder.dynamic_offsets.size() == 0 ? nullptr :binder.dynamic_offsets.data());
 		}// End Foreach BindingGroup.
 	}
 }
 
-void RenderDevice::processCommandUpdateBinding(PassCacheFrame& cacheFrame,
-    const RenderCommandUpdateBinding& command, WGPUCommandEncoder* encoder,
-	WGPURenderPassEncoder* pass, RenderPipeline* ppl) const
+void RenderDevice::processCommandUpdateBinding(PassCacheFrame& cacheFrame, const RenderCommandUpdateBinding& command) const
 {
-    processCommandUpdateBinding(cacheFrame, command.binder, encoder, pass, ppl);
+    processCommandUpdateBinding(cacheFrame, command.binder);
 }
 
-void RenderDevice::processCommandDrawInstancedWithArgs(PassCacheFrame& cacheFrame, const RenderCommandDrawInstancedWithArgs& command,
-    WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass, RenderPipeline* ppl) const
+void RenderDevice::processCommandDrawInstancedWithArgs(PassCacheFrame& cacheFrame, const RenderCommandDrawInstancedWithArgs& command) const
 {
     if(command.binder)
-        processCommandUpdateBinding(cacheFrame, *command.binder, encoder, pass, ppl);
-	wgpuRenderPassEncoderDrawIndexed(*pass, static_cast<uint32>(command.index_count), command.instance_count,
+        processCommandUpdateBinding(cacheFrame, *command.binder);
+	wgpuRenderPassEncoderDrawIndexed(cacheFrame.pass_encoder, static_cast<uint32>(command.index_count), command.instance_count,
 		command.first_index, command.base_vertex, command.first_instance);
 }
 
@@ -336,7 +328,7 @@ bool RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPas
     // Evaluate.
     for (auto& cmd : cmdBuffer)
     {
-        processCommand(cacheFrame, cmd, &cacheFrame.encoder, &cacheFrame.pass_encoder);
+        processCommand(cacheFrame, cmd);
     }
 	WGPUFenceDescriptor desc = {};
     if (cacheFrame.pass_encoder)
@@ -427,11 +419,11 @@ sakura::graphics::IGPUMemoryResource* RenderDevice::optional_unsafe(const Render
 	}
 }
 
-sakura::graphics::IGPUObject* RenderDevice::get_unsafe(const RenderGraphHandle handle) const
+sakura::graphics::IGPUObject* RenderDevice::get_unsafe(const RenderObjectHandle handle) const
 {
-	if (created_resources_.size() < handle.id().index() + 1)
+	if (created_objects_.size() < handle.id().index() + 1)
 	{
-		handle_error<RenderGraphHandle>::not_find(handle);
+		handle_error<RenderObjectHandle>::not_find(handle);
 		return nullptr;
 	}
 	const auto& resource = created_objects_[handle.id().index()];
@@ -439,14 +431,14 @@ sakura::graphics::IGPUObject* RenderDevice::get_unsafe(const RenderGraphHandle h
 		return resource.first;
 	else
 	{
-		handle_error<RenderGraphHandle>::generation_dismatch(handle);
+		handle_error<RenderObjectHandle>::generation_dismatch(handle);
 		return nullptr;
 	}
 }
 
-sakura::graphics::IGPUObject* RenderDevice::optional_unsafe(const RenderGraphHandle handle) const
+sakura::graphics::IGPUObject* RenderDevice::optional_unsafe(const RenderObjectHandle handle) const
 {
-	if (created_resources_.size() < handle.id().index() + 1)
+	if (created_objects_.size() < handle.id().index() + 1)
 	{
 		return nullptr;
 	}

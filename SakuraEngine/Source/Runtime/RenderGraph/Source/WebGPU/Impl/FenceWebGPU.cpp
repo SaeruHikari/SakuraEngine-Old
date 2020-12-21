@@ -19,7 +19,7 @@ const sakura::uint64 sakura::graphics::webgpu::Fence::completed_value() const
 	return wgpuFenceGetCompletedValue(_fence);
 }
 
-sakura::graphics::RenderGraphHandle sakura::graphics::webgpu::Fence::handle() const
+sakura::graphics::RenderObjectHandle sakura::graphics::webgpu::Fence::handle() const
 {
 	return _handle;
 }

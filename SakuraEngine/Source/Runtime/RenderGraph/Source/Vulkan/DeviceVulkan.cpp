@@ -82,7 +82,7 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 		{
 			VulkanDeviceSet dev = findQueueFamilies(device, config.window_handle);
 			// cn: 筛选掉特性不足的设备.
-			// en: Filter out devices with insufficient features.
+			// en: Filter out devices_ with insufficient features.
 			// jp: 機能が不十分なデバイスを除外する
 			if (checkDeviceExtensionSupport(device, std::set<std::string>(basic_device_exts.begin(), basic_device_exts.end())))
 			{
@@ -344,11 +344,11 @@ sakura::graphics::IGPUMemoryResource* sakura::graphics::vk::RenderDevice::option
 	}
 }
 
-sakura::graphics::IGPUObject* sakura::graphics::vk::RenderDevice::get_unsafe(const RenderGraphHandle handle) const
+sakura::graphics::IGPUObject* sakura::graphics::vk::RenderDevice::get_unsafe(const RenderObjectHandle handle) const
 {
 	if (created_objects_.size() < handle.id().index() + 1)
 	{
-		handle_error<RenderGraphHandle>::not_find(handle);
+		handle_error<RenderObjectHandle>::not_find(handle);
 		return nullptr;
 	}
 	const auto& resource = created_objects_[handle.id().index()];
@@ -356,12 +356,12 @@ sakura::graphics::IGPUObject* sakura::graphics::vk::RenderDevice::get_unsafe(con
 		return resource.first;
 	else
 	{
-		handle_error<RenderGraphHandle>::generation_dismatch(handle);
+		handle_error<RenderObjectHandle>::generation_dismatch(handle);
 		return nullptr;
 	}
 }
 
-sakura::graphics::IGPUObject* sakura::graphics::vk::RenderDevice::optional_unsafe(const RenderGraphHandle handle) const
+sakura::graphics::IGPUObject* sakura::graphics::vk::RenderDevice::optional_unsafe(const RenderObjectHandle handle) const
 {
 	if (created_objects_.size() < handle.id().index() + 1)
 	{

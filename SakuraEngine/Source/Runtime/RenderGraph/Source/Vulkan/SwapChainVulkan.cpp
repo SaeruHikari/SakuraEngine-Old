@@ -150,7 +150,7 @@ sakura::Window sakura::graphics::vk::SwapChain::window() const
 	return window_;
 }
 
-sakura::graphics::RenderGraphHandle sakura::graphics::vk::SwapChain::handle() const
+sakura::graphics::RenderObjectHandle sakura::graphics::vk::SwapChain::handle() const
 {
 	return handle_;
 }

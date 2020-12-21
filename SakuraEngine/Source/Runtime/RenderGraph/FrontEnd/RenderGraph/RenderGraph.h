@@ -21,42 +21,42 @@ namespace sakura::graphics
 #define constructor_rg_resource_handle(element, funcname)\
 [[nodiscard]] element##Handle element##Unsafe()\
 {\
-	memoryResources.emplace_back(RenderGraphId::uhalf::max/*generation*/);\
+	memory_resources_.emplace_back(RenderGraphId::uhalf::max/*generation*/);\
 	return element##Handle({RenderGraphId::uhalf::max/*generation*/,\
-	    static_cast<RenderGraphId::uhalf_t>(memoryResources.size())});\
+	    static_cast<RenderGraphId::uhalf_t>(memory_resources_.size())});\
 }\
 template<typename... Args>\
 [[nodiscard]] element##Handle element##Unsafe(const sakura::string& name, Args&&... args)\
 {\
 	std::forward<Args...>(args...);\
 	auto hdl = element##Unsafe();\
-	_blackboard.insert_or_assign(name, hdl);\
+	named_handles_.insert_or_assign(name, hdl);\
 	return hdl;\
 }\
 [[nodiscard]] element##Handle element##Unsafe(const sakura::string& name)\
 {\
 	auto hdl = element##Unsafe();\
-	_blackboard.insert_or_assign(name, hdl);\
+	named_handles_.insert_or_assign(name, hdl);\
 	return hdl;\
 }\
 [[nodiscard]] element##Handle element()\
 {\
-	memoryResources.emplace_back(0/*generation*/);\
+	memory_resources_.emplace_back(0/*generation*/);\
 	return element##Handle({0/*generation*/,\
-	static_cast<RenderGraphId::uhalf_t>(memoryResources.size())});\
+	static_cast<RenderGraphId::uhalf_t>(memory_resources_.size())});\
 }\
 template<typename... Args>\
 [[nodiscard]] element##Handle element(const sakura::string& name, Args&&... args)\
 {\
 	std::forward<Args...>(args...);\
 	auto hdl = element();\
-	_blackboard.insert_or_assign(name, hdl);\
+	named_handles_.insert_or_assign(name, hdl);\
 	return hdl;\
 }\
 [[nodiscard]] element##Handle element(const sakura::string& name)\
 {\
 	auto hdl = element();\
-	_blackboard.insert_or_assign(name, hdl);\
+	named_handles_.insert_or_assign(name, hdl);\
 	return hdl;\
 }
 
@@ -66,9 +66,9 @@ template<typename... Args>\
 #define constructor_rg_object_handle(element, funcname)\
 [[nodiscard]] element##Handle element()\
 {\
-	gpuObjects.emplace_back(0/*generation*/);\
+	gpu_objects_.emplace_back(0/*generation*/);\
 	return element##Handle({0/*generation*/,\
-	    static_cast<RenderGraphId::uhalf_t>(gpuObjects.size())});\
+	    static_cast<RenderGraphId::uhalf_t>(gpu_objects_.size())});\
 }\
 template<typename... Args>\
 [[nodiscard]] element##Handle element(Args&&... args)\
@@ -85,20 +85,18 @@ namespace sakura::graphics
     class RenderGraphAPI RenderGraph
     {
     public:
-    	struct ResourceNode
-    	{
-            
-    	};
         struct RenderGraphAPI Builder
         {
             friend class RenderGraph;
             friend struct RenderPass;
         	
             Builder(const uint32 generation);
-            //void read();
+        	
             void write(const Attachment& attachment);
-            void write(const RenderPipelineHandle& ppl);
+            void pipeline(const RenderPipelineHandle& ppl);
 
+            bool apply();
+        	
             RenderPipelineHandle pipeline() const;
             Attachment attachment() const;
         protected:
@@ -106,7 +104,12 @@ namespace sakura::graphics
             RenderPipelineHandle _pipeline;
             const uint32 generation = 0;
         };
-
+    	
+        struct RenderGraphAPI Blackboard
+        {
+        	
+        };
+    	
 		RenderGraph();
         ~RenderGraph();
 		[[nodiscard]] IRenderDevice* get_device(const sakura::string_view name) const;
@@ -129,21 +132,20 @@ namespace sakura::graphics
         RenderPass* render_pass(const RenderPassHandle handle);
         RenderGraph::Builder& builder(const RenderPassHandle handle);
 
-        const RenderResourceHandle blackboard(const sakura::string& name) const;
+        const RenderResourceHandle query(const sakura::string& name) const;
     	template<typename T>
-        const T blackboard(const sakura::string& name) const
+        const T query(const sakura::string& name) const
     	{
             static_assert(std::is_base_of_v<RenderResourceHandle, T>, "T is not derived from RenderResourceHandle!");
-            auto& hdl = blackboard(name);
+            auto& hdl = query(name);
             return *static_cast<const T*>(&hdl);
     	}
 
     private:
-        RenderDeviceGroupProxy devices;
-        sakura::unordered_map<sakura::string, RenderResourceHandle> _blackboard;
-
-    	sakura::vector<uint32> memoryResources;/*generations*/
-        sakura::vector<uint32> gpuObjects;/*generations*/
+        RenderDeviceGroupProxy devices_;
+        sakura::unordered_map<sakura::string, RenderResourceHandle> named_handles_;
+    	sakura::vector<uint32> memory_resources_;/*generations*/
+        sakura::vector<uint32> gpu_objects_;/*generations*/
         sakura::vector<sakura::pair<RenderPass*, Builder>> passes;
     };
 

@@ -72,15 +72,15 @@ namespace sakura::graphics
 		
 		virtual IGPUMemoryResource* get_unsafe(const RenderResourceHandle handle) const = 0;
 		virtual IGPUMemoryResource* optional_unsafe(const RenderResourceHandle handle) const = 0;
-		virtual IGPUObject* get_unsafe(const RenderGraphHandle handle) const = 0;
-		virtual IGPUObject* optional_unsafe(const RenderGraphHandle handle) const = 0;
+		virtual IGPUObject* get_unsafe(const RenderObjectHandle handle) const = 0;
+		virtual IGPUObject* optional_unsafe(const RenderObjectHandle handle) const = 0;
 		
 		template<typename Type, typename Handle>
 		Type* get(const Handle handle) const noexcept
 		{
 			if constexpr (std::is_base_of_v<IGPUObject, Type>)
 			{
-				static_assert(std::is_base_of_v<RenderGraphHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderObjectHandle!");
+				static_assert(std::is_base_of_v<RenderObjectHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderObjectHandle!");
 				static_assert(std::is_base_of_v<typename Handle::ObjectType, Type>, "[RGDevice::get]: Handle must match to it's ObjectType!");
 				return static_cast<Type*>(get_unsafe(handle));
 			}
@@ -101,7 +101,7 @@ namespace sakura::graphics
 		{
 			if constexpr (std::is_base_of_v<IGPUObject, Type>)
 			{
-				static_assert(std::is_base_of_v<RenderGraphHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderObjectHandle!");
+				static_assert(std::is_base_of_v<RenderObjectHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderObjectHandle!");
 				static_assert(std::is_base_of_v<typename Handle::ObjectType, Type>, "[RGDevice::get]: Handle must match to it's ObjectType!"); 
 				return static_cast<Type*>(optional_unsafe(handle));
 			}
@@ -275,7 +275,7 @@ namespace sakura::graphics
 			return nullptr;
 		}
 
-		virtual IGPUObject* get_unsafe(const RenderGraphHandle handle) const override
+		virtual IGPUObject* get_unsafe(const RenderObjectHandle handle) const override
 		{
 			return nullptr;
 		}
@@ -285,7 +285,7 @@ namespace sakura::graphics
 			return nullptr;
 		}
 
-		virtual IGPUObject* optional_unsafe(const RenderGraphHandle handle) const override
+		virtual IGPUObject* optional_unsafe(const RenderObjectHandle handle) const override
 		{
 			return nullptr;
 		}

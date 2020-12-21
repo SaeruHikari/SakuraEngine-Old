@@ -14,7 +14,7 @@ namespace sakura::graphics::vk
 		uint8 buffer_count() const override;
 		extent2d extent() const override;
 		Window window() const override;
-		RenderGraphHandle handle() const override;
+		RenderObjectHandle handle() const override;
 		ETextureFormat render_format() const override;
 		bool present() override;
 		

@@ -280,17 +280,17 @@ namespace sakura::graphics
 	};
 
 	using RenderGraphId = sakura::GenerationalId;
-	struct RenderGraphAPI RenderGraphHandle
+	struct RenderGraphAPI RenderObjectHandle
 	{
-		RenderGraphHandle(const RenderGraphId _id);
+		RenderObjectHandle(const RenderGraphId _id);
 		inline operator size_t() const { return _id; }
 		inline operator bool() const { return _id; }
 		inline RenderGraphId id() const { return _id; }
 	protected:
-		RenderGraphHandle();
+		RenderObjectHandle();
 		RenderGraphId _id;
 	};
-	inline bool operator==(const RenderGraphHandle& lhs, const RenderGraphHandle& rhs) {
+	inline bool operator==(const RenderObjectHandle& lhs, const RenderObjectHandle& rhs) {
 		return size_t(lhs.id()) == size_t(rhs.id());
 	}
 
@@ -327,7 +327,7 @@ namespace sakura::graphics
 	struct RenderGraphAPI IGPUObject
 	{
 		virtual ~IGPUObject() = default;
-		virtual RenderGraphHandle handle() const = 0;
+		virtual RenderObjectHandle handle() const = 0;
 		virtual sakura::string format() const { return ""; }
 	};
 
@@ -352,11 +352,11 @@ namespace sakura::graphics
 		static_assert(std::is_base_of_v<IGPUMemoryResource, ResourceType>, "Resource Handle must be used with GPU Resources!");
 	};
 	template<typename _ObjectType>
-	struct TypedRenderObjectHandle : public RenderGraphHandle
+	struct TypedRenderObjectHandle : public RenderObjectHandle
 	{
 		using ObjectType = _ObjectType;
 		TypedRenderObjectHandle(const RenderGraphId _id)
-			:RenderGraphHandle(_id)
+			:RenderObjectHandle(_id)
 		{
 
 		}
@@ -664,15 +664,6 @@ namespace sakura::graphics
 		Attachment(const Slot(&slots)[N]) noexcept;
 		
 		Attachment() = default;
-		Attachment(const Attachment&) = default;
-		Attachment(Attachment&&) = default;
-		Attachment& operator=(Attachment&& rhs) = default;
-		Attachment& operator=(const Attachment& rhs)
-		{
-			if(slots.begin() != rhs.slots.begin() && slots.end() != rhs.slots.end())
-				slots.assign(rhs.slots.begin(), rhs.slots.end());
-			return *this;
-		}
  	};
 
 	template <size_t N>
@@ -891,9 +882,9 @@ namespace std
 		}
 	};
 	
-	template<> struct hash<sakura::graphics::RenderGraphHandle>
+	template<> struct hash<sakura::graphics::RenderObjectHandle>
 	{
-		sakura::size_t operator()(sakura::graphics::RenderGraphHandle handle) const
+		sakura::size_t operator()(sakura::graphics::RenderObjectHandle handle) const
 		{
 			return std::hash<sakura::uint64>()(handle.id().storage());
 		}
@@ -1005,10 +996,10 @@ namespace fmt
 			return fmt::formatter< sakura::graphics::RenderGraphId>::format(handle.id(), ctx);
 		}
 	};
-	template<> struct formatter<sakura::graphics::RenderGraphHandle> : fmt::formatter<sakura::graphics::RenderGraphId>
+	template<> struct formatter<sakura::graphics::RenderObjectHandle> : fmt::formatter<sakura::graphics::RenderGraphId>
 	{
 		template<typename FormatContext>
-		auto format(sakura::graphics::RenderGraphHandle handle, FormatContext& ctx)
+		auto format(sakura::graphics::RenderObjectHandle handle, FormatContext& ctx)
 		{
 			return fmt::formatter< sakura::graphics::RenderGraphId>::format(handle.id(), ctx);
 		}

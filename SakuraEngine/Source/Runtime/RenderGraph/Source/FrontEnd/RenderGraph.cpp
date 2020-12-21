@@ -21,7 +21,7 @@ namespace sakura::graphics
 			auto err = string("a device named ").append(device->get_name().data()).append("already exists!");
 			assert(0 && err.c_str());
 		}
-		devices.emplace(device);
+		devices_.emplace(device);
 		return;
 	}
 
@@ -35,10 +35,10 @@ namespace sakura::graphics
 		return passes[handle.id().index()].second;
 	}
 
-	const RenderResourceHandle RenderGraph::blackboard(const sakura::string& name) const
+	const RenderResourceHandle RenderGraph::query(const sakura::string& name) const
 	{
-		auto res = _blackboard.find(name);
-		if (res != _blackboard.end())
+		auto res = named_handles_.find(name);
+		if (res != named_handles_.end())
 			return res->second;
 		return RenderResourceHandle();
 	}
@@ -74,10 +74,10 @@ namespace sakura::graphics
 
 	RenderGraphAPI IRenderDevice* RenderGraph::get_device(const sakura::string_view name) const
 	{
-		for(auto i = 0u; i < devices.count(); i++)
+		for(auto i = 0u; i < devices_.count(); i++)
 		{
-			if (name == devices[i]->get_name())
-				return devices[i];
+			if (name == devices_[i]->get_name())
+				return devices_[i];
 		}
 		return nullptr;
 	}
@@ -92,9 +92,14 @@ namespace sakura::graphics
 		_attachment = attachment;
 	}
 
-	void RenderGraph::Builder::write(const RenderPipelineHandle& ppl)
+	void RenderGraph::Builder::pipeline(const RenderPipelineHandle& ppl)
 	{
 		_pipeline = ppl;
+	}
+
+	bool RenderGraph::Builder::apply()
+	{
+		return true;
 	}
 
 	RenderPipelineHandle RenderGraph::Builder::pipeline() const
@@ -108,8 +113,9 @@ namespace sakura::graphics
 	}
 
 	RenderGraph::RenderGraph()
-		:devices(*this)
+		:devices_(*this)
 	{
+		
 	}
 
 	RenderGraph::~RenderGraph()
@@ -118,17 +124,17 @@ namespace sakura::graphics
 		{
 			delete passes[i].first;
 		}
-		for (auto i = 0u; i < devices.count(); i++)
+		for (auto i = 0u; i < devices_.count(); i++)
 		{
-			delete devices[i];
+			delete devices_[i];
 		}
 	}
 
 
-	RenderGraphAPI RenderGraphHandle::RenderGraphHandle(RenderGraphId id)
+	RenderGraphAPI RenderObjectHandle::RenderObjectHandle(RenderGraphId id)
 		:_id(id) {	}
 
-	RenderGraphAPI RenderGraphHandle::RenderGraphHandle()
+	RenderGraphAPI RenderObjectHandle::RenderObjectHandle()
 		: _id(RenderGraphId::UNINITIALIZED) {	}
 	
 	RenderGraphAPI RenderPassHandle::RenderPassHandle(RenderGraphId id)

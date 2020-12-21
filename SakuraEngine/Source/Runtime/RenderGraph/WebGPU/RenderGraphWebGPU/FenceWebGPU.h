@@ -19,7 +19,7 @@ namespace sakura::graphics::webgpu
 		
 		const uint64 completed_value() const;
 
-		RenderGraphHandle handle() const override;
+		RenderObjectHandle handle() const override;
 		WGPUFence _fence;
 	protected:
 		FenceHandle _handle;

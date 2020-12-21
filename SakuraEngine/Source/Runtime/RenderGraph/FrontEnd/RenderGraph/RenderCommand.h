@@ -244,32 +244,3 @@ namespace sakura::graphics
 
 }
 
-
-namespace fmt
-{
-    template<> struct formatter<sakura::graphics::RenderCommandBeginRenderPass> : fmt::formatter<sakura::string_view>
-    {
-        using RenderCommandBeginRenderPass = sakura::graphics::RenderCommandBeginRenderPass;
-        template<typename FormatContext>
-        auto format(const RenderCommandBeginRenderPass& cmd, FormatContext& ctx)
-        {
-            using namespace sakura::graphics;
-            using namespace sakura::graphics::detail;
-        	
-            constexpr sakura::string_view totalTitle = " BeginRenderPass ";
-            constexpr sakura::string_view pplTitle = "Pipeline";
-            constexpr size_t widthLeft = sakura::max(pplTitle.size(), size_t(0));
-            int widthRight = 20;
-            return fmt::format_to(
-                ctx.out(),
-                "***{4:*^{2}}***\n"
-                "* {5: <{0}}   {6: >{1}} *\n"
-                "***{3:*^{2}}***\n",
-                widthLeft, widthRight, widthRight + widthLeft + 1,
-                "", //3 : none
-                totalTitle,//4: TotalTitle
-                pplTitle, cmd.pipeline// 5, 6 pipeline
-            );
-        }
-    };
-}
