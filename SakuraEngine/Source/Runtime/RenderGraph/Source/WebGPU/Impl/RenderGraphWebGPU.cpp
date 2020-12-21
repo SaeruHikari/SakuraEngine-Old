@@ -331,6 +331,46 @@ WGPUBufferUsageFlags sakura::graphics::webgpu::translate(const BufferUsages usag
 	return usage;
 }
 
+WGPUTextureDescriptor sakura::graphics::webgpu::translate(const TextureDesc& desc)
+{
+	WGPUTextureDescriptor res = {};
+	res.size = { desc.size.width, desc.size.height, desc.size.depth };
+	res.usage = WGPUTextureUsage::WGPUTextureUsage_None;
+	if (desc.usages & ETextureUsage::Attachment)
+		res.usage |= WGPUTextureUsage::WGPUTextureUsage_OutputAttachment;
+	if (desc.usages & ETextureUsage::CopyDst)
+		res.usage |= WGPUTextureUsage::WGPUTextureUsage_CopyDst;
+	if (desc.usages & ETextureUsage::CopySrc)
+		res.usage |= WGPUTextureUsage::WGPUTextureUsage_CopySrc;
+	if (desc.usages & ETextureUsage::Present)
+		res.usage |= WGPUTextureUsage::WGPUTextureUsage_Present;
+	if (desc.usages & ETextureUsage::Sampled)
+		res.usage |= WGPUTextureUsage::WGPUTextureUsage_Sampled;
+	if (desc.usages & ETextureUsage::Storage)
+		res.usage |= WGPUTextureUsage::WGPUTextureUsage_Storage;
+
+	res.dimension = translate(desc.dimension);
+	res.format = translate(desc.format);
+	res.mipLevelCount = desc.mip_levels;
+	res.sampleCount = desc.sample_count;
+	return res;
+}
+
+WGPUTextureDimension sakura::graphics::webgpu::translate(const ETextureDimension dimension)
+{
+	switch (dimension)
+	{
+	case ETextureDimension::Texture1D:
+		return WGPUTextureDimension_1D;
+	case ETextureDimension::Texture2D:
+		return WGPUTextureDimension_2D;
+	case ETextureDimension::Texture3D:
+		return WGPUTextureDimension_3D;
+	default:
+		return WGPUTextureDimension_2D;
+	}
+}
+
 WGPULoadOp sakura::graphics::webgpu::translate(const ELoadOp op)
 {
 	switch (op)

@@ -38,6 +38,10 @@ namespace sakura::graphics::webgpu
 
 	RenderGraphWebGPUAPI WGPUBufferUsageFlags translate(const BufferUsages usage, const EBufferCPUAccess access);
 
+	RenderGraphWebGPUAPI WGPUTextureDescriptor translate(const TextureDesc& desc);
+
+	RenderGraphWebGPUAPI WGPUTextureDimension translate(const ETextureDimension dimension);
+	
 	RenderGraphWebGPUAPI WGPULoadOp translate(const ELoadOp op);
 	RenderGraphWebGPUAPI WGPUStoreOp translate(const EStoreOp op);
 

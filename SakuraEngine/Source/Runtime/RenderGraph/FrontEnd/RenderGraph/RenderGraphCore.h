@@ -389,6 +389,7 @@ namespace sakura::graphics
 	using EBufferUsage = BufferDesc::Usage;
 
 	using TextureUsages = uint32;
+	using TextureFlags = uint32;
 	struct RenderGraphAPI TextureDesc
 	{
 		enum Usage
@@ -435,6 +436,8 @@ namespace sakura::graphics
 		// multi-queue support.
 		ESharingMode sharing_mode = ESharingMode::Exclusive;
 	};
+	using ETextureDimension = TextureDesc::Dimension;
+	using ETextureFlag = TextureDesc::Flag;
 	using ETextureUsage = TextureDesc::Usage;
 	
 	struct RenderGraphAPI IGPUShader : public IGPUMemoryResource

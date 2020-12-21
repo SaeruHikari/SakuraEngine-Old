@@ -7,11 +7,13 @@ GpuTexture::GpuTexture(const RenderTextureHandle handle, const webgpu::RenderDev
 	const TextureDesc& desc) noexcept
 	:handle_(handle), desc_(desc)
 {
+	WGPUTextureDescriptor textureDesc = translate(desc);
+	texture = wgpuDeviceCreateTexture(dev.device, &textureDesc);
 }
 
 GpuTexture::~GpuTexture()
 {
-	
+	wgpuTextureDestroy(texture);
 }
 
 RenderResourceHandle GpuTexture::handle() const
