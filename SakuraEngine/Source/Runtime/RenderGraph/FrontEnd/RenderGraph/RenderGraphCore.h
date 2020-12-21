@@ -795,6 +795,7 @@ namespace sakura::graphics
 			{
 				{ sakura::graphics::ELoadOp::Clear, "Clear" },
 				{ sakura::graphics::ELoadOp::Load, "Load" },
+				{ sakura::graphics::ELoadOp::DontCare, "DontCare" },
 			}
 		);
 		static_assert(LoadOpNameLut.size() == static_cast<int>(ELoadOp::Count),
@@ -804,6 +805,7 @@ namespace sakura::graphics
 			{
 				{ sakura::graphics::EStoreOp::Clear, "Clear" },
 				{ sakura::graphics::EStoreOp::Store, "Store" },
+				{ sakura::graphics::EStoreOp::DontCare, "DontCare" },
 			}
 		);
 		static_assert(StoreOpNameLut.size() == static_cast<int>(EStoreOp::Count),

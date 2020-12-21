@@ -672,6 +672,7 @@ void sakura::graphics::vk::RenderDevice::processCommandBeginRenderPass(
 	VkDevice device, PassCacheFrame& cache, const RenderCommandBeginRenderPass& cmd) const
 {
 	sakura::vector<VkImageView> imageViews(cmd.attachments.slots.size());
+	
 	cache.pipeline = cmd.pipeline;
 	const auto pipeline = get<RenderPipeline>(cmd.pipeline);
 	extent2d extent = {};
@@ -753,6 +754,25 @@ void sakura::graphics::vk::RenderDevice::processCommandBeginRenderPass(
 
 	vkCmdBeginRenderPass(cache.command_buffer_, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 	vkCmdBindPipeline(cache.command_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
+
+	if(!imageViews.empty())
+	{
+		auto& imageView = imageViews[0];
+		VkRect2D rect = {};
+		rect.extent = { extent.width, extent.height };
+		rect.offset = { static_cast<int32>(0), static_cast<int32>(0) };
+		vkCmdSetScissor(cache.command_buffer_, 0, 1, &rect);
+
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = (float)extent.width;
+		viewport.height = (float)extent.height;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(cache.command_buffer_, 0, 1, &viewport);
+	}
+
 }
 
 void sakura::graphics::vk::RenderDevice::processCommandEndRenderPass(PassCacheFrame& cache, const RenderCommandEndRenderPass& command) const
