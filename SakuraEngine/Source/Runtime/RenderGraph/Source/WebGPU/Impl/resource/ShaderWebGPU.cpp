@@ -15,8 +15,8 @@ sakura::graphics::webgpu::GPUShader::GPUShader(
 	:_handle(handle), desc(description)
 {
 	// Find From Created Modules
-	auto tryFindExisted = dev.shaderModules.find(description.name);
-	if(tryFindExisted != dev.shaderModules.end())
+	auto tryFindExisted = dev.shader_modules.find(description.name);
+	if(tryFindExisted != dev.shader_modules.end())
 	{
 		module_ref = tryFindExisted->second;
 	}
@@ -46,7 +46,7 @@ sakura::graphics::webgpu::GPUShader::GPUShader(
 		{
 			sakura::error("[RenderGraphWebGPU]: Failed to create shader {}", desc);
 		}
-		dev.shaderModules.insert_or_assign(description.name, module_ref);
+		dev.shader_modules.insert_or_assign(description.name, module_ref);
 	}
 }
 

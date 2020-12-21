@@ -338,6 +338,8 @@ RenderGraphVulkanAPI VkAttachmentLoadOp sakura::graphics::vk::translate(ELoadOp 
 		return VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_CLEAR;
 	case sakura::graphics::ELoadOp::Load:
 		return VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_LOAD;
+	case sakura::graphics::ELoadOp::DontCare:
+		return VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	case sakura::graphics::ELoadOp::Count:
 	default:
 		return VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_MAX_ENUM;
@@ -350,9 +352,10 @@ RenderGraphVulkanAPI VkAttachmentStoreOp sakura::graphics::vk::translate(EStoreO
 	{
 	case sakura::graphics::EStoreOp::Store:
 		return VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_STORE;
-	case sakura::graphics::EStoreOp::Clear:
+	case sakura::graphics::EStoreOp::DontCare:
 		return VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	case sakura::graphics::EStoreOp::Count:
+	case sakura::graphics::EStoreOp::Clear:
 	default:
 		return VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_MAX_ENUM;
 	}

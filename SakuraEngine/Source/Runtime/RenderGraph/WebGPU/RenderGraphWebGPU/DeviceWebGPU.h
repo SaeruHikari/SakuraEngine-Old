@@ -8,11 +8,9 @@
 #include <dawn_native/DawnNative.h>
 #endif
 
-namespace sakura {
-	namespace graphics {
-		struct RenderPass;
-	}
-	
+namespace sakura::graphics
+{
+	struct RenderPass;
 }
 
 namespace sakura::graphics::webgpu
@@ -27,14 +25,16 @@ namespace sakura::graphics::webgpu
 		static WGPUBackendType get_backend();
 		
 		virtual EBackend backend() const override;
-		bool valid(const RenderShaderHandle shader) const override;
+
+		bool valid(const RenderResourceHandle handle) const override;
+		void destroy_resource(const RenderResourceHandle to_destroy) override;
+
 		sakura::string_view get_name() const override;
 		bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl) override;
 		bool execute(const RenderGraph& graph_to_execute) override;
 		bool present(const SwapChainHandle handle) override;
 		void terminate() override;
 
-		void destroy_resource(const RenderShaderHandle to_destroy) override;
 		RenderShaderHandle create_shader(const RenderShaderHandle handle, const ShaderDesc& config) override;
 		RenderBufferHandle create_buffer(const RenderBufferHandle handle, const BufferDesc& config) override;
 		RenderAttachmentHandle create_render_attachment(const RenderAttachmentHandle handle, const Attachment& config) override;
@@ -45,20 +45,20 @@ namespace sakura::graphics::webgpu
 
 		RenderBufferHandle update_buffer(const RenderBufferHandle handle, size_t offset, void* data, size_t size) override;
 
-		IGPUMemoryResource* get_unsafe(const RenderResourceHandle handle) const override;
-		IGPUMemoryResource* optional_unsafe(const RenderResourceHandle handle) const override;
-		IGPUObject* get_unsafe(const RenderObjectHandle handle) const override;
-		IGPUObject* optional_unsafe(const RenderObjectHandle handle) const override;
+		[[nodiscard]] IGPUMemoryResource* get_unsafe(const RenderResourceHandle handle) const override;
+		[[nodiscard]] IGPUMemoryResource* optional_unsafe(const RenderResourceHandle handle) const override;
+		[[nodiscard]] IGPUObject* get_unsafe(const RenderObjectHandle handle) const override;
+		[[nodiscard]] IGPUObject* optional_unsafe(const RenderObjectHandle handle) const override;
 		
-		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources_;
-		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects_;
-		sakura::unordered_map<sakura::string, WGPUShaderModule> shaderModules;
+		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources;
+		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects;
+		sakura::unordered_map<sakura::string, WGPUShaderModule> shader_modules;
 		struct PassCacheFrame
 		{
 			sakura::vector<WGPUTextureView> texture_views = sakura::vector<WGPUTextureView>(0); // [NOT FINISHED] Clear Every Frame.
 			sakura::vector< sakura::pair<sakura::vector<WGPUBindGroupEntry>, bool> > entries
 				= sakura::vector< sakura::pair<sakura::vector<WGPUBindGroupEntry>, bool> >(0); // Finished
-			sakura::vector<WGPUBindGroup> bindGroups = sakura::vector<WGPUBindGroup>(0); // Finished
+			sakura::vector<WGPUBindGroup> bind_groups = sakura::vector<WGPUBindGroup>(0); // Finished
 			RenderPipeline* pipeline = nullptr; // 
 
 			WGPUCommandBuffer commands = nullptr;
@@ -66,14 +66,14 @@ namespace sakura::graphics::webgpu
 			WGPURenderPassEncoder pass_encoder = nullptr;
 			WGPUQueue queue = nullptr;
 		};
-		sakura::vector<PassCacheFrame> passCache;
+		sakura::vector<PassCacheFrame> pass_cache;
 
 #ifndef SAKURA_TARGET_PLATFORM_EMSCRIPTEN
 		dawn_native::Adapter adapter;
 #endif
 		// devices_
 		WGPUDevice device = nullptr;
-		WGPUQueue defaultQueue = nullptr;
+		WGPUQueue default_queue = nullptr;
 		sakura::string name;
 
 	protected:
@@ -81,11 +81,9 @@ namespace sakura::graphics::webgpu
 		Handle _create_resouce_impl(const Handle handle, Args&&... args) noexcept;
 		template <typename ObjectType, typename Handle, typename... Args>
 		Handle _create_object_impl(const Handle handle, Args&&... args) noexcept;
-
 		
 		void initPlatformSpecific(const DeviceConfiguration& config);
 
-		
 		void processCommand(PassCacheFrame& cache, const RenderCommand* command) const;
 		void processCommandUpdateBinding(PassCacheFrame& cache, const RenderCommandUpdateBinding& command) const;
 		void processCommandUpdateBinding(PassCacheFrame& cache, const sakura::graphics::Binding& binder) const;
@@ -190,10 +188,10 @@ namespace sakura::graphics::webgpu
 		}
 		else
 		{
-			if (created_resources_.size() < handle.id().index() + 1)
-				created_resources_.resize(handle.id().index() + 1);
+			if (created_resources.size() < handle.id().index() + 1)
+				created_resources.resize(handle.id().index() + 1);
 			auto newRes = new ResourceType(handle, std::forward<Args>(args)...);
-			created_resources_[handle.id().index()] = sakura::make_pair(newRes, handle.id().generation());
+			created_resources[handle.id().index()] = sakura::make_pair(newRes, handle.id().generation());
 		}
 		return handle;
 	}
@@ -210,10 +208,10 @@ namespace sakura::graphics::webgpu
 		}
 		else
 		{
-			if (created_objects_.size() < handle.id().index() + 1)
-				created_objects_.resize(handle.id().index() + 1);
+			if (created_objects.size() < handle.id().index() + 1)
+				created_objects.resize(handle.id().index() + 1);
 			auto newRes = new ObjectType(handle, std::forward<Args>(args)...);
-			created_objects_[handle.id().index()] = sakura::make_pair(newRes, handle.id().generation());
+			created_objects[handle.id().index()] = sakura::make_pair(newRes, handle.id().generation());
 		}
 		return handle;
 	}

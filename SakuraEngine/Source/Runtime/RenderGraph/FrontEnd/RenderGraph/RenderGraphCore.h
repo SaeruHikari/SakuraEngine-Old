@@ -260,6 +260,7 @@ namespace sakura::graphics
 	{
 		Clear = 0,
 		Load = 1,
+		DontCare = 2,
 		Count
 	};
 
@@ -267,6 +268,7 @@ namespace sakura::graphics
 	{
 		Store = 0,
 		Clear = 1,
+		DontCare = 2,
 		Count
 	};
 
@@ -520,14 +522,21 @@ namespace sakura::graphics
 		{
 			ETextureFormat format; // size = 16
 			bool blend_enable = false;
+			ELoadOp load_operation = ELoadOp::Count;
+			ELoadOp stencil_load_operation = ELoadOp::DontCare;
+			EStoreOp store_operation = EStoreOp::Count;
+			EStoreOp stencil_store_operation = EStoreOp::DontCare;
 			struct BlendDesc
 			{
+				ELoadOp load_operation = ELoadOp::Count;
+				EStoreOp store_opeartion = EStoreOp::Count;
 				EBlendOp operation = EBlendOp::Add;
 				EBlendFactor src_factor = EBlendFactor::SrcAlpha;
 				EBlendFactor dst_factor = EBlendFactor::OneMinusSrcAlpha;
 			} alpha_blend, color_blend; // size = 32 * 2
 			ColorMask write_mask = EColorMaskBits::All; // size = 8
-			Slot(ETextureFormat format) noexcept;
+			Slot(ETextureFormat format, ELoadOp loadOp, EStoreOp storeOp,
+				ELoadOp stencilLoadOp = ELoadOp::DontCare, EStoreOp stencilStoreOp = EStoreOp::DontCare) noexcept;
 			Slot() = default;
 		};
 		AttachmentLayout() = default;

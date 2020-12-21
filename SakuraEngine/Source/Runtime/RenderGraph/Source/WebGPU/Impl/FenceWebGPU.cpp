@@ -6,7 +6,7 @@ sakura::graphics::webgpu::Fence::Fence(const FenceHandle handle, RenderDevice& d
 {
 	WGPUFenceDescriptor fenceDesc = {};
 	fenceDesc.initialValue = desc.initial_value;
-	_fence = wgpuQueueCreateFence(dev.defaultQueue, &fenceDesc);
+	_fence = wgpuQueueCreateFence(dev.default_queue, &fenceDesc);
 }
 
 sakura::graphics::webgpu::Fence::~Fence()

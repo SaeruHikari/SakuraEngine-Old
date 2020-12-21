@@ -16,9 +16,9 @@ namespace render_system
 	using namespace sakura;
 	using namespace sakura::graphics;
 
-	inline sakura::vector<std::byte> vertexShaderSpirv;
-	inline sakura::vector<std::byte> pixelShaderSpirv;
-	const sakura::string vertexShaderHLSL = 
+	inline sakura::vector<std::byte> vertex_shader_spirv;
+	inline sakura::vector<std::byte> pixel_shader_spirv;
+	const sakura::string vertex_shader_hlsl = 
 		u8"struct VertexIn\
 		{\
 			float3 aPos : SV_Position;\
@@ -48,7 +48,7 @@ namespace render_system
 			vout.vCol = vin.aCol;\
 			return vout;\
 		}";
-	const sakura::string pixelShaderHLSL =
+	const sakura::string pixel_shader_hlsl =
 		u8"struct VertexOut\
 		{\
 			float4 position : SV_Position;\
@@ -115,7 +115,7 @@ namespace render_system
 				Binding binding = Binding({
 					Binding::Set({
 						Binding::Slot(uniform_buffer_per_target, 0,
-							sizeof(sakura::float4x4) * 4, sizeof(sakura::float4x4) * i * 4)
+							sizeof(sakura::float4x4) * 4, 0)
 					})
 				}, { sizeof(sakura::float4x4) * i * 4 });
 				command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 60);
@@ -145,7 +145,7 @@ namespace render_system
 						Binding::Set({
 							Binding::Slot(uniform_buffer_per_object, 0,
 								sizeof(sakura::float4x4) * 4, 
-								sizeof(sakura::float4x4) * (i + bn * n / N) * 4)
+								0)
 						})
 					}, { sizeof(sakura::float4x4) * (i + bn * n / N) * 4 });
 					command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 3);
@@ -175,14 +175,14 @@ namespace render_system
 		vars.entry = u8"main";
 		vars.name = u8"BaseVS";
 		vars.freq = sakura::graphics::EShaderFrequency::VertexShader;
-		vertexShaderSpirv = 
-			sakura::development::compile_hlsl(vertexShaderHLSL, vars);
+		vertex_shader_spirv = 
+			sakura::development::compile_hlsl(vertex_shader_hlsl, vars);
 
 		vars.entry = u8"main";
 		vars.name = u8"BasePS";
 		vars.freq = sakura::graphics::EShaderFrequency::PixelShader;
-		pixelShaderSpirv = 
-			sakura::development::compile_hlsl(pixelShaderHLSL, vars);
+		pixel_shader_spirv = 
+			sakura::development::compile_hlsl(pixel_shader_hlsl, vars);
 
 		sakura::Core::initialize(sakura::Core::Parameters());
 		sakura::info("game thread id: {}", std::hash<std::thread::id>()(sakura::Core::get_main_thread_id()));
@@ -219,8 +219,8 @@ namespace render_system
 		RenderPipelineDesc pipelineDesc = RenderPipelineDesc(
 			ShaderLayout({
 				// Create Actual ShaderResources on Device.
-				device_group.create_shader(vertex_shader, ShaderDesc("VertexShader", "main", EShaderFrequency::VertexShader, vertexShaderSpirv)),
-				device_group.create_shader(pixel_shader, ShaderDesc("PiexelShader", "main", EShaderFrequency::PixelShader, pixelShaderSpirv))
+				device_group.create_shader(vertex_shader, ShaderDesc("VertexShader", "main", EShaderFrequency::VertexShader, vertex_shader_spirv)),
+				device_group.create_shader(pixel_shader, ShaderDesc("PiexelShader", "main", EShaderFrequency::PixelShader, pixel_shader_spirv))
 				}),
 			VertexLayout(
 				{
@@ -232,20 +232,23 @@ namespace render_system
 				{
 					BindingLayout::Set(
 					{
-						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
+						BindingLayout::Slot(
+							0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
 					}),
 					BindingLayout::Set(
 					{
-						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
+						BindingLayout::Slot(
+							0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
 					}),
 				}),
 			AttachmentLayout(
 #ifndef SAKURA_TARGET_PLATFORM_EMSCRIPTEN
-		{ AttachmentLayout::Slot(ETextureFormat::R8G8B8A8_UNORM) }
+				{ AttachmentLayout::Slot(ETextureFormat::R8G8B8A8_UNORM, ELoadOp::Clear, EStoreOp::Store) }
 #else
-		{ AttachmentLayout::Slot(ETextureFormat::B8G8R8A8_UNORM) }
+				{ AttachmentLayout::Slot(ETextureFormat::B8G8R8A8_UNORM, ELoadOp::Clear, EStoreOp::Store) }
 #endif
-		), ECullMode::Back, EPrimitiveTopology::TriangleList, EPolygonMode::FILL, 1, 0xFFFFFFFF
+			),
+			ECullMode::Back, EPrimitiveTopology::TriangleList, EPolygonMode::FILL, 1, 0xFFFFFFFF
 		);
 
 		// Create Render pipeline.
@@ -315,7 +318,7 @@ namespace render_system
 	{
 		using namespace sakura;
 		using namespace sakura::graphics;
-		using namespace ecs;
+		using namespace sakura::ecs;
 		ZoneScopedN("CollectAndUpload");
 		auto Collect = [&ppl](filters& filter, std::vector<sakura::float4x4>& world, int maxSlice = 500)
 		{

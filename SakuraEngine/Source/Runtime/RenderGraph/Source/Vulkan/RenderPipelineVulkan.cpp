@@ -5,10 +5,10 @@ using namespace sakura::graphics::vk;
 
 sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle,
 	const vk::RenderDevice& render_device, VkDevice device, const RenderPipelineDesc& desc)
-	:handle_(handle), owned_device_(device), render_device_(render_device)
+	:handle_(handle), owned_device(device), render_device(render_device)
 {
 	// Binding Layout
-	binding_layouts_.resize(desc.binding_layout.tables.size());
+	binding_layouts.resize(desc.binding_layout.tables.size());
 	for (auto tbl = 0; tbl < desc.binding_layout.tables.size(); tbl++)
 	{
 		auto& set = desc.binding_layout.tables[tbl];
@@ -28,13 +28,14 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		layoutInfo.bindingCount = uboLayoutBindings.size();
 		layoutInfo.pBindings = uboLayoutBindings.data();
-		if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &binding_layouts_[tbl]) != VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &binding_layouts[tbl]) != VK_SUCCESS)
 		{
 			sakura::error("failed to create descriptor set layout!");
 		}
 	}
 
 	// Shader Stages Set-Up.
+	sakura::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	shaderStages.resize(desc.shader_layout.count);
 	for (auto i = 0u; i < desc.shader_layout.count; i++)
 	{
@@ -65,6 +66,9 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	}
 
 	// vertex input information
+	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+	sakura::vector<VkVertexInputAttributeDescription> vertexAttributes;
+	sakura::vector<VkVertexInputBindingDescription> vertexBindings;
 	{
 		vertexBindings.resize(desc.vertex_layout.size());
 		for (size_t vbindex = 0u; vbindex < desc.vertex_layout.size(); vbindex++)
@@ -90,10 +94,13 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 		vertexInputInfo.pVertexAttributeDescriptions = vertexAttributes.data();
 		vertexInputInfo.vertexAttributeDescriptionCount = vertexAttributes.size();
 	}
+
+	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssembly.topology = translate(desc.primitive_topology);
 	inputAssembly.primitiveRestartEnable = VK_FALSE;
 
+	VkPipelineRasterizationStateCreateInfo rasterizer{};
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterizer.depthClampEnable = VK_FALSE;
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
@@ -103,15 +110,19 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 
+	// cn: 多重采样设置.
+	// en: multi-sampling setting up.
+	// jp: マルチサンプリングの設定.
+	VkPipelineMultisampleStateCreateInfo multisampling{};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
 	multisampling.rasterizationSamples = VkSampleCountFlagBits(desc.sample_count);
-	sample_mask_ = desc.sample_mask;
-	multisampling.pSampleMask = &sample_mask_;
+	multisampling.pSampleMask = &desc.sample_mask;
 
 	// cn: Color Attachments 的转译.
 	// en: Translate Color Attachments.
 	// jp: カラーアタッチメントを翻訳する.
+	sakura::vector<VkPipelineColorBlendAttachmentState> attachmentStates;
 	attachmentStates.resize(desc.attachment_layout.slots.size());
 	for (size_t i = 0u; i < desc.attachment_layout.slots.size(); i++)
 	{
@@ -136,6 +147,7 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	// en: RenderGraph does not support logicOp & blendConstants, no motivation to support currently.
 	// jp: レンダリンググラフは、ロジックオペレーションとブレンド定数をサポートしていません。
 	//     現在、サポートする動機はありません。
+	VkPipelineColorBlendStateCreateInfo colorBlending{};
 	{
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlending.logicOpEnable = VK_FALSE;
@@ -150,33 +162,69 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = binding_layouts_.size();
-	pipelineLayoutInfo.pSetLayouts = binding_layouts_.data();
+	pipelineLayoutInfo.setLayoutCount = binding_layouts.size();
+	pipelineLayoutInfo.pSetLayouts = binding_layouts.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 0;
 	pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-	if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipeline_layout_) != VK_SUCCESS) 
+	if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipeline_layout) != VK_SUCCESS) 
 	{
 		sakura::error("[RenderGraphVulkan]: failed to create pipeline layout!");
 	}
-}
 
-sakura::graphics::vk::RenderPipeline::~RenderPipeline()
-{
-	for(auto i = 0u; i < binding_layouts_.size(); i++)
-		vkDestroyDescriptorSetLayout(owned_device_, binding_layouts_[i], nullptr);
 	
-	vkDestroyPipelineLayout(owned_device_, pipeline_layout_, nullptr);
-	vkDestroyPipeline(owned_device_, pipeline_, nullptr);
-}
+	// cn: subpass. 未实现, 暂时没有实现动机.
+	// en: subpass, unimplemented, and no motivation for realizing temporarily.
+	// jp: サブパス、未実現、一時的に実現する動機はありません。
+	VkAttachmentReference colorAttachmentRef{};
+	VkSubpassDescription subpass{};
+	VkSubpassDependency dependency{};
+	sakura::vector<VkAttachmentDescription> attachDescs(desc.attachment_layout.slots.size());
+	{
+		colorAttachmentRef.attachment = 0;
+		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		subpass.colorAttachmentCount = 1;
+		subpass.pColorAttachments = &colorAttachmentRef;
+		
+		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+		dependency.dstSubpass = 0;
+		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.srcAccessMask = 0;
+		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	}
+	for(auto i = 0u; i < attachDescs.size(); i++)
+	{
+		auto& attachDesc = attachDescs[i];
+		const auto& slot = desc.attachment_layout.slots[i];
+		
+		attachDesc.format = translate(slot.format);
+		attachDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+		attachDesc.loadOp = translate(slot.load_operation);
+		attachDesc.storeOp = translate(slot.store_operation);
+	
+		attachDesc.stencilLoadOp = translate(slot.stencil_load_operation);
+		attachDesc.stencilStoreOp = translate(slot.stencil_store_operation);
 
-sakura::graphics::RenderObjectHandle sakura::graphics::vk::RenderPipeline::handle() const
-{
-	return handle_;
-}
+		// Barriers.
+		attachDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		attachDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	}
+	VkRenderPassCreateInfo renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = static_cast<uint32>(desc.attachment_layout.slots.size());
+	renderPassInfo.pAttachments = attachDescs.data();
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.dependencyCount = 1;
+	renderPassInfo.pDependencies = &dependency;
 
-void sakura::graphics::vk::RenderPipeline::start(VkRenderPass render_pass)
-{
+	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &pass) != VK_SUCCESS)
+	{
+		sakura::error("failed to create render pass!");
+	}
+
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
@@ -206,15 +254,28 @@ void sakura::graphics::vk::RenderPipeline::start(VkRenderPass render_pass)
 	pipelineInfo.pRasterizationState = &rasterizer;
 	pipelineInfo.pMultisampleState = &multisampling;
 	pipelineInfo.pColorBlendState = &colorBlending;
-	pipelineInfo.layout = pipeline_layout_;
-	pipelineInfo.renderPass = render_pass;
+	pipelineInfo.layout = pipeline_layout;
+	pipelineInfo.renderPass = pass;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(owned_device_, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline_)
+	if (vkCreateGraphicsPipelines(owned_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline)
 		!= VK_SUCCESS)
 	{
 		sakura::error("failed to create graphics pipeline!");
 	}
 }
 
+sakura::graphics::vk::RenderPipeline::~RenderPipeline()
+{
+	for(auto i = 0u; i < binding_layouts.size(); i++)
+		vkDestroyDescriptorSetLayout(owned_device, binding_layouts[i], nullptr);
+	
+	vkDestroyPipelineLayout(owned_device, pipeline_layout, nullptr);
+	vkDestroyPipeline(owned_device, pipeline, nullptr);
+}
+
+sakura::graphics::RenderObjectHandle sakura::graphics::vk::RenderPipeline::handle() const
+{
+	return handle_;
+}

@@ -49,16 +49,32 @@ namespace sakura::graphics
 		IRenderDevice() = default;
 		virtual ~IRenderDevice() = default;
 
-		virtual bool valid(const RenderShaderHandle shader) const = 0;
+		// cn: 判断一个资源句柄是否再此设备中有对应有效资源.
+		// en: Determine whether a resource handle has a corresponding valid resource in this device.
+		// jp: リソースハンドルに、デバイスに対応する有効なリソースがあるかどうかを確認.
+		virtual bool valid(const RenderResourceHandle handle) const = 0;
 
+		// cn: 销毁句柄在此设备上对应的资源. 成功销毁会释放句柄内索引, 并使对应有效代数+1.
+		// en: Destroy the resource corresponding to the handle on this device.
+		//     Successful destruction will release index in the handle and make the corresponding generation +1.
+		// jp: このデバイスのハンドルに対応するリソースを破棄します。
+		//     破棄に成功すると、ハンドルのインデックスが解放され、対応する世代が1つ増えます。
+		virtual void destroy_resource(const RenderResourceHandle to_destroy) = 0;
+
+		// cn: 获得设备的名称.
+		// en: Get the name of the device.
+		// jp: デバイスの名前を取得します.
 		virtual sakura::string_view get_name() const = 0;
+
+		// cn: 获得设备的后端.
+		// en: Get the backend of the device.
+		// jp: デバイスのバックエンドを取得します.
 		virtual EBackend backend() const = 0;
 		
 		// execute a command buffer
 		virtual bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl) = 0;
 		virtual bool execute(const RenderGraph& graph_to_execute) = 0;
 		virtual bool present(const SwapChainHandle handle) { return true; }
-		virtual void destroy_resource(const RenderShaderHandle to_destroy) = 0;
 		
 		virtual RenderShaderHandle create_shader(const RenderShaderHandle handle, const ShaderDesc& desc) = 0;
 		virtual RenderBufferHandle create_buffer(const RenderBufferHandle handle, const BufferDesc& desc) = 0;
@@ -70,13 +86,13 @@ namespace sakura::graphics
 
 		virtual RenderBufferHandle update_buffer(const RenderBufferHandle handle, size_t offset, void* data, size_t size) { return handle; };
 		
-		virtual IGPUMemoryResource* get_unsafe(const RenderResourceHandle handle) const = 0;
-		virtual IGPUMemoryResource* optional_unsafe(const RenderResourceHandle handle) const = 0;
-		virtual IGPUObject* get_unsafe(const RenderObjectHandle handle) const = 0;
-		virtual IGPUObject* optional_unsafe(const RenderObjectHandle handle) const = 0;
+		[[nodiscard]] virtual IGPUMemoryResource* get_unsafe(const RenderResourceHandle handle) const = 0;
+		[[nodiscard]] virtual IGPUMemoryResource* optional_unsafe(const RenderResourceHandle handle) const = 0;
+		[[nodiscard]] virtual IGPUObject* get_unsafe(const RenderObjectHandle handle) const = 0;
+		[[nodiscard]] virtual IGPUObject* optional_unsafe(const RenderObjectHandle handle) const = 0;
 		
 		template<typename Type, typename Handle>
-		Type* get(const Handle handle) const noexcept
+		[[nodiscard]] Type* get(const Handle handle) const noexcept
 		{
 			if constexpr (std::is_base_of_v<IGPUObject, Type>)
 			{
@@ -97,7 +113,7 @@ namespace sakura::graphics
 			}
 		}
 		template<typename Type, typename Handle>
-		Type* optional(const Handle handle) const noexcept
+		[[nodiscard]] Type* optional(const Handle handle) const noexcept
 		{
 			if constexpr (std::is_base_of_v<IGPUObject, Type>)
 			{
@@ -146,7 +162,7 @@ namespace sakura::graphics
 		{
 			return devices.size();
 		}
-		FORCEINLINE bool valid(const RenderShaderHandle shader) const override
+		FORCEINLINE bool valid(const RenderResourceHandle shader) const override
 		{
 			bool result = true;
 			for (auto i = 0; i < count(); i++)
@@ -182,7 +198,7 @@ namespace sakura::graphics
 			}
 			return result;
 		}
-		FORCEINLINE void destroy_resource(const RenderShaderHandle to_destroy) override
+		FORCEINLINE void destroy_resource(const RenderResourceHandle to_destroy) override
 		{
 			for (auto i = 0; i < count(); i++)
 			{

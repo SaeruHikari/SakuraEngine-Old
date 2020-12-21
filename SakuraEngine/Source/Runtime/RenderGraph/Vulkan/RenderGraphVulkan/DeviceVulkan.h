@@ -9,46 +9,7 @@
 
 namespace sakura::graphics::vk
 {
-	const bool bEnableValidationLayers = false;
 	class RenderPipeline;
-
-	// cn: 启动引擎所需要的最小扩展集合.
-	// en: The minimum set of extensions required to start the engine.
-	// jp: エンジンをランチするために必要なエクステンション-セット.
-	FORCEINLINE const std::vector<const char*> basic_extentions()
-	{
-		std::vector<const char*> res = {
-#ifdef SAKURA_TARGET_PLATFORM_WIN
-				VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-#endif
-				VK_KHR_SURFACE_EXTENSION_NAME
-		};
-		if (bEnableValidationLayers)
-		{
-			res.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-		}
-		return res;
-	}
-
-	// cn: 拉起 physics device 对象所要求的最小设备扩展集合.
-	// en: The minimum set of device extensions required by the physics device object.
-	// jp: 物理デバイスオブジェクトによって必要とされるデバイス-エクステンションの最小集合.
-	const std::vector<const char*> basic_device_exts =
-	{
-		
-	};
-
-	// cn: 拉起 main device 对象所要求的最小设备扩展集合.
-	// en: The minimum set of device extensions required by the main device object.
-	// jp: メイン-デバイスオブジェクトによって必要とされるデバイス-エクステンションの最小集合.
-	const std::vector<const char*> main_device_exts =
-	{
-		VK_KHR_SWAPCHAIN_EXTENSION_NAME
-	};
-
-	const std::vector<const char*> validationLayers = {
-		"VK_LAYER_KHRONOS_validation"
-	};
 
 	struct VulkanQueue
 	{
@@ -83,8 +44,6 @@ namespace sakura::graphics::vk
 		VulkanQueue master_queue;
 	};
 	
-
-
     class RenderGraphVulkanAPI RenderDevice final : public IRenderDevice
     {
 	public:
@@ -93,13 +52,16 @@ namespace sakura::graphics::vk
 
 		virtual EBackend backend() const override;
 
-		bool valid(const RenderShaderHandle shader) const override;
-		void destroy_resource(const RenderShaderHandle to_destroy) override;
+		bool valid(const RenderResourceHandle handle) const override;
+		void destroy_resource(const RenderResourceHandle to_destroy) override;
 
 		sakura::string_view get_name() const override;
+    	
 		bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl) override;
 		bool execute(const RenderGraph& graph_to_execute) override;
+    	
 		bool present(const SwapChainHandle handle) override;
+    	
 		void terminate() override;
 
 		RenderShaderHandle create_shader(const RenderShaderHandle handle, const ShaderDesc& config) override;
@@ -117,11 +79,12 @@ namespace sakura::graphics::vk
 		IGPUObject* get_unsafe(const RenderObjectHandle handle) const override;
 		IGPUObject* optional_unsafe(const RenderObjectHandle handle) const override;
 
-
+		// RenderGraph Device Resource.
+    	
 		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources_;
 		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects_;
 
-		// vulkan-specific
+		// vulkan-specific.
 		
 		FORCEINLINE const VulkanDeviceSet& master_device() const
 		{
@@ -137,13 +100,10 @@ namespace sakura::graphics::vk
 
 		struct PassCacheFrame
 		{
-			VkRenderPassCreateInfo pass_info_ = {};
-			VkRenderPass pass_ = VK_NULL_HANDLE;
-			
 			// ?
 			VkCommandPool command_pool_ = VK_NULL_HANDLE;
 			
-			RenderPipeline* pipeline = nullptr;
+			RenderPipelineHandle pipeline = GenerationalId::UNINITIALIZED;
 
 			// 易变: !!!Do Something!!!
 			VkDescriptorPool descripter_pool_;
@@ -155,9 +115,9 @@ namespace sakura::graphics::vk
 			SwapChainHandle toScreen = GenerationalId::UNINITIALIZED;
 		};
 		sakura::vector<PassCacheFrame> pass_caches_;
-		
 
 	protected:
+    	
 		void processCommand(PassCacheFrame& cache, const RenderCommand* command) const;
 		void processCommandUpdateBinding(PassCacheFrame& cache, const RenderCommandUpdateBinding& command) const;
 		void processCommandUpdateBinding(PassCacheFrame& cache, const sakura::graphics::Binding& binder) const;
@@ -165,7 +125,7 @@ namespace sakura::graphics::vk
 			PassCacheFrame& cache, const RenderCommandDrawInstancedWithArgs& command) const;
 		void processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command) const;
 		void processCommandDrawIndirect(PassCacheFrame& cache, const RenderCommandDrawIndirect& command) const;
-		RenderPipeline* processCommandBeginRenderPass(
+		void processCommandBeginRenderPass(
 			VkDevice device, PassCacheFrame& cache, const RenderCommandBeginRenderPass& command) const;
 		void processCommandEndRenderPass(PassCacheFrame& cache, const RenderCommandEndRenderPass& command) const;
 		void processCommandSetScissorRect(
@@ -181,6 +141,8 @@ namespace sakura::graphics::vk
 		VulkanDeviceSet findQueueFamilies(VkPhysicalDevice device, sakura::Window wind);
     };
 }
+
+
 
 
 namespace sakura::graphics::vk

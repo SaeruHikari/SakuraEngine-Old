@@ -24,9 +24,9 @@ sakura::graphics::vk::SwapChain::SwapChain(
 {
 	extent_ = Window::extent(window_);
 
-	surface_ = dev.create_and_validate_surface(window_);
+	surface = dev.create_and_validate_surface(window_);
 
-	auto swapChainSupport = querySwapChainSupport(device_.master_device().device, surface_);
+	auto swapChainSupport = querySwapChainSupport(device_.master_device().device, surface);
 
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
 	VkPresentModeKHR presentMode = chooseSwapPresentMode(desc.present_mode, swapChainSupport.presentModes);
@@ -43,7 +43,7 @@ sakura::graphics::vk::SwapChain::SwapChain(
 
 	VkSwapchainCreateInfoKHR createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	createInfo.surface = surface_;
+	createInfo.surface = surface;
 
 	createInfo.minImageCount = imageCount;
 	createInfo.imageFormat = surfaceFormat.format;
@@ -75,25 +75,25 @@ sakura::graphics::vk::SwapChain::SwapChain(
 
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	if (vkCreateSwapchainKHR(device_.master_device().logical_device, &createInfo, nullptr, &swap_chain_) != VK_SUCCESS)
+	if (vkCreateSwapchainKHR(device_.master_device().logical_device, &createInfo, nullptr, &swap_chain) != VK_SUCCESS)
 	{
 		sakura::error("[VulkanSwapChain]: Failed to create swap chain!");
 	}
 
-	vkGetSwapchainImagesKHR(device_.master_device().logical_device, swap_chain_, &imageCount, nullptr);
-	images_.resize(imageCount);
-	vkGetSwapchainImagesKHR(device_.master_device().logical_device, swap_chain_, &imageCount, images_.data());
+	vkGetSwapchainImagesKHR(device_.master_device().logical_device, swap_chain, &imageCount, nullptr);
+	images.resize(imageCount);
+	vkGetSwapchainImagesKHR(device_.master_device().logical_device, swap_chain, &imageCount, images.data());
 
 	format_ = surfaceFormat.format;
 	extent_.width = extent.width;
 	extent_.height = extent.height;
 
-	image_views_.resize(images_.size());
-	for (size_t i = 0; i < image_views_.size(); i++) 
+	image_views.resize(images.size());
+	for (size_t i = 0; i < image_views.size(); i++) 
 	{
 		VkImageViewCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		createInfo.image = images_[i];
+		createInfo.image = images[i];
 		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		createInfo.format = format_;
 		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -106,7 +106,7 @@ sakura::graphics::vk::SwapChain::SwapChain(
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
-		if (vkCreateImageView(device_.master_device().logical_device, &createInfo, nullptr, &image_views_[i]) != VK_SUCCESS)
+		if (vkCreateImageView(device_.master_device().logical_device, &createInfo, nullptr, &image_views[i]) != VK_SUCCESS)
 		{
 			sakura::error("failed to create image views!");
 		}
@@ -114,30 +114,30 @@ sakura::graphics::vk::SwapChain::SwapChain(
 
 	VkSemaphoreCreateInfo semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	render_to_screen_semaphores_.resize(images_.size());
-	vkCreateSemaphore(device_.master_device().logical_device, &semaphoreInfo, nullptr, &presentCompleteSemaphore);
-	for (size_t i = 0; i < image_views_.size(); i++)
+	render_to_screen_semaphores.resize(images.size());
+	vkCreateSemaphore(device_.master_device().logical_device, &semaphoreInfo, nullptr, &present_complete_semaphore);
+	for (size_t i = 0; i < image_views.size(); i++)
 	{
-		vkCreateSemaphore(device_.master_device().logical_device, &semaphoreInfo, nullptr, &render_to_screen_semaphores_[i]);
+		vkCreateSemaphore(device_.master_device().logical_device, &semaphoreInfo, nullptr, &render_to_screen_semaphores[i]);
 	}
 }
 
 sakura::graphics::vk::SwapChain::~SwapChain()
 {
-	vkDestroySemaphore(device_.master_device().logical_device, presentCompleteSemaphore, nullptr);
-	for (size_t i = 0; i < image_views_.size(); i++) 
+	vkDestroySemaphore(device_.master_device().logical_device, present_complete_semaphore, nullptr);
+	for (size_t i = 0; i < image_views.size(); i++) 
 	{
-		vkDestroySemaphore(device_.master_device().logical_device, render_to_screen_semaphores_[i], nullptr);
+		vkDestroySemaphore(device_.master_device().logical_device, render_to_screen_semaphores[i], nullptr);
 
-		vkDestroyImageView(device_.master_device().logical_device, image_views_[i], nullptr);
+		vkDestroyImageView(device_.master_device().logical_device, image_views[i], nullptr);
 	}
-	vkDestroySwapchainKHR(device_.master_device().logical_device, swap_chain_, nullptr);
-	vkDestroySurfaceKHR(device_.instance_, surface_, nullptr);
+	vkDestroySwapchainKHR(device_.master_device().logical_device, swap_chain, nullptr);
+	vkDestroySurfaceKHR(device_.instance_, surface, nullptr);
 }
 
 sakura::uint8 sakura::graphics::vk::SwapChain::buffer_count() const
 {
-	return static_cast<sakura::uint8>(images_.size());
+	return static_cast<sakura::uint8>(images.size());
 }
 
 sakura::graphics::extent2d sakura::graphics::vk::SwapChain::extent() const
@@ -164,12 +164,12 @@ bool sakura::graphics::vk::SwapChain::present()
 {
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	VkSwapchainKHR swapChains[] = { swap_chain_ };
+	VkSwapchainKHR swapChains[] = { swap_chain };
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
-	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pImageIndices = &image_index_;
 	{
-		presentInfo.pWaitSemaphores = &render_to_screen_semaphores_[0];
+		presentInfo.pWaitSemaphores = &render_to_screen_semaphores[0];
 		presentInfo.waitSemaphoreCount = 1;
 	}
 	vkQueuePresentKHR(device_.master_device().master_queue.queue, &presentInfo);
@@ -183,7 +183,7 @@ bool sakura::graphics::vk::SwapChain::present()
 
 VkImageView sakura::graphics::vk::SwapChain::back_buffer() const
 {
-	return image_views_[(imageIndex + 1) % buffer_count()];
+	return image_views[(image_index_ + 1) % buffer_count()];
 }
 
 // vulkan-specific.

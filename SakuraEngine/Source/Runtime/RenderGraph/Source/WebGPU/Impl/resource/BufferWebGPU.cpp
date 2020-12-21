@@ -11,7 +11,7 @@ sakura::graphics::webgpu::GPUBuffer::GPUBuffer(const RenderBufferHandle handle,
 	if(desc.data)
 	{
 		wgpuQueueWriteBuffer(
-			dev.defaultQueue, _buffer, 0, desc.data, desc.length);
+			dev.default_queue, _buffer, 0, desc.data, desc.length);
 	}
 }
 

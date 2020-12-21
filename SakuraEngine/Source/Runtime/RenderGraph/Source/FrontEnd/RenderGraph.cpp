@@ -181,8 +181,10 @@ namespace sakura::graphics
 	BindingLayout::Set::Set(const Slot* _slots, uint32 _slots_count) noexcept
 		:slots(_slots, _slots + _slots_count) {	}
 
-	AttachmentLayout::Slot::Slot(ETextureFormat _format) noexcept
-		:format(_format) {	}
+	AttachmentLayout::Slot::Slot(ETextureFormat _format, ELoadOp loadOp, EStoreOp storeOp,
+		ELoadOp stencilLoadOp, EStoreOp stencilStoreOp) noexcept
+		:format(_format), load_operation(loadOp), store_operation(storeOp),
+		 stencil_load_operation(stencilLoadOp), stencil_store_operation(stencilStoreOp) {	}
 
 	FenceDesc::FenceDesc(const uint64 initialValue) noexcept
 		: initial_value(initialValue) {	}

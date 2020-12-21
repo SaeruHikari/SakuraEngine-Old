@@ -15,7 +15,7 @@ using namespace sakura::graphics::webgpu;
 
 //WGPUTextureView backBufView = nullptr;
 //static RenderPipeline* ppl = nullptr;
-//sakura::vector<WGPUBindGroup> bindGroups;
+//sakura::vector<WGPUBindGroup> bind_groups;
 void RenderDevice::processCommandBeginRenderPass(PassCacheFrame& cacheFrame, const RenderCommandBeginRenderPass& cmd) const
 {
     auto& pass = cacheFrame.pass_encoder;
@@ -45,7 +45,7 @@ void RenderDevice::processCommandBeginRenderPass(PassCacheFrame& cacheFrame, con
         else if (auto attachment
             = std::get_if<RenderTextureHandle>(&slot_var); attachment)
         {
-            auto get_wgpu_res = created_resources_[attachment->id().index()];
+            auto get_wgpu_res = created_resources[attachment->id().index()];
             // TODO: Support This & Generation Check & Diff Check.
             assert(0 && "Unimplemented");
         }
@@ -188,15 +188,15 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
 {
 	{
 		auto* bindingDesc = &binder;
-		if (cacheFrame.bindGroups.size() < bindingDesc->sets.size())
+		if (cacheFrame.bind_groups.size() < bindingDesc->sets.size())
 		{
-			cacheFrame.bindGroups.resize(bindingDesc->sets.size());
+			cacheFrame.bind_groups.resize(bindingDesc->sets.size());
 			cacheFrame.entries.resize(bindingDesc->sets.size());
 		}
 		// Foreach BindingGroup.
 		for (auto i = 0u; i < bindingDesc->sets.size(); i++)
 		{
-			auto& bindGroup = cacheFrame.bindGroups[i];
+			auto& bindGroup = cacheFrame.bind_groups[i];
 			auto set = bindingDesc->sets[i];
 			// Matching Size.
 			if (cacheFrame.entries[i].first.size() != set.slots.size())
@@ -280,8 +280,8 @@ RenderDevice::RenderDevice(const DeviceConfiguration& config)
 {
     initPlatformSpecific(config);
     // Get Default Queue
-    defaultQueue = wgpuDeviceGetDefaultQueue(device);
-    if (!defaultQueue)
+    default_queue = wgpuDeviceGetDefaultQueue(device);
+    if (!default_queue)
     {
         sakura::error("[RenderDeviceWebGPU]: Get Default Queue Failed!");
     }
@@ -289,11 +289,11 @@ RenderDevice::RenderDevice(const DeviceConfiguration& config)
 
 RenderDevice::~RenderDevice()
 {
-	for(auto& iter : shaderModules)
+	for(auto& iter : shader_modules)
 	{
         wgpuShaderModuleRelease(iter.second);
 	}
-    wgpuQueueRelease(defaultQueue);
+    wgpuQueueRelease(default_queue);
 }
 
 WGPUBackendType RenderDevice::get_backend()
@@ -306,23 +306,29 @@ EBackend RenderDevice::backend() const
     return EBackend::WebGPU;
 }
 
-bool RenderDevice::valid(const RenderShaderHandle shader) const
+bool RenderDevice::valid(const RenderResourceHandle handle) const
 {
-    return false;
+    return optional_unsafe(handle);
 }
+
+void RenderDevice::destroy_resource(const RenderResourceHandle to_destroy)
+{
+
+}
+
 
 bool RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl)
 {
     // TODO: Move These to Constuction Phase.
-    if (hdl.id().index() + 1 > passCache.size())
-        passCache.resize(hdl.id().index() + 1); // Create New Cache
+    if (hdl.id().index() + 1 > pass_cache.size())
+        pass_cache.resize(hdl.id().index() + 1); // Create New Cache
     // TODO: Generation Check & Validate
-    auto&& cacheFrame = passCache[hdl.id().index()];
+    auto&& cacheFrame = pass_cache[hdl.id().index()];
     {// create pass cache objects.
         cacheFrame.encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);// create encoder
         //WGPUFenceDescriptor desc = {};
         //cacheFrame.committed_fence =
-        //    cacheFrame.committed_fence ? cacheFrame.committed_fence : wgpuQueueCreateFence(defaultQueue, &desc);
+        //    cacheFrame.committed_fence ? cacheFrame.committed_fence : wgpuQueueCreateFence(default_queue, &desc);
     }
 
     // Evaluate.
@@ -335,7 +341,7 @@ bool RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPas
     {
         wgpuRenderPassEncoderRelease(cacheFrame.pass_encoder);
         WGPUCommandBuffer commands = wgpuCommandEncoderFinish(cacheFrame.encoder, nullptr);// create commands
-        wgpuQueueSubmit(defaultQueue, 1, &commands);
+        wgpuQueueSubmit(default_queue, 1, &commands);
         wgpuCommandBufferRelease(commands);
     }
     for (size_t i = 0u; i < cacheFrame.texture_views.size(); i++)
@@ -374,27 +380,23 @@ bool RenderDevice::present(const SwapChainHandle handle)
     return false;
 }
 
-void RenderDevice::destroy_resource(const RenderShaderHandle to_destroy)
-{
-
-}
 
 RenderBufferHandle RenderDevice::update_buffer(const RenderBufferHandle handle, size_t offset, void* data, size_t size)
 {
     auto buf = get<GPUBuffer>(handle);
-    wgpuQueueWriteBuffer(defaultQueue, buf->_buffer, offset, data, size);
+    wgpuQueueWriteBuffer(default_queue, buf->_buffer, offset, data, size);
     return handle;
 }
 
 
 sakura::graphics::IGPUMemoryResource* RenderDevice::get_unsafe(const RenderResourceHandle handle) const
 {
-	if (created_resources_.size() < handle.id().index() + 1)
+	if (created_resources.size() < handle.id().index() + 1)
 	{
 		handle_error<RenderResourceHandle>::not_find(handle);
 		return nullptr;
 	}
-	const auto& resource = created_resources_[handle.id().index()];
+	const auto& resource = created_resources[handle.id().index()];
 	if (handle.id().generation() == resource.second)
 		return resource.first;
 	else
@@ -406,11 +408,11 @@ sakura::graphics::IGPUMemoryResource* RenderDevice::get_unsafe(const RenderResou
 
 sakura::graphics::IGPUMemoryResource* RenderDevice::optional_unsafe(const RenderResourceHandle handle) const
 {
-	if (created_resources_.size() < handle.id().index() + 1)
+	if (created_resources.size() < handle.id().index() + 1)
 	{
 		return nullptr;
 	}
-	const auto& resource = created_resources_[handle.id().index()];
+	const auto& resource = created_resources[handle.id().index()];
 	if (handle.id().generation() == resource.second)
 		return resource.first;
 	else
@@ -421,12 +423,12 @@ sakura::graphics::IGPUMemoryResource* RenderDevice::optional_unsafe(const Render
 
 sakura::graphics::IGPUObject* RenderDevice::get_unsafe(const RenderObjectHandle handle) const
 {
-	if (created_objects_.size() < handle.id().index() + 1)
+	if (created_objects.size() < handle.id().index() + 1)
 	{
 		handle_error<RenderObjectHandle>::not_find(handle);
 		return nullptr;
 	}
-	const auto& resource = created_objects_[handle.id().index()];
+	const auto& resource = created_objects[handle.id().index()];
 	if (handle.id().generation() == resource.second)
 		return resource.first;
 	else
@@ -438,11 +440,11 @@ sakura::graphics::IGPUObject* RenderDevice::get_unsafe(const RenderObjectHandle 
 
 sakura::graphics::IGPUObject* RenderDevice::optional_unsafe(const RenderObjectHandle handle) const
 {
-	if (created_objects_.size() < handle.id().index() + 1)
+	if (created_objects.size() < handle.id().index() + 1)
 	{
 		return nullptr;
 	}
-	const auto& resource = created_objects_[handle.id().index()];
+	const auto& resource = created_objects[handle.id().index()];
 	if (handle.id().generation() == resource.second)
 		return resource.first;
 	else

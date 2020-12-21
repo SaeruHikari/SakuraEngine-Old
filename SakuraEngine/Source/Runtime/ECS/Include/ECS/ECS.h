@@ -8,7 +8,10 @@
 
 namespace sakura
 {
-	namespace ecs = core::codebase;
+	namespace ecs
+	{
+		using namespace core::codebase;
+	}
 }
 
 // task_system support.

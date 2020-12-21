@@ -14,26 +14,13 @@ namespace sakura::graphics::vk
 		~RenderPipeline();
 		RenderObjectHandle handle() const override;
 
-		void start(VkRenderPass render_pass);
+		const vk::RenderDevice& render_device;
+		VkDevice owned_device = nullptr;
+		VkPipelineLayout pipeline_layout = nullptr;
+		VkPipeline pipeline = nullptr;
+		VkRenderPass pass = nullptr;
 
-		const vk::RenderDevice& render_device_;
-		VkDevice owned_device_ = VK_NULL_HANDLE;
-		VkPipelineLayout pipeline_layout_ = VK_NULL_HANDLE;
-		VkPipeline pipeline_ = VK_NULL_HANDLE;
-
-		std::vector<VkDescriptorSetLayout> binding_layouts_;
-
-		sakura::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-		sakura::vector<VkPipelineColorBlendAttachmentState> attachmentStates;
-		sakura::vector<VkVertexInputAttributeDescription> vertexAttributes;
-		sakura::vector<VkVertexInputBindingDescription> vertexBindings;
-		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
-		VkPipelineRasterizationStateCreateInfo rasterizer{};
-		VkPipelineMultisampleStateCreateInfo multisampling{};
-		VkPipelineColorBlendStateCreateInfo colorBlending{};
-
-		uint32 sample_mask_;
+		std::vector<VkDescriptorSetLayout> binding_layouts;
 	protected:
 		RenderPipelineHandle handle_;
 	};
