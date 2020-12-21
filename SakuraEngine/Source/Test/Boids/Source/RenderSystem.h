@@ -8,7 +8,7 @@
 #include "ECS/ECS.h"
 #include "Boids.h"
 
-#define TARGET_NUM 50000
+#define TARGET_NUM 100000
 
 namespace render_system
 {
@@ -317,8 +317,11 @@ namespace render_system
 				param<const LocalToWorld>
 			);
 			auto pass = ppl.create_pass(filter, paramList);
-			world.resize(ppl.pass_size(*pass) * 4);
-			task_system::ecs::schedule(ppl, pass,
+			task_system::ecs::schedule_init(ppl, pass,
+				[&world](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass)
+				{
+					world.resize(pipeline.pass_size(task_pass) * 4);
+				},
 				[&world](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
 				{
 					ZoneScopedN("CollectJob");
