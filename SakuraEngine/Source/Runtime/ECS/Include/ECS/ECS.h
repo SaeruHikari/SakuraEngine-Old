@@ -93,12 +93,6 @@ namespace sakura::task_system::ecs
 			"F must be an invokable of void(const ecs::pipeline&, const ecs::pass&, const ecs::task&)>");
 		static_assert(!(ForceParallel & ForceNoParallel),
 			"A schedule can not force both parallel and not parallel!");
-		//if (pass.archetypeCount == 0)
-		//{
-		//	task_system::Event e{ task_system::Event::Mode::Auto };
-		//	e.signal();
-		//	return e;
-		//}
 		task_system::schedule([&, p, maxSlice, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
 			defer(p->event.signal());
@@ -108,6 +102,55 @@ namespace sakura::task_system::ecs
 				ed.wait();
 			auto tasks = pipeline.create_tasks(*p, maxSlice);
 
+			constexpr auto MinParallelTask = 10u;
+			const bool recommandParallel = !p->hasRandomWrite && tasks.size > MinParallelTask;
+			if (pipeline.force_no_parallel)
+				goto FORCE_NO_PARALLEL;
+			if ((recommandParallel & !ForceNoParallel) || ForceParallel)
+			{
+				task_system::WaitGroup tasksGroup((uint32_t)tasks.size);
+				forloop(tsk, 0, tasks.size)
+				{
+					auto& tk = tasks[tsk];
+					task_system::schedule([&, tasksGroup] {
+						// Decrement the WaitGroup counter when the task has finished.
+						defer(tasksGroup.done());
+						t(pipeline, *p, tk);
+						});
+				}
+				tasksGroup.wait();
+			}
+			else
+			{
+			FORCE_NO_PARALLEL:
+				std::for_each(
+					tasks.begin(), tasks.end(), [&, t](auto& tk) mutable
+					{
+						t(pipeline, *p, tk);
+					});
+			}
+		});
+	}
+
+	template<bool ForceParallel = false, bool ForceNoParallel = false, class F, class F2>
+	FORCEINLINE void schedule_init(
+		pipeline& pipeline, std::shared_ptr<pass> p, F&& f, F2&& t, int maxSlice = -1, std::vector<task_system::Event> externalDependencies = {})
+	{
+		static_assert(std::is_invocable_v<std::decay_t<F>, const task_system::ecs::pipeline&, const pass&>,
+			"F must be an invokable of void(const ecs::pipeline&, const ecs::pass&)>");
+		static_assert(std::is_invocable_v<std::decay_t<F2>, const task_system::ecs::pipeline&, const pass&, const sakura::ecs::task&>,
+			"F2 must be an invokable of void(const ecs::pipeline&, const ecs::pass&, const ecs::task&)>");
+		static_assert(!(ForceParallel & ForceNoParallel),
+			"A schedule can not force both parallel and not parallel!");
+		task_system::schedule([&, p, maxSlice, f, t, externalDependencies = std::move(externalDependencies)]() mutable
+		{
+			defer(p->event.signal());
+			//defer(tasks.reset());
+			p->wait_for_dependencies();
+			for (auto& ed : externalDependencies)
+				ed.wait();
+			auto tasks = pipeline.create_tasks(*p, maxSlice);
+			f(pipeline, *p);
 			constexpr auto MinParallelTask = 10u;
 			const bool recommandParallel = !p->hasRandomWrite && tasks.size > MinParallelTask;
 			if (pipeline.force_no_parallel)
