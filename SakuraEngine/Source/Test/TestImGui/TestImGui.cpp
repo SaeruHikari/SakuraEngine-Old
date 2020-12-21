@@ -45,5 +45,5 @@ int main(int, char**)
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
     
-    initialize_imgui(render_graph, device_group);
+    graphics::initialize_imgui(render_graph, device_group);
 }

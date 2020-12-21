@@ -78,7 +78,7 @@ namespace sakura::graphics
 		
 		virtual RenderShaderHandle create_shader(const RenderShaderHandle handle, const ShaderDesc& desc) = 0;
 		virtual RenderBufferHandle create_buffer(const RenderBufferHandle handle, const BufferDesc& desc) = 0;
-		virtual RenderAttachmentHandle create_render_attachment(const RenderAttachmentHandle handle, const Attachment& desc) = 0;
+		virtual RenderTextureHandle create_texture(const RenderTextureHandle handle, const TextureDesc& desc) = 0;
 
 		virtual FenceHandle create_fence(const FenceHandle handle, const FenceDesc& desc) = 0;
 		virtual SwapChainHandle create_swap_chain(const SwapChainHandle handle, const SwapChainDesc& desc) = 0;
@@ -229,11 +229,11 @@ namespace sakura::graphics
 			}
 			return handle;
 		}
-		FORCEINLINE RenderAttachmentHandle create_render_attachment(const RenderAttachmentHandle handle, const Attachment& config) override
+		FORCEINLINE RenderTextureHandle create_texture(const RenderTextureHandle handle, const TextureDesc& desc) override
 		{
 			for (auto i = 0; i < count(); i++)
 			{
-				devices[i]->create_render_attachment(handle, config);
+				devices[i]->create_texture(handle, desc);
 			}
 			return handle;
 		}

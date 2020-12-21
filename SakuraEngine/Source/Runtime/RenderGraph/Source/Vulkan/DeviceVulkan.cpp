@@ -272,12 +272,11 @@ sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::create_
 		config);
 }
 
-sakura::graphics::RenderAttachmentHandle sakura::graphics::vk::RenderDevice::create_render_attachment(
-	const RenderAttachmentHandle handle, const Attachment& config)
+RenderTextureHandle RenderDevice::create_texture(const RenderTextureHandle handle, const TextureDesc& desc)
 {
-
 	return handle;
 }
+
 
 sakura::graphics::FenceHandle sakura::graphics::vk::RenderDevice::create_fence(const FenceHandle handle, const FenceDesc& desc)
 {

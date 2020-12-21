@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "BufferVulkan.h"
 #include "TextureVulkan.h"
 #include "DeviceVulkan.h"
@@ -31,7 +31,7 @@ namespace sakura::graphics::vk
 
 	RenderGraphVulkanAPI VkAttachmentStoreOp translate(EStoreOp op);
 
-	RenderGraphVulkanAPI VkBufferUsageFlags translate(EBufferUsage usage);
+	RenderGraphVulkanAPI VkBufferUsageFlags translate(const BufferUsages usage, const EBufferCPUAccess access);
 
 	RenderGraphVulkanAPI VkPrimitiveTopology translate(EPrimitiveTopology topo);
 
@@ -43,9 +43,9 @@ namespace sakura::graphics::vk
 
 	const bool bEnableValidationLayers = false;
 
-	// cn: Æô¶¯ÒıÇæËùĞèÒªµÄ×îĞ¡À©Õ¹¼¯ºÏ.
+	// cn: å¯åŠ¨å¼•æ“æ‰€éœ€çš„æœ€å°æ‰©å±•é›†.
 	// en: The minimum set of extensions required to start the engine.
-	// jp: ¥¨¥ó¥¸¥ó¤ò¥é¥ó¥Á¤¹¤ë¤¿¤á¤Ë±ØÒª¤Ê¥¨¥¯¥¹¥Æ¥ó¥·¥ç¥ó-¥»¥Ã¥È.
+	// jp: ã‚¨ãƒ³ã‚¸ãƒ³ã‚’å§‹å‹•ã™ã‚‹ãŸã‚ã«å¿…è¦ãªãƒ‡ãƒã‚¤ã‚¹ã‚¨ã‚¯ã‚¹ãƒ†ãƒ³ã‚·ãƒ§ãƒ³ã®æœ€å°ã‚»ãƒƒãƒˆ.
 	FORCEINLINE const std::vector<const char*> basic_extentions()
 	{
 		std::vector<const char*> res = {
@@ -61,17 +61,17 @@ namespace sakura::graphics::vk
 		return res;
 	}
 
-	// cn: À­Æğ physics device ¶ÔÏóËùÒªÇóµÄ×îĞ¡Éè±¸À©Õ¹¼¯ºÏ.
-	// en: The minimum set of device extensions required by the physics device object.
-	// jp: ÎïÀí¥Ç¥Ğ¥¤¥¹¥ª¥Ö¥¸¥§¥¯¥È¤Ë¤è¤Ã¤Æ±ØÒª¤È¤µ¤ì¤ë¥Ç¥Ğ¥¤¥¹-¥¨¥¯¥¹¥Æ¥ó¥·¥ç¥ó¤Î×îĞ¡¼¯ºÏ.
+	// cn: physics deviceæ‰€éœ€çš„æœ€å°è®¾å¤‡æ‰©å±•é›†.
+	// en: The minimum set of device extensions required by the physics device.
+	// jp: ç‰©ç†ãƒ‡ãƒã‚¤ã‚¹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒå¿…è¦ã¨ã™ã‚‹ãƒ‡ãƒã‚¤ã‚¹ã‚¨ã‚¯ã‚¹ãƒ†ãƒ³ã‚·ãƒ§ãƒ³ã®æœ€å°ã‚»ãƒƒãƒˆ.
 	const std::vector<const char*> basic_device_exts =
 	{
 
 	};
 
-	// cn: À­Æğ main device ¶ÔÏóËùÒªÇóµÄ×îĞ¡Éè±¸À©Õ¹¼¯ºÏ.
-	// en: The minimum set of device extensions required by the main device object.
-	// jp: ¥á¥¤¥ó-¥Ç¥Ğ¥¤¥¹¥ª¥Ö¥¸¥§¥¯¥È¤Ë¤è¤Ã¤Æ±ØÒª¤È¤µ¤ì¤ë¥Ç¥Ğ¥¤¥¹-¥¨¥¯¥¹¥Æ¥ó¥·¥ç¥ó¤Î×îĞ¡¼¯ºÏ.
+	// cn: ä¸»è®¾å¤‡å¯¹è±¡æ‰€éœ€çš„æœ€å°è®¾å¤‡æ‰©å±•é›†.
+	// en: The minimum set of device extensions required by the main device.
+	// jp: ãƒ¡ã‚¤ãƒ³ãƒ‡ãƒã‚¤ã‚¹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒå¿…è¦ã¨ã™ã‚‹ãƒ‡ãƒã‚¤ã‚¹ã‚¨ã‚¯ã‚¹ãƒ†ãƒ³ã‚·ãƒ§ãƒ³ã®æœ€å°ã‚»ãƒƒãƒˆ.
 	const std::vector<const char*> main_device_exts =
 	{
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME

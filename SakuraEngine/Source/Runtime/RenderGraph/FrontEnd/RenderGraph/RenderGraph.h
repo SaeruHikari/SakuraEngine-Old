@@ -118,7 +118,6 @@ namespace sakura::graphics
         constructor_rg_resource_handle(RenderShader, shader)
         constructor_rg_resource_handle(RenderBuffer, buffer)
         constructor_rg_resource_handle(RenderTexture, texture)
-        constructor_rg_resource_handle(RenderAttachment, render_attachment)
 
         constructor_rg_object_handle(RenderPipeline, render_pipeline)
         constructor_rg_object_handle(SwapChain, swap_chain)

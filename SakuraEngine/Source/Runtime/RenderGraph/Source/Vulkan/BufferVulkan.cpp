@@ -24,7 +24,7 @@ GPUBuffer::GPUBuffer(const RenderBufferHandle handle, const vk::RenderDevice& de
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferInfo.size = desc.length;
-	bufferInfo.usage = translate(desc.usage);
+	bufferInfo.usage = translate(desc.usages);
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer_) != VK_SUCCESS) 
@@ -65,18 +65,12 @@ sakura::graphics::RenderResourceHandle sakura::graphics::vk::GPUBuffer::handle()
 	return handle_;
 }
 
-sakura::graphics::EBufferUsage sakura::graphics::vk::GPUBuffer::usage() const
+sakura::graphics::BufferUsages sakura::graphics::vk::GPUBuffer::usages() const
 {
-	return desc_.usage;
+	return desc_.usages;
 }
 
 size_t sakura::graphics::vk::GPUBuffer::size() const
 {
 	return desc_.length;
 }
-
-sakura::graphics::EBufferOptions sakura::graphics::vk::GPUBuffer::options() const
-{
-	return desc_.options;
-}
-

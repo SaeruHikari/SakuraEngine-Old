@@ -201,9 +201,9 @@ namespace sakura::graphics
 		shader_layout(_shader_layout), vertex_layout({ _vertex_layout }), binding_layout(_binding_layout),
 			attachment_layout(_attachment_layout), polygon_mode(_polygon_mode), cull_mode(_cull_mode) {	}
 
-	BufferDesc::BufferDesc(EBufferUsage _usage, size_t _length,
-		const void* _data, const EBufferCPUAccess _access, EBufferOptions _options)
-		:usage(_usage), options(_options), access(_access), length(_length), data(_data) {	}
+	BufferDesc::BufferDesc(Usage _usage, size_t _length,
+		const void* _data, const EBufferCPUAccess _access)
+		:usages(_usage), access(_access), length(_length), data(_data) {	}
 
 
 	
