@@ -9,6 +9,10 @@ GpuTexture::GpuTexture(const RenderTextureHandle handle, const webgpu::RenderDev
 {
 	WGPUTextureDescriptor textureDesc = translate(desc);
 	texture = wgpuDeviceCreateTexture(dev.device, &textureDesc);
+	if(!texture)
+	{
+		sakura::error("[RenderGraphWebGPU]: Failed to craete texture!");
+	}
 }
 
 GpuTexture::~GpuTexture()
