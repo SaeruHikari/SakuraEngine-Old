@@ -95,7 +95,7 @@ namespace sakura::graphics
 
         RenderCommandCopyTextureToTexture(RenderTextureHandle source, RenderTextureHandle destination, extent3d copy_size, uint32_t mip_level = 1);
         RenderCommandCopyTextureToTexture(RenderTextureHandle source, TextureSlice src_slice,
-            TextureSlice dst_slice, RenderTextureHandle destination, extent3d copy_size = { 0, 0, 0 });
+            TextureSlice dst_slice, RenderTextureHandle destination, extent3d copy_size);
     };
 
     struct RenderCommandCopyTextureToBuffer final

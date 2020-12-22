@@ -107,7 +107,7 @@ void RenderDevice::processCommandCopyTextureToBuffer(
     WGPUCommandEncoder encoder, const RenderCommandCopyTextureToBuffer& command) const
 {
     WGPUTextureCopyView src = translate(command.src_slice, get<GpuTexture>(command.src)->texture);
-    WGPUBufferCopyView dst = translate(command.dst_layout, get<GPUBuffer>(command.dst)->_buffer);
+    WGPUBufferCopyView dst = translate(command.dst_layout, get<GPUBuffer>(command.dst)->buffer);
     WGPUExtent3D size = { command.copy_size.width, command.copy_size.height, command.copy_size.depth };
     wgpuCommandEncoderCopyTextureToBuffer(encoder, &src, &dst, &size);
 }
@@ -116,8 +116,8 @@ void RenderDevice::processCommandCopyBufferToBuffer(
     WGPUCommandEncoder encoder, const RenderCommandCopyBufferToBuffer& command) const
 {
     wgpuCommandEncoderCopyBufferToBuffer(encoder,
-        get<GPUBuffer>(command.src)->_buffer, command.src_offset,
-        get<GPUBuffer>(command.dst)->_buffer, command.dst_offset, command.copy_size);
+        get<GPUBuffer>(command.src)->buffer, command.src_offset,
+        get<GPUBuffer>(command.dst)->buffer, command.dst_offset, command.copy_size);
 }
 
 void RenderDevice::processCommandCopyBufferToTexture(
@@ -125,7 +125,7 @@ void RenderDevice::processCommandCopyBufferToTexture(
 {
 	
 	WGPUTextureCopyView dst = translate(command.dst_slice, get<GpuTexture>(command.dst)->texture);
-    WGPUBufferCopyView src = translate(command.layout, get<GPUBuffer>(command.src)->_buffer);
+    WGPUBufferCopyView src = translate(command.layout, get<GPUBuffer>(command.src)->buffer);
 	WGPUExtent3D size = { command.copy_size.width, command.copy_size.height, command.copy_size.depth };
     wgpuCommandEncoderCopyBufferToTexture(encoder, &src, &dst, &size);
 }
@@ -136,7 +136,7 @@ void RenderDevice::processCommandDrawIndirect(PassCacheFrame& cache, const Rende
     const auto buf_hdl = command.indirect_buffer;
     if (auto buf = get<GPUBuffer>(buf_hdl); buf)
     {
-        wgpuRenderPassEncoderDrawIndexedIndirect(cache.pass_encoder, buf->_buffer, command.offset);
+        wgpuRenderPassEncoderDrawIndexedIndirect(cache.pass_encoder, buf->buffer, command.offset);
     }
 }
 
@@ -151,7 +151,7 @@ void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, const RenderCo
 
         if (auto vb = get<GPUBuffer>(vb_src.vertex_buffer); vb)
         {
-            wgpuRenderPassEncoderSetVertexBuffer(cacheFrame.pass_encoder, 0, vb->_buffer, vb_src.offset, vb_src.stride);
+            wgpuRenderPassEncoderSetVertexBuffer(cacheFrame.pass_encoder, 0, vb->buffer, vb_src.offset, vb_src.stride);
         }
         else
         {
@@ -161,10 +161,10 @@ void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, const RenderCo
         if(auto ib = get<GPUBuffer>(ib_src.index_buffer);ib)
 		{
 #ifdef _____DESPERATED // Emscripten hasn't yet caught up with the API changes
-	        wgpuRenderPassEncoderSetIndexBuffer(*pass, ib->_buffer, ib_src.offset, ib_src.stride);
+	        wgpuRenderPassEncoderSetIndexBuffer(*pass, ib->buffer, ib_src.offset, ib_src.stride);
 #else
             wgpuRenderPassEncoderSetIndexBufferWithFormat(
-                cacheFrame.pass_encoder, ib->_buffer, translate(ib_src.format), ib_src.offset, ib_src.stride);
+                cacheFrame.pass_encoder, ib->buffer, translate(ib_src.format), ib_src.offset, ib_src.stride);
 #endif
         }
         else
@@ -269,7 +269,7 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
 				if (entry.binding == slot.slot_index && entry.offset == slot.offset && entry.size == slot.size)
 				{
 					if (auto buf = get<GPUBuffer>(slot.buffer); buf)
-						if (entry.buffer == buf->_buffer) continue;
+						if (entry.buffer == buf->buffer) continue;
 				}
 				cacheFrame.entries[i].second = false;
 				goto CREATE_BINDINGS;
@@ -286,7 +286,7 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
 					auto& entry = cacheFrame.entries[i].first[j];
 					entry.binding = slot.slot_index; entry.offset = slot.offset; entry.size = slot.size;
 					if (auto buf = get<GPUBuffer>(slot.buffer); buf)
-						entry.buffer = buf->_buffer;
+						entry.buffer = buf->buffer;
 					else
 						assert(0 && "Buffer Not Found!");
 				}
@@ -443,7 +443,7 @@ bool RenderDevice::present(const SwapChainHandle handle)
 RenderBufferHandle RenderDevice::update_buffer(const RenderBufferHandle handle, size_t offset, void* data, size_t size)
 {
     auto buf = get<GPUBuffer>(handle);
-    wgpuQueueWriteBuffer(default_queue, buf->_buffer, offset, data, size);
+    wgpuQueueWriteBuffer(default_queue, buf->buffer, offset, data, size);
     return handle;
 }
 
