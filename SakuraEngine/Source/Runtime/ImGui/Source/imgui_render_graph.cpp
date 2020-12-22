@@ -4,9 +4,11 @@ using namespace sakura;
 using namespace sakura::graphics;
 
 static RenderPipelineHandle imgui_render_pipeline;
+static RenderTextureHandle imgui_fonts_texture;
 
 namespace sakura
 {
+    ImGuiAPI ImGuiContext* imgui_context = nullptr;
 
     void initialize_imgui(graphics::RenderGraph& render_graph, graphics::IRenderDevice& device)
     {
@@ -39,11 +41,12 @@ namespace sakura
         io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
 
         // Upload Fonts
-        
+        imgui_fonts_texture = render_graph.RenderTexture("ImGuiFonts");
+
     }
 
 
-    void create_imgui_fonts(graphics::RenderCommandBuffer& buffer)
+    void create_imgui_fonts(graphics::IRenderDevice& device, graphics::RenderCommandBuffer& buffer)
     {
         ImGuiIO& io = ImGui::GetIO();
 
@@ -52,7 +55,17 @@ namespace sakura
         io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
         size_t upload_size = width * height * 4 * sizeof(char);
 
-        
+        RenderCommandBuffer buffer("ImGuiUploadFont", 1024);
+
+        TextureDesc texDesc = {};
+        texDesc.size = { width, height, 1 };
+        texDesc.dimension = ETextureDimension::Texture2D;
+        texDesc.format = ETextureFormat::R8G8B8A8_UNORM;
+        texDesc.mip_levels = 1;
+        texDesc.sharing_mode = ESharingMode::Concurrent;
+        texDesc.sample_count = 1;
+        texDesc.array_layers = 1;
+        device.create_texture(imgui_fonts_texture, texDesc);
 
     }
 

@@ -328,7 +328,7 @@ WGPUBufferUsageFlags sakura::graphics::webgpu::translate(const BufferUsages usag
 	case EBufferCPUAccess::ReadWrite:
 		usages = usages | WGPUBufferUsage_MapWrite | WGPUBufferUsage_MapRead; break;
 	}
-	return usage;
+	return usages;
 }
 
 WGPUTextureDescriptor sakura::graphics::webgpu::translate(const TextureDesc& desc)

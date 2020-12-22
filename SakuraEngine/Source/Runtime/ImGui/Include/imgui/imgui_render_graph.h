@@ -6,5 +6,5 @@ namespace sakura
 {
     ImGuiAPI void initialize_imgui(graphics::RenderGraph& render_graph, graphics::IRenderDevice& device);
 
-    ImGuiAPI void create_imgui_fonts(graphics::RenderCommandBuffer& buffer);
+    ImGuiAPI void create_imgui_fonts(graphics::IRenderDevice& device, graphics::RenderCommandBuffer& buffer);
 }

@@ -9,7 +9,7 @@
 #include "Boids.h"
 
 #define TARGET_NUM 20000
-const bool useVk = true;
+const bool useVk = false;
 
 namespace render_system
 {
@@ -116,8 +116,8 @@ namespace render_system
 					Binding::Set({
 						Binding::Slot(uniform_buffer_per_target, 0,
 							sizeof(sakura::float4x4) * 4, 0)
-					})
-				}, { sizeof(sakura::float4x4) * i * 4 });
+					}, { sizeof(sakura::float4x4) * i * 4 })
+				});
 				command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 60);
 			}
 
@@ -126,8 +126,8 @@ namespace render_system
 				Binding::Set({
 					Binding::Slot(uniform_buffer_per_object, 0,
 						sizeof(sakura::float4x4) * 4, 0)
-				}) 
-			}, { 0 }/*dynamic_offsets*/);
+				}, { 0 }/*dynamic_offsets*/)
+			});
 			command_buffer.enqueue<RenderCommandUpdateBinding>(binding00);
 			command_buffer.enqueue<RenderCommandDraw>(
 				RenderCommandDraw::VB(rg.query<RenderBufferHandle>("VertexBuffer")),
@@ -146,8 +146,8 @@ namespace render_system
 							Binding::Slot(uniform_buffer_per_object, 0,
 								sizeof(sakura::float4x4) * 4, 
 								0)
-						})
-					}, { sizeof(sakura::float4x4) * (i + bn * n / N) * 4 });
+						}, { sizeof(sakura::float4x4) * (i + bn * n / N) * 4 })
+					});
 					command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 3);
 				}
 			}
@@ -287,22 +287,22 @@ namespace render_system
 		};
 		// Create Buffers.
 		device_group.create_buffer(uniform_buffer,
-			BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4), &view_proj));
+			BufferDesc(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4), &view_proj));
 		device_group.create_buffer(uniform_buffer_per_target,
-				BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * target_worlds.size(), target_worlds.data()));
+			BufferDesc(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * target_worlds.size(), target_worlds.data()));
 		device_group.create_buffer(uniform_buffer_per_object,
-			BufferDesc(EBufferUsage::UniformBuffer, sizeof(sakura::float4x4) * worlds.size(), worlds.data()));
+			BufferDesc(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * worlds.size(), worlds.data()));
 
 		device_group.create_buffer(vertex_buffer,
-			BufferDesc(EBufferUsage::VertexBuffer, sizeof(vertData), vertData));
+			BufferDesc(EBufferUsage::VertexBuffer | EBufferUsage::CopyDst, sizeof(vertData), vertData));
 		device_group.create_buffer(index_buffer,
-			BufferDesc(EBufferUsage::IndexBuffer, sizeof(indxData), &indxData));
+			BufferDesc(EBufferUsage::IndexBuffer | EBufferUsage::CopyDst, sizeof(indxData), &indxData));
 
 
 		device_group.create_buffer(vertex_buffer_sphere,
-			BufferDesc(EBufferUsage::VertexBuffer, sizeof(sphere_vertices), sphere_vertices));
+			BufferDesc(EBufferUsage::VertexBuffer | EBufferUsage::CopyDst, sizeof(sphere_vertices), sphere_vertices));
 		device_group.create_buffer(index_buffer_sphere,
-			BufferDesc(EBufferUsage::IndexBuffer, sizeof(sphere_indices), &sphere_indices));
+			BufferDesc(EBufferUsage::IndexBuffer | EBufferUsage::CopyDst, sizeof(sphere_indices), &sphere_indices));
 
 		sakura::info("All Tests Passed!");
 	}

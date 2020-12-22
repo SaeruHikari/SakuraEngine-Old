@@ -22,12 +22,13 @@ Module(
         /Source #Default as Source
     DEPS
     DEPS_PUBLIC 
-        RuntimeCore 
+        RuntimeCore IMGUI_CORE
         RenderGraph RenderGraphWebGPU RenderGraphVulkan
         ShaderCompiler
     INCLUDES_PUBLIC 
+        /Include
     INCLUDES 
         ${CMAKE_CURRENT_SOURCE_DIR}/Source
-    LINKS
-    LINKS_PUBLIC IMGUI_CORE
+    LINKS 
+    LINKS_PUBLIC 
 )

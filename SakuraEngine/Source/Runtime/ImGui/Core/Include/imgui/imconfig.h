@@ -107,3 +107,17 @@ namespace ImGui
     void MyFunction(const char* name, const MyMatrix44& v);
 }
 */
+
+struct ImGuiContext;
+namespace sakura
+{
+    IMPORT_API extern ImGuiContext* imgui_context;
+}
+
+#ifdef GImGui
+#undef GImGui
+#endif
+
+#ifndef GImGui
+#define GImGui sakura::imgui_context
+#endif

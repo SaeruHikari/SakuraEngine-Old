@@ -90,11 +90,6 @@ RenderBufferHandle RenderDevice::create_buffer(const RenderBufferHandle handle, 
 	return handle;
 }
 
-RenderAttachmentHandle RenderDevice::create_render_attachment(const RenderAttachmentHandle handle, const Attachment& config)
-{
-	return handle;
-}
-
 SwapChainHandle RenderDevice::create_swap_chain(
 	const SwapChainHandle handle, const SwapChainDesc& window)
 {

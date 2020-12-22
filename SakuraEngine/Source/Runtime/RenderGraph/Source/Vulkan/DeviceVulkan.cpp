@@ -612,10 +612,14 @@ void sakura::graphics::vk::RenderDevice::processCommandUpdateBinding(
 		}
 	}
 
-	vkCmdBindDescriptorSets(cache.command_buffer_,
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		pipeline->pipeline_layout, 0, binder.sets.size(), cache.binding_sets_.data(),
-			binder.dynamic_offsets.size(), binder.dynamic_offsets.data());
+	for (auto i = 0u; i < binder.sets.size(); i++) // Sets
+	{
+		auto& set = binder.sets[i];
+		vkCmdBindDescriptorSets(cache.command_buffer_,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			pipeline->pipeline_layout, i, 1, &cache.binding_sets_[i],
+			set.slots.size(), set.dynamic_offsets.data());
+	}
 }
 
 void sakura::graphics::vk::RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command) const

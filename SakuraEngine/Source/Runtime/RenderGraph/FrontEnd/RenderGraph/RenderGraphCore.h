@@ -382,7 +382,7 @@ namespace sakura::graphics
 		const EBufferCPUAccess access = EBufferCPUAccess::None;
 		const size_t length = 0;
 		const void* data = nullptr;
-		BufferDesc(Usage usage = Usage::UniformBuffer,
+		BufferDesc(BufferUsages usage = Usage::UniformBuffer,
 			size_t length = 0, const void* data = nullptr,
 			const EBufferCPUAccess access = EBufferCPUAccess::None);
 	};
@@ -753,36 +753,39 @@ namespace sakura::graphics
 			Set() = default;
 			template<size_t N>
 			Set(const Slot(&slots)[N]) noexcept;
+			template<typename I, size_t N>
+			Set(const Slot(&slots)[N], const I(&dynamic_offsets)[N]) noexcept;
 			const sakura::vector<Slot> slots;
+			const sakura::vector<uint32_t> dynamic_offsets;
 		};
 		const sakura::vector<Set> sets;
-		const sakura::vector<uint32_t> dynamic_offsets;
 		Binding() = default;
 		template<size_t N>
 		Binding(const Set(&sets)[N]) noexcept;
-		template<typename I, size_t N>
-		Binding(const Set(&sets)[N], const I(&dynamic_offsets)[N]) noexcept;
 	};
 
 	template <size_t N>
 	Binding::Set::Set(const Slot(& _slots)[N]) noexcept
-		: slots(_slots, _slots + N)
+		: slots(_slots, _slots + N), dynamic_offsets(N, 0)
 	{
 		
 	}
+	
+	template <typename I, size_t N>
+	Binding::Set::Set(const Slot(&_slots)[N], const I(&offsets)[N]) noexcept
+		:slots(_slots, _slots + N), dynamic_offsets(offsets, offsets + N)
+	{
+
+	}
+	
 	template <size_t N>
 	Binding::Binding(const Set(& _sets)[N]) noexcept
-		:sets(_sets, _sets + N), dynamic_offsets(N, 0)
+		:sets(_sets, _sets + N)
 	{
 
 	}
 
-	template <typename I, size_t N>
-	Binding::Binding(const Set(& _sets)[N], const I(&offsets)[N]) noexcept
-		:sets(_sets, _sets + N), dynamic_offsets(offsets, offsets + N)
-	{
-		
-	}
+
 
 	// Shader Description struct
 	struct RenderGraphAPI ShaderDesc

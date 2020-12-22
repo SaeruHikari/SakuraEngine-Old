@@ -24,8 +24,6 @@ int main(int, char**)
 
     initialize_imgui(render_graph, device_group);
 
-    
-
 
     
 }

@@ -251,8 +251,10 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
 				}
 			}
             if (bindGroup && cacheFrame.pass_encoder)
-                wgpuRenderPassEncoderSetBindGroup(cacheFrame.pass_encoder, i, bindGroup, 0, 0);
-                    //binder.dynamic_offsets.size(), binder.dynamic_offsets.size() == 0 ? nullptr :binder.dynamic_offsets.data());
+                wgpuRenderPassEncoderSetBindGroup(cacheFrame.pass_encoder, i, bindGroup, 
+                    //0, 0);
+                    set.slots.size(),
+                    set.slots.size() == 0 ? nullptr : set.dynamic_offsets.data());
 		}// End Foreach BindingGroup.
 	}
 }

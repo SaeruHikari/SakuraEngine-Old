@@ -25,7 +25,6 @@ namespace sakura::graphics::d3d12
 		void destroy_resource(const RenderShaderHandle to_destroy) override;
 		RenderShaderHandle create_shader(const RenderShaderHandle handle, const ShaderDesc& desc) override;
 		RenderBufferHandle create_buffer(const RenderBufferHandle handle, const BufferDesc& desc) override;
-		RenderAttachmentHandle create_render_attachment(const RenderAttachmentHandle handle, const Attachment& desc) override;
 		SwapChainHandle create_swap_chain(const SwapChainHandle handle, const SwapChainDesc& desc) override;
 		RenderPipelineHandle create_render_pipeline(const RenderPipelineHandle handle, const RenderPipelineDesc& desc) override;
 
