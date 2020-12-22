@@ -699,7 +699,7 @@ int main()
 
 	using namespace sakura::ecs;
 
-	register_components<Translation, Rotation, RotationEuler, Scale, LocalToWorld, LocalToParent, 
+	declare_components<Translation, Rotation, RotationEuler, Scale, LocalToWorld, LocalToParent, 
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading>();
 	SpawnBoidSetting();
 	SpawnBoids(TARGET_NUM);
