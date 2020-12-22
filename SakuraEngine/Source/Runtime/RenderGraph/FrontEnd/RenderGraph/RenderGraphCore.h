@@ -6,6 +6,7 @@
 
 namespace sakura::graphics
 {
+	struct RenderCommandBuffer;
 	class RenderGraph;
 	namespace ____
 	{
@@ -144,6 +145,64 @@ namespace sakura::graphics
 		BC7_UNORM = 64,
 		BC7_UNORM_SRGB = 65,
 		Count = BC7_UNORM_SRGB + 1
+	};
+
+	enum class ERenderCommandType : uint32_t
+	{
+		set_scissor_rect,
+		draw,
+		draw_indirect,
+
+		draw_instanced_with_args,
+
+		dispatch,
+		dispatch_indirect,
+
+		update_binding,
+
+		copy_buffer_to_buffer,
+		copy_buffer_to_texture,
+		copy_texture_to_texture,
+		copy_texture_to_buffer,
+
+		fence, // ? necessary ?
+		// GPUQueue wait GPUQueue (semaphores) ==> Pass dependencies.
+		// GPU wait CPU ==> .....Seems useless, why not ComputePipeline ?
+		// CPU wait GPU ==> What about non-block callback pass->on_finish() ?
+
+		barriers, // optional
+		transitions, // optional
+
+		begin_timing,
+		end_timing,
+		resolve_timings,
+
+		begin_event,
+		end_event,
+
+		begin_render_pass,
+		end_render_pass,
+
+		begin_compute_pass,
+		end_compute_pass,
+
+		ray_trace,
+		update_top_level,
+		update_bottom_level,
+		update_shader_table,
+		count
+	};
+
+	enum ERenderQueueType
+	{
+		QueueTypeNone = 0x00,
+		Copy = 0x01,
+		Compute = 0x02,
+		Graphics = 0x04,
+		QueueTypeCopy = Copy,
+		QueueTypeCompute = Compute,
+		QueueTypeGraphics = Graphics,
+		QueueTypeAll = Copy | Compute | Graphics
 	};
 
 	enum class EBufferCPUAccess : uint8
@@ -474,21 +533,40 @@ namespace sakura::graphics
 		virtual bool present() = 0;
 		//virtual RenderAttachmentHandle back_buffer() const = 0;
 	};
+	using SwapChainHandle = TypedRenderObjectHandle<ISwapChain>;
+	
 	struct RenderGraphAPI IRenderPipeline : public IGPUObject
 	{
 
 	};
+	using RenderPipelineHandle = TypedRenderObjectHandle<IRenderPipeline>;
+	
 	struct RenderGraphAPI IComputePipeline : public IGPUObject
 	{
 
 	};
+	using ComputePipelineHandle = TypedRenderObjectHandle<IComputePipeline>;
+	
 	struct RenderGraphAPI IFence : public IGPUObject
 	{
 
 	};
-	using SwapChainHandle = TypedRenderObjectHandle<ISwapChain>;
-	using RenderPipelineHandle = TypedRenderObjectHandle<IRenderPipeline>;
 	using FenceHandle = TypedRenderObjectHandle<IFence>;
+
+	struct RenderGraphAPI IRenderQueue
+	{
+		IRenderQueue() = default;
+		virtual ~IRenderQueue() = default;
+
+		virtual bool execute_let_fly(const RenderCommandBuffer& command_buffer) = 0;
+
+		virtual bool execute_block(const RenderCommandBuffer& command_buffer) = 0;
+
+		virtual FenceHandle execute(const RenderCommandBuffer& command_buffer) = 0;
+
+		virtual void wait_idle() = 0;
+	};
+	using RenderQueueHandle = TypedRenderObjectHandle<IRenderQueue>;
 
 
 

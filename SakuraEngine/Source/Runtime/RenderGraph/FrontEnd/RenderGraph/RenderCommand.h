@@ -4,64 +4,6 @@
 
 namespace sakura::graphics
 {
-    enum class ERenderCommandType : uint32_t
-    {
-        set_scissor_rect,
-        draw,
-        draw_indirect,
-
-        draw_instanced_with_args,
-
-        dispatch,
-        dispatch_indirect,
-
-        update_binding,
-
-        copy_buffer_to_buffer,
-        copy_buffer_to_texture,
-        copy_texture_to_texture,
-        copy_texture_to_buffer,
-
-        fence, // ? necessary ?
-    	// GPUQueue wait GPUQueue (semaphores) ==> Pass dependencies.
-    	// GPU wait CPU ==> .....Seems useless, why not ComputePipeline ?
-    	// CPU wait GPU ==> What about non-block callback pass->on_finish() ?
-    	
-        barriers, // optional
-        transitions, // optional
-
-        begin_timing,
-        end_timing,
-        resolve_timings,
-
-        begin_event,
-        end_event,
-
-        begin_render_pass,
-        end_render_pass,
-
-    	begin_compute_pass,
-    	end_compute_pass,
-
-        ray_trace,
-        update_top_level,
-        update_bottom_level,
-        update_shader_table,
-        count
-    };
-
-    enum ERenderQueueType 
-    {
-        QueueTypeNone = 0x00,
-        Copy = 0x01,
-        Compute = 0x02,
-        Graphics = 0x04,
-        QueueTypeCopy = Copy,
-        QueueTypeCompute = Compute,
-        QueueTypeGraphics = Graphics,
-        QueueTypeAll = Copy | Compute | Graphics
-    };
-
     struct RenderCommand
     {
         virtual ~RenderCommand() = default;
@@ -227,6 +169,7 @@ namespace sakura::graphics
             explicit IB(RenderBufferHandle index_buffer, size_t indexCount,
                 EIndexFormat format = EIndexFormat::UINT16, size_t offset = 0, size_t stride = 0);
         }ib;
+    	
         uint32 instance_count = 1;
         uint32 first_index = 0;
         uint32 base_vertex = 0;

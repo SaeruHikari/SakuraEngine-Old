@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "RenderGraph/IRenderDevice.h"
+#include "RenderGraph/RenderDevice.h"
 #include "System/Log.h"
 #ifdef SAKURA_TARGET_PLATFORM_EMSCRIPTEN
 #include <webgpu/webgpu.h>
