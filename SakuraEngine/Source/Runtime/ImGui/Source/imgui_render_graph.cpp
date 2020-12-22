@@ -7,11 +7,24 @@ using namespace sakura::graphics;
 
 static RenderPipelineHandle imgui_render_pipeline;
 static RenderTextureHandle imgui_fonts_texture;
+static RenderShaderHandle imgui_vs;
+static RenderShaderHandle imgui_ps;
 
 namespace sakura
 {
     ImGuiAPI ImGuiContext* imgui_context = nullptr;
 
+    static void imgui_render_window(ImGuiViewport* viewport, void*)
+    {
+        if (!(viewport->Flags & ImGuiViewportFlags_NoRendererClear))
+        {
+            ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+        }
+        //ImGui_ImplOpenGL3_RenderDrawData(viewport->DrawData);
+    }
+
+	
     void imgui_initialize_gfx(graphics::RenderGraph& render_graph, graphics::IRenderDevice& device)
     {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -41,7 +54,7 @@ namespace sakura
         //if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         //    ImGui_ImplVulkan_InitPlatformInterface();
         ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
-        //platform_io.Renderer_RenderWindow = ImGui_ImplOpenGL3_RenderWindow;
+        platform_io.Renderer_RenderWindow = imgui_render_window;
     }
 
 
@@ -65,34 +78,13 @@ namespace sakura
         device.create_texture(imgui_fonts_texture, texDesc);
 
         graphics::RenderCommandBuffer buffer("ImGuiFontsCreate");
-    	
+    	// Upload fonts texture.
     	
     	io.Fonts->TexID = (ImTextureID)(intptr_t)&imgui_fonts_texture;
     }
 
 
-
-
     // per-frame
-	 
-    void imgui_new_frame(Window window, float delta_time)
-    {
-        ImGuiIO& io = ImGui::GetIO();
-
-        auto extent = window.extent();
-        io.DisplaySize = {static_cast<float>(extent.width), static_cast<float>(extent.height)};
-
-    	// !! no Scalable Drawing Support.
-        io.DisplayFramebufferScale = ImVec2(1, 1);
-
-        io.DeltaTime = delta_time;
-
-    	// Update MousePosAndButtons
-    	// Update MouseCursor
-    	// Update Gamepads.
-
-        ImGui::NewFrame();
-    }
 
     void imgui_fetch_commands(graphics::RenderCommandBuffer& command_buffer)
     {
@@ -111,17 +103,16 @@ namespace sakura
             size_t index_size = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
 
             // Upload vertex/index data into a single contiguous GPU buffer
-            ImDrawVert* vtx_dst = NULL;
-            ImDrawIdx* idx_dst = NULL;
+            ImDrawVert* vtx_dst = nullptr;
+            ImDrawIdx* idx_dst = nullptr;
             for (int n = 0; n < draw_data->CmdListsCount; n++)
             {
                 const ImDrawList* cmd_list = draw_data->CmdLists[n];
-                memcpy(vtx_dst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
-                memcpy(idx_dst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
-                vtx_dst += cmd_list->VtxBuffer.Size;
-                idx_dst += cmd_list->IdxBuffer.Size;
+                //memcpy(vtx_dst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
+                //memcpy(idx_dst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
+                //vtx_dst += cmd_list->VtxBuffer.Size;
+                //idx_dst += cmd_list->IdxBuffer.Size;
             }
-            
         }
     }
 }

@@ -410,5 +410,40 @@ WGPUPresentMode sakura::graphics::webgpu::translate(const EPresentMode mode)
 	}
 }
 
+WGPUTextureAspect sakura::graphics::webgpu::translate(const ETextureAspect aspect)
+{
+	switch (aspect)
+	{
+	case ETextureAspect::All:
+		return WGPUTextureAspect::WGPUTextureAspect_All;
+	case ETextureAspect::DepthOnly:
+		return WGPUTextureAspect_DepthOnly;
+	case ETextureAspect::StencilOnly:
+		return WGPUTextureAspect_StencilOnly;
+	default:
+		return WGPUTextureAspect_Force32;
+	}
+}
+
+WGPUTextureCopyView sakura::graphics::webgpu::translate(const TextureSlice from, const WGPUTexture texture)
+{
+	WGPUTextureCopyView copyView = {};
+	copyView.texture = texture;
+	copyView.mipLevel = from.mip_level;
+	copyView.origin = { from.origin.x, from.origin.y, from.origin.z };
+	copyView.aspect = translate(from.aspect);
+	return copyView;
+}
+
+WGPUBufferCopyView sakura::graphics::webgpu::translate(const TextureDataLayout layout, const WGPUBuffer buffer)
+{
+	WGPUBufferCopyView copyView = {};
+	copyView.layout.bytesPerRow = layout.bytes_per_raw;
+	copyView.layout.rowsPerImage = layout.rows_per_image;
+	copyView.layout.offset = layout.offset;
+	copyView.buffer = buffer;
+	return copyView;
+}
+
 
 

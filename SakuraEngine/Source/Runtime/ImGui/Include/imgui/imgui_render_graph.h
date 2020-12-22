@@ -8,7 +8,6 @@ namespace sakura
 
     ImGuiAPI void imgui_create_fonts(graphics::IRenderDevice& device);
 
-    ImGuiAPI void imgui_new_frame(Window window, float delta_time);
     ImGuiAPI void imgui_fetch_commands(graphics::RenderCommandBuffer& command_buffer);
 }
 

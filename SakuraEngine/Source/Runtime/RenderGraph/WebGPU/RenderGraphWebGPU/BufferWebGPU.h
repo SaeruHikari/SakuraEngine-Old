@@ -21,9 +21,9 @@ namespace sakura::graphics::webgpu
 		size_t size() const override;
 
 		BufferUsages usages() const override;
-		WGPUBuffer _buffer = nullptr;
+		WGPUBuffer buffer = nullptr;
 	protected:
-		BufferDesc _desc;
-		RenderBufferHandle _handle;
+		BufferDesc desc_;
+		RenderBufferHandle handle_;
 	};
 }

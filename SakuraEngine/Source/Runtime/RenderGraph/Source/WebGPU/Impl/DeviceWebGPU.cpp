@@ -94,6 +94,43 @@ void RenderDevice::processCommandFence(const RenderCommandFence& command, WGPUCo
 	
 }
 
+void RenderDevice::processCommandCopyTextureToTexture(
+    WGPUCommandEncoder encoder, const RenderCommandCopyTextureToTexture& command) const
+{
+    WGPUTextureCopyView src = translate(command.src_slice, get<GpuTexture>(command.src)->texture);
+    WGPUTextureCopyView dst = translate(command.dst_slice, get<GpuTexture>(command.dst)->texture);
+    WGPUExtent3D size = { command.copy_size.width, command.copy_size.height, command.copy_size.depth };
+    wgpuCommandEncoderCopyTextureToTexture(encoder, &src, &dst, &size);
+}
+
+void RenderDevice::processCommandCopyTextureToBuffer(
+    WGPUCommandEncoder encoder, const RenderCommandCopyTextureToBuffer& command) const
+{
+    WGPUTextureCopyView src = translate(command.src_slice, get<GpuTexture>(command.src)->texture);
+    WGPUBufferCopyView dst = translate(command.dst_layout, get<GPUBuffer>(command.dst)->_buffer);
+    WGPUExtent3D size = { command.copy_size.width, command.copy_size.height, command.copy_size.depth };
+    wgpuCommandEncoderCopyTextureToBuffer(encoder, &src, &dst, &size);
+}
+
+void RenderDevice::processCommandCopyBufferToBuffer(
+    WGPUCommandEncoder encoder, const RenderCommandCopyBufferToBuffer& command) const
+{
+    wgpuCommandEncoderCopyBufferToBuffer(encoder,
+        get<GPUBuffer>(command.src)->_buffer, command.src_offset,
+        get<GPUBuffer>(command.dst)->_buffer, command.dst_offset, command.copy_size);
+}
+
+void RenderDevice::processCommandCopyBufferToTexture(
+    WGPUCommandEncoder encoder, const RenderCommandCopyBufferToTexture& command) const
+{
+	
+	WGPUTextureCopyView dst = translate(command.dst_slice, get<GpuTexture>(command.dst)->texture);
+    WGPUBufferCopyView src = translate(command.layout, get<GPUBuffer>(command.src)->_buffer);
+	WGPUExtent3D size = { command.copy_size.width, command.copy_size.height, command.copy_size.depth };
+    wgpuCommandEncoderCopyBufferToTexture(encoder, &src, &dst, &size);
+}
+
+
 void RenderDevice::processCommandDrawIndirect(PassCacheFrame& cache, const RenderCommandDrawIndirect& command) const
 {
     const auto buf_hdl = command.indirect_buffer;
@@ -180,6 +217,26 @@ void RenderDevice::processCommand(PassCacheFrame& cacheFrame, const RenderComman
 		auto& cmd = *static_cast<const RenderCommandDrawInstancedWithArgs*>(command);
         processCommandDrawInstancedWithArgs(cacheFrame, cmd);
 	}break;
+    case ERenderCommandType::copy_texture_to_texture:
+    {
+        auto& cmd = *static_cast<const RenderCommandCopyTextureToTexture*>(command);
+        processCommandCopyTextureToTexture(cacheFrame.encoder, cmd);
+    }break;
+    case ERenderCommandType::copy_texture_to_buffer:
+    {
+        auto& cmd = *static_cast<const RenderCommandCopyTextureToBuffer*>(command);
+        processCommandCopyTextureToBuffer(cacheFrame.encoder, cmd);
+    }break;
+    case ERenderCommandType::copy_buffer_to_buffer:
+    {
+        auto& cmd = *static_cast<const RenderCommandCopyBufferToBuffer*>(command);
+        processCommandCopyBufferToBuffer(cacheFrame.encoder, cmd);
+    }break;
+    case ERenderCommandType::copy_buffer_to_texture:
+    {
+        auto& cmd = *static_cast<const RenderCommandCopyBufferToTexture*>(command);
+        processCommandCopyBufferToTexture(cacheFrame.encoder, cmd);
+    }break;
     default:break;
     }
 }

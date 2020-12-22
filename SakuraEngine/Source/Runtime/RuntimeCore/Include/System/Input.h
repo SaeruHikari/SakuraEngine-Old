@@ -1,7 +1,7 @@
 #pragma once
 #include "Base/Definations.h"
 
-namespace sakura
+namespace sakura::input
 {
 	enum class EKeyCode : uint32
 	{
@@ -16,9 +16,9 @@ namespace sakura
 		Pause = 0x13,
 		CapsLock = 0x14,
 		Esc = 0x1B,
-		Space_bar = 0x20,
-		Page_up = 0x21,
-		Page_down = 0x22,
+		SpaceBar = 0x20,
+		PageUp = 0x21,
+		PageDown = 0x22,
 		End = 0x23,
 		Home = 0x24,
 		Left = 0x25,
@@ -68,8 +68,8 @@ namespace sakura
 		X = 0x58,
 		Y = 0x59,
 		Z = 0x5A,
-		L_system = 0x5B,
-		R_system = 0x5C,
+		LSystem = 0x5B,
+		RSystem = 0x5C,
 		App = 0x5D,
 		Sleep = 0x5F,
 		Numpad0 = 0x60,
@@ -114,12 +114,12 @@ namespace sakura
 		F24 = 0x87,
 		Num_lock = 0x90,
 		Scroll_lock = 0x91,
-		L_shift = 0xA0,
-		R_shift = 0xA1,
-		L_ctrl = 0xA2,
-		R_ctrl = 0xA3,
-		L_alt = 0xA4,
-		R_alt = 0xA5,
+		LShift = 0xA0,
+		RShift = 0xA1,
+		LCtrl = 0xA2,
+		RCtrl = 0xA3,
+		LAlt = 0xA4,
+		RAlt = 0xA5,
 		Semicolon = 0xBA,	// ;: key on US standard keyboard
 		Plus = 0xBB,		// =+ key
 		Comma = 0xBC,		// ,< key
@@ -127,9 +127,9 @@ namespace sakura
 		Dot = 0xBE,			// .> key
 		Slash = 0xBF,		// /? key on US standard keyboard
 		Wave = 0xC0,		// ~` key on US standard keyboard
-		L_branket = 0xDB,	// [{ key on US standard keyboard
+		LBranket = 0xDB,	// [{ key on US standard keyboard
 		Backslash = 0xDC,	// \| key on US standard keyboard
-		R_branket = 0xDD,	// ]} key on US standard keyboard
+		RBranket = 0xDD,	// ]} key on US standard keyboard
 		Quote = 0xDE,		// '" key on US standard keyboard
 	};
 
@@ -180,4 +180,24 @@ namespace sakura
 		Left = 1,
 		Right = 2,
 	};
+
+	enum class EMouseCursor
+	{
+		Hide,
+		Arrow,
+		TextInput,
+		ResizeAll,
+		ResizeEW,
+		ResizeNS,
+		ResizeNESW,
+		ResizeNWSE,
+		Hand,
+		NotAllowed
+	};
+	
+	RuntimeCoreAPI bool key_down(EKeyCode key_code);
+	RuntimeCoreAPI bool key_down(EMouseKey key_code);
+	RuntimeCoreAPI bool set_cursor_pos(int32 x, int32 y);
+	RuntimeCoreAPI bool set_cursor(EMouseCursor cursor);
+	RuntimeCoreAPI pos2d cursor_pos();
 }

@@ -85,6 +85,8 @@ namespace sakura::graphics::webgpu
 		void initPlatformSpecific(const DeviceConfiguration& config);
 
 		void processCommand(PassCacheFrame& cache, const RenderCommand* command) const;
+
+		// Graphics
 		void processCommandUpdateBinding(PassCacheFrame& cache, const RenderCommandUpdateBinding& command) const;
 		void processCommandUpdateBinding(PassCacheFrame& cache, const sakura::graphics::Binding& binder) const;
 		void processCommandDrawInstancedWithArgs(PassCacheFrame& cache, const RenderCommandDrawInstancedWithArgs& command) const;
@@ -94,6 +96,12 @@ namespace sakura::graphics::webgpu
 		void processCommandEndRenderPass(PassCacheFrame& cache, const RenderCommandEndRenderPass& command) const;
 		void processCommandSetScissorRect(PassCacheFrame& cache, const RenderCommandSetScissorRect& command) const;
 		void processCommandFence(const RenderCommandFence& command, WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const;
+
+		// Copy/Transfer
+		void processCommandCopyTextureToTexture(WGPUCommandEncoder encoder, const RenderCommandCopyTextureToTexture& command) const;
+		void processCommandCopyTextureToBuffer(WGPUCommandEncoder encoder, const RenderCommandCopyTextureToBuffer& command) const;
+		void processCommandCopyBufferToBuffer(WGPUCommandEncoder encoder, const RenderCommandCopyBufferToBuffer& command) const;
+		void processCommandCopyBufferToTexture(WGPUCommandEncoder encoder, const RenderCommandCopyBufferToTexture& command) const;
 	};
 }
 

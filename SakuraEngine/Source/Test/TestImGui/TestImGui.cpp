@@ -1,5 +1,6 @@
 #include "imgui/sakura_imgui.h"
 
+#include "System/Input.h"
 #include "RuntimeCore/RuntimeCore.h"
 
 #include "RenderGraph/RenderGraph.h"
@@ -77,5 +78,4 @@ int main(int, char**)
 
         sakura::imgui_fetch_commands(command_buffer);
     }
-    
 }

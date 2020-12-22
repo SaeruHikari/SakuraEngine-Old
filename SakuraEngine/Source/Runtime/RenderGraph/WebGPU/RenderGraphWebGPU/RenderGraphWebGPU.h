@@ -46,6 +46,10 @@ namespace sakura::graphics::webgpu
 	RenderGraphWebGPUAPI WGPUStoreOp translate(const EStoreOp op);
 
 	RenderGraphWebGPUAPI WGPUPresentMode translate(const EPresentMode mode);
+
+	RenderGraphWebGPUAPI WGPUTextureAspect translate(const ETextureAspect aspect);
+	RenderGraphWebGPUAPI WGPUTextureCopyView translate(const TextureSlice from, const WGPUTexture texture);
+	RenderGraphWebGPUAPI WGPUBufferCopyView translate(const TextureDataLayout layout, const WGPUBuffer buffer);
 	
 	namespace detail
 	{

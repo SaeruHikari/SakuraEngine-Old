@@ -490,6 +490,28 @@ namespace sakura::graphics
 	using RenderPipelineHandle = TypedRenderObjectHandle<IRenderPipeline>;
 	using FenceHandle = TypedRenderObjectHandle<IFence>;
 
+
+
+	struct RenderGraphAPI TextureDataLayout
+	{
+		uint64_t offset = 0;
+		uint32_t bytes_per_raw = 0;
+		uint32_t rows_per_image = 0;
+	};
+	struct RenderGraphAPI TextureSlice
+	{
+		enum EAspect
+		{
+			All,
+			StencilOnly,
+			DepthOnly
+		};
+		EAspect aspect = EAspect::All;
+		uint32_t mip_level = 1;
+		pos3d origin = { 0, 0, 0 };
+	};
+	using ETextureAspect = TextureSlice::EAspect;
+	
 	struct RenderGraphAPI ShaderLayout
 	{
 		const RenderShaderHandle* shaders = nullptr;

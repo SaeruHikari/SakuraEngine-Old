@@ -79,6 +79,17 @@ namespace sakura
     using float32_t = float;
     using float64 = double;
     using float64_t = double;
+	struct pos2d
+	{
+        uint32 x = 0;
+        uint32 y = 0;
+	};
+	struct pos3d
+	{
+        uint32 x;
+        uint32 y;
+        uint32 z;
+	};
     struct extent2d
     {
         uint32 width = 0;
