@@ -11,12 +11,18 @@ endif()
 
 add_subdirectory(Dots)
 CMakeImportedModule(
-    NAME DotsDatabase
+    NAME Dots
     SELF_INSTALL FALSE
     INCLUDES_PUBLIC
-        Source/Runtime/CMakeImported/Dots/Database/include
-        Source/Runtime/CMakeImported/Dots/Database
-        Source/Runtime/CMakeImported/Dots
+        Source/Runtime/CMakeImported/Dots/Dots/include
+        Source/Runtime/CMakeImported/Dots/Dots
+)
+
+CMakeImportedModule(
+    NAME DotsRuntime
+    SELF_INSTALL FALSE
+    INCLUDES_PUBLIC
+        Source/Runtime/CMakeImported/Dots/DotsRuntime
 )
 
 add_subdirectory(GSL)

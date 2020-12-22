@@ -1,7 +1,7 @@
 #pragma once
 #include "TaskSystem/TaskSystem.h"
 #include "RuntimeCore/RuntimeCore.h"
-#include "Database/Codebase.h"
+#include "Codebase.h"
 
 #define forloop(i, z, n) for(auto i = std::decay_t<decltype(n)>(z); i<(n); ++i)
 #define def static constexpr auto

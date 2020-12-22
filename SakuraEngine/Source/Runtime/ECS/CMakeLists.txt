@@ -7,8 +7,9 @@ Module(
         #Default as Source
     DEPS
     DEPS_PUBLIC 
-        RuntimeCore 
-        DotsDatabase
+        Dots
+        DotsRuntime
+        RuntimeCore
     INCLUDES_PUBLIC 
         #Default as RuntimeCore
     LINKS
