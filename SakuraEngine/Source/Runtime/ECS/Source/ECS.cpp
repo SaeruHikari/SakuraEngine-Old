@@ -7,7 +7,6 @@ ECSModule* ECSModule::create()
 
 bool ECSModule::StartUp()
 {
-	core::database::initialize();
 	core::codebase::initialize();
 
 	return true;
