@@ -70,7 +70,58 @@ namespace sakura::graphics
 		// en: Get the backend of the device.
 		// jp: デバイスのバックエンドを取得します.
 		virtual EBackend backend() const = 0;
+
+		// cn: 从设备请求一条用于资源拷贝的queue. 这样的queue一般是DMA总线的界面, 在桌面平台有多条专门的实例.
+		//     对于一些没有专用拷贝队列的平台(例如移动平台)来说, 这个call会直接返回主队列.
+		// en: Request a queue for resource copying from the device.
+		//     Such a queue is generally the interface of the DMA bus, multiple specialized instances on the desktop/console.
+		//     For platforms that have no dedicated copy queues(like mobile), this call directly returns the main queue.
+		// jp: デバイスからのリソースコピーのキューを選択します.
+		//     このようなキューは通常、DMAバスのインターフェイスであり、デスクトップ/コンソール上の複数の特殊なインスタンスです.
+		//     専用のコピーキューがないプラットフォーム（モバイルなど）の場合、この呼び出しはメインキューを直接返します.
+		virtual QueueIndex request_copy_queue() const = 0;
 		
+		// cn: 执行command buffer, 不建立任何fence, 不做任何等待.
+		// en: Execute command buffer, establish no fence, do not do any waiting.
+		// jp: コマンドバッファを実行し、フェンスを確立せず、待機を行わない
+		virtual bool execute_let_fly(const QueueIndex queue, const RenderCommandBuffer& command_buffer) = 0;
+
+		// cn: 执行command buffer, 不建立任何fence, 不做任何等待.
+		// en: Execute command buffer, establish no fence, do not do any waiting.
+		// jp: コマンドバッファを実行し、フェンスを確立せず、待機を行わない
+		virtual bool execute_let_fly(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer) = 0;
+
+		// [performance warning]
+		// cn: 执行command buffer, 直接阻滞等待到该次执行在GPU完成.
+		// en: Execute the command buffer, block and wait until the execution is completed on the GPU.
+		// jp: コマンドバッファを実行し、直接ブロックして、GPUで実行が完了するまで待ちます.
+		// [performance warning]
+		virtual bool execute_block(const QueueIndex queue, const RenderCommandBuffer& command_buffer) = 0;
+
+		// [performance warning]
+		// cn: 执行command buffer, 直接阻滞等待到该次执行在GPU完成.
+		// en: Execute the command buffer, block and wait until the execution is completed on the GPU.
+		// jp: コマンドバッファを実行し、直接ブロックして、GPUで実行が完了するまで待ちます.
+		// [performance warning]
+		virtual bool execute_block(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer) = 0;
+
+		// cn: 执行command buffer, 返回一个可以用来等待该任务完成的fence.
+		// en: Execute the command buffer and return a fence, which is used to wait for the task to complete.
+		// jp: コマンドバッファを実行し、タスクが完了するのを待つために使用できるフェンスをリターン.
+		virtual FenceHandle execute(const QueueIndex queue, const RenderCommandBuffer& command_buffer) = 0;
+		
+		// cn: 执行command buffer, 返回一个可以用来等待该任务完成的fence.
+		// en: Execute the command buffer and return a fence, which is used to wait for the task to complete.
+		// jp: コマンドバッファを実行し、タスクが完了するのを待つために使用できるフェンスをリターン.
+		virtual FenceHandle execute(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer) = 0;
+
+		// [performance warning]
+		// cn: 阻滞, 等待该queue中所有任务的完成.
+		// en: Block, wait for the completion of all tasks in the queue.
+		// jp: ブロックし、キュー内のすべてのタスクを待ちます。
+		// [performance warning]
+		virtual void wait_idle() = 0;
+
 		// execute a command buffer
 		virtual bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl) = 0;
 		virtual bool execute(const RenderGraph& graph_to_execute) = 0;
@@ -92,52 +143,61 @@ namespace sakura::graphics
 		[[nodiscard]] virtual IGPUObject* optional_unsafe(const RenderObjectHandle handle) const = 0;
 		
 		template<typename Type, typename Handle>
-		[[nodiscard]] Type* get(const Handle handle) const noexcept
-		{
-			if constexpr (std::is_base_of_v<IGPUObject, Type>)
-			{
-				static_assert(std::is_base_of_v<RenderObjectHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderObjectHandle!");
-				static_assert(std::is_base_of_v<typename Handle::ObjectType, Type>, "[RGDevice::get]: Handle must match to it's ObjectType!");
-				return static_cast<Type*>(get_unsafe(handle));
-			}
-			else if constexpr (std::is_base_of_v<IGPUMemoryResource, Type>)
-			{
-				static_assert(std::is_base_of_v<RenderResourceHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderResourceHandle!");
-				static_assert(std::is_base_of_v<typename Handle::ResourceType, Type>, "[RGDevice::get]: Handle must match to it's ResourceType!");
-				return static_cast<Type*>(get_unsafe(handle));
-			}
-			else
-			{
-				static_assert(0, "Type & Handle not matching!");
-				return nullptr;
-			}
-		}
+		[[nodiscard]] Type* get(const Handle handle) const noexcept;
+
 		template<typename Type, typename Handle>
-		[[nodiscard]] Type* optional(const Handle handle) const noexcept
-		{
-			if constexpr (std::is_base_of_v<IGPUObject, Type>)
-			{
-				static_assert(std::is_base_of_v<RenderObjectHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderObjectHandle!");
-				static_assert(std::is_base_of_v<typename Handle::ObjectType, Type>, "[RGDevice::get]: Handle must match to it's ObjectType!"); 
-				return static_cast<Type*>(optional_unsafe(handle));
-			}
-			else if constexpr (std::is_base_of_v<IGPUMemoryResource, Type>)
-			{
-				static_assert(std::is_base_of_v<RenderResourceHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderResourceHandle!");
-				static_assert(std::is_base_of_v<typename Handle::ResourceType, Type>, "[RGDevice::get]: Handle must match to it's ResourceType!");
-				return static_cast<Type*>(optional_unsafe(handle));
-			}
-			else
-			{
-				static_assert(0, "Type & Handle not matching!");
-				return nullptr;
-			}
-		}
+		[[nodiscard]] Type* optional(const Handle handle) const noexcept;
 
 		virtual void terminate() = 0;
-
-		//virtual const SwapChainSupportDetails& support_details() const = 0;
 	};
+
+
+	
+	template <typename Type, typename Handle>
+	Type* IRenderDevice::get(const Handle handle) const noexcept
+	{
+		if constexpr (std::is_base_of_v<IGPUObject, Type>)
+		{
+			static_assert(std::is_base_of_v<RenderObjectHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderObjectHandle!");
+			static_assert(std::is_base_of_v<typename Handle::ObjectType, Type>, "[RGDevice::get]: Handle must match to it's ObjectType!");
+			return static_cast<Type*>(get_unsafe(handle));
+		}
+		else if constexpr (std::is_base_of_v<IGPUMemoryResource, Type>)
+		{
+			static_assert(std::is_base_of_v<RenderResourceHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderResourceHandle!");
+			static_assert(std::is_base_of_v<typename Handle::ResourceType, Type>, "[RGDevice::get]: Handle must match to it's ResourceType!");
+			return static_cast<Type*>(get_unsafe(handle));
+		}
+		else
+		{
+			static_assert(std::is_base_of_v<IGPUObject, Type> || std::is_base_of_v<IGPUMemoryResource, Type>, 
+				"Type & Handle not matching!");
+			return nullptr;
+		}
+	}
+
+	template <typename Type, typename Handle>
+	Type* IRenderDevice::optional(const Handle handle) const noexcept
+	{
+		if constexpr (std::is_base_of_v<IGPUObject, Type>)
+		{
+			static_assert(std::is_base_of_v<RenderObjectHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderObjectHandle!");
+			static_assert(std::is_base_of_v<typename Handle::ObjectType, Type>, "[RGDevice::get]: Handle must match to it's ObjectType!");
+			return static_cast<Type*>(optional_unsafe(handle));
+		}
+		else if constexpr (std::is_base_of_v<IGPUMemoryResource, Type>)
+		{
+			static_assert(std::is_base_of_v<RenderResourceHandle, Handle>, "[RGDevice::get]: Handle must be derived from RenderResourceHandle!");
+			static_assert(std::is_base_of_v<typename Handle::ResourceType, Type>, "[RGDevice::get]: Handle must match to it's ResourceType!");
+			return static_cast<Type*>(optional_unsafe(handle));
+		}
+		else
+		{
+			static_assert(std::is_base_of_v<IGPUObject, Type> || std::is_base_of_v<IGPUMemoryResource, Type>
+				, "Type & Handle not matching!");
+			return nullptr;
+		}
+	}
 
 	class RenderDeviceGroupProxy final : public IRenderDevice
 	{
@@ -306,6 +366,47 @@ namespace sakura::graphics
 			return nullptr;
 		}
 
+		QueueIndex request_copy_queue() const override
+		{
+			return QueueIndex(-1);
+		}
+		bool execute_let_fly(const QueueIndex queue, const RenderCommandBuffer& command_buffer) override
+		{
+			return false;
+		}
+		bool execute_block(const QueueIndex queue, const RenderCommandBuffer& command_buffer) override
+		{
+			return false;
+		}
+		FenceHandle execute(const QueueIndex queue, const RenderCommandBuffer& command_buffer) override
+		{
+			return GenerationalId::UNINITIALIZED;
+		}
+		void wait_idle() override
+		{
+			return;
+		}
+
+		bool execute_let_fly(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer) override
+		{
+			for (auto i = 0; i < count(); i++)
+			{
+				devices[i]->execute_let_fly(queue, command_buffer);
+			}
+			return true;
+		}
+		bool execute_block(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer) override
+		{
+			for (auto i = 0; i < count(); i++)
+			{
+				devices[i]->execute_block(queue, command_buffer);
+			}
+			return true;
+		}
+		FenceHandle execute(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer) override
+		{
+			return GenerationalId::UNINITIALIZED;
+		}
 	private:
 		sakura::string name = "DeviceGroup:";
 		sakura::vector<IRenderDevice*> devices;

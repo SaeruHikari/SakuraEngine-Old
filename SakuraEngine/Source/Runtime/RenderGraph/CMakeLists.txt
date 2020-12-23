@@ -13,7 +13,7 @@ Module(
     LINKS_PUBLIC
 )
 
-if(windows)
+if(FALSE)
 Module(
     NAME RenderGraphD3D12
     TYPE Library
@@ -26,7 +26,7 @@ Module(
     LINKS
     LINKS_PUBLIC
 )
-endif(windows)
+endif(FALSE)
 
 if(${vulkan})
 Module(

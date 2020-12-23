@@ -12,7 +12,7 @@ using namespace sakura::graphics;
 
 inline sakura::Window main_window;
 inline RenderGraph render_graph;
-inline RenderDeviceGroupProxy device_group = RenderDeviceGroupProxy(render_graph);
+inline IRenderDevice* render_device = nullptr;
 inline SwapChainHandle swap_chain = render_graph.SwapChain("DefaultSwapChain");
 
 const bool useVk = false;
@@ -32,23 +32,19 @@ int main(int, char**)
     if (!useVk)
     {
         deviceConfig.name = "DawnDevice";
-        render_graph.emplace_device(new webgpu::RenderDevice(deviceConfig));
-        IRenderDevice* dawnDevice = render_graph.get_device("DawnDevice");
-        assert(dawnDevice != nullptr && "ERROR: Failed to create Dawn device!");
-        device_group.emplace(dawnDevice);
+        render_device = new webgpu::RenderDevice(deviceConfig);
+        assert(render_device != nullptr && "ERROR: Failed to create Dawn device!");
     }
     else
     {
         deviceConfig.name = "VulkanDevice";
-        render_graph.emplace_device(new vk::RenderDevice(deviceConfig));
-        IRenderDevice* vulaknDevice = render_graph.get_device("VulkanDevice");
-        assert(vulaknDevice != nullptr && "ERROR: Failed to create Vulkan device!");
-        device_group.emplace(vulaknDevice);
+        render_device = new vk::RenderDevice(deviceConfig);
+        assert(render_device != nullptr && "ERROR: Failed to create Vulkan device!");
     }
 
     imgui_initialize();
     imgui_bind_window(main_window);
-    imgui_initialize_gfx(render_graph, device_group);
+    imgui_initialize_gfx(render_graph, *render_device);
    
     RenderCommandBuffer command_buffer("ImGuiRender", 4096);
     while (sakura::Core::yield())

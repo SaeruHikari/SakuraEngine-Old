@@ -30,6 +30,16 @@ namespace sakura::graphics::webgpu
 		void destroy_resource(const RenderResourceHandle to_destroy) override;
 
 		sakura::string_view get_name() const override;
+
+		QueueIndex request_copy_queue() const override;
+		bool execute_let_fly(const QueueIndex queue, const RenderCommandBuffer& command_buffer) override;
+		bool execute_let_fly(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer) override;
+		bool execute_block(const QueueIndex queue, const RenderCommandBuffer& command_buffer) override;
+		bool execute_block(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer) override;
+		FenceHandle execute(const QueueIndex queue, const RenderCommandBuffer& command_buffer) override;
+		FenceHandle execute(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer) override;
+		void wait_idle() override;
+		
 		bool execute(const RenderCommandBuffer& cmdBuffer, const RenderPassHandle hdl) override;
 		bool execute(const RenderGraph& graph_to_execute) override;
 		bool present(const SwapChainHandle handle) override;

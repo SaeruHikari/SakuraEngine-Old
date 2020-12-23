@@ -9,8 +9,6 @@
 
 namespace sakura::graphics::webgpu
 {
-	class RenderDevice;
-
 	class RenderGraphWebGPUAPI GpuTexture : public IGPUTexture
 	{
 	public:

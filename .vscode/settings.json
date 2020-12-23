@@ -133,6 +133,7 @@
         "string_span": "cpp",
         "gsl_assert": "cpp",
         "complex": "cpp",
-        "execution": "cpp"
+        "execution": "cpp",
+        "shared_mutex": "cpp"
     },
 }

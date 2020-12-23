@@ -334,6 +334,57 @@ sakura::string_view RenderDevice::get_name() const
     return name;
 }
 
+QueueIndex RenderDevice::request_copy_queue() const
+{
+	// WebGPU supports only main queue.
+    return 0;
+}
+
+
+
+bool RenderDevice::execute_let_fly(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
+{
+    sakura::error("Unimplemented!");
+    return false;
+}
+
+bool RenderDevice::execute_let_fly(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
+{
+    sakura::error("Unimplemented!");
+    return false;
+}
+
+bool RenderDevice::execute_block(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
+{
+    sakura::error("Unimplemented!");
+    return false;
+}
+
+FenceHandle RenderDevice::execute(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
+{
+    sakura::error("Unimplemented!");
+    return GenerationalId::UNINITIALIZED;
+}
+
+bool RenderDevice::execute_block(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
+{
+    sakura::error("Unimplemented!");
+    return false;
+}
+
+FenceHandle RenderDevice::execute(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
+{
+    sakura::error("Unimplemented!");
+    return GenerationalId::UNINITIALIZED;
+}
+
+void RenderDevice::wait_idle()
+{
+	
+}
+
+
+
 RenderDevice::RenderDevice(const DeviceConfiguration& config)
     :name(config.name)
 {

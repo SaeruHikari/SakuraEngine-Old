@@ -502,7 +502,9 @@ namespace sakura::graphics
 	struct RenderGraphAPI IGPUShader : public IGPUMemoryResource
 	{
 		virtual EShaderFrequency frequency() const = 0;
+		
 		virtual sakura::string_view entry_name() const = 0;
+		
 		virtual EShaderCodeFormat code_format() const = 0;
 	};
 	struct RenderGraphAPI IGPUBuffer : public IGPUMemoryResource
@@ -512,8 +514,11 @@ namespace sakura::graphics
 	struct RenderGraphAPI IGPUTexture : public IGPUMemoryResource
 	{
 		virtual uint32 width() const = 0;
+		
 		virtual uint32 height() const = 0;
+		
 		virtual uint32 depth() const = 0;
+		
 		virtual ETextureFormat render_format() const = 0;
 
 		virtual RenderResourceHandle handle() const = 0;
@@ -549,25 +554,13 @@ namespace sakura::graphics
 	
 	struct RenderGraphAPI IFence : public IGPUObject
 	{
-
+		//virtual void wait() = 0;
+		
+		//virtual bool completed() const = 0;
 	};
 	using FenceHandle = TypedRenderObjectHandle<IFence>;
 
-	struct RenderGraphAPI IRenderQueue
-	{
-		IRenderQueue() = default;
-		virtual ~IRenderQueue() = default;
-
-		virtual bool execute_let_fly(const RenderCommandBuffer& command_buffer) = 0;
-
-		virtual bool execute_block(const RenderCommandBuffer& command_buffer) = 0;
-
-		virtual FenceHandle execute(const RenderCommandBuffer& command_buffer) = 0;
-
-		virtual void wait_idle() = 0;
-	};
-	using RenderQueueHandle = TypedRenderObjectHandle<IRenderQueue>;
-
+	using QueueIndex = size_t;
 
 
 	struct RenderGraphAPI TextureDataLayout
@@ -602,7 +595,7 @@ namespace sakura::graphics
 	constexpr ShaderLayout::ShaderLayout(const RenderShaderHandle(&_shaders)[N])
 		:shaders(_shaders), count(N)
 	{
-
+		
 	}
 
 	struct RenderGraphAPI VertexLayout

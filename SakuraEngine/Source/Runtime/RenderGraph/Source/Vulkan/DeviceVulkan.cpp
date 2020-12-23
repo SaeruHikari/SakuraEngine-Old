@@ -240,6 +240,53 @@ sakura::string_view sakura::graphics::vk::RenderDevice::get_name() const
 	return name_;
 }
 
+QueueIndex RenderDevice::request_copy_queue() const
+{
+	sakura::error("Unimplemented!");
+	return QueueIndex(-1);
+}
+
+bool RenderDevice::execute_let_fly(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
+{
+	sakura::error("Unimplemented!");
+	return false;
+}
+
+bool RenderDevice::execute_let_fly(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
+{
+	sakura::error("Unimplemented!");
+	return false;
+}
+bool RenderDevice::execute_block(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
+{
+	sakura::error("Unimplemented!");
+	return false;
+}
+
+bool RenderDevice::execute_block(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
+{
+	sakura::error("Unimplemented!");
+	return false;
+}
+
+FenceHandle RenderDevice::execute(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
+{
+	sakura::error("Unimplemented!");
+	return GenerationalId::UNINITIALIZED;
+}
+
+FenceHandle RenderDevice::execute(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
+{
+	sakura::error("Unimplemented!");
+	return GenerationalId::UNINITIALIZED;
+}
+
+void RenderDevice::wait_idle()
+{
+	sakura::error("Unimplemented!");
+	return;
+}
+
 void sakura::graphics::vk::RenderDevice::terminate()
 {
 	for (auto& phy_dev : device_sets_)

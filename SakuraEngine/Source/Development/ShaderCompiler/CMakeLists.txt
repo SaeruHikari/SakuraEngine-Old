@@ -23,7 +23,7 @@ Module(
     DEPS_PUBLIC 
         RuntimeCore DevelopmentCore
     INCLUDES_PUBLIC 
-        #Default as RuntimeCore
+        #
     LINKS
     LINKS_PUBLIC dxcompiler
 )
