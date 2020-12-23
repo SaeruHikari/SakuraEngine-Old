@@ -63,19 +63,19 @@ namespace render_system
 	inline RenderGraph render_graph;
 	inline RenderDeviceGroupProxy device_group = RenderDeviceGroupProxy(render_graph);
 	inline SwapChainHandle swap_chain = render_graph.SwapChain("DefaultSwapChain");
-	inline RenderShaderHandle vertex_shader = render_graph.RenderShaderUnsafe("VertexShader");
-	inline RenderShaderHandle pixel_shader = render_graph.RenderShaderUnsafe("PixelShader");
+	inline GpuShaderHandle vertex_shader = render_graph.GpuShaderUnsafe("VertexShader");
+	inline GpuShaderHandle pixel_shader = render_graph.GpuShaderUnsafe("PixelShader");
 	inline RenderPipelineHandle render_pipeline = render_graph.RenderPipeline("TrianglePipeline");
 
-	inline RenderBufferHandle uniform_buffer = render_graph.RenderBuffer("UniformBuffer");
-	inline RenderBufferHandle uniform_buffer_per_object = render_graph.RenderBuffer("UniformBufferPerObject");
-	inline RenderBufferHandle uniform_buffer_per_target = render_graph.RenderBuffer("UniformBufferPerTarget");
+	inline GpuBufferHandle uniform_buffer = render_graph.GpuBuffer("UniformBuffer");
+	inline GpuBufferHandle uniform_buffer_per_object = render_graph.GpuBuffer("UniformBufferPerObject");
+	inline GpuBufferHandle uniform_buffer_per_target = render_graph.GpuBuffer("UniformBufferPerTarget");
 
-	inline RenderBufferHandle vertex_buffer = render_graph.RenderBuffer("VertexBuffer");
-	inline RenderBufferHandle index_buffer = render_graph.RenderBuffer("IndexBuffer");
+	inline GpuBufferHandle vertex_buffer = render_graph.GpuBuffer("VertexBuffer");
+	inline GpuBufferHandle index_buffer = render_graph.GpuBuffer("IndexBuffer");
 
-	inline RenderBufferHandle vertex_buffer_sphere = render_graph.RenderBuffer("VertexBufferSphere");
-	inline RenderBufferHandle index_buffer_sphere = render_graph.RenderBuffer("IndexBufferSphere");
+	inline GpuBufferHandle vertex_buffer_sphere = render_graph.GpuBuffer("VertexBufferSphere");
+	inline GpuBufferHandle index_buffer_sphere = render_graph.GpuBuffer("IndexBufferSphere");
 
 	inline sakura::float4x4 view_proj;
 	inline std::vector<sakura::float4x4> worlds(TARGET_NUM * 4);
@@ -105,8 +105,8 @@ namespace render_system
 			//);
 			command_buffer.enqueue<RenderCommandUpdateBinding>(binding0);
 			command_buffer.enqueue<RenderCommandDraw>(
-				RenderCommandDraw::VB(rg.query<RenderBufferHandle>("VertexBufferSphere")),
-				RenderCommandDraw::IB(rg.query<RenderBufferHandle>("IndexBufferSphere"),
+				RenderCommandDraw::VB(rg.query<GpuBufferHandle>("VertexBufferSphere")),
+				RenderCommandDraw::IB(rg.query<GpuBufferHandle>("IndexBufferSphere"),
 					60, EIndexFormat::UINT16)
 			);
 			auto tn = target_worlds.size() / 4;
@@ -130,8 +130,8 @@ namespace render_system
 			});
 			command_buffer.enqueue<RenderCommandUpdateBinding>(binding00);
 			command_buffer.enqueue<RenderCommandDraw>(
-				RenderCommandDraw::VB(rg.query<RenderBufferHandle>("VertexBuffer")),
-				RenderCommandDraw::IB(rg.query<RenderBufferHandle>("IndexBuffer"),
+				RenderCommandDraw::VB(rg.query<GpuBufferHandle>("VertexBuffer")),
+				RenderCommandDraw::IB(rg.query<GpuBufferHandle>("IndexBuffer"),
 					3, EIndexFormat::UINT16)
 			);
 			static constexpr size_t N = 10;

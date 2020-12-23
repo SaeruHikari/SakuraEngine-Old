@@ -43,7 +43,7 @@ void RenderDevice::processCommandBeginRenderPass(PassCacheFrame& cacheFrame, con
             }
         }
         else if (auto attachment
-            = std::get_if<RenderTextureHandle>(&slot_var); attachment)
+            = std::get_if<GpuTextureHandle>(&slot_var); attachment)
         {
             auto get_wgpu_res = created_resources[attachment->id().index()];
             // TODO: Support This & Generation Check & Diff Check.
@@ -241,6 +241,8 @@ void RenderDevice::processCommand(PassCacheFrame& cacheFrame, const RenderComman
     }
 }
 
+
+
 void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cacheFrame, const sakura::graphics::Binding& binder) const
 {
 	{
@@ -362,14 +364,64 @@ bool RenderDevice::execute_block(const ERenderQueueType queue, const RenderComma
 
 FenceHandle RenderDevice::execute(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
 {
-    sakura::error("Unimplemented!");
+	sakura::error("Unimplemented!");
     return GenerationalId::UNINITIALIZED;
+}
+
+void RenderDevice::compileCommand(WGPUCommandEncoder encoder, const RenderCommand* command) const
+{
+	switch (command->type())
+	{
+    case ERenderCommandType::copy_texture_to_buffer:
+    {
+        auto& cmd = *static_cast<const RenderCommandCopyTextureToBuffer*>(command);
+        processCommandCopyTextureToBuffer(encoder, cmd);
+    }break;
+    case ERenderCommandType::copy_texture_to_texture:
+    {
+        auto& cmd = *static_cast<const RenderCommandCopyTextureToTexture*>(command);
+        processCommandCopyTextureToTexture(encoder, cmd);
+    }break;
+    case ERenderCommandType::copy_buffer_to_buffer:
+    {
+        auto& cmd = *static_cast<const RenderCommandCopyBufferToBuffer*>(command);
+        processCommandCopyBufferToBuffer(encoder, cmd);
+    }break;
+    case ERenderCommandType::copy_buffer_to_texture:
+    {
+        auto& cmd = *static_cast<const RenderCommandCopyBufferToTexture*>(command);
+        processCommandCopyBufferToTexture(encoder, cmd);
+    }break;
+	}
 }
 
 bool RenderDevice::execute_block(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
 {
-    sakura::error("Unimplemented!");
-    return false;
+    if (queue == ERenderQueueType::Copy)
+    {
+        WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);// create encoder
+        for(auto& cmd : command_buffer)
+        {
+            compileCommand(encoder, cmd);
+        }
+        WGPUFenceDescriptor fenceDesc = {};
+        auto fence = wgpuQueueCreateFence(default_queue, &fenceDesc);
+        WGPUCommandBuffer commands = wgpuCommandEncoderFinish(encoder, nullptr);// create commands
+        wgpuQueueSubmit(default_queue, 1, &commands);
+        wgpuQueueSignal(default_queue, fence, 1);
+    	wgpuCommandBufferRelease(commands);
+        wgpuCommandEncoderRelease(encoder);
+		while(!wgpuFenceGetCompletedValue(fence))
+		{
+			
+		}
+        return true;
+    }
+    else
+    {
+        sakura::error("Unimplemented!");
+        return false;
+    }
 }
 
 FenceHandle RenderDevice::execute(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
@@ -491,7 +543,7 @@ bool RenderDevice::present(const SwapChainHandle handle)
 }
 
 
-RenderBufferHandle RenderDevice::update_buffer(const RenderBufferHandle handle, size_t offset, void* data, size_t size)
+GpuBufferHandle RenderDevice::update_buffer(const GpuBufferHandle handle, size_t offset, void* data, size_t size)
 {
     auto buf = get<GPUBuffer>(handle);
     wgpuQueueWriteBuffer(default_queue, buf->buffer, offset, data, size);
@@ -499,7 +551,7 @@ RenderBufferHandle RenderDevice::update_buffer(const RenderBufferHandle handle, 
 }
 
 
-sakura::graphics::IGPUMemoryResource* RenderDevice::get_unsafe(const RenderResourceHandle handle) const
+sakura::graphics::IGpuMemoryResource* RenderDevice::get_unsafe(const RenderResourceHandle handle) const
 {
 	if (created_resources.size() < handle.id().index() + 1)
 	{
@@ -516,7 +568,7 @@ sakura::graphics::IGPUMemoryResource* RenderDevice::get_unsafe(const RenderResou
 	}
 }
 
-sakura::graphics::IGPUMemoryResource* RenderDevice::optional_unsafe(const RenderResourceHandle handle) const
+sakura::graphics::IGpuMemoryResource* RenderDevice::optional_unsafe(const RenderResourceHandle handle) const
 {
 	if (created_resources.size() < handle.id().index() + 1)
 	{
@@ -531,7 +583,7 @@ sakura::graphics::IGPUMemoryResource* RenderDevice::optional_unsafe(const Render
 	}
 }
 
-sakura::graphics::IGPUObject* RenderDevice::get_unsafe(const RenderObjectHandle handle) const
+sakura::graphics::IGpuObject* RenderDevice::get_unsafe(const RenderObjectHandle handle) const
 {
 	if (created_objects.size() < handle.id().index() + 1)
 	{
@@ -548,7 +600,7 @@ sakura::graphics::IGPUObject* RenderDevice::get_unsafe(const RenderObjectHandle 
 	}
 }
 
-sakura::graphics::IGPUObject* RenderDevice::optional_unsafe(const RenderObjectHandle handle) const
+sakura::graphics::IGpuObject* RenderDevice::optional_unsafe(const RenderObjectHandle handle) const
 {
 	if (created_objects.size() < handle.id().index() + 1)
 	{
@@ -563,19 +615,31 @@ sakura::graphics::IGPUObject* RenderDevice::optional_unsafe(const RenderObjectHa
 	}
 }
 
-RenderShaderHandle RenderDevice::create_shader(const RenderShaderHandle handle, const ShaderDesc& config)
+GpuShaderHandle RenderDevice::create_shader(const GpuShaderHandle handle, const ShaderDesc& config)
 {
-    return _create_resouce_impl<webgpu::GPUShader, RenderShaderHandle>(handle, *this, config);
+    return _create_resouce_impl<webgpu::GpuShader, GpuShaderHandle>(handle, *this, config);
 }
 
-RenderBufferHandle RenderDevice::create_buffer(const RenderBufferHandle handle, const BufferDesc& config)
+GpuBufferHandle RenderDevice::create_buffer(const GpuBufferHandle handle, const BufferDesc& config)
 {
-	return _create_resouce_impl<webgpu::GPUBuffer, RenderBufferHandle>(handle, *this, config);
+	return _create_resouce_impl<webgpu::GPUBuffer, GpuBufferHandle>(handle, *this, config);
 }
 
-RenderTextureHandle RenderDevice::create_texture(const RenderTextureHandle handle, const TextureDesc& desc)
+GpuTextureHandle RenderDevice::create_texture(const GpuTextureHandle handle, const TextureDesc& desc)
 {
-	return _create_resouce_impl<webgpu::GpuTexture, RenderTextureHandle>(handle, *this, desc);
+	return _create_resouce_impl<webgpu::GpuTexture, GpuTextureHandle>(handle, *this, desc);
+}
+
+void RenderDevice::write_texture(GpuTextureHandle texture, void const* data, size_t data_size,
+	const TextureSlice& slice, const TextureDataLayout& layout, extent3d write_size, QueueIndex queue_index)
+{
+    WGPUTextureCopyView copyView = translate(slice, get<GpuTexture>(texture)->texture);
+    WGPUTextureDataLayout lo = {};
+    lo.offset = layout.offset;
+    lo.rowsPerImage = layout.rows_per_image;
+    lo.bytesPerRow = layout.bytes_per_raw;
+    WGPUExtent3D size = { write_size.width, write_size.height, write_size.depth };
+    wgpuQueueWriteTexture(default_queue, &copyView, data, data_size, &lo, &size);
 }
 
 

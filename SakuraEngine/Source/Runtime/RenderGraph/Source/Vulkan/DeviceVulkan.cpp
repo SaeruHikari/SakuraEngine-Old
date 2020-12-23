@@ -220,6 +220,20 @@ sakura::graphics::vk::RenderDevice::~RenderDevice()
 
 }
 
+void sakura::graphics::vk::RenderDevice::terminate()
+{
+	for (auto& phy_dev : device_sets_)
+	{
+		vkDestroyDevice(phy_dev.logical_device, nullptr);
+	}
+	if (bEnableValidationLayers)
+	{
+		DestroyDebugUtilsMessengerEXT(instance_, debug_messenger_, nullptr);
+	}
+	vkDestroyInstance(instance_, nullptr);
+	return;
+}
+
 EBackend RenderDevice::backend() const
 {
 	return EBackend::Vulkan;
@@ -239,6 +253,9 @@ sakura::string_view sakura::graphics::vk::RenderDevice::get_name() const
 {
 	return name_;
 }
+
+
+
 
 QueueIndex RenderDevice::request_copy_queue() const
 {
@@ -287,39 +304,31 @@ void RenderDevice::wait_idle()
 	return;
 }
 
-void sakura::graphics::vk::RenderDevice::terminate()
+void RenderDevice::write_texture(GpuTextureHandle texture, void const* data, size_t data_size,
+	const TextureSlice& slice, const TextureDataLayout& layout, extent3d write_size, QueueIndex queue_index)
 {
-	for (auto& phy_dev : device_sets_)
-	{
-		vkDestroyDevice(phy_dev.logical_device, nullptr);
-	}
-	if (bEnableValidationLayers) 
-	{
-		DestroyDebugUtilsMessengerEXT(instance_, debug_messenger_, nullptr);
-	}
-	vkDestroyInstance(instance_, nullptr);
-	return;
+	sakura::error("Unimplemented!");
 }
 
-sakura::graphics::RenderShaderHandle sakura::graphics::vk::RenderDevice::create_shader(
-	const RenderShaderHandle handle, const ShaderDesc& config)
+sakura::graphics::GpuShaderHandle sakura::graphics::vk::RenderDevice::create_shader(
+	const GpuShaderHandle handle, const ShaderDesc& config)
 {
-	return _create_resouce_impl<vk::GPUShader, RenderShaderHandle>(handle, *this,
+	return _create_resouce_impl<vk::GpuShader, GpuShaderHandle>(handle, *this,
 		// TODO: mGPU Support.
 		master_device().logical_device, 
 		config);
 }
 
-sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::create_buffer(
-	const RenderBufferHandle handle, const BufferDesc& config)
+sakura::graphics::GpuBufferHandle sakura::graphics::vk::RenderDevice::create_buffer(
+	const GpuBufferHandle handle, const BufferDesc& config)
 {
-	return _create_resouce_impl<vk::GPUBuffer, RenderBufferHandle>(handle, *this,
+	return _create_resouce_impl<vk::GpuBuffer, GpuBufferHandle>(handle, *this,
 		// TODO: mGPU Support.
 		master_device().logical_device, master_device().device,
 		config);
 }
 
-RenderTextureHandle RenderDevice::create_texture(const RenderTextureHandle handle, const TextureDesc& desc)
+GpuTextureHandle RenderDevice::create_texture(const GpuTextureHandle handle, const TextureDesc& desc)
 {
 	return handle;
 }
@@ -347,10 +356,10 @@ sakura::graphics::RenderPipelineHandle sakura::graphics::vk::RenderDevice::creat
 		desc);
 }
 
-sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::update_buffer(
-	const RenderBufferHandle handle, size_t offset, void* data, size_t size)
+sakura::graphics::GpuBufferHandle sakura::graphics::vk::RenderDevice::update_buffer(
+	const GpuBufferHandle handle, size_t offset, void* data, size_t size)
 {
-	auto buf = get<GPUBuffer>(handle);
+	auto buf = get<GpuBuffer>(handle);
 	void* data_ptr;
 	vkMapMemory(buf->owned_device_, buf->buffer_memory_, 0, size, 0, &data_ptr);
 		memcpy(data_ptr, data, size);
@@ -358,7 +367,7 @@ sakura::graphics::RenderBufferHandle sakura::graphics::vk::RenderDevice::update_
 	return handle;
 }
 
-sakura::graphics::IGPUMemoryResource* sakura::graphics::vk::RenderDevice::get_unsafe(const RenderResourceHandle handle) const
+sakura::graphics::IGpuMemoryResource* sakura::graphics::vk::RenderDevice::get_unsafe(const RenderResourceHandle handle) const
 {
 	if (created_resources_.size() < handle.id().index() + 1)
 	{
@@ -375,7 +384,7 @@ sakura::graphics::IGPUMemoryResource* sakura::graphics::vk::RenderDevice::get_un
 	}
 }
 
-sakura::graphics::IGPUMemoryResource* sakura::graphics::vk::RenderDevice::optional_unsafe(const RenderResourceHandle handle) const
+sakura::graphics::IGpuMemoryResource* sakura::graphics::vk::RenderDevice::optional_unsafe(const RenderResourceHandle handle) const
 {
 	if (created_resources_.size() < handle.id().index() + 1)
 	{
@@ -390,7 +399,7 @@ sakura::graphics::IGPUMemoryResource* sakura::graphics::vk::RenderDevice::option
 	}
 }
 
-sakura::graphics::IGPUObject* sakura::graphics::vk::RenderDevice::get_unsafe(const RenderObjectHandle handle) const
+sakura::graphics::IGpuObject* sakura::graphics::vk::RenderDevice::get_unsafe(const RenderObjectHandle handle) const
 {
 	if (created_objects_.size() < handle.id().index() + 1)
 	{
@@ -407,7 +416,7 @@ sakura::graphics::IGPUObject* sakura::graphics::vk::RenderDevice::get_unsafe(con
 	}
 }
 
-sakura::graphics::IGPUObject* sakura::graphics::vk::RenderDevice::optional_unsafe(const RenderObjectHandle handle) const
+sakura::graphics::IGpuObject* sakura::graphics::vk::RenderDevice::optional_unsafe(const RenderObjectHandle handle) const
 {
 	if (created_objects_.size() < handle.id().index() + 1)
 	{
@@ -632,7 +641,7 @@ void sakura::graphics::vk::RenderDevice::processCommandUpdateBinding(
 			{
 				auto& slot = set.slots[j];
 				VkDescriptorBufferInfo bufferInfo = {};
-				if (auto buf = get<GPUBuffer>(slot.buffer); buf)
+				if (auto buf = get<GpuBuffer>(slot.buffer); buf)
 					bufferInfo.buffer = buf->buffer_;
 				else
 				{
@@ -676,7 +685,7 @@ void sakura::graphics::vk::RenderDevice::processCommandDraw(PassCacheFrame& cach
 	{
 		const auto& vb_src = command.vb;
 		const auto& ib_src = command.ib;
-		if (auto vb = get<GPUBuffer>(vb_src.vertex_buffer); vb)
+		if (auto vb = get<GpuBuffer>(vb_src.vertex_buffer); vb)
 		{
 			VkBuffer vertexBuffers[] = { vb->buffer_ };
 			VkDeviceSize offsets[] = { 0 };
@@ -687,7 +696,7 @@ void sakura::graphics::vk::RenderDevice::processCommandDraw(PassCacheFrame& cach
 			assert(0 && "VB NOT FOUND");
 		}
 
-		if (auto ib = get<GPUBuffer>(ib_src.index_buffer); ib)
+		if (auto ib = get<GpuBuffer>(ib_src.index_buffer); ib)
 		{
 			VkIndexType indType = VkIndexType::VK_INDEX_TYPE_UINT16;
 			if (ib_src.stride == 32)
@@ -747,7 +756,7 @@ void sakura::graphics::vk::RenderDevice::processCommandBeginRenderPass(
 			}
 		}
 		else if (auto attachment
-			= std::get_if<RenderTextureHandle>(&slot_var); attachment)
+			= std::get_if<GpuTextureHandle>(&slot_var); attachment)
 		{
 			auto native_res = created_resources_[attachment->id().index()];
 			// TODO: Support This & Generation Check & Diff Check.

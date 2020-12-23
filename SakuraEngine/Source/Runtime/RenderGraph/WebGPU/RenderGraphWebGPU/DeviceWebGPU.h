@@ -45,23 +45,26 @@ namespace sakura::graphics::webgpu
 		bool present(const SwapChainHandle handle) override;
 		void terminate() override;
 
-		RenderShaderHandle create_shader(const RenderShaderHandle handle, const ShaderDesc& config) override;
-		RenderBufferHandle create_buffer(const RenderBufferHandle handle, const BufferDesc& config) override;
-		RenderTextureHandle create_texture(const RenderTextureHandle handle, const TextureDesc& desc) override;
+		GpuShaderHandle create_shader(const GpuShaderHandle handle, const ShaderDesc& config) override;
+		GpuBufferHandle create_buffer(const GpuBufferHandle handle, const BufferDesc& config) override;
+		GpuTextureHandle create_texture(const GpuTextureHandle handle, const TextureDesc& desc) override;
+
+		void write_texture(GpuTextureHandle texture, void const* data, size_t data_size, const TextureSlice& slice,
+			const TextureDataLayout& layout, extent3d write_size, QueueIndex queue_index = QueueIndex(-1)) override;
 		
 		FenceHandle create_fence(const FenceHandle handle, const FenceDesc& desc) override;
 		SwapChainHandle create_swap_chain(const SwapChainHandle handle, const SwapChainDesc& desc) override;
 		RenderPipelineHandle create_render_pipeline(const RenderPipelineHandle handle, const RenderPipelineDesc& desc) override;
 
-		RenderBufferHandle update_buffer(const RenderBufferHandle handle, size_t offset, void* data, size_t size) override;
+		GpuBufferHandle update_buffer(const GpuBufferHandle handle, size_t offset, void* data, size_t size) override;
 
-		[[nodiscard]] IGPUMemoryResource* get_unsafe(const RenderResourceHandle handle) const override;
-		[[nodiscard]] IGPUMemoryResource* optional_unsafe(const RenderResourceHandle handle) const override;
-		[[nodiscard]] IGPUObject* get_unsafe(const RenderObjectHandle handle) const override;
-		[[nodiscard]] IGPUObject* optional_unsafe(const RenderObjectHandle handle) const override;
+		[[nodiscard]] IGpuMemoryResource* get_unsafe(const RenderResourceHandle handle) const override;
+		[[nodiscard]] IGpuMemoryResource* optional_unsafe(const RenderResourceHandle handle) const override;
+		[[nodiscard]] IGpuObject* get_unsafe(const RenderObjectHandle handle) const override;
+		[[nodiscard]] IGpuObject* optional_unsafe(const RenderObjectHandle handle) const override;
 		
-		sakura::vector<sakura::pair<IGPUMemoryResource*, RenderGraphId::uhalf_t>> created_resources;
-		sakura::vector<sakura::pair<IGPUObject*, RenderGraphId::uhalf_t>> created_objects;
+		sakura::vector<sakura::pair<IGpuMemoryResource*, RenderGraphId::uhalf_t>> created_resources;
+		sakura::vector<sakura::pair<IGpuObject*, RenderGraphId::uhalf_t>> created_objects;
 		sakura::unordered_map<sakura::string, WGPUShaderModule> shader_modules;
 		struct PassCacheFrame
 		{
@@ -95,7 +98,8 @@ namespace sakura::graphics::webgpu
 		void initPlatformSpecific(const DeviceConfiguration& config);
 
 		void processCommand(PassCacheFrame& cache, const RenderCommand* command) const;
-
+		void compileCommand(WGPUCommandEncoder encoder, const RenderCommand* command) const;
+		
 		// Graphics
 		void processCommandUpdateBinding(PassCacheFrame& cache, const RenderCommandUpdateBinding& command) const;
 		void processCommandUpdateBinding(PassCacheFrame& cache, const sakura::graphics::Binding& binder) const;
@@ -112,6 +116,7 @@ namespace sakura::graphics::webgpu
 		void processCommandCopyTextureToBuffer(WGPUCommandEncoder encoder, const RenderCommandCopyTextureToBuffer& command) const;
 		void processCommandCopyBufferToBuffer(WGPUCommandEncoder encoder, const RenderCommandCopyBufferToBuffer& command) const;
 		void processCommandCopyBufferToTexture(WGPUCommandEncoder encoder, const RenderCommandCopyBufferToTexture& command) const;
+
 	};
 }
 
@@ -133,34 +138,34 @@ namespace sakura::graphics::webgpu
 			sakura::error("[RenderDeviceWeb]: Resource with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
 		}
 	};
-	template<> struct handle_error<RenderBufferHandle>
+	template<> struct handle_error<GpuBufferHandle>
 	{
-		static void not_find(const RenderBufferHandle handle)
+		static void not_find(const GpuBufferHandle handle)
 		{
-			sakura::error("RenderBuffer With Handle {} Not found in WebGPU Resources!", handle);
+			sakura::error("GpuBuffer With Handle {} Not found in WebGPU Resources!", handle);
 		}
-		static void generation_dismatch(const RenderBufferHandle handle)
+		static void generation_dismatch(const GpuBufferHandle handle)
 		{
-			sakura::error("Generation Error : RenderBufferHandle{} has a different generation with WebGPU Resource!", handle);
+			sakura::error("Generation Error : GpuBufferHandle{} has a different generation with WebGPU Resource!", handle);
 		}
-		static void create_on_existed(const RenderBufferHandle handle)
+		static void create_on_existed(const GpuBufferHandle handle)
 		{
-			sakura::error("[RenderDeviceWeb]: RenderBuffer with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
+			sakura::error("[RenderDeviceWeb]: GpuBuffer with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
 		}
 	};
-	template<> struct handle_error<RenderShaderHandle>
+	template<> struct handle_error<GpuShaderHandle>
 	{
-		static void not_find(const RenderShaderHandle handle)
+		static void not_find(const GpuShaderHandle handle)
 		{
-			sakura::error("RenderShader With Handle {} Not found in WebGPU Resources!", handle);
+			sakura::error("GpuShader With Handle {} Not found in WebGPU Resources!", handle);
 		}
-		static void generation_dismatch(const RenderShaderHandle handle)
+		static void generation_dismatch(const GpuShaderHandle handle)
 		{
-			sakura::error("Generation Error : RenderShaderHandle{} has a different generation with WebGPU Resource!", handle);
+			sakura::error("Generation Error : GpuShaderHandle{} has a different generation with WebGPU Resource!", handle);
 		}
-		static void create_on_existed(const RenderShaderHandle handle)
+		static void create_on_existed(const GpuShaderHandle handle)
 		{
-			sakura::error("[RenderDeviceWeb]: RenderShader with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
+			sakura::error("[RenderDeviceWeb]: GpuShader with handle {} alreay created! hash code: {}", handle, size_t(handle.id()));
 		}
 	};
 	template<> struct handle_error<SwapChainHandle>
@@ -197,7 +202,7 @@ namespace sakura::graphics::webgpu
 	template <typename ResourceType, typename Handle, typename ... Args>
 	Handle RenderDevice::_create_resouce_impl(const Handle handle, Args&&... args) noexcept
 	{
-		static_assert(std::is_base_of_v<IGPUMemoryResource, ResourceType>, "[DeviceWebGPU::_create_resouce_impl]: ResourceType must be derived from IGPUMemoryResource!");
+		static_assert(std::is_base_of_v<IGpuMemoryResource, ResourceType>, "[DeviceWebGPU::_create_resouce_impl]: ResourceType must be derived from IGpuMemoryResource!");
 		static_assert(std::is_base_of_v<RenderResourceHandle, Handle>, "[DeviceWebGPU::_create_resouce_impl]: Handle must be derived from RenderResourceHandle!");
 		static_assert(std::is_base_of_v<typename Handle::ResourceType, ResourceType>, "[DeviceWebGPU::_create_resouce_impl]: Handle must match to it's ResourceType!");
 		if (this->optional<ResourceType>(handle))
@@ -217,7 +222,7 @@ namespace sakura::graphics::webgpu
 	template <typename ObjectType, typename Handle, typename ... Args>
 	Handle RenderDevice::_create_object_impl(const Handle handle, Args&&... args) noexcept
 	{
-		static_assert(std::is_base_of_v<IGPUObject, ObjectType>, "[DeviceWebGPU::_create_object_impl]: ResourceType must be derived from IGPUObject!");
+		static_assert(std::is_base_of_v<IGpuObject, ObjectType>, "[DeviceWebGPU::_create_object_impl]: ResourceType must be derived from IGpuObject!");
 		static_assert(std::is_base_of_v<RenderObjectHandle, Handle>, "[DeviceWebGPU::_create_object_impl]: Handle must be derived from RenderObjectHandle!");
 		static_assert(std::is_base_of_v<typename Handle::ObjectType, ObjectType>, "[DeviceWebGPU::_create_object_impl]: Handle must match to it's ObjectType!");
 		if (this->optional<ObjectType>(handle))

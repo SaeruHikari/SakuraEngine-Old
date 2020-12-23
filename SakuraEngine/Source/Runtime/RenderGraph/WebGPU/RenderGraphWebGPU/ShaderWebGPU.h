@@ -11,12 +11,12 @@ namespace sakura::graphics::webgpu
 {
 	class RenderDevice;
 	
-	class RenderGraphWebGPUAPI GPUShader : public IGPUShader
+	class RenderGraphWebGPUAPI GpuShader : public IGpuShader
 	{
 	public:
-		GPUShader(const RenderShaderHandle handle,
+		GpuShader(const GpuShaderHandle handle,
 			webgpu::RenderDevice& dev, const ShaderDesc& desc) noexcept;
-		~GPUShader();
+		~GpuShader();
 		RenderResourceHandle handle() const override;
 		size_t size() const override;
 		EShaderFrequency frequency() const override;
@@ -24,7 +24,7 @@ namespace sakura::graphics::webgpu
 		sakura::string_view entry_name() const override;
 		EShaderCodeFormat code_format() const override;
 		
-		RenderShaderHandle _handle;
+		GpuShaderHandle _handle;
 		size_t size_ = 0;
 		WGPUShaderModule module_ref = nullptr;
 		ShaderDesc desc;

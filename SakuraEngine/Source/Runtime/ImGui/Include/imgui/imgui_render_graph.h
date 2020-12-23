@@ -37,8 +37,8 @@ namespace sakura
     {
         size_t        vertex_buffer_size;
         size_t        index_buffer_size;
-        graphics::RenderBufferHandle            vertex_buffer;
-        graphics::RenderBufferHandle            index_buffer;
+        graphics::GpuBufferHandle            vertex_buffer;
+        graphics::GpuBufferHandle            index_buffer;
     };
 
     // [Please zero-clear before use!]

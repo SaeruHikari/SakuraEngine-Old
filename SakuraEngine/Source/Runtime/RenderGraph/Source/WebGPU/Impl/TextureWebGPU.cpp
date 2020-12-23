@@ -3,7 +3,7 @@
 using namespace sakura::graphics;
 using namespace sakura::graphics::webgpu;
 
-GpuTexture::GpuTexture(const RenderTextureHandle handle, const webgpu::RenderDevice& dev,
+GpuTexture::GpuTexture(const GpuTextureHandle handle, const webgpu::RenderDevice& dev,
 	const TextureDesc& desc) noexcept
 	:handle_(handle), desc_(desc)
 {

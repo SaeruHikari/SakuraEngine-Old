@@ -6,12 +6,12 @@ namespace sakura::graphics::vk
 {
 	class RenderDevice;
 
-	class RenderGraphVulkanAPI GPUBuffer : public IGPUBuffer
+	class RenderGraphVulkanAPI GpuBuffer : public IGpuBuffer
 	{
 	public:
-		GPUBuffer(const RenderBufferHandle handle, const vk::RenderDevice& dev, 
+		GpuBuffer(const GpuBufferHandle handle, const vk::RenderDevice& dev, 
 			VkDevice device, VkPhysicalDevice physicalDevice, const BufferDesc& desc) noexcept;
-		~GPUBuffer();
+		~GpuBuffer();
 		RenderResourceHandle handle() const override;
 		size_t size() const override;
 
@@ -23,6 +23,6 @@ namespace sakura::graphics::vk
 		VkDevice owned_device_ = VK_NULL_HANDLE;
 	protected:
 		BufferDesc desc_;
-		RenderBufferHandle handle_;
+		GpuBufferHandle handle_;
 	};
 }

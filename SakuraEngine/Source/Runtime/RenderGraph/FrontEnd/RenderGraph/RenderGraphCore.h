@@ -374,16 +374,16 @@ namespace sakura::graphics
 	using extent2d = sakura::extent2d;
 	using extent3d = sakura::extent3d;
 
-	struct RenderGraphAPI IGPUObject
+	struct RenderGraphAPI IGpuObject
 	{
-		virtual ~IGPUObject() = default;
+		virtual ~IGpuObject() = default;
 		virtual RenderObjectHandle handle() const = 0;
 		virtual sakura::string format() const { return ""; }
 	};
 
-	struct RenderGraphAPI IGPUMemoryResource
+	struct RenderGraphAPI IGpuMemoryResource
 	{
-		virtual ~IGPUMemoryResource() = default;
+		virtual ~IGpuMemoryResource() = default;
 		virtual RenderResourceHandle handle() const = 0;
 		virtual size_t size() const = 0;
 		virtual sakura::string format() const { return ""; }
@@ -399,7 +399,7 @@ namespace sakura::graphics
 
 		}
 		TypedRenderResourceHandle() = default;
-		static_assert(std::is_base_of_v<IGPUMemoryResource, ResourceType>, "Resource Handle must be used with GPU Resources!");
+		static_assert(std::is_base_of_v<IGpuMemoryResource, ResourceType>, "Resource Handle must be used with GPU Resources!");
 	};
 	template<typename _ObjectType>
 	struct TypedRenderObjectHandle : public RenderObjectHandle
@@ -411,7 +411,7 @@ namespace sakura::graphics
 
 		}
 		TypedRenderObjectHandle() = default;
-		static_assert(std::is_base_of_v<IGPUObject, ObjectType>, "GPUObject Handle must be used with GPU Objects!");
+		static_assert(std::is_base_of_v<IGpuObject, ObjectType>, "GPUObject Handle must be used with GPU Objects!");
 	};
 
 
@@ -495,11 +495,17 @@ namespace sakura::graphics
 		// multi-queue support.
 		ESharingMode sharing_mode = ESharingMode::Exclusive;
 	};
+
+	struct RenderGraphAPI SamplerDesc
+	{
+		
+	};
+	
 	using ETextureDimension = TextureDesc::Dimension;
 	using ETextureFlag = TextureDesc::Flag;
 	using ETextureUsage = TextureDesc::Usage;
 	
-	struct RenderGraphAPI IGPUShader : public IGPUMemoryResource
+	struct RenderGraphAPI IGpuShader : public IGpuMemoryResource
 	{
 		virtual EShaderFrequency frequency() const = 0;
 		
@@ -507,11 +513,11 @@ namespace sakura::graphics
 		
 		virtual EShaderCodeFormat code_format() const = 0;
 	};
-	struct RenderGraphAPI IGPUBuffer : public IGPUMemoryResource
+	struct RenderGraphAPI IGpuBuffer : public IGpuMemoryResource
 	{
 		virtual BufferUsages usages() const = 0;
 	};
-	struct RenderGraphAPI IGPUTexture : public IGPUMemoryResource
+	struct RenderGraphAPI IGpuTexture : public IGpuMemoryResource
 	{
 		virtual uint32 width() const = 0;
 		
@@ -525,11 +531,16 @@ namespace sakura::graphics
 		
 		virtual TextureUsages usages() const = 0;
 	};
-	using RenderShaderHandle = TypedRenderResourceHandle<IGPUShader>;
-	using RenderBufferHandle = TypedRenderResourceHandle<IGPUBuffer>;
-	using RenderTextureHandle = TypedRenderResourceHandle<IGPUTexture>;
+	struct RenderGraphAPI IGpuSampler : public IGpuMemoryResource
+	{
+		
+	};
+	using GpuShaderHandle = TypedRenderResourceHandle<IGpuShader>;
+	using GpuBufferHandle = TypedRenderResourceHandle<IGpuBuffer>;
+	using GpuTextureHandle = TypedRenderResourceHandle<IGpuTexture>;
+	using GpuSamplerHandle = TypedRenderResourceHandle<IGpuSampler>;
 
-	struct RenderGraphAPI ISwapChain : public IGPUObject
+	struct RenderGraphAPI ISwapChain : public IGpuObject
 	{
 		virtual uint8 buffer_count() const = 0;
 		virtual extent2d extent() const = 0;
@@ -540,19 +551,19 @@ namespace sakura::graphics
 	};
 	using SwapChainHandle = TypedRenderObjectHandle<ISwapChain>;
 	
-	struct RenderGraphAPI IRenderPipeline : public IGPUObject
+	struct RenderGraphAPI IRenderPipeline : public IGpuObject
 	{
 
 	};
 	using RenderPipelineHandle = TypedRenderObjectHandle<IRenderPipeline>;
 	
-	struct RenderGraphAPI IComputePipeline : public IGPUObject
+	struct RenderGraphAPI IComputePipeline : public IGpuObject
 	{
 
 	};
 	using ComputePipelineHandle = TypedRenderObjectHandle<IComputePipeline>;
 	
-	struct RenderGraphAPI IFence : public IGPUObject
+	struct RenderGraphAPI IFence : public IGpuObject
 	{
 		//virtual void wait() = 0;
 		
@@ -585,14 +596,14 @@ namespace sakura::graphics
 	
 	struct RenderGraphAPI ShaderLayout
 	{
-		const RenderShaderHandle* shaders = nullptr;
+		const GpuShaderHandle* shaders = nullptr;
 		uint32 count = 0;
 		ShaderLayout() = default;
 		template<size_t N>
-		constexpr explicit ShaderLayout(const RenderShaderHandle(&shaders)[N]);
+		constexpr explicit ShaderLayout(const GpuShaderHandle(&shaders)[N]);
 	};
 	template <size_t N>
-	constexpr ShaderLayout::ShaderLayout(const RenderShaderHandle(&_shaders)[N])
+	constexpr ShaderLayout::ShaderLayout(const GpuShaderHandle(&_shaders)[N])
 		:shaders(_shaders), count(N)
 	{
 		
@@ -798,7 +809,7 @@ namespace sakura::graphics
 		struct RenderGraphAPI Slot
 		{
 			Slot() = default;
-			Slot(RenderTextureHandle attachmentHandle,
+			Slot(GpuTextureHandle attachmentHandle,
 				double4 clearColor = double4(), ELoadOp loadOp = ELoadOp::Clear, EStoreOp storeOp = EStoreOp::Store)
 				:attachment(attachmentHandle), load_op(loadOp), store_op(storeOp), clear_color(clearColor)
 			{
@@ -810,7 +821,7 @@ namespace sakura::graphics
 			{
 				  
 			}
-			sakura::variant<RenderTextureHandle, SwapChainHandle> attachment;
+			sakura::variant<GpuTextureHandle, SwapChainHandle> attachment;
 			ELoadOp load_op = ELoadOp::Clear;
 			EStoreOp store_op = EStoreOp::Store;
 			double4 clear_color = { 0, 0, 0, 0 };
@@ -837,8 +848,8 @@ namespace sakura::graphics
 			uint32 slot_index = 0;
 			uint32 size = 0;
 			uint32 offset = 0;
-			RenderBufferHandle buffer = RenderGraphId::UNINITIALIZED;
-			Slot(RenderBufferHandle buffer = RenderGraphId::UNINITIALIZED,
+			GpuBufferHandle buffer = RenderGraphId::UNINITIALIZED;
+			Slot(GpuBufferHandle buffer = RenderGraphId::UNINITIALIZED,
 				uint32 index_on_set = 0, uint32 size = 0, uint32 offset = 0);
 		};
 		struct RenderGraphAPI Set

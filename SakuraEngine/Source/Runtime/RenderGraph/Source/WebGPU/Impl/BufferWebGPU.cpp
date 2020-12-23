@@ -1,6 +1,6 @@
 ﻿#include <RenderGraphWebGPU/RenderGraphWebGPU.h>
 
-sakura::graphics::webgpu::GPUBuffer::GPUBuffer(const RenderBufferHandle handle,
+sakura::graphics::webgpu::GPUBuffer::GPUBuffer(const GpuBufferHandle handle,
 	const webgpu::RenderDevice& dev, const BufferDesc& desc) noexcept
 	:desc_(desc), handle_(handle)
 {

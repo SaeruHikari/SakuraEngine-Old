@@ -9,8 +9,8 @@ namespace shaders::spirv
 	RenderGraphAPI const sakura::uint32 get_shader_size(const sakura::string& name);
 }
 
-sakura::graphics::webgpu::GPUShader::GPUShader(
-	const RenderShaderHandle handle, webgpu::RenderDevice& dev,
+sakura::graphics::webgpu::GpuShader::GpuShader(
+	const GpuShaderHandle handle, webgpu::RenderDevice& dev,
 	const ShaderDesc& description) noexcept
 	:_handle(handle), desc(description)
 {
@@ -50,32 +50,32 @@ sakura::graphics::webgpu::GPUShader::GPUShader(
 	}
 }
 
-sakura::graphics::webgpu::GPUShader::~GPUShader()
+sakura::graphics::webgpu::GpuShader::~GpuShader()
 {
 	
 }
 
-sakura::graphics::RenderResourceHandle sakura::graphics::webgpu::GPUShader::handle() const
+sakura::graphics::RenderResourceHandle sakura::graphics::webgpu::GpuShader::handle() const
 {
 	return _handle;
 }
 
-size_t sakura::graphics::webgpu::GPUShader::size() const
+size_t sakura::graphics::webgpu::GpuShader::size() const
 {
 	return size_;
 }
 
-sakura::graphics::EShaderFrequency sakura::graphics::webgpu::GPUShader::frequency() const
+sakura::graphics::EShaderFrequency sakura::graphics::webgpu::GpuShader::frequency() const
 {
 	return desc.frequency;
 }
 
-sakura::string_view sakura::graphics::webgpu::GPUShader::entry_name() const
+sakura::string_view sakura::graphics::webgpu::GpuShader::entry_name() const
 {
 	return desc.entry;
 }
 
-sakura::graphics::EShaderCodeFormat sakura::graphics::webgpu::GPUShader::code_format() const
+sakura::graphics::EShaderCodeFormat sakura::graphics::webgpu::GpuShader::code_format() const
 {
 	return EShaderCodeFormat::Spirv;
 }

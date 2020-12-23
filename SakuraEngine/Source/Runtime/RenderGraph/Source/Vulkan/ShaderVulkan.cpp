@@ -3,8 +3,8 @@
 using namespace sakura::graphics::vk;
 using namespace sakura::graphics;
 
-sakura::graphics::vk::GPUShader::GPUShader(
-	const RenderShaderHandle handle, vk::RenderDevice& render_device,
+sakura::graphics::vk::GpuShader::GpuShader(
+	const GpuShaderHandle handle, vk::RenderDevice& render_device,
 	VkDevice device,
 	const ShaderDesc& description) noexcept
 	:handle_(handle), desc_(description)
@@ -34,32 +34,32 @@ sakura::graphics::vk::GPUShader::GPUShader(
 	shaderStageInfo.pName = desc_.entry.c_str();
 }
 
-sakura::graphics::vk::GPUShader::~GPUShader()
+sakura::graphics::vk::GpuShader::~GpuShader()
 {
 	vkDestroyShaderModule(owned_device, shader_module_, nullptr);
 }
 
-sakura::graphics::RenderResourceHandle sakura::graphics::vk::GPUShader::handle() const
+sakura::graphics::RenderResourceHandle sakura::graphics::vk::GpuShader::handle() const
 {
 	return handle_;
 }
 
-size_t sakura::graphics::vk::GPUShader::size() const
+size_t sakura::graphics::vk::GpuShader::size() const
 {
 	return size_;
 }
 
-sakura::graphics::EShaderFrequency sakura::graphics::vk::GPUShader::frequency() const
+sakura::graphics::EShaderFrequency sakura::graphics::vk::GpuShader::frequency() const
 {
 	return desc_.frequency;
 }
 
-sakura::string_view sakura::graphics::vk::GPUShader::entry_name() const
+sakura::string_view sakura::graphics::vk::GpuShader::entry_name() const
 {
 	return desc_.entry;
 }
 
-sakura::graphics::EShaderCodeFormat sakura::graphics::vk::GPUShader::code_format() const
+sakura::graphics::EShaderCodeFormat sakura::graphics::vk::GpuShader::code_format() const
 {
 	return EShaderCodeFormat::Spirv;
 }

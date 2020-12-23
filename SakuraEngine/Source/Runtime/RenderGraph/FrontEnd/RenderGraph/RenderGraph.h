@@ -115,9 +115,9 @@ namespace sakura::graphics
 		[[nodiscard]] IRenderDevice* get_device(const sakura::string_view name) const;
         void emplace_device(IRenderDevice* device);
 
-        constructor_rg_resource_handle(RenderShader, shader)
-        constructor_rg_resource_handle(RenderBuffer, buffer)
-        constructor_rg_resource_handle(RenderTexture, texture)
+        constructor_rg_resource_handle(GpuShader, shader)
+        constructor_rg_resource_handle(GpuBuffer, buffer)
+        constructor_rg_resource_handle(GpuTexture, texture)
 
         constructor_rg_object_handle(RenderPipeline, render_pipeline)
         constructor_rg_object_handle(SwapChain, swap_chain)

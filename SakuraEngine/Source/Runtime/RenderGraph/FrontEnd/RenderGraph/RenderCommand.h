@@ -23,9 +23,9 @@ namespace sakura::graphics
     struct RenderCommandCopyTextureToTexture final
         : public RenderCommandTyped<ERenderCommandType::copy_texture_to_texture, ERenderQueueType::QueueTypeAll>
     {
-        RenderTextureHandle src;
+        GpuTextureHandle src;
         TextureSlice src_slice;
-        RenderTextureHandle dst;
+        GpuTextureHandle dst;
         TextureSlice dst_slice;
     	extent3d copy_size = {0, 0, 0};
 
@@ -35,46 +35,46 @@ namespace sakura::graphics
     	// jp: originとcopy_sizeが指定されている場合、デフォルトで[0,0,0]の起点からデスティネーションにテクスチャサイズをコピーする.
         // TODO
 
-        RenderCommandCopyTextureToTexture(RenderTextureHandle source, RenderTextureHandle destination, extent3d copy_size, uint32_t mip_level = 1);
-        RenderCommandCopyTextureToTexture(RenderTextureHandle source, TextureSlice src_slice,
-            TextureSlice dst_slice, RenderTextureHandle destination, extent3d copy_size);
+        RenderCommandCopyTextureToTexture(GpuTextureHandle source, GpuTextureHandle destination, extent3d copy_size, uint32_t mip_level = 1);
+        RenderCommandCopyTextureToTexture(GpuTextureHandle source, TextureSlice src_slice,
+            TextureSlice dst_slice, GpuTextureHandle destination, extent3d copy_size);
     };
 
     struct RenderCommandCopyTextureToBuffer final
         : public RenderCommandTyped<ERenderCommandType::copy_texture_to_buffer, ERenderQueueType::QueueTypeAll>
     {
         TextureSlice src_slice;
-        RenderTextureHandle src;
-        RenderBufferHandle dst;
+        GpuTextureHandle src;
+        GpuBufferHandle dst;
         TextureDataLayout dst_layout;
         extent3d copy_size = { 0, 0, 0 };
     	
-        RenderCommandCopyTextureToBuffer(RenderTextureHandle src, TextureSlice src_slice, RenderBufferHandle dest, TextureDataLayout dst_layout, extent3d copy_size);
+        RenderCommandCopyTextureToBuffer(GpuTextureHandle src, TextureSlice src_slice, GpuBufferHandle dest, TextureDataLayout dst_layout, extent3d copy_size);
     };
 	
     struct RenderCommandCopyBufferToBuffer final
         : public RenderCommandTyped<ERenderCommandType::copy_buffer_to_buffer, ERenderQueueType::QueueTypeAll>
     {
-        RenderBufferHandle src;
-        RenderBufferHandle dst;
+        GpuBufferHandle src;
+        GpuBufferHandle dst;
         uint64_t src_offset = 0;
         uint64_t dst_offset = 0;
         uint64_t copy_size = 0;
 
-        RenderCommandCopyBufferToBuffer(RenderBufferHandle src, uint64_t src_offset,
-            RenderBufferHandle dst, uint64_t dst_offset, uint64_t copy_size);
+        RenderCommandCopyBufferToBuffer(GpuBufferHandle src, uint64_t src_offset,
+            GpuBufferHandle dst, uint64_t dst_offset, uint64_t copy_size);
     };
 
     struct RenderCommandCopyBufferToTexture final
         : public RenderCommandTyped<ERenderCommandType::copy_buffer_to_texture, ERenderQueueType::QueueTypeAll>
     {
         TextureDataLayout layout;
-        RenderBufferHandle src;
+        GpuBufferHandle src;
         TextureSlice dst_slice;
-        RenderTextureHandle dst;
+        GpuTextureHandle dst;
         extent3d copy_size;
 
-        RenderCommandCopyBufferToTexture(RenderBufferHandle src, RenderTextureHandle dst, TextureSlice dst_slice,
+        RenderCommandCopyBufferToTexture(GpuBufferHandle src, GpuTextureHandle dst, TextureSlice dst_slice,
             TextureDataLayout layout, extent3d copy_size);
     };
 	
@@ -143,7 +143,7 @@ namespace sakura::graphics
     struct RenderCommandDrawIndirect final
 		: public RenderCommandTyped<ERenderCommandType::draw_indirect, ERenderQueueType::Graphics>
 	{
-		RenderBufferHandle indirect_buffer;
+		GpuBufferHandle indirect_buffer;
 		size_t offset;
 	};
 
@@ -154,19 +154,19 @@ namespace sakura::graphics
         {
             size_t offset = 0;
             size_t stride = 0;
-            RenderBufferHandle vertex_buffer;
+            GpuBufferHandle vertex_buffer;
             VB() = default;
-            explicit VB(RenderBufferHandle vertex_buffer, size_t offset = 0, size_t stride = 0);
+            explicit VB(GpuBufferHandle vertex_buffer, size_t offset = 0, size_t stride = 0);
         }vb;
         struct IB
         {
             size_t offset = 0;
             size_t stride = 0;
             EIndexFormat format = EIndexFormat::UINT16;
-            RenderBufferHandle index_buffer;
+            GpuBufferHandle index_buffer;
             size_t index_count = 0;
             IB() = default;
-            explicit IB(RenderBufferHandle index_buffer, size_t indexCount,
+            explicit IB(GpuBufferHandle index_buffer, size_t indexCount,
                 EIndexFormat format = EIndexFormat::UINT16, size_t offset = 0, size_t stride = 0);
         }ib;
     	
@@ -185,37 +185,37 @@ namespace sakura::graphics
 
 
 	
-    FORCEINLINE RenderCommandCopyTextureToTexture::RenderCommandCopyTextureToTexture(RenderTextureHandle source,
-	    RenderTextureHandle destination, extent3d copy_size, uint32_t mip_level)
+    FORCEINLINE RenderCommandCopyTextureToTexture::RenderCommandCopyTextureToTexture(GpuTextureHandle source,
+	    GpuTextureHandle destination, extent3d copy_size, uint32_t mip_level)
 		:src(source), src_slice(TextureSlice{ETextureAspect::All, mip_level, {0, 0, 0}}),
 		dst(destination), dst_slice(TextureSlice{ETextureAspect::All, mip_level, { 0, 0, 0 }})
     {
     	
     }
 
-    FORCEINLINE RenderCommandCopyTextureToTexture::RenderCommandCopyTextureToTexture(RenderTextureHandle source,
-	    TextureSlice src_slice, TextureSlice dst_slice, RenderTextureHandle destination, extent3d copy_size)
+    FORCEINLINE RenderCommandCopyTextureToTexture::RenderCommandCopyTextureToTexture(GpuTextureHandle source,
+	    TextureSlice src_slice, TextureSlice dst_slice, GpuTextureHandle destination, extent3d copy_size)
 		:src(source), src_slice(src_slice), dst(destination), dst_slice(dst_slice), copy_size(copy_size)
     {
     	
     }
 
-    FORCEINLINE RenderCommandCopyTextureToBuffer::RenderCommandCopyTextureToBuffer(RenderTextureHandle src,
-	    TextureSlice src_slice, RenderBufferHandle dest, TextureDataLayout unpack_layout, extent3d copy_size)
+    FORCEINLINE RenderCommandCopyTextureToBuffer::RenderCommandCopyTextureToBuffer(GpuTextureHandle src,
+	    TextureSlice src_slice, GpuBufferHandle dest, TextureDataLayout unpack_layout, extent3d copy_size)
 		:src(src), src_slice(src_slice), dst(dest), dst_layout(unpack_layout), copy_size(copy_size)
     {
     	
     }
 
     FORCEINLINE RenderCommandCopyBufferToBuffer::RenderCommandCopyBufferToBuffer(
-        RenderBufferHandle src, uint64_t src_offset, RenderBufferHandle dst, uint64_t dst_offset, uint64_t copy_size)
+        GpuBufferHandle src, uint64_t src_offset, GpuBufferHandle dst, uint64_t dst_offset, uint64_t copy_size)
 	    :src(src), src_offset(src_offset), dst(dst), dst_offset(dst_offset), copy_size(copy_size)
 	{
     	
     }
 
-    FORCEINLINE RenderCommandCopyBufferToTexture::RenderCommandCopyBufferToTexture(RenderBufferHandle src, 
-        RenderTextureHandle dst, TextureSlice dst_slice, TextureDataLayout layout, extent3d copy_size)
+    FORCEINLINE RenderCommandCopyBufferToTexture::RenderCommandCopyBufferToTexture(GpuBufferHandle src, 
+        GpuTextureHandle dst, TextureSlice dst_slice, TextureDataLayout layout, extent3d copy_size)
 		:src(src), dst(dst), dst_slice(dst_slice), layout(layout), copy_size(copy_size)
     {
     	
@@ -260,13 +260,13 @@ namespace sakura::graphics
     }
 	
     FORCEINLINE RenderCommandDraw::VB::VB(
-        RenderBufferHandle vb, size_t _offset, size_t _stride)
+        GpuBufferHandle vb, size_t _offset, size_t _stride)
         :offset(_offset), stride(_stride), vertex_buffer(vb)
     {
 
     }
 	
-    FORCEINLINE RenderCommandDraw::IB::IB(RenderBufferHandle ib, size_t indexCount,
+    FORCEINLINE RenderCommandDraw::IB::IB(GpuBufferHandle ib, size_t indexCount,
         EIndexFormat _format, size_t _offset, size_t _stride)
         : offset(_offset), stride(_stride), format(_format), index_buffer(ib), index_count(indexCount)
     {

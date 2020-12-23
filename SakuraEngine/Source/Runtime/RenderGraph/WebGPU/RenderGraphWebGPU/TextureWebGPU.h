@@ -9,10 +9,10 @@
 
 namespace sakura::graphics::webgpu
 {
-	class RenderGraphWebGPUAPI GpuTexture : public IGPUTexture
+	class RenderGraphWebGPUAPI GpuTexture : public IGpuTexture
 	{
 	public:
-		GpuTexture(const RenderTextureHandle handle,
+		GpuTexture(const GpuTextureHandle handle,
 			const webgpu::RenderDevice& dev, const TextureDesc& desc) noexcept;
 		~GpuTexture();
 		
@@ -27,7 +27,7 @@ namespace sakura::graphics::webgpu
 		WGPUTexture texture = nullptr;
 	protected:
 		TextureDesc desc_;
-		RenderTextureHandle handle_;
+		GpuTextureHandle handle_;
 	};
 
 }

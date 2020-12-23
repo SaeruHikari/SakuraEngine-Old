@@ -164,7 +164,7 @@ namespace sakura::graphics
 		return freq <= EShaderFrequency::MeshShader && freq >= EShaderFrequency::VertexShader;
 	}
 
-	Binding::Slot::Slot(RenderBufferHandle _buffer, 
+	Binding::Slot::Slot(GpuBufferHandle _buffer, 
 		uint32 _slot_index, uint32 _size, uint32 _offset)
 		:slot_index(_slot_index), size(_size), offset(_offset), buffer(_buffer)	{	}
 

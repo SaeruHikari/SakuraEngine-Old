@@ -40,7 +40,7 @@ sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle
 	for (auto i = 0u; i < desc.shader_layout.count; i++)
 	{
 		const auto& shaderHandle = desc.shader_layout.shaders[i];
-		if (auto shaderFound = render_device.optional<vk::GPUShader>(shaderHandle); shaderFound)
+		if (auto shaderFound = render_device.optional<vk::GpuShader>(shaderHandle); shaderFound)
 		{
 			const auto freq = shaderFound->frequency();
 			shaderStages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

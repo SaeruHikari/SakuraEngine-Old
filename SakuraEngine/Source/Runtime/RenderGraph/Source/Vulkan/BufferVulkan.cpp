@@ -17,7 +17,7 @@ uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, Vk
 	sakura::error("failed to find suitable memory type!");
 }
 
-GPUBuffer::GPUBuffer(const RenderBufferHandle handle, const vk::RenderDevice& dev,
+GpuBuffer::GpuBuffer(const GpuBufferHandle handle, const vk::RenderDevice& dev,
 	VkDevice device, VkPhysicalDevice physicalDevice, const BufferDesc& desc) noexcept
 	:owned_device_(device)
 {
@@ -54,23 +54,23 @@ GPUBuffer::GPUBuffer(const RenderBufferHandle handle, const vk::RenderDevice& de
 	vkUnmapMemory(device, buffer_memory_);
 }
 
-sakura::graphics::vk::GPUBuffer::~GPUBuffer()
+sakura::graphics::vk::GpuBuffer::~GpuBuffer()
 {
 	vkDestroyBuffer(owned_device_, buffer_, nullptr);
 	vkFreeMemory(owned_device_, buffer_memory_, nullptr);
 }
 
-sakura::graphics::RenderResourceHandle sakura::graphics::vk::GPUBuffer::handle() const
+sakura::graphics::RenderResourceHandle sakura::graphics::vk::GpuBuffer::handle() const
 {
 	return handle_;
 }
 
-sakura::graphics::BufferUsages sakura::graphics::vk::GPUBuffer::usages() const
+sakura::graphics::BufferUsages sakura::graphics::vk::GpuBuffer::usages() const
 {
 	return desc_.usages;
 }
 
-size_t sakura::graphics::vk::GPUBuffer::size() const
+size_t sakura::graphics::vk::GpuBuffer::size() const
 {
 	return desc_.length;
 }

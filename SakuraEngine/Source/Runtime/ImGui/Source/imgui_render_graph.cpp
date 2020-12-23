@@ -6,9 +6,9 @@ using namespace sakura;
 using namespace sakura::graphics;
 
 static RenderPipelineHandle imgui_render_pipeline;
-static RenderTextureHandle imgui_fonts_texture;
-static RenderShaderHandle imgui_vs;
-static RenderShaderHandle imgui_ps;
+static GpuTextureHandle imgui_fonts_texture;
+static GpuShaderHandle imgui_vs;
+static GpuShaderHandle imgui_ps;
 
 namespace sakura
 {
@@ -28,13 +28,6 @@ namespace sakura
     void imgui_initialize_gfx(graphics::RenderGraph& render_graph, graphics::IRenderDevice& device)
     {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
-		// Window
-        // Our mouse update function expect PlatformHandle to be filled for the main viewport
-        //ImGuiViewport* main_viewport = ;
-
-        // Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array.
-
-    	
     	// Render
     	
         io.BackendRendererName = "imgui_render_graph";
@@ -44,7 +37,7 @@ namespace sakura
         io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
 
         // Upload Fonts
-        imgui_fonts_texture = render_graph.RenderTexture("ImGuiFonts");
+        imgui_fonts_texture = render_graph.GpuTexture("ImGuiFonts");
         // Our render function expect RendererUserData to be storing the window render buffer we need (for the main viewport we won't use ->Window)
         ImGuiViewport* main_viewport = ImGui::GetMainViewport();
         main_viewport->RendererUserData = IM_NEW(ImGuiViewportDataVulkan)();
@@ -75,10 +68,19 @@ namespace sakura
         texDesc.sharing_mode = ESharingMode::Concurrent;
         texDesc.sample_count = 1;
         texDesc.array_layers = 1;
+        texDesc.usages = ETextureUsage::CopyDst | ETextureUsage::Sampled;
         device.create_texture(imgui_fonts_texture, texDesc);
-
-        graphics::RenderCommandBuffer buffer("ImGuiFontsCreate");
-    	// Upload fonts texture.
+    	
+        TextureSlice slice = {};
+        slice.origin = { 0, 0, 0 };
+        slice.aspect = TextureSlice::All;
+        slice.mip_level = 0;
+        TextureDataLayout layout = {};
+        layout.bytes_per_raw = width * 4 * sizeof(char);
+        layout.offset = 0;
+        layout.rows_per_image = height;
+        device.write_texture(imgui_fonts_texture, pixels, upload_size, slice,
+            layout, { static_cast<uint32>(width), static_cast<uint32>(height), 1});
     	
     	io.Fonts->TexID = (ImTextureID)(intptr_t)&imgui_fonts_texture;
     }

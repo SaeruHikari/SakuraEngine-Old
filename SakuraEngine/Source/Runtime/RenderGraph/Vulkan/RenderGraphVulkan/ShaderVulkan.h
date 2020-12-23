@@ -6,12 +6,12 @@ namespace sakura::graphics::vk
 {
 	class RenderDevice;
 
-	class RenderGraphVulkanAPI GPUShader : public IGPUShader
+	class RenderGraphVulkanAPI GpuShader : public IGpuShader
 	{
 	public:
-		GPUShader(const RenderShaderHandle handle,
+		GpuShader(const GpuShaderHandle handle,
 			vk::RenderDevice& dev, VkDevice device, const ShaderDesc& desc) noexcept;
-		~GPUShader();
+		~GpuShader();
 		RenderResourceHandle handle() const override;
 		size_t size() const override;
 		EShaderFrequency frequency() const override;
@@ -19,7 +19,7 @@ namespace sakura::graphics::vk
 		sakura::string_view entry_name() const override;
 		EShaderCodeFormat code_format() const override;
 
-		RenderShaderHandle handle_;
+		GpuShaderHandle handle_;
 		ShaderDesc desc_;
 		size_t size_ = 0;
 

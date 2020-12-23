@@ -11,10 +11,10 @@ namespace sakura::graphics::webgpu
 {
 	class RenderDevice;
 
-	class RenderGraphWebGPUAPI GPUBuffer : public IGPUBuffer
+	class RenderGraphWebGPUAPI GPUBuffer : public IGpuBuffer
 	{
 	public:
-		GPUBuffer(const RenderBufferHandle handle,
+		GPUBuffer(const GpuBufferHandle handle,
 			const webgpu::RenderDevice& dev, const BufferDesc& desc) noexcept;
 		~GPUBuffer();
 		RenderResourceHandle handle() const override;
@@ -24,6 +24,6 @@ namespace sakura::graphics::webgpu
 		WGPUBuffer buffer = nullptr;
 	protected:
 		BufferDesc desc_;
-		RenderBufferHandle handle_;
+		GpuBufferHandle handle_;
 	};
 }
