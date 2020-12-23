@@ -553,7 +553,9 @@ GpuBufferHandle RenderDevice::update_buffer(const GpuBufferHandle handle, size_t
 
 sakura::graphics::IGpuMemoryResource* RenderDevice::get_unsafe(const RenderResourceHandle handle) const
 {
-	if (created_resources.size() < handle.id().index() + 1)
+    if (handle == GenerationalId::UNINITIALIZED)
+        assert(0 && "Create on an invalide handle!");
+    else if (created_resources.size() < handle.id().index() + 1)
 	{
 		handle_error<RenderResourceHandle>::not_find(handle);
 		return nullptr;
@@ -570,7 +572,9 @@ sakura::graphics::IGpuMemoryResource* RenderDevice::get_unsafe(const RenderResou
 
 sakura::graphics::IGpuMemoryResource* RenderDevice::optional_unsafe(const RenderResourceHandle handle) const
 {
-	if (created_resources.size() < handle.id().index() + 1)
+    if (handle == GenerationalId::UNINITIALIZED)
+        assert(0 && "Create on an invalide handle!");
+	else if (created_resources.size() < handle.id().index() + 1)
 	{
 		return nullptr;
 	}
@@ -585,7 +589,9 @@ sakura::graphics::IGpuMemoryResource* RenderDevice::optional_unsafe(const Render
 
 sakura::graphics::IGpuObject* RenderDevice::get_unsafe(const RenderObjectHandle handle) const
 {
-	if (created_objects.size() < handle.id().index() + 1)
+    if (handle == GenerationalId::UNINITIALIZED)
+        assert(0 && "Create on an invalide handle!");
+    else if (created_objects.size() < handle.id().index() + 1)
 	{
 		handle_error<RenderObjectHandle>::not_find(handle);
 		return nullptr;
@@ -602,7 +608,9 @@ sakura::graphics::IGpuObject* RenderDevice::get_unsafe(const RenderObjectHandle 
 
 sakura::graphics::IGpuObject* RenderDevice::optional_unsafe(const RenderObjectHandle handle) const
 {
-	if (created_objects.size() < handle.id().index() + 1)
+    if (handle == GenerationalId::UNINITIALIZED)
+        assert(0 && "Create on an invalide handle!");
+    else if (created_objects.size() < handle.id().index() + 1)
 	{
 		return nullptr;
 	}

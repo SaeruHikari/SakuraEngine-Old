@@ -19,7 +19,8 @@ sakura::graphics::webgpu::RenderPipeline::RenderPipeline(RenderPipelineHandle ha
             binding_slots[i].binding = slot_info.binding;
             binding_slots[i].visibility = translate(slot_info.visibility);
             binding_slots[i].type = translate(slot_info.binding_type);
-            binding_slots[i].hasDynamicOffset = true;
+        	if(slot_info.binding_type == BindingLayout::UniformBuffer)
+				binding_slots[i].hasDynamicOffset = true;
         }
         WGPUBindGroupLayoutDescriptor bglDesc = {};
         bglDesc.entryCount = static_cast<uint32>(table.slots.size());
