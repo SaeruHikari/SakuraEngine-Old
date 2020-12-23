@@ -9,6 +9,19 @@ GpuTexture::GpuTexture(const GpuTextureHandle handle, const webgpu::RenderDevice
 {
 	WGPUTextureDescriptor textureDesc = translate(desc);
 	texture = wgpuDeviceCreateTexture(dev.device, &textureDesc);
+	WGPUTextureViewDescriptor vdesc = {};
+
+	WGPUTextureViewDimension d;
+	vdesc.dimension = match(translate(desc.dimension));
+	vdesc.arrayLayerCount = desc.array_layers;
+	vdesc.aspect = WGPUTextureAspect_All;
+	vdesc.baseArrayLayer = 0;
+	vdesc.arrayLayerCount = 1;
+	vdesc.baseMipLevel = 0;
+	// TODO: mip-map initialize.
+	vdesc.mipLevelCount = 1;
+	vdesc.format = textureDesc.format;
+	default_view = wgpuTextureCreateView(texture, &vdesc);
 	if(!texture)
 	{
 		sakura::error("[RenderGraphWebGPU]: Failed to craete texture!");

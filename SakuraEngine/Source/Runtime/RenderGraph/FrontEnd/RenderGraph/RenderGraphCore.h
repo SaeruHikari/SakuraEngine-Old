@@ -547,6 +547,7 @@ namespace sakura::graphics
 	};
 	struct RenderGraphAPI IGpuBuffer : public IGpuMemoryResource
 	{
+		virtual ~IGpuBuffer() = default;
 		virtual BufferUsages usages() const = 0;
 	};
 	struct RenderGraphAPI IGpuTexture : public IGpuMemoryResource
@@ -873,12 +874,60 @@ namespace sakura::graphics
 	{
 		struct RenderGraphAPI Slot
 		{
-			uint32 slot_index = 0;
-			uint32 size = 0;
-			uint32 offset = 0;
-			GpuBufferHandle buffer = RenderGraphId::UNINITIALIZED;
+			struct Buffer
+			{
+				uint32 slot_index = 0;
+				uint32 size = 0;
+				uint32 offset = 0;
+				GpuBufferHandle buffer = RenderGraphId::UNINITIALIZED;
+			};
+
+			struct Sampler
+			{
+				uint32 slot_index = 0;
+				GpuSamplerHandle sampler = RenderGraphId::UNINITIALIZED;
+			};
+
+			struct SampledTexture
+			{
+				uint32 slot_index = 0;
+				const bool follow_default = true;
+				
+				ETextureFormat format = ETextureFormat::Count;
+				ETextureDimension dimension = ETextureDimension::Texture2D;
+				ETextureAspect aspect = ETextureAspect::All;
+				uint32_t base_mip_level = 0;
+				uint32_t mip_level_count = 0;
+				uint32_t base_array_layer = 0;
+				uint32_t array_layer_count = 1;
+				
+				GpuTextureHandle texture = RenderGraphId::UNINITIALIZED;
+
+				FORCEINLINE SampledTexture(GpuTextureHandle handle, uint32_t slot_index)
+					: slot_index(slot_index), texture(handle), follow_default(true){}
+			};
+			
+			FORCEINLINE auto as_buffer() const
+			{
+				return std::get_if<Buffer>(&content);
+			}
+
+			FORCEINLINE auto as_sampler() const
+			{
+				return std::get_if<Sampler>(&content);
+			}
+
+			FORCEINLINE auto as_sampled_texture() const
+			{
+				return std::get_if<SampledTexture>(&content);
+			}
+			
 			Slot(GpuBufferHandle buffer = RenderGraphId::UNINITIALIZED,
-				uint32 index_on_set = 0, uint32 size = 0, uint32 offset = 0);
+				uint32 slot_index = 0, uint32 size = 0, uint32 offset = 0);
+			Slot(GpuTextureHandle texture, uint32 slot_index = 0);
+			Slot(GpuSamplerHandle texture, uint32 slot_index = 0);
+		protected:
+			std::variant<Buffer, Sampler, SampledTexture> content;
 		};
 		struct RenderGraphAPI Set
 		{

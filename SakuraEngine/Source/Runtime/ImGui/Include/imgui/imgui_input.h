@@ -3,9 +3,9 @@
 #include "System/Window.h"
 #include "RuntimeCore/RuntimeCore.h"
 
-namespace sakura
+namespace sakura::imgui
 {
-	ImGuiAPI void imgui_bind_window(Window window);
+	ImGuiAPI void bind_window(Window window);
 
-	ImGuiAPI void imgui_new_frame(Window window, float delta_time);
+	ImGuiAPI void new_frame(Window window, float delta_time);
 }

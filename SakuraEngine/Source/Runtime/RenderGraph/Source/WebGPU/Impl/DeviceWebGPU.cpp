@@ -163,7 +163,7 @@ void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, const RenderCo
 #ifdef _____DESPERATED // Emscripten hasn't yet caught up with the API changes
 	        wgpuRenderPassEncoderSetIndexBuffer(*pass, ib->buffer, ib_src.offset, ib_src.stride);
 #else
-            wgpuRenderPassEncoderSetIndexBufferWithFormat(
+            wgpuRenderPassEncoderSetIndexBuffer(
                 cacheFrame.pass_encoder, ib->buffer, translate(ib_src.format), ib_src.offset, ib_src.stride);
 #endif
         }
@@ -257,40 +257,48 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
 		{
 			auto& bindGroup = cacheFrame.bind_groups[i];
 			auto set = bindingDesc->sets[i];
+            size_t dyn_c = 0;
 			// Matching Size.
 			if (cacheFrame.entries[i].first.size() != set.slots.size())
 			{
 				cacheFrame.entries[i].first.resize(set.slots.size());
-				goto CREATE_BINDINGS;
 			}
-			// Check Slot Differences.
-			for (auto j = 0u; j < set.slots.size(); j++)
-			{
-				auto& slot = set.slots[j];
-				auto& entry = cacheFrame.entries[i].first[j];
-				if (entry.binding == slot.slot_index && entry.offset == slot.offset && entry.size == slot.size)
-				{
-					if (auto buf = get<GPUBuffer>(slot.buffer); buf)
-						if (entry.buffer == buf->buffer) continue;
-				}
-				cacheFrame.entries[i].second = false;
-				goto CREATE_BINDINGS;
-			}
-			cacheFrame.entries[i].second = true;
-		CREATE_BINDINGS:
 			auto& unchanged = cacheFrame.entries[i].second;
 			// Optionally Create Bindings
 			if (!unchanged)
 			{
 				for (auto j = 0u; j < set.slots.size(); j++)
 				{
-					auto& slot = set.slots[j];
-					auto& entry = cacheFrame.entries[i].first[j];
-					entry.binding = slot.slot_index; entry.offset = slot.offset; entry.size = slot.size;
-					if (auto buf = get<GPUBuffer>(slot.buffer); buf)
-						entry.buffer = buf->buffer;
-					else
-						assert(0 && "Buffer Not Found!");
+                    auto& slot = set.slots[j];
+                    auto& entry = cacheFrame.entries[i].first[j];
+					if(auto buf = slot.as_buffer();buf)
+					{
+                        entry.binding = buf->slot_index;
+                        entry.offset = buf->offset;
+                        entry.size = buf->size;
+                        dyn_c++;
+                        if (auto buff = get<GPUBuffer>(buf->buffer); buff)
+                            entry.buffer = buff->buffer;
+                        else
+                            assert(0 && "Buffer Not Found!");
+					}
+                    else if(auto sampler = slot.as_sampler();sampler)
+                    {
+                        entry.sampler = get<GpuSampler>(sampler->sampler)->sampler;
+                        entry.binding = sampler->slot_index;
+                    }
+                    else if(auto tex = slot.as_sampled_texture(); tex)
+                    {
+	                    if(tex->follow_default)
+	                    {
+                            entry.binding = tex->slot_index;
+                            entry.textureView = get<GpuTexture>(tex->texture)->default_view;
+	                    }
+                        else
+                        {
+                            sakura::error("Unimplemented!");
+                        }
+                    }
 				}
 				WGPUBindGroupDescriptor bgDesc = {};
 				if (cacheFrame.pipeline && !cacheFrame.entries.empty())
@@ -311,9 +319,8 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
 			}
             if (bindGroup && cacheFrame.pass_encoder)
                 wgpuRenderPassEncoderSetBindGroup(cacheFrame.pass_encoder, i, bindGroup, 
-                    //0, 0);
-                    set.slots.size(),
-                    set.slots.size() == 0 ? nullptr : set.dynamic_offsets.data());
+                    dyn_c,
+                    dyn_c == 0 ? nullptr : set.dynamic_offsets.data());
 		}// End Foreach BindingGroup.
 	}
 }
@@ -458,11 +465,6 @@ RenderDevice::~RenderDevice()
     wgpuQueueRelease(default_queue);
 }
 
-WGPUBackendType RenderDevice::get_backend()
-{
-    return WGPUBackendType_D3D12;
-}
-
 EBackend RenderDevice::backend() const
 {
     return EBackend::WebGPU;
@@ -473,9 +475,18 @@ bool RenderDevice::valid(const RenderResourceHandle handle) const
     return optional_unsafe(handle);
 }
 
-void RenderDevice::destroy_resource(const RenderResourceHandle to_destroy)
+void RenderDevice::destroy(const RenderResourceHandle to_destroy)
 {
-
+	if(!optional_unsafe(to_destroy))
+	{
+        return;
+	}
+    else
+    {
+        delete get_unsafe(to_destroy);
+    }
+    created_resources[to_destroy.id().index()].first = nullptr;
+    created_resources[to_destroy.id().index()].second++;
 }
 
 

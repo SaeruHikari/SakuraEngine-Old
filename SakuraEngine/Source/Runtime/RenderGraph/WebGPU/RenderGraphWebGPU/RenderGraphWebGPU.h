@@ -51,6 +51,13 @@ namespace sakura::graphics::webgpu
 	RenderGraphWebGPUAPI WGPUTextureAspect translate(const ETextureAspect aspect);
 	RenderGraphWebGPUAPI WGPUTextureCopyView translate(const TextureSlice from, const WGPUTexture texture);
 	RenderGraphWebGPUAPI WGPUBufferCopyView translate(const TextureDataLayout layout, const WGPUBuffer buffer);
+
+	RenderGraphWebGPUAPI WGPUSamplerDescriptor translate(const SamplerDesc& desc);
+	RenderGraphWebGPUAPI WGPUFilterMode translate(const EFilter filter);
+	RenderGraphWebGPUAPI WGPUAddressMode translate(const ESamplerAddressMode mode);
+	
+	RenderGraphWebGPUAPI WGPUTextureViewDimension match(const WGPUTextureDimension dimension);
+
 	
 	namespace detail
 	{

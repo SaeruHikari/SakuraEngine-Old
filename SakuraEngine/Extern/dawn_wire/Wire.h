@@ -1,4 +1,4 @@
-﻿// Copyright 2017 The Dawn Authors
+// Copyright 2017 The Dawn Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 #define DAWNWIRE_WIRE_H_
 
 #include <cstdint>
+#include <limits>
 
 #include "dawn/webgpu.h"
 #include "dawn_wire/dawn_wire_export.h"
@@ -25,8 +26,14 @@ namespace dawn_wire {
     class DAWN_WIRE_EXPORT CommandSerializer {
       public:
         virtual ~CommandSerializer() = default;
+
+        // Get space for serializing commands.
+        // GetCmdSpace will never be called with a value larger than
+        // what GetMaximumAllocationSize returns. Return nullptr to indicate
+        // a fatal error.
         virtual void* GetCmdSpace(size_t size) = 0;
         virtual bool Flush() = 0;
+        virtual size_t GetMaximumAllocationSize() const = 0;
     };
 
     class DAWN_WIRE_EXPORT CommandHandler {

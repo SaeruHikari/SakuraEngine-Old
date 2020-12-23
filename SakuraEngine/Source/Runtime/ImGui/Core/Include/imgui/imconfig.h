@@ -109,7 +109,7 @@ namespace ImGui
 */
 
 struct ImGuiContext;
-namespace sakura
+namespace sakura::imgui
 {
     IMPORT_API extern ImGuiContext* imgui_context;
 }
@@ -119,5 +119,5 @@ namespace sakura
 #endif
 
 #ifndef GImGui
-#define GImGui sakura::imgui_context
+#define GImGui sakura::imgui::imgui_context
 #endif

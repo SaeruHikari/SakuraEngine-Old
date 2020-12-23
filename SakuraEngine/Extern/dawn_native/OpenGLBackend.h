@@ -1,4 +1,4 @@
-﻿// Copyright 2018 The Dawn Authors
+// Copyright 2018 The Dawn Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,12 @@ namespace dawn_native { namespace opengl {
 
     struct DAWN_NATIVE_EXPORT AdapterDiscoveryOptions : public AdapterDiscoveryOptionsBase {
         AdapterDiscoveryOptions();
+
+        void* (*getProc)(const char*);
+    };
+
+    struct DAWN_NATIVE_EXPORT AdapterDiscoveryOptionsES : public AdapterDiscoveryOptionsBase {
+        AdapterDiscoveryOptionsES();
 
         void* (*getProc)(const char*);
     };

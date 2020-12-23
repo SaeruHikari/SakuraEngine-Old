@@ -2,7 +2,7 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#define TRACY_ENABLE
+//#define TRACY_ENABLE
 #include "tracy/Tracy.hpp"
 
 #include "RuntimeCore/RuntimeCore.h"

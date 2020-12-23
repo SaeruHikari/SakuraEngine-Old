@@ -43,7 +43,9 @@ namespace sakura::graphics
 		sakura::Window window_handle;
 	};
 
-	// actual render device class interface
+	// cn: 渲染设备的接口.
+	// en: actual render device class interface.
+	// jp: レンダリングデバイスインターフェイス.
 	struct RenderGraphAPI IRenderDevice
 	{
 		IRenderDevice() = default;
@@ -71,26 +73,26 @@ namespace sakura::graphics
 		
 		// cn: 执行command buffer, 不建立任何fence, 不做任何等待.
 		// en: Execute command buffer, establish no fence, do not do any waiting.
-		// jp: コマンドバッファを実行し、フェンスを確立せず、待機を行わない
+		// jp: コマンドバッファを実行し、フェンスを確立せず、アイドルを行わない
 		virtual bool execute_let_fly(const QueueIndex queue, const RenderCommandBuffer& command_buffer) = 0;
 
 		// cn: 执行command buffer, 不建立任何fence, 不做任何等待.
 		// en: Execute command buffer, establish no fence, do not do any waiting.
-		// jp: コマンドバッファを実行し、フェンスを確立せず、待機を行わない
+		// jp: コマンドバッファを実行し、フェンスを確立せず、アイドルを行わない
 		virtual bool execute_let_fly(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer) = 0;
 
-		// [performance warning]
+		// [性能警告] [performance warning] [パフォーマンス警告]
 		// cn: 执行command buffer, 直接阻滞等待到该次执行在GPU完成.
 		// en: Execute the command buffer, block and wait until the execution is completed on the GPU.
 		// jp: コマンドバッファを実行し、直接ブロックして、GPUで実行が完了するまで待ちます.
-		// [performance warning]
+		// [性能警告] [performance warning] [パフォーマンス警告]
 		virtual bool execute_block(const QueueIndex queue, const RenderCommandBuffer& command_buffer) = 0;
 
-		// [performance warning]
+		// [性能警告] [performance warning] [パフォーマンス警告]
 		// cn: 执行command buffer, 直接阻滞等待到该次执行在GPU完成.
 		// en: Execute the command buffer, block and wait until the execution is completed on the GPU.
 		// jp: コマンドバッファを実行し、直接ブロックして、GPUで実行が完了するまで待ちます.
-		// [performance warning]
+		// [性能警告] [performance warning] [パフォーマンス警告]
 		virtual bool execute_block(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer) = 0;
 
 		// cn: 执行command buffer, 返回一个可以用来等待该任务完成的fence.
@@ -103,14 +105,18 @@ namespace sakura::graphics
 		// jp: コマンドバッファを実行し、タスクが完了するのを待つために使用できるフェンスをリターン.
 		virtual FenceHandle execute(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer) = 0;
 
-		// [performance warning]
+		// [性能警告] [performance warning] [パフォーマンス警告]
 		// cn: 阻滞, 等待该queue中所有任务的完成.
 		// en: Block, wait for the completion of all tasks in the queue.
 		// jp: ブロックし、キュー内のすべてのタスクを待ちます。
-		// [performance warning]
+		// [性能警告] [performance warning] [パフォーマンス警告]
 		virtual void wait_idle() = 0;
 
-		
+		// [性能警告] [performance warning] [パフォーマンス警告]
+		// cn: 阻滞, 将指定的数据上传到texture上.
+		// en: Block, upload the specified data to the texture.
+		// jp: ブロックし、指定したデータをテクスチャにアップロードします。
+		// [性能警告] [performance warning] [パフォーマンス警告]
 		virtual void write_texture(GpuTextureHandle texture, void const* data, size_t data_size,
 			const TextureSlice& slice, const TextureDataLayout& layout, extent3d write_size, QueueIndex queue_index = -1) = 0;
 		
@@ -128,9 +134,9 @@ namespace sakura::graphics
 		// en: Destroy the resource corresponding to the handle on this device.
 		//     Successful destruction will release index in the handle and make the corresponding generation +1.
 		// jp: このデバイスのハンドルに対応するリソースを破棄します。
-		//     破棄に成功すると、ハンドルのインデックスが解放され、対応する世代が1つ増えます。
-		virtual void destroy_resource(const RenderResourceHandle to_destroy) = 0;
-		
+		//     破棄に成功すると、ハンドルのインデックスが解放され、対応するジェネレーションが1つ増えます。
+		virtual void destroy(const RenderResourceHandle to_destroy) = 0;
+
 		virtual GpuShaderHandle create_shader(const GpuShaderHandle handle, const ShaderDesc& desc) = 0;
 		virtual GpuBufferHandle create_buffer(const GpuBufferHandle handle, const BufferDesc& desc) = 0;
 		virtual GpuTextureHandle create_texture(const GpuTextureHandle handle, const TextureDesc& desc) = 0;
@@ -144,7 +150,13 @@ namespace sakura::graphics
 			const ComputePipelineHandle handle, const ComputePipelineDesc& desc) = 0;
 
 		virtual GpuBufferHandle update_buffer(const GpuBufferHandle handle, size_t offset, void* data, size_t size) = 0;
-		
+
+		// TODO
+		// cn: resize一个GpuBuffer. 在此操作后该Buffer的索引保持在原地, 代数会+1.
+		// en: Resize a GpuBuffer. After this operation, the Buffer index remains in place, and the generation will be +1.
+		// jp: GpuBufferのサイズを変更する。この後、バッファインデックスはそのまま残り、ジェネレーションは+1になります。
+		//virtual GpuBufferHandle resize(const GpuBufferHandle handle, size_t size, void* data = nullptr, size_t to = 0);
+		// TODO
 		
 		[[nodiscard]] virtual IGpuMemoryResource* get_unsafe(const RenderResourceHandle handle) const = 0;
 		[[nodiscard]] virtual IGpuMemoryResource* optional_unsafe(const RenderResourceHandle handle) const = 0;

@@ -8,6 +8,7 @@ webgpu::GpuSampler::GpuSampler(const GpuSamplerHandle handle, webgpu::RenderDevi
 	:handle_(handle), desc_(desc)
 {
 	WGPUSamplerDescriptor sampler_desc = {};
+	sampler_desc = translate(desc);
 	sampler = wgpuDeviceCreateSampler(dev.device, &sampler_desc);
 }
 

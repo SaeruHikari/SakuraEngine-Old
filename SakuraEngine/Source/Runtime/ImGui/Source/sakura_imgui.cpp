@@ -1,8 +1,8 @@
 #include "imgui/sakura_imgui.h"
 
-namespace sakura
+namespace sakura::imgui
 {
-	void imgui_initialize()
+	void initialize()
 	{
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();

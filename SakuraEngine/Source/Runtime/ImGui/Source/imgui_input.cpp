@@ -12,7 +12,7 @@
 #endif
 #include "System/Input.h"
 
-namespace sakura
+namespace sakura::imgui
 {
 	static void imgui_update_mouse_and_buttons()
 	{
@@ -76,29 +76,35 @@ namespace sakura
         }
         return true;
 	}
-	
-	static void imgui_update_monitors(Window window)
-	{
-        ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
-        platform_io.Monitors.resize(0);
-        // has no multi-viewport support.
-		int display_count = 1; //SDL_GetNumVideoDisplays();
-        for (int n = 0; n < display_count; n++)
-        {
-            // Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness settings, which generally needs to be set in the manifest or at runtime.
-            ImGuiPlatformMonitor monitor;
-            auto r = window.rect();
-            auto sz = window.extent();
-            monitor.MainPos = monitor.WorkPos = ImVec2((float)r.left, (float)r.top);
-            monitor.MainSize = monitor.WorkSize = ImVec2((float)sz.width, (float)sz.height);
-            monitor.WorkPos = monitor.WorkPos = ImVec2((float)r.left, (float)r.top);
-            monitor.WorkSize = monitor.WorkSize = ImVec2((float)sz.width, (float)sz.height);
-            monitor.DpiScale = 1;
-            platform_io.Monitors.push_back(monitor);
-        }
-	}
 
-	void imgui_bind_window(Window window)
+    static BOOL CALLBACK ImGui_ImplWin32_UpdateMonitors_EnumFunc(HMONITOR monitor, HDC, LPRECT, LPARAM)
+    {
+        MONITORINFO info = { 0 };
+        info.cbSize = sizeof(MONITORINFO);
+        if (!::GetMonitorInfo(monitor, &info))
+            return TRUE;
+        ImGuiPlatformMonitor imgui_monitor;
+        imgui_monitor.MainPos = ImVec2((float)info.rcMonitor.left, (float)info.rcMonitor.top);
+        imgui_monitor.MainSize = ImVec2((float)(info.rcMonitor.right - info.rcMonitor.left), (float)(info.rcMonitor.bottom - info.rcMonitor.top));
+        imgui_monitor.WorkPos = ImVec2((float)info.rcWork.left, (float)info.rcWork.top);
+        imgui_monitor.WorkSize = ImVec2((float)(info.rcWork.right - info.rcWork.left), (float)(info.rcWork.bottom - info.rcWork.top));
+        imgui_monitor.DpiScale = 1.f;//ImGui_ImplWin32_GetDpiScaleForMonitor(monitor);
+        ImGuiPlatformIO& io = ImGui::GetPlatformIO();
+        if (info.dwFlags & MONITORINFOF_PRIMARY)
+            io.Monitors.push_front(imgui_monitor);
+        else
+            io.Monitors.push_back(imgui_monitor);
+        return TRUE;
+    }
+
+    static void imgui_update_monitors()
+    {
+        ImGui::GetPlatformIO().Monitors.resize(0);
+        ::EnumDisplayMonitors(NULL, NULL, ImGui_ImplWin32_UpdateMonitors_EnumFunc, NULL);
+    }
+	
+
+	void bind_window(Window window)
 	{
         using namespace sakura::input;
 		
@@ -131,11 +137,11 @@ namespace sakura
 		ImGuiViewport* viewport = ImGui::GetMainViewport();
 		viewport->PlatformHandle = window.handle();
 		
-        imgui_update_monitors(window);
+        imgui_update_monitors();
 	}
 
 
-    void imgui_new_frame(Window window, float delta_time)
+    void new_frame(Window window, float delta_time)
     {
         ImGuiIO& io = ImGui::GetIO();
 
@@ -153,6 +159,7 @@ namespace sakura
         // Update MouseCursor
         // Update Gamepads.
 
+        imgui_update_monitors();
         imgui_update_mouse_and_buttons();
         imgui_update_cursor();
 		

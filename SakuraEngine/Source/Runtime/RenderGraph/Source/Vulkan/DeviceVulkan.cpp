@@ -244,7 +244,7 @@ bool sakura::graphics::vk::RenderDevice::valid(const RenderResourceHandle handle
 	return optional_unsafe(handle);
 }
 
-void sakura::graphics::vk::RenderDevice::destroy_resource(const RenderResourceHandle to_destroy)
+void sakura::graphics::vk::RenderDevice::destroy(const RenderResourceHandle to_destroy)
 {
 	return;
 }
@@ -655,30 +655,37 @@ void sakura::graphics::vk::RenderDevice::processCommandUpdateBinding(
 			for (auto j = 0; j < set.slots.size(); j++) // Slots
 			{
 				auto& slot = set.slots[j];
-				VkDescriptorBufferInfo bufferInfo = {};
-				if (auto buf = get<GpuBuffer>(slot.buffer); buf)
-					bufferInfo.buffer = buf->buffer_;
+				if (auto bufSet = slot.as_buffer(); bufSet)
+				{
+					VkDescriptorBufferInfo bufferInfo = {};
+					if (auto buf = get<GpuBuffer>(bufSet->buffer); buf)
+						bufferInfo.buffer = buf->buffer_;
+					else
+					{
+						assert(0 && "Buffer Not Found!");
+					}
+					bufferInfo.offset = bufSet->offset;
+					bufferInfo.range = bufSet->size;
+					bufferInfos.emplace_back(bufferInfo);
+
+					VkWriteDescriptorSet descriptorWrite = {};
+					descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET; //
+					descriptorWrite.dstSet = cache.binding_sets_[i]; // Set
+					descriptorWrite.dstBinding = bufSet->slot_index;
+					descriptorWrite.dstArrayElement = 0;
+					descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+					descriptorWrite.descriptorCount = 1;
+					descriptorWrite.pBufferInfo = &bufferInfos[bufferInfos.size() - 1];
+
+					vkUpdateDescriptorSets(
+						// TODO: mGPU
+						master_device().logical_device,
+						1, &descriptorWrite, 0, nullptr);
+				}
 				else
 				{
-					assert(0 && "Buffer Not Found!");
+					sakura::error("Unimplemented!");
 				}
-				bufferInfo.offset = slot.offset;
-				bufferInfo.range = slot.size;
-				bufferInfos.emplace_back(bufferInfo);
-
-				VkWriteDescriptorSet descriptorWrite = {};
-				descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET; //
-				descriptorWrite.dstSet = cache.binding_sets_[i]; // Set
-				descriptorWrite.dstBinding = slot.slot_index;
-				descriptorWrite.dstArrayElement = 0;
-				descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-				descriptorWrite.descriptorCount = 1;
-				descriptorWrite.pBufferInfo = &bufferInfos[bufferInfos.size() - 1];
-
-				vkUpdateDescriptorSets(
-					// TODO: mGPU
-					master_device().logical_device,
-					1, &descriptorWrite, 0, nullptr);
 			}
 		}
 	}

@@ -5,7 +5,7 @@ sakura::graphics::webgpu::GPUBuffer::GPUBuffer(const GpuBufferHandle handle,
 	:desc_(desc), handle_(handle)
 {
 	WGPUBufferDescriptor buffDesc = {};
-	buffDesc.usage = WGPUBufferUsage_CopyDst | translate(desc.usages, desc.access);
+	buffDesc.usage = translate(desc.usages, desc.access);
 	buffDesc.size = desc_.length;
 	buffer = wgpuDeviceCreateBuffer(dev.device, &buffDesc);
 	if(desc.data)
@@ -17,7 +17,11 @@ sakura::graphics::webgpu::GPUBuffer::GPUBuffer(const GpuBufferHandle handle,
 
 sakura::graphics::webgpu::GPUBuffer::~GPUBuffer()
 {
-	wgpuBufferRelease(buffer);
+	if(buffer)
+	{
+		wgpuBufferDestroy(buffer);
+		wgpuBufferRelease(buffer);
+	}
 }
 
 sakura::graphics::RenderResourceHandle sakura::graphics::webgpu::GPUBuffer::handle() const

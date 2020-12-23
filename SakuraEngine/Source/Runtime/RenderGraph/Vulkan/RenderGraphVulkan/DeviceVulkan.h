@@ -53,7 +53,7 @@ namespace sakura::graphics::vk
 		virtual EBackend backend() const override;
 
 		bool valid(const RenderResourceHandle handle) const override;
-		void destroy_resource(const RenderResourceHandle to_destroy) override;
+		void destroy(const RenderResourceHandle to_destroy) override;
 
 		sakura::string_view get_name() const override;
 

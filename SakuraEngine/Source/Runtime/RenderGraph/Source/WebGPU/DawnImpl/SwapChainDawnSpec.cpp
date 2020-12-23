@@ -44,6 +44,15 @@ static VkSurfaceKHR createVkSurface(WGPUDevice device, void* window) {
 }
 #endif
 
+WGPUBackendType RenderDevice::get_backend()
+{
+#ifdef DAWN_ENABLE_BACKEND_VULKAN
+	return WGPUBackendType_Vulkan;
+#else
+	return WGPUBackendType_D3D12;
+#endif
+}
+
 void SwapChain::initPlatformSpecific(const SwapChainHandle handle, const webgpu::RenderDevice& dev,
 	const SwapChainDesc& desc)
 {
@@ -86,6 +95,6 @@ void SwapChain::initPlatformSpecific(const SwapChainHandle handle, const webgpu:
 	 */
 	_extent = sakura::Window::extent(window);
 	wgpuSwapChainConfigure(
-		swapchain, _format, WGPUTextureUsage_OutputAttachment,
+		swapchain, _format, WGPUTextureUsage_OutputAttachment, 
 		_extent.width, _extent.height);
 }

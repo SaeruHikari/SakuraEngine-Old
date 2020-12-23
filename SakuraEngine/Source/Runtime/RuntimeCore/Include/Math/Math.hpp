@@ -42,6 +42,21 @@ namespace sakura::math
 		return res;
 	}
 
+	FORCEINLINE float4x4 ortho_projection
+	(
+		float ViewWidth,
+		float ViewHeight,
+		float NearZ,
+		float FarZ
+	)
+	{
+		float4x4 res;
+		__matrix::store_aligned(res.data_view(),
+			__matrix::inverse(__matrix::ortho_projection(ViewWidth, ViewHeight, NearZ, FarZ))
+		);
+		return res;
+	}
+
 	FORCEINLINE float4x4 look_at_matrix
 	(
 		const Vector3f Eye,

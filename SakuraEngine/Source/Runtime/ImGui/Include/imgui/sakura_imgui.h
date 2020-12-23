@@ -2,7 +2,7 @@
 #include "imgui_render_graph.h"
 #include "imgui_input.h"
 
-namespace sakura
+namespace sakura::imgui
 {
-	ImGuiAPI void imgui_initialize();
+	ImGuiAPI void initialize();
 }

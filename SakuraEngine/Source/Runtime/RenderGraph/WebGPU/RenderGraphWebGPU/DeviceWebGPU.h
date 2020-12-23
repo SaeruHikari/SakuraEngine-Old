@@ -27,7 +27,7 @@ namespace sakura::graphics::webgpu
 		virtual EBackend backend() const override;
 
 		bool valid(const RenderResourceHandle handle) const override;
-		void destroy_resource(const RenderResourceHandle to_destroy) override;
+		void destroy(const RenderResourceHandle to_destroy) override;
 
 		sakura::string_view get_name() const override;
 
@@ -60,6 +60,7 @@ namespace sakura::graphics::webgpu
 		RenderPipelineHandle create_render_pipeline(const RenderPipelineHandle handle, const RenderPipelineDesc& desc) override;
 
 		GpuBufferHandle update_buffer(const GpuBufferHandle handle, size_t offset, void* data, size_t size) override;
+		//GpuBufferHandle resize(const GpuBufferHandle handle, size_t size, size_t from = 0, size_t to = 0) override;
 
 		[[nodiscard]] IGpuMemoryResource* get_unsafe(const RenderResourceHandle handle) const override;
 		[[nodiscard]] IGpuMemoryResource* optional_unsafe(const RenderResourceHandle handle) const override;

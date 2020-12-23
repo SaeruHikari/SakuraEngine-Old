@@ -16,7 +16,7 @@ namespace sakura::graphics::webgpu
 	public:
 		GPUBuffer(const GpuBufferHandle handle,
 			const webgpu::RenderDevice& dev, const BufferDesc& desc) noexcept;
-		~GPUBuffer();
+		virtual ~GPUBuffer();
 		RenderResourceHandle handle() const override;
 		size_t size() const override;
 

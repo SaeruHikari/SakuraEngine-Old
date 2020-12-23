@@ -25,6 +25,7 @@ namespace sakura::graphics::webgpu
 		ETextureFormat render_format() const override;
 		
 		WGPUTexture texture = nullptr;
+		WGPUTextureView default_view = nullptr;
 	protected:
 		TextureDesc desc_;
 		GpuTextureHandle handle_;

@@ -84,4 +84,17 @@ namespace sakura::math::__matrix
 			FovAngleY, AspectRatio, NearZ, FarZ
 		);
 	}
+
+	FORCEINLINE MatrixRegister ortho_projection
+	(
+		float ViewWidth,
+		float ViewHeight,
+		float NearZ,
+		float FarZ
+	)
+	{
+		return DirectX::XMMatrixOrthographicLH(
+			ViewWidth, ViewHeight, NearZ, FarZ
+		);
+	}
 }

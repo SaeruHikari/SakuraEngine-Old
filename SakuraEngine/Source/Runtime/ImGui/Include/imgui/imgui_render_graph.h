@@ -2,17 +2,23 @@
 #include "RenderGraph/RenderGraph.h"
 #include "imgui/imgui.h"
 
-namespace sakura
+namespace sakura::imgui
 {
-    ImGuiAPI void imgui_initialize_gfx(graphics::RenderGraph& render_graph, graphics::IRenderDevice& device);
+    ImGuiAPI void initialize_gfx(graphics::RenderGraph& render_graph, graphics::IRenderDevice& device);
 
-    ImGuiAPI void imgui_create_fonts(graphics::IRenderDevice& device);
-
-    ImGuiAPI void imgui_fetch_commands(graphics::RenderCommandBuffer& command_buffer);
+    using namespace sakura::graphics;
+	
+    class ImGuiAPI RenderPassImGui : public graphics::RenderPass
+    {
+    public:
+        RenderPassImGui(const RenderPassHandle handle, const SwapChainHandle swap_chain, RenderGraph& render_graph, sakura::uint8 cycleCount = 3)
+            :RenderPass(handle, cycleCount), render_graph(render_graph), swap_chain(swap_chain) {}
+        const RenderCommandBuffer& execute(RenderCommandBuffer& command_buffer, const RenderGraph& rg, IRenderDevice& device) noexcept override;
+        bool construct(RenderGraph::Builder& builder, IRenderDevice& device) noexcept override;
+        RenderGraph& render_graph;
+        SwapChainHandle swap_chain = GenerationalId::UNINITIALIZED;
+    };
 }
-
-
-
 
 
 
@@ -69,8 +75,8 @@ namespace sakura
             struct VS_INPUT\
             {\
               float2 pos : POSITION;\
-              float4 col : COLOR0;\
               float2 uv  : TEXCOORD0;\
+              float4 col : COLOR0;\
             };\
             \
             struct PS_INPUT\
@@ -83,7 +89,7 @@ namespace sakura
             PS_INPUT main(VS_INPUT input)\
             {\
               PS_INPUT output;\
-              output.pos = mul( ProjectionMatrix, float4(input.pos.xy, 0.f, 1.f));\
+              output.pos = mul(float4(input.pos.xy, 0.f, 1.f), ProjectionMatrix);\
               output.col = input.col;\
               output.uv  = input.uv;\
               return output;\

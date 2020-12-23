@@ -16,6 +16,23 @@ inline IRenderDevice* render_device = nullptr;
 inline SwapChainHandle swap_chain = render_graph.SwapChain("DefaultSwapChain");
 
 const bool useVk = false;
+struct Timer
+{
+    void start_up()
+    {
+        tmpt = std::chrono::system_clock::now();
+    }
+
+    double end()
+    {
+        auto dur = std::chrono::system_clock::now() - tmpt;
+        auto delta_time =
+            static_cast<double>(dur.count()) / static_cast<double>(decltype(dur)::period::den);
+        tmpt = std::chrono::system_clock::now();
+        return delta_time;
+    }
+    std::chrono::system_clock::time_point tmpt;
+};
 
 int main(int, char**)
 {
@@ -41,16 +58,22 @@ int main(int, char**)
         render_device = new vk::RenderDevice(deviceConfig);
         assert(render_device != nullptr && "ERROR: Failed to create Vulkan device!");
     }
-
-    imgui_initialize();
-    imgui_bind_window(main_window);
-    imgui_initialize_gfx(render_graph, *render_device);
-   
+    // Create Swap Chains.
+    render_device->create_swap_chain(swap_chain, SwapChainDesc(EPresentMode::Mailbox, main_window, 3));
+	
+    sakura::imgui::initialize();
+    sakura::imgui::bind_window(main_window);
+    sakura::imgui::initialize_gfx(render_graph, *render_device);
+    
     RenderCommandBuffer command_buffer("ImGuiRender", 4096);
-    while (sakura::Core::yield())
+    RenderPassHandle pass = render_graph.create_render_pass<imgui::RenderPassImGui>(swap_chain, render_graph);
+    Timer timer;
+    double deltaTime = 0;
+    double added = 0;
+	while (sakura::Core::yield())
     {
-        sakura::imgui_new_frame(main_window, 1.f / 60.f);
-
+        sakura::imgui::new_frame(main_window, 1.f / 60.f);
+        timer.start_up();
         {
             static float f = 0.0f;
             static int counter = 0;
@@ -71,7 +94,25 @@ int main(int, char**)
 
             ImGui::Render();
         }
+		
+        if (added >= 1.0 / 60.0)
+        {
+            added = 0;
+            main_window.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());
+        }
+		
+        {
+            // Render
+            RenderPass* pass_ptr = render_graph.render_pass(pass);
+            pass_ptr->construct(render_graph.builder(pass), *render_device);
+            command_buffer.reset();
+            pass_ptr->execute(command_buffer, render_graph, *render_device);
+            render_device->execute(command_buffer, pass_ptr->handle());
+            render_device->present(swap_chain);
+        }
 
-        sakura::imgui_fetch_commands(command_buffer);
+        deltaTime = timer.end();
+
+        added += deltaTime;
     }
 }

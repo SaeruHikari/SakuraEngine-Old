@@ -154,7 +154,7 @@ namespace render_system
 			command_buffer.enqueue<RenderCommandEndRenderPass>();
 			return command_buffer;
 		}
-		bool construct(RenderGraph::Builder& builder) noexcept override
+		bool construct(RenderGraph::Builder& builder, IRenderDevice& device) noexcept override
 		{
 			builder.pipeline(render_pipeline);
 			attachment = Attachment({
@@ -384,7 +384,7 @@ namespace render_system
 
 		RenderPass* pass_ptr = render_graph.render_pass(pass);
 
-		pass_ptr->construct(render_graph.builder(pass));
+		pass_ptr->construct(render_graph.builder(pass), *render_device);
 		buffer.reset();
 		pass_ptr->execute(buffer, render_graph, *render_device);
 	}

@@ -1,5 +1,5 @@
 ﻿#include <RenderGraphWebGPU/RenderGraphWebGPU.h>
-#include <dawn_native/DawnNative.h>
+#include <dawn_platform/dawn_platform_export.h>
 #include <dawn/webgpu_cpp.h>
 #include <dawn/dawn_proc.h>
 #include <dawn/dawn_proc_table.h>

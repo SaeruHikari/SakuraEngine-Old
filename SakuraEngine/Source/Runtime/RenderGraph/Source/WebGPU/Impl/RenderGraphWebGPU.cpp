@@ -371,6 +371,19 @@ WGPUTextureDimension sakura::graphics::webgpu::translate(const ETextureDimension
 	}
 }
 
+WGPUTextureViewDimension sakura::graphics::webgpu::match(const WGPUTextureDimension dimension)
+{
+	switch (dimension)
+	{
+	case WGPUTextureDimension_1D:
+		return WGPUTextureViewDimension_1D;
+	case WGPUTextureDimension_2D:
+		return WGPUTextureViewDimension_2D;
+	case WGPUTextureDimension_3D:
+		return WGPUTextureViewDimension_3D;
+	}
+}
+
 WGPULoadOp sakura::graphics::webgpu::translate(const ELoadOp op)
 {
 	switch (op)
@@ -443,6 +456,52 @@ WGPUBufferCopyView sakura::graphics::webgpu::translate(const TextureDataLayout l
 	copyView.layout.offset = layout.offset;
 	copyView.buffer = buffer;
 	return copyView;
+}
+
+WGPUSamplerDescriptor sakura::graphics::webgpu::translate(const SamplerDesc& desc)
+{
+	WGPUSamplerDescriptor sampler = {};
+	sampler.addressModeU = translate(desc.address_mode_u);
+	sampler.addressModeV = translate(desc.address_mode_v);
+	sampler.addressModeW = translate(desc.address_mode_w);
+	sampler.lodMaxClamp = desc.max_lod;
+	sampler.lodMinClamp = desc.min_lod;
+	sampler.minFilter = translate(desc.min_filter);
+	sampler.magFilter = translate(desc.mag_filter);
+	return sampler;
+}
+
+WGPUFilterMode sakura::graphics::webgpu::translate(const EFilter filter)
+{
+	switch (filter)
+	{
+	case EFilter::Linear:
+		return WGPUFilterMode_Linear;
+	case EFilter::Nearest:
+		return WGPUFilterMode_Nearest;
+	case EFilter::Cubic:
+	default:
+		return WGPUFilterMode_Linear;
+	}
+}
+
+WGPUAddressMode sakura::graphics::webgpu::translate(const ESamplerAddressMode mode)
+{
+	switch (mode)
+	{
+	case ESamplerAddressMode::ClampToBorder:
+		return WGPUAddressMode_ClampToEdge;
+	case ESamplerAddressMode::ClampToEdge:
+		return WGPUAddressMode_ClampToEdge;
+	case ESamplerAddressMode::MirroredRepeat:
+		return WGPUAddressMode_MirrorRepeat;
+	case ESamplerAddressMode::Repeat:
+		return WGPUAddressMode_Repeat;
+	case ESamplerAddressMode::MirrorClampToEdge:
+	default:
+		sakura::warn("[RenderGraphWebGPU]: Sampler Address Mode Not Supported!");
+		return WGPUAddressMode_Repeat;
+	}
 }
 
 

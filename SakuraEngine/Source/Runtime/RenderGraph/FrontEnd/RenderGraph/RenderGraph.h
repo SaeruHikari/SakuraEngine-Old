@@ -155,7 +155,7 @@ namespace sakura::graphics
 	    virtual ~RenderPass();
 	    virtual const RenderCommandBuffer& execute(RenderCommandBuffer& command_buffer,
             const RenderGraph& rg, IRenderDevice& device) noexcept = 0;
-        virtual bool construct(RenderGraph::Builder& rg) noexcept = 0;
+        virtual bool construct(RenderGraph::Builder& builder, IRenderDevice& device) noexcept = 0;
         RenderPassHandle handle() const
         {
             return handle_;
@@ -170,10 +170,10 @@ namespace sakura::graphics
     {
         using Evaluator = sakura::function<const RenderCommandBuffer&(IRenderDevice& device,
             const RenderGraph& rg, RenderCommandBuffer& buffer)>;
-        using Constructor = sakura::function<Evaluator(RenderGraph::Builder& builder)>;
+        using Constructor = sakura::function<Evaluator(RenderGraph::Builder& builder, IRenderDevice& device)>;
         RenderPassLambda(const RenderPassHandle __handle, const Constructor& constructor);
 
-        bool construct(RenderGraph::Builder& builder) noexcept override;
+        bool construct(RenderGraph::Builder& builder, IRenderDevice& device) noexcept override;
         const RenderCommandBuffer& execute(RenderCommandBuffer& command_buffer, const RenderGraph& rg, 
             IRenderDevice& device) noexcept override;
     protected:

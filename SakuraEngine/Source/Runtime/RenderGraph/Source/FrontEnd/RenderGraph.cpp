@@ -60,9 +60,9 @@ namespace sakura::graphics
 
 	}
 
-	bool RenderPassLambda::construct(RenderGraph::Builder& builder) noexcept
+	bool RenderPassLambda::construct(RenderGraph::Builder& builder, IRenderDevice& device) noexcept
 	{
-		evaluator_ = constructor_(builder);
+		evaluator_ = constructor_(builder, device);
 		return true;
 	}
 
@@ -166,11 +166,19 @@ namespace sakura::graphics
 
 	Binding::Slot::Slot(GpuBufferHandle _buffer, 
 		uint32 _slot_index, uint32 _size, uint32 _offset)
-		:slot_index(_slot_index), size(_size), offset(_offset), buffer(_buffer)	{	}
+		: content(Binding::Slot::Buffer{_slot_index, _size, _offset, _buffer})	{	}
+
+	Binding::Slot::Slot(GpuTextureHandle texture, uint32 slot_index)
+		: content(Binding::Slot::SampledTexture(texture, slot_index)) {		}
+
+
+	Binding::Slot::Slot(GpuSamplerHandle sampler, uint32 slot_index)
+		: content(Binding::Slot::Sampler{ slot_index, sampler }) {		}
+
 
 	ShaderDesc::ShaderDesc(const sakura::string& _name, const sakura::string& _entry,
-		const EShaderFrequency _frequency, const sakura::span<const std::byte> _code) noexcept
-		:code(_code), name(_name), entry(_entry), frequency(_frequency)	{	}
+	                       const EShaderFrequency _frequency, const sakura::span<const std::byte> _code) noexcept
+		: code(_code), name(_name), entry(_entry), frequency(_frequency) {	}
 
 	VertexLayout::Element::Element(string _semantic_name, EVertexFormat _format, uint32 _offset) noexcept
 		:semantic_name(_semantic_name), format(_format), offset(_offset) {	}
