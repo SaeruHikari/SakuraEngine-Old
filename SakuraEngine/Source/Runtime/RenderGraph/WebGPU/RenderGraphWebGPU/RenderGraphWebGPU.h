@@ -5,6 +5,7 @@
 #include <RenderGraphWebGPU/FenceWebGPU.h>
 #include <RenderGraphWebGPU/RenderPipelineWebGPU.h>
 #include <RenderGraphWebGPU/BufferWebGPU.h>
+#include <RenderGraphWebGPU/SamplerWebGPU.h>
 #include <RenderGraphWebGPU/TextureWebGPU.h>
 #include "RenderGraph/RenderGraph.h"
 

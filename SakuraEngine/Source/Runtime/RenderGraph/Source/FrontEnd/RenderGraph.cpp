@@ -21,18 +21,18 @@ namespace sakura::graphics
 			auto err = string("a device named ").append(device->get_name().data()).append("already exists!");
 			assert(0 && err.c_str());
 		}
-		devices_.emplace(device);
+		devices_.emplace_back(device);
 		return;
 	}
 
 	RenderPass* RenderGraph::render_pass(const RenderPassHandle handle)
 	{
-		return passes[handle.id().index()].first;
+		return passes.at(handle.id().index()).first;
 	}
 
 	RenderGraph::Builder& RenderGraph::builder(const RenderPassHandle handle)
 	{
-		return passes[handle.id().index()].second;
+		return passes.at(handle.id().index()).second;
 	}
 
 	const RenderResourceHandle RenderGraph::query(const sakura::string& name) const
@@ -74,7 +74,7 @@ namespace sakura::graphics
 
 	RenderGraphAPI IRenderDevice* RenderGraph::get_device(const sakura::string_view name) const
 	{
-		for(auto i = 0u; i < devices_.count(); i++)
+		for(auto i = 0u; i < devices_.size(); i++)
 		{
 			if (name == devices_[i]->get_name())
 				return devices_[i];
@@ -113,7 +113,7 @@ namespace sakura::graphics
 	}
 
 	RenderGraph::RenderGraph()
-		:devices_(*this)
+		:devices_()
 	{
 		
 	}
@@ -122,9 +122,9 @@ namespace sakura::graphics
 	{
 		for (size_t i = 0u; i < passes.size(); i++)
 		{
-			delete passes[i].first;
+			delete passes.at(i).first;
 		}
-		for (auto i = 0u; i < devices_.count(); i++)
+		for (auto i = 0u; i < devices_.size(); i++)
 		{
 			delete devices_[i];
 		}

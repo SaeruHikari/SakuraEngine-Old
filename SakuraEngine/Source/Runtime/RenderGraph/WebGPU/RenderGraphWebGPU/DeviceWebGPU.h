@@ -48,6 +48,9 @@ namespace sakura::graphics::webgpu
 		GpuShaderHandle create_shader(const GpuShaderHandle handle, const ShaderDesc& config) override;
 		GpuBufferHandle create_buffer(const GpuBufferHandle handle, const BufferDesc& config) override;
 		GpuTextureHandle create_texture(const GpuTextureHandle handle, const TextureDesc& desc) override;
+		GpuSamplerHandle create_sampler(const GpuSamplerHandle handle, const SamplerDesc& desc) override;
+		ComputePipelineHandle create_compute_pipeline(
+			const ComputePipelineHandle handle, const ComputePipelineDesc& desc) override;
 
 		void write_texture(GpuTextureHandle texture, void const* data, size_t data_size, const TextureSlice& slice,
 			const TextureDataLayout& layout, extent3d write_size, QueueIndex queue_index = QueueIndex(-1)) override;
@@ -116,6 +119,7 @@ namespace sakura::graphics::webgpu
 		void processCommandCopyTextureToBuffer(WGPUCommandEncoder encoder, const RenderCommandCopyTextureToBuffer& command) const;
 		void processCommandCopyBufferToBuffer(WGPUCommandEncoder encoder, const RenderCommandCopyBufferToBuffer& command) const;
 		void processCommandCopyBufferToTexture(WGPUCommandEncoder encoder, const RenderCommandCopyBufferToTexture& command) const;
+
 
 	};
 }

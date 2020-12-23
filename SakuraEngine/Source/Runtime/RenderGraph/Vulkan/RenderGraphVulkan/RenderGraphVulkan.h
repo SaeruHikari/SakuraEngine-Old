@@ -4,43 +4,51 @@
 #include "DeviceVulkan.h"
 #include "FenceVulkan.h"
 #include "ShaderVulkan.h"
+#include "SamplerVulkan.h"
 #include "SwapChainVulkan.h"
 #include "RenderPipelineVulkan.h"
 
 namespace sakura::graphics::vk
 {
-	RenderGraphVulkanAPI VkPresentModeKHR translate(EPresentMode present_mode);
+	VkPresentModeKHR translate(EPresentMode present_mode);
 
-	RenderGraphVulkanAPI EPresentMode translate(VkPresentModeKHR present_mode);
+	EPresentMode translate(VkPresentModeKHR present_mode);
 
-	RenderGraphVulkanAPI VkFormat translate(ETextureFormat format);
+	VkFormat translate(ETextureFormat format);
 
-	RenderGraphVulkanAPI ETextureFormat translate(VkFormat format);
+	ETextureFormat translate(VkFormat format);
 
-	RenderGraphVulkanAPI VkShaderStageFlagBits translate(EShaderFrequency frequency);
+	VkShaderStageFlagBits translate(EShaderFrequency frequency);
 
-	RenderGraphVulkanAPI VkColorComponentFlags translate(ColorMask mask);
+	VkColorComponentFlags translate(ColorMask mask);
 
-	RenderGraphVulkanAPI VkBlendOp translate(EBlendOp blendOp);
+	VkBlendOp translate(EBlendOp blendOp);
 
-	RenderGraphVulkanAPI VkBlendFactor translate(EBlendFactor blendFactor);
+	VkBlendFactor translate(EBlendFactor blendFactor);
 
-	RenderGraphVulkanAPI VkPolygonMode translate(EPolygonMode polygonMode);
+	VkPolygonMode translate(EPolygonMode polygonMode);
 
-	RenderGraphVulkanAPI VkAttachmentLoadOp translate(ELoadOp op);
+	VkAttachmentLoadOp translate(ELoadOp op);
 
-	RenderGraphVulkanAPI VkAttachmentStoreOp translate(EStoreOp op);
+	VkAttachmentStoreOp translate(EStoreOp op);
 
-	RenderGraphVulkanAPI VkBufferUsageFlags translate(const BufferUsages usage, const EBufferCPUAccess access);
+	VkBufferUsageFlags translate(const BufferUsages usage, const EBufferCPUAccess access);
 
-	RenderGraphVulkanAPI VkPrimitiveTopology translate(EPrimitiveTopology topo);
+	VkPrimitiveTopology translate(EPrimitiveTopology topo);
 
-	RenderGraphVulkanAPI VkVertexInputRate translate(VertexLayout::Frequency freq);
+	VkVertexInputRate translate(VertexLayout::Frequency freq);
 
-	RenderGraphVulkanAPI VkFormat translate(EVertexFormat format);
+	VkFormat translate(EVertexFormat format);
 
-	RenderGraphVulkanAPI VkDescriptorType translate(BindingLayout::EType type);
+	VkDescriptorType translate(BindingLayout::EType type);
 
+	VkSamplerCreateInfo translate(SamplerDesc desc);
+
+	VkSamplerAddressMode translate(ESamplerAddressMode mode);
+	
+	VkFilter translate(EFilter mode);
+	
+	
 	const bool bEnableValidationLayers = false;
 
 	// cn: 启动引擎所需的最小扩展集.
@@ -81,3 +89,5 @@ namespace sakura::graphics::vk
 		"VK_LAYER_KHRONOS_validation"
 	};
 }
+
+#include "RenderGraphVulkan/RenderGraphVulkan.inl"

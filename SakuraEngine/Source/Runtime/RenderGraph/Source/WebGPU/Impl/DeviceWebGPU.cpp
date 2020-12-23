@@ -630,8 +630,20 @@ GpuTextureHandle RenderDevice::create_texture(const GpuTextureHandle handle, con
 	return _create_resouce_impl<webgpu::GpuTexture, GpuTextureHandle>(handle, *this, desc);
 }
 
+GpuSamplerHandle RenderDevice::create_sampler(const GpuSamplerHandle handle, const SamplerDesc& desc)
+{
+    return _create_resouce_impl<webgpu::GpuSampler, GpuSamplerHandle>(handle, *this, desc);
+}
+
+ComputePipelineHandle RenderDevice::create_compute_pipeline(const ComputePipelineHandle handle,
+	const ComputePipelineDesc& desc)
+{
+    sakura::error("Unimplemented!");
+    return GenerationalId::UNINITIALIZED;
+}
+
 void RenderDevice::write_texture(GpuTextureHandle texture, void const* data, size_t data_size,
-	const TextureSlice& slice, const TextureDataLayout& layout, extent3d write_size, QueueIndex queue_index)
+                                 const TextureSlice& slice, const TextureDataLayout& layout, extent3d write_size, QueueIndex queue_index)
 {
     WGPUTextureCopyView copyView = translate(slice, get<GpuTexture>(texture)->texture);
     WGPUTextureDataLayout lo = {};

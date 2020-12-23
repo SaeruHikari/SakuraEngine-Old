@@ -89,7 +89,8 @@ namespace sakura::graphics
         {
             friend class RenderGraph;
             friend struct RenderPass;
-        	
+
+            Builder() = default;
             Builder(const uint32 generation);
         	
             void write(const Attachment& attachment);
@@ -102,7 +103,7 @@ namespace sakura::graphics
         protected:
             Attachment _attachment;
             RenderPipelineHandle _pipeline;
-            const uint32 generation = 0;
+            uint32 generation = 0;
         };
     	
         struct RenderGraphAPI Blackboard
@@ -118,6 +119,7 @@ namespace sakura::graphics
         constructor_rg_resource_handle(GpuShader, shader)
         constructor_rg_resource_handle(GpuBuffer, buffer)
         constructor_rg_resource_handle(GpuTexture, texture)
+        constructor_rg_resource_handle(GpuSampler, sampler)
 
         constructor_rg_object_handle(RenderPipeline, render_pipeline)
         constructor_rg_object_handle(SwapChain, swap_chain)
@@ -141,7 +143,7 @@ namespace sakura::graphics
     	}
 
     private:
-        RenderDeviceGroupProxy devices_;
+        sakura::vector<IRenderDevice*> devices_;
         sakura::unordered_map<sakura::string, RenderResourceHandle> named_handles_;
     	sakura::vector<uint32> memory_resources_;/*generations*/
         sakura::vector<uint32> gpu_objects_;/*generations*/

@@ -61,7 +61,7 @@ namespace render_system
 
 	inline sakura::Window main_window;
 	inline RenderGraph render_graph;
-	inline RenderDeviceGroupProxy device_group = RenderDeviceGroupProxy(render_graph);
+	inline IRenderDevice* render_device = nullptr;
 	inline SwapChainHandle swap_chain = render_graph.SwapChain("DefaultSwapChain");
 	inline GpuShaderHandle vertex_shader = render_graph.GpuShaderUnsafe("VertexShader");
 	inline GpuShaderHandle pixel_shader = render_graph.GpuShaderUnsafe("PixelShader");
@@ -199,28 +199,24 @@ namespace render_system
 		if(!useVk)
 		{
 			deviceConfig.name = "DawnDevice";
-			render_graph.emplace_device(new webgpu::RenderDevice(deviceConfig));
-			IRenderDevice* dawnDevice = render_graph.get_device("DawnDevice");
-			assert(dawnDevice != nullptr && "ERROR: Failed to create Dawn device!");
-			device_group.emplace(dawnDevice);
+			render_device = new webgpu::RenderDevice(deviceConfig);
+			assert(render_device != nullptr && "ERROR: Failed to create Dawn device!");
 		}
 		else
 		{
 			deviceConfig.name = "VulkanDevice";
-			render_graph.emplace_device(new vk::RenderDevice(deviceConfig));
-			IRenderDevice* vulaknDevice = render_graph.get_device("VulkanDevice");
-			assert(vulaknDevice != nullptr && "ERROR: Failed to create Vulkan device!");
-			device_group.emplace(vulaknDevice);
+			render_device = new vk::RenderDevice(deviceConfig);
+			assert(render_device != nullptr && "ERROR: Failed to create Vulkan device!");
 		}
 
 		// Create Swap Chains.
-		device_group.create_swap_chain(swap_chain, SwapChainDesc(EPresentMode::Mailbox, main_window, 3));
+		render_device->create_swap_chain(swap_chain, SwapChainDesc(EPresentMode::Mailbox, main_window, 3));
 		// Init RenderPipeline Desc
 		RenderPipelineDesc pipelineDesc = RenderPipelineDesc(
 			ShaderLayout({
 				// Create Actual ShaderResources on Device.
-				device_group.create_shader(vertex_shader, ShaderDesc("VertexShader", "main", EShaderFrequency::VertexShader, vertex_shader_spirv)),
-				device_group.create_shader(pixel_shader, ShaderDesc("PiexelShader", "main", EShaderFrequency::PixelShader, pixel_shader_spirv))
+				render_device->create_shader(vertex_shader, ShaderDesc("VertexShader", "main", EShaderFrequency::VertexShader, vertex_shader_spirv)),
+				render_device->create_shader(pixel_shader, ShaderDesc("PiexelShader", "main", EShaderFrequency::PixelShader, pixel_shader_spirv))
 				}),
 			VertexLayout(
 				{
@@ -252,7 +248,7 @@ namespace render_system
 		);
 
 		// Create Render pipeline.
-		device_group.create_render_pipeline(render_pipeline, pipelineDesc);
+		render_device->create_render_pipeline(render_pipeline, pipelineDesc);
 		// create the buffers (x, y, r, g, b)
 		float const vertData[] = {
 			 -4.f, 0.f, -4.f,    0.f / 256.f, 49.f / 256.f, 79.f / 256.f, // BL
@@ -286,22 +282,22 @@ namespace render_system
 			10,1,6, 11,0,9, 2,11,9, 5,2,9,  11,2,7
 		};
 		// Create Buffers.
-		device_group.create_buffer(uniform_buffer,
+		render_device->create_buffer(uniform_buffer,
 			BufferDesc(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4), &view_proj));
-		device_group.create_buffer(uniform_buffer_per_target,
+		render_device->create_buffer(uniform_buffer_per_target,
 			BufferDesc(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * target_worlds.size(), target_worlds.data()));
-		device_group.create_buffer(uniform_buffer_per_object,
+		render_device->create_buffer(uniform_buffer_per_object,
 			BufferDesc(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * worlds.size(), worlds.data()));
 
-		device_group.create_buffer(vertex_buffer,
+		render_device->create_buffer(vertex_buffer,
 			BufferDesc(EBufferUsage::VertexBuffer | EBufferUsage::CopyDst, sizeof(vertData), vertData));
-		device_group.create_buffer(index_buffer,
+		render_device->create_buffer(index_buffer,
 			BufferDesc(EBufferUsage::IndexBuffer | EBufferUsage::CopyDst, sizeof(indxData), &indxData));
 
 
-		device_group.create_buffer(vertex_buffer_sphere,
+		render_device->create_buffer(vertex_buffer_sphere,
 			BufferDesc(EBufferUsage::VertexBuffer | EBufferUsage::CopyDst, sizeof(sphere_vertices), sphere_vertices));
-		device_group.create_buffer(index_buffer_sphere,
+		render_device->create_buffer(index_buffer_sphere,
 			BufferDesc(EBufferUsage::IndexBuffer | EBufferUsage::CopyDst, sizeof(sphere_indices), &sphere_indices));
 
 		sakura::info("All Tests Passed!");
@@ -379,7 +375,7 @@ namespace render_system
 
 	void Present()
 	{
-		device_group.present(swap_chain);
+		render_device->present(swap_chain);
 	}
 
 	void PrepareCommandBuffer(RenderCommandBuffer& buffer)
@@ -390,7 +386,7 @@ namespace render_system
 
 		pass_ptr->construct(render_graph.builder(pass));
 		buffer.reset();
-		pass_ptr->execute(buffer, render_graph, device_group);
+		pass_ptr->execute(buffer, render_graph, *render_device);
 	}
 
 	void RenderAndPresent(const RenderCommandBuffer& buffer)
@@ -407,17 +403,17 @@ namespace render_system
 			view_proj = sakura::math::multiply(view_proj, proj);
 			view_proj = sakura::math::transpose(view_proj);
 
-			device_group.update_buffer(uniform_buffer, 0, &view_proj, sizeof(view_proj));
-			device_group.update_buffer(
+			render_device->update_buffer(uniform_buffer, 0, &view_proj, sizeof(view_proj));
+			render_device->update_buffer(
 			uniform_buffer_per_object, 0, worlds.data(), sizeof(float4x4) * worlds.size());
-			device_group.update_buffer(uniform_buffer_per_target,
+			render_device->update_buffer(uniform_buffer_per_target,
 				0, target_worlds.data(), sizeof(float4x4) * target_worlds.size());
 		}
 
 		{
 			ZoneScopedN("RenderAndPresent");
 			RenderPass* pass_ptr = render_graph.render_pass(pass);
-			device_group.execute(buffer, pass_ptr->handle());
+			render_device->execute(buffer, pass_ptr->handle());
 			render_system::Present(); // 0
 		}
 	}

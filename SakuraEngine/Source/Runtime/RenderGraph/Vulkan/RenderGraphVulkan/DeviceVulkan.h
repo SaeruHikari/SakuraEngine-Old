@@ -77,7 +77,10 @@ namespace sakura::graphics::vk
 		GpuShaderHandle create_shader(const GpuShaderHandle handle, const ShaderDesc& config) override;
 		GpuBufferHandle create_buffer(const GpuBufferHandle handle, const BufferDesc& config) override;
 		GpuTextureHandle create_texture(const GpuTextureHandle handle, const TextureDesc& desc) override;
-
+		GpuSamplerHandle create_sampler(const GpuSamplerHandle handle, const SamplerDesc& desc) override;
+		ComputePipelineHandle create_compute_pipeline(const ComputePipelineHandle handle,
+			const ComputePipelineDesc& desc) override;
+    	
 		FenceHandle create_fence(const FenceHandle handle, const FenceDesc& desc) override;
 		SwapChainHandle create_swap_chain(const SwapChainHandle handle, const SwapChainDesc& desc) override;
 		RenderPipelineHandle create_render_pipeline(const RenderPipelineHandle handle, const RenderPipelineDesc& desc) override;
@@ -149,7 +152,6 @@ namespace sakura::graphics::vk
 		Handle _create_object_impl(const Handle handle, Args&&... args) noexcept;
 	protected:
 		VulkanDeviceSet findQueueFamilies(VkPhysicalDevice device, sakura::Window wind);
-
     };
 }
 

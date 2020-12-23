@@ -333,6 +333,21 @@ GpuTextureHandle RenderDevice::create_texture(const GpuTextureHandle handle, con
 	return handle;
 }
 
+GpuSamplerHandle RenderDevice::create_sampler(const GpuSamplerHandle handle, const SamplerDesc& desc)
+{
+	return _create_resouce_impl<vk::GpuSampler, GpuSamplerHandle>(handle, *this,
+		// TODO: mGPU Support.
+		master_device().logical_device, master_device().device,
+		desc);
+}
+
+ComputePipelineHandle RenderDevice::create_compute_pipeline(const ComputePipelineHandle handle,
+	const ComputePipelineDesc& desc)
+{
+	sakura::error("UNIMPLEMENTED!");
+	return GenerationalId::UNINITIALIZED;
+}
+
 
 sakura::graphics::FenceHandle sakura::graphics::vk::RenderDevice::create_fence(const FenceHandle handle, const FenceDesc& desc)
 {

@@ -292,6 +292,13 @@ namespace sakura::graphics
 		OneMinusBlendColor = 0x0C
 	};
 
+	enum class EFilter : uint8
+	{
+		Nearest = 0,
+		Linear = 1,
+		Cubic = 2
+	};
+	
 	enum EColorMaskBits : uint8
 	{
 		None = 0x00,
@@ -328,6 +335,23 @@ namespace sakura::graphics
 		Count
 	};
 
+	enum class EPresentMode : uint8
+	{
+		Immediate = 0,
+		FIFO = 1,
+		Mailbox = 2,
+		Count = 3
+	};
+
+	enum class ESamplerAddressMode : uint8
+	{
+		Repeat = 0,
+		MirroredRepeat = 1,
+		ClampToEdge = 2,
+		ClampToBorder = 3,
+		MirrorClampToEdge = 4
+	};
+	
 	using RenderGraphId = sakura::GenerationalId;
 	struct RenderGraphAPI RenderObjectHandle
 	{
@@ -498,7 +522,15 @@ namespace sakura::graphics
 
 	struct RenderGraphAPI SamplerDesc
 	{
-		
+		ESamplerAddressMode address_mode_u = ESamplerAddressMode::MirroredRepeat;
+		ESamplerAddressMode address_mode_v = ESamplerAddressMode::MirroredRepeat;
+		ESamplerAddressMode address_mode_w = ESamplerAddressMode::MirroredRepeat;
+		bool anisotropy = true;
+		float max_anisotropy = 1.f;
+		float max_lod = 1000.f;
+		float min_lod = -1000.f;
+		EFilter mag_filter = EFilter::Linear;
+		EFilter min_filter = EFilter::Linear;
 	};
 	
 	using ETextureDimension = TextureDesc::Dimension;
@@ -730,14 +762,6 @@ namespace sakura::graphics
 	using AttachmentSlot = AttachmentLayout::Slot;
 	using BlendDesc = AttachmentSlot::BlendDesc;
 
-	enum class EPresentMode : uint8
-	{
-		Immediate = 0,
-		FIFO = 1,
-		Mailbox = 2,
-		Count = 3
-	};
-
 	struct RenderGraphAPI FenceDesc
 	{
 		const uint64 initial_value = 0;
@@ -802,6 +826,10 @@ namespace sakura::graphics
 	{
 	}
 
+	struct RenderGraphAPI ComputePipelineDesc
+	{
+		
+	};
 
 	
 	struct RenderGraphAPI Attachment
