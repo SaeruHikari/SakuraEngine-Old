@@ -582,7 +582,6 @@ void SpawnBoidSetting()
 
 void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 {
-	BoidCount = Count;
 	using namespace sakura::ecs;
 	//创建 Boid
 	entity_type type
@@ -803,7 +802,7 @@ int main()
 				*(Boid*)ppl.get_owned_rw(BoidSettingEntity, cid<Boid>) = BoidSetting;
 			}
 			int prevBoidCount = BoidCount;
-			if (imgui::SliderInt("BoidCount", &BoidCount, 0, 100000))
+			if (imgui::SliderInt("BoidCount", &BoidCount, 0, 20000))
 			{
 				UpdateBoidsCount(ppl, BoidCount - prevBoidCount);
 			}
