@@ -25,6 +25,8 @@
 #include <random>
 #include <cmath>
 
+#include "imgui/sakura_imgui.h"
+
 
 #define forloop(i, z, n) for(auto i = std::decay_t<decltype(n)>(z); i<(n); ++i)
 #define def static constexpr auto
@@ -704,6 +706,17 @@ int main()
 	SpawnBoidSetting();
 	SpawnBoids(TARGET_NUM);
 	SpawnBoidTargets(10);
+
+	// ImGui
+	sakura::graphics::RenderPassHandle imgui_pass = sakura::GenerationalId::UNINITIALIZED;
+	sakura::graphics::RenderCommandBuffer imgui_command_buffer("ImGuiRender", 4096);
+	{
+		using namespace render_system;
+		imgui::initialize(main_window);
+		imgui::initialize_gfx(render_graph, *render_device);
+		imgui_pass = render_graph.create_render_pass<imgui::RenderPassImGui>(swap_chain, render_graph);
+	}
+
 	
 	task_system::Scheduler scheduler(task_system::Scheduler::Config::allCores());
 	scheduler.bind();
@@ -722,20 +735,56 @@ int main()
 		ZoneScoped;
 		timer.start_up();
 		ppl.inc_timestamp();
+		
 		BoidMainLoop(ppl, deltaTime);
 
 		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
 		render_system::CollectAndUpload(ppl, deltaTime);
 
+		// IMGUI
+		{
+			using namespace render_system;
+			static float f = 0.0f;
+			static int counter = 0;
+			
+			imgui::new_frame(main_window, 1.f / 60.f);
+			imgui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+			imgui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+
+			imgui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+
+			if (imgui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+				counter++;
+			imgui::SameLine();
+			imgui::Text("counter = %d", counter);
+
+			imgui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / imgui::GetIO().Framerate, imgui::GetIO().Framerate);
+			imgui::End();
+
+			imgui::Render();
+		}
+		
 		cycle += 1;
 
-		//renderTask.wait();
-		// 编译 Command Buffer Cache. TODO: 是否在此处再次错帧？
-		// render_system::Compile(buffer)
-		// 开始渲染已经准备好的那帧 Command Buffer, 目前 Compile 内联在渲染系统中.
-		render_system::RenderAndPresent(buffer); // 0 + 1
+		{
+			using namespace render_system;
+			
+			// 开始渲染已经准备好的那帧 Command Buffer, 目前 Compile 内联在渲染系统中.
+			render_system::Render(buffer); // 0 + 1
 
+			// 渲染ImGui
+			RenderPass* pass_ptr = render_graph.render_pass(imgui_pass);
+			pass_ptr->construct(render_graph.builder(imgui_pass), *render_device);
+			imgui_command_buffer.reset();
+			pass_ptr->execute(imgui_command_buffer, render_graph, *render_device);
+			render_device->execute(imgui_command_buffer, pass_ptr->handle());
 
+			// Present
+			render_system::Present();
+		}
+
+		
 		if (cycle % 60 == 0)
 			render_system::main_window.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());
 

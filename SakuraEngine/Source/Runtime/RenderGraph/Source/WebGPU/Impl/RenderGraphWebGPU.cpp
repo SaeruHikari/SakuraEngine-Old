@@ -389,7 +389,9 @@ WGPULoadOp sakura::graphics::webgpu::translate(const ELoadOp op)
 	switch (op)
 	{
 	case ELoadOp::Clear: return WGPULoadOp_Clear;
-	case ELoadOp::Load: return WGPULoadOp_Load;
+	case ELoadOp::Load:
+	case ELoadOp::DontCare:
+		return WGPULoadOp_Load;
 	default:
 		sakura::error("ELoadOp {} Not Supported By WebGPU!", op);
 		return WGPULoadOp_Force32;

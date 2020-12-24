@@ -4,5 +4,7 @@
 
 namespace sakura::imgui
 {
-	ImGuiAPI void initialize();
+	ImGuiAPI void initialize(Window window);
+
+	using namespace ImGui;
 }

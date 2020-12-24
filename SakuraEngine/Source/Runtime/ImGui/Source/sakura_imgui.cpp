@@ -2,7 +2,7 @@
 
 namespace sakura::imgui
 {
-	void initialize()
+	void initialize(Window window)
 	{
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
@@ -26,5 +26,7 @@ namespace sakura::imgui
             style.WindowRounding = 0.0f;
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
+
+        imgui::bind_window(window);
 	}
 }

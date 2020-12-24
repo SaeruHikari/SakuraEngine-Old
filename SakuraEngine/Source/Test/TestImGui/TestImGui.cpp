@@ -61,8 +61,7 @@ int main(int, char**)
     // Create Swap Chains.
     render_device->create_swap_chain(swap_chain, SwapChainDesc(EPresentMode::Mailbox, main_window, 3));
 	
-    sakura::imgui::initialize();
-    sakura::imgui::bind_window(main_window);
+    sakura::imgui::initialize(main_window);
     sakura::imgui::initialize_gfx(render_graph, *render_device);
     
     RenderCommandBuffer command_buffer("ImGuiRender", 4096);

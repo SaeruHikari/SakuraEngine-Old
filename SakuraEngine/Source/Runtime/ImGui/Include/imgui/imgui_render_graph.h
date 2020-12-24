@@ -24,49 +24,6 @@ namespace sakura::imgui
 
 namespace sakura
 {
-    // Helper structure to hold the data needed by one rendering context into one OS window
-// (Used by example's main.cpp. Used by multi-viewport features. Probably NOT used by your own engine/app.)
-    struct ImGuiWindow
-    {
-        int                 width;
-        int                 height;
-        Window              window;
-        // Current frame being rendered to (0 <= FrameIndex < FrameInFlightCount)
-        uint32_t            frame_index;
-        // Number of simultaneous in-flight frames (returned by vkGetSwapchainImagesKHR, usually derived from min_image_count)
-        uint32_t            image_count;
-    };
-
-    // Reusable buffers used for rendering 1 current in-flight frame, for ImGui_ImplVulkan_RenderDrawData()
-    // [Please zero-clear before use!]
-    struct ImGuiFrameRenderBuffers
-    {
-        size_t        vertex_buffer_size;
-        size_t        index_buffer_size;
-        graphics::GpuBufferHandle            vertex_buffer;
-        graphics::GpuBufferHandle            index_buffer;
-    };
-
-    // [Please zero-clear before use!]
-    struct ImGuiWindowRenderBuffers
-    {
-        uint32_t            index;
-        uint32_t            count;
-        ImGuiFrameRenderBuffers* frame_render_buffers;
-    };
-
-    // For multi-viewport support:
-    // Helper structure we store in the void* RenderUserData field of each ImGuiViewport to easily retrieve our backend data.
-    struct ImGuiViewportDataVulkan
-    {
-        bool                       window_owned;
-        ImGuiWindow                window;             // Used by secondary viewports only
-        ImGuiWindowRenderBuffers   render_buffers;      // Used by all viewports
-
-        ImGuiViewportDataVulkan() { window_owned = false; memset(&render_buffers, 0, sizeof(render_buffers)); }
-        ~ImGuiViewportDataVulkan() { }
-    };
-
     const char imgui_vertex_shader[] =
            "[[vk::binding(0, 0)]] cbuffer vertexBuffer : register(b0) \
             {\

@@ -7,7 +7,7 @@ Module(
         RuntimeCore ECS 
         RenderGraph RenderGraphWebGPU RenderGraphVulkan
         ShaderCompiler
-        Tracker
+        Tracker ImGui
     INCLUDES_PUBLIC 
     LINKS
     LINKS_PUBLIC

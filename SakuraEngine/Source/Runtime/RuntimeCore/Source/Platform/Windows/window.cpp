@@ -357,7 +357,7 @@ void sakura::Window::hide(const Window wind) noexcept
 sakura::extent2d sakura::Window::extent(const Window wind) noexcept
 {
 	tagRECT rect;
-	GetWindowRect(HWND(wind.hdl), &rect);
+	GetClientRect(HWND(wind.hdl), &rect);
 	return { static_cast<uint32>(rect.right - rect.left), static_cast<uint32>(rect.bottom - rect.top) };
 }
 

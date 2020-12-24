@@ -389,7 +389,7 @@ namespace render_system
 		pass_ptr->execute(buffer, render_graph, *render_device);
 	}
 
-	void RenderAndPresent(const RenderCommandBuffer& buffer)
+	void Render(const RenderCommandBuffer& buffer)
 	{
 		{
 			ZoneScopedN("Upload");
@@ -414,7 +414,6 @@ namespace render_system
 			ZoneScopedN("RenderAndPresent");
 			RenderPass* pass_ptr = render_graph.render_pass(pass);
 			render_device->execute(buffer, pass_ptr->handle());
-			render_system::Present(); // 0
 		}
 	}
 }	

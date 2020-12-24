@@ -191,7 +191,7 @@ namespace sakura::imgui
 
     	
         attachment = Attachment({
-            Attachment::Slot(swap_chain, sakura::double4(), ELoadOp::Clear, EStoreOp::Store)
+            Attachment::Slot(swap_chain, sakura::double4(), ELoadOp::DontCare, EStoreOp::Store)
         });
         return true;
     }
@@ -235,7 +235,7 @@ namespace sakura::imgui
     	
         // Our render function expect RendererUserData to be storing the window render buffer we need (for the main viewport we won't use ->Window)
         ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-        main_viewport->RendererUserData = IM_NEW(ImGuiViewportDataVulkan)();
+        //main_viewport->RendererUserData = IM_NEW(ImGuiViewportDataVulkan)();
 
         imgui_create_fonts(device);
         imgui_create_pipeline(device);
