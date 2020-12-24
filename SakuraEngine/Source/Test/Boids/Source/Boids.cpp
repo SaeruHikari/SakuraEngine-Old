@@ -501,7 +501,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 						sakura::Vector3f separation = math::normalize((float)neighbers.size() * trs[i] - separations[i]);
 						sakura::Vector3f targeting = math::normalize(targetings[i] - trs[i]);
 						sakura::Vector3f newHeading = math::normalize(alignment * boid->AlignmentWeight + separation * boid->SeparationWeight + targeting * boid->TargetWeight);
-						(*newHeadings)[index + i] = math::normalize((hds[i] + (newHeading - hds[i]) * deltaTime * boid->turnSpeed));
+						(*newHeadings)[index + i] = math::normalize((hds[i] + (newHeading - hds[i]) * deltaTime * boid->TurnSpeed));
 					}
 				}
 			}, 100);
@@ -529,8 +529,15 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	}
 }
 
+int BoidCount = 0;
+int LeaderCount = 0;
+float Radius = 1000.f;
+sakura::ecs::entity BoidSettingEntity;
+Boid BoidSetting;
+
 void SpawnBoidTargets(int Count)
 {
+	LeaderCount = Count;
 	using namespace sakura::ecs;
 	//创建 Boid 目标
 	entity_type type
@@ -548,7 +555,7 @@ void SpawnBoidTargets(int Count)
 		{
 			std::uniform_real_distribution<float> speedDst(200.f, 300.f);
 			rmts[i].center = sakura::Vector3f::vector_zero();
-			rmts[i].radius = 1000.f;
+			rmts[i].radius = Radius;
 			mts[i].Target = rmts[i].random_point(get_random_engine());
 			mts[i].MoveSpeed = speedDst(get_random_engine());
 			trs[i] = rmts[i].random_point(get_random_engine());
@@ -556,8 +563,6 @@ void SpawnBoidTargets(int Count)
 		}
 	}
 }
-
-sakura::ecs::entity BoidSetting;
 void SpawnBoidSetting()
 {
 	using namespace sakura::ecs;
@@ -570,30 +575,27 @@ void SpawnBoidSetting()
 	for (auto slice : ctx.allocate(type, 1))
 	{
 		auto bs = init_component<Boid>(ctx, slice);
-		bs->AlignmentWeight = 1.f;
-		bs->TargetWeight = 1.f;
-		bs->SeparationWeight = 2.f;
-		bs->turnSpeed = 2.f;
-		bs->MoveSpeed = 250.f;
-		bs->SightRadius = 10.f;
-		BoidSetting = ctx.get_entities(slice.c)[slice.start];
+		*bs = BoidSetting;
+		BoidSettingEntity = ctx.get_entities(slice.c)[slice.start];
 	}
 }
 
-void SpawnBoids(int Count)
+void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 {
+	BoidCount = Count;
 	using namespace sakura::ecs;
 	//创建 Boid
 	entity_type type
 	{
 		complist<Translation, Heading, Rotation, LocalToWorld>,
-		{&BoidSetting, 1}
+		{&BoidSettingEntity, 1}
 	};
 	sphere s;
 	s.center = Vector3f::vector_zero();
-	s.radius = 500.f;
-	for (auto slice : ctx.allocate(type, Count))
+	s.radius = Radius;
+	for (auto slice : ppl.allocate(type, Count))
 	{
+		auto& ctx = (world&)ppl; //warning! 解放!
 		auto trs = init_component<Translation>(ctx, slice);
 		auto hds = init_component<Heading>(ctx, slice);
 		forloop(i, 0, slice.count)
@@ -605,6 +607,39 @@ void SpawnBoids(int Count)
 			trs[i] = s.random_point(el);
 		}
 	}
+}
+
+void DestroyBoids(task_system::ecs::pipeline& ppl, int Count)
+{
+	using namespace sakura::ecs;
+	filters filter;
+	filter.archetypeFilter = {
+		{complist<LocalToWorld, Boid>}, //all
+		{}, //any
+		{} //none
+	};
+	for (auto at : ppl.query(filter.archetypeFilter))
+	{
+		ppl.sync_archetype(at.type);
+		auto& ctx = (world&)ppl; //warning! 解放!
+		for (auto j : ctx.query(at.type))
+		{
+			uint32_t ToDestory = std::min((uint32_t)Count, j->get_count());
+			ctx.destroy({ j, 0, ToDestory });
+			Count -= ToDestory;
+			if (Count == 0)
+				return;
+		}
+	}
+		
+}
+
+void UpdateBoidsCount(task_system::ecs::pipeline& ppl, int Count)
+{
+	if (Count > 0)
+		SpawnBoids(ppl, Count);
+	else if (Count < 0)
+		DestroyBoids(ppl, -Count);
 }
 
 void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
@@ -701,10 +736,17 @@ int main()
 
 	using namespace sakura::ecs;
 
+
+	BoidSetting.AlignmentWeight = 1.f;
+	BoidSetting.TargetWeight = 1.f;
+	BoidSetting.SeparationWeight = 2.f;
+	BoidSetting.TurnSpeed = 2.f;
+	BoidSetting.MoveSpeed = 250.f;
+	BoidSetting.SightRadius = 10.f;
 	declare_components<Translation, Rotation, RotationEuler, Scale, LocalToWorld, LocalToParent, 
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading>();
 	SpawnBoidSetting();
-	SpawnBoids(TARGET_NUM);
+	//SpawnBoids(0);
 	SpawnBoidTargets(10);
 
 	// ImGui
@@ -745,19 +787,28 @@ int main()
 		{
 			using namespace render_system;
 			static float f = 0.0f;
-			static int counter = 0;
 			
 			imgui::new_frame(main_window, 1.f / 60.f);
-			imgui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+			imgui::Begin("Boid Settings");
+			bool UpdateBoid = false;
+			UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
+			UpdateBoid |= imgui::SliderFloat("TargetWeight", &BoidSetting.TargetWeight, 0, 10);
+			UpdateBoid |= imgui::SliderFloat("SeparationWeight", &BoidSetting.SeparationWeight, 0, 10);
+			UpdateBoid |= imgui::SliderFloat("TurnSpeed", &BoidSetting.TurnSpeed, 0, 5);
+			UpdateBoid |= imgui::SliderFloat("MoveSpeed", &BoidSetting.MoveSpeed, 0, 1000);
+			UpdateBoid |= imgui::SliderFloat("SightRadius", &BoidSetting.SightRadius, 5, 50);
+			if (UpdateBoid)
+			{
+				*(Boid*)ppl.get_owned_rw(BoidSettingEntity, cid<Boid>) = BoidSetting;
+			}
+			int prevBoidCount = BoidCount;
+			if (imgui::SliderInt("BoidCount", &BoidCount, 0, 100000))
+			{
+				UpdateBoidsCount(ppl, BoidCount - prevBoidCount);
+			}
+			//if (imgui::SliderInt("LeaderCount", &LeaderCount, 0, 100)){}
 
-			imgui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-
-			imgui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-
-			if (imgui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-				counter++;
 			imgui::SameLine();
-			imgui::Text("counter = %d", counter);
 
 			imgui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / imgui::GetIO().Framerate, imgui::GetIO().Framerate);
 			imgui::End();

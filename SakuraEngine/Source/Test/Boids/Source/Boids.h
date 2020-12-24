@@ -12,7 +12,7 @@ struct Boid
 {
 	float SightRadius;
 	float SeparationWeight;
-	float turnSpeed;
+	float TurnSpeed;
 	float AlignmentWeight;
 	float TargetWeight;
 	float MoveSpeed;
