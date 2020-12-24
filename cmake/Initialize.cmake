@@ -133,7 +133,7 @@ include(CPack)
 
 set(CMAKE_DEBUG_POSTFIX "_d")
 
-set(FULL_STATIC TRUE)
+#set(FULL_STATIC TRUE)
 
 if(FULL_STATIC)
 add_compile_definitions( 
