@@ -532,6 +532,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 int BoidCount = 0;
 int LeaderCount = 0;
 float Radius = 1000.f;
+float TimeScale = 1.f;
 sakura::ecs::entity BoidSettingEntity;
 Boid BoidSetting;
 
@@ -782,7 +783,7 @@ int main()
 		timer.start_up(); 
 		ppl.inc_timestamp();
 		
-		BoidMainLoop(ppl, deltaTime);
+		BoidMainLoop(ppl, deltaTime * TimeScale);
 
 		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
 		render_system::CollectAndUpload(ppl, deltaTime);
@@ -805,6 +806,7 @@ int main()
 			{
 				*(Boid*)ppl.get_owned_rw(BoidSettingEntity, cid<Boid>) = BoidSetting;
 			}
+			imgui::SliderFloat("TimeScale", &TimeScale, 0, 10);
 			int prevBoidCount = BoidCount;
 			if (imgui::SliderInt("BoidCount", &BoidCount, 0, 20000))
 			{
@@ -812,7 +814,7 @@ int main()
 			}
 			//if (imgui::SliderInt("LeaderCount", &LeaderCount, 0, 100)){}
 
-			imgui::SameLine();
+			//imgui::SameLine();
 
 			imgui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / imgui::GetIO().Framerate, imgui::GetIO().Framerate);
 			imgui::End();
