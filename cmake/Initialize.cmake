@@ -133,16 +133,18 @@ include(CPack)
 
 set(CMAKE_DEBUG_POSTFIX "_d")
 
-if(windows OR prospero)
-add_compile_definitions(
-    IMPORT_API=__declspec\(dllimport\)
-    EXPORT_API=__declspec\(dllexport\)
-    HIDEEN_API=
-)
-elseif(web)
+set(FULL_STATIC TRUE)
+
+if(FULL_STATIC)
 add_compile_definitions( 
     IMPORT_API=
     EXPORT_API= 
+    HIDEEN_API=
+)
+elseif(windows OR prospero)
+add_compile_definitions(
+    IMPORT_API=__declspec\(dllimport\)
+    EXPORT_API=__declspec\(dllexport\)
     HIDEEN_API=
 )
 elseif(osx)

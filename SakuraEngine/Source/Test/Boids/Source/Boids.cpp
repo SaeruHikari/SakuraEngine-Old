@@ -731,6 +731,11 @@ int main()
 		sakura::error("Failed to StartUp ECSModule!");
 		return -1;
 	}
+	if (!IModule::Registry::regist("RenderGraph", &sakura::graphics::RenderGraphModule::create) || !sakura::IModule::StartUp("RenderGraph"))
+	{
+		sakura::error("Failed to StartUp RG!");
+		return -1;
+	}
 	render_system::initialize();
 
 	using namespace sakura::ecs;
@@ -774,7 +779,7 @@ int main()
 	while(sakura::Core::yield())
 	{
 		ZoneScoped;
-		timer.start_up();
+		timer.start_up(); 
 		ppl.inc_timestamp();
 		
 		BoidMainLoop(ppl, deltaTime);
@@ -786,7 +791,6 @@ int main()
 		{
 			using namespace render_system;
 			static float f = 0.0f;
-			static bool show_another_window = true;
 			
 			imgui::new_frame(main_window, 1.f / 60.f);
 			imgui::Begin("Boid Settings");
@@ -812,14 +816,6 @@ int main()
 
 			imgui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / imgui::GetIO().Framerate, imgui::GetIO().Framerate);
 			imgui::End();
-
-
-			ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-			ImGui::Text("Hello from another window!");
-			if (ImGui::Button("Close Me"))
-				show_another_window = false;
-			ImGui::End();
-
 			imgui::Render();
 		}
 		

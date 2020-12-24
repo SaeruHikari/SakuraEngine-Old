@@ -74,7 +74,7 @@ namespace sakura
 }
 using char8_t = char;
 
-#ifdef SAKURA_TARGET_PLATFORM_WIN
+#ifdef WHEN_PMR_IS_USABLE
 #include <memory_resource>
 namespace sakura
 {

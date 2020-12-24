@@ -287,7 +287,7 @@ namespace sakura::imgui
                 layout, { static_cast<uint32>(width), static_cast<uint32>(height), 1 });
         }
 
-        // Create fonst sampler.
+        // Create font sampler.
         {
             SamplerDescriptor samplerDesc = {};
             samplerDesc.address_mode_u = ESamplerAddressMode::Repeat;

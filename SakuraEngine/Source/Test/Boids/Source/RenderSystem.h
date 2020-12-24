@@ -59,27 +59,27 @@ namespace render_system
 			return float4(pin.vCol.xyz, 1.f);\
 		}";
 
-	inline sakura::Window main_window;
-	inline RenderGraph render_graph;
-	inline IRenderDevice* render_device = nullptr;
-	inline SwapChainHandle swap_chain = render_graph.SwapChain("DefaultSwapChain");
-	inline GpuShaderHandle vertex_shader = render_graph.GpuShaderUnsafe("VertexShader");
-	inline GpuShaderHandle pixel_shader = render_graph.GpuShaderUnsafe("PixelShader");
-	inline RenderPipelineHandle render_pipeline = render_graph.RenderPipeline("TrianglePipeline");
+	static sakura::Window main_window;
+	static RenderGraph render_graph;
+	static IRenderDevice* render_device = nullptr;
+	static SwapChainHandle swap_chain = render_graph.SwapChain("DefaultSwapChain");
+	static GpuShaderHandle vertex_shader = render_graph.GpuShaderUnsafe("VertexShader");
+	static GpuShaderHandle pixel_shader = render_graph.GpuShaderUnsafe("PixelShader");
+	static RenderPipelineHandle render_pipeline = render_graph.RenderPipeline("TrianglePipeline");
 
-	inline GpuBufferHandle uniform_buffer = render_graph.GpuBuffer("UniformBuffer");
-	inline GpuBufferHandle uniform_buffer_per_object = render_graph.GpuBuffer("UniformBufferPerObject");
-	inline GpuBufferHandle uniform_buffer_per_target = render_graph.GpuBuffer("UniformBufferPerTarget");
+	static GpuBufferHandle uniform_buffer = render_graph.GpuBuffer("UniformBuffer");
+	static GpuBufferHandle uniform_buffer_per_object = render_graph.GpuBuffer("UniformBufferPerObject");
+	static GpuBufferHandle uniform_buffer_per_target = render_graph.GpuBuffer("UniformBufferPerTarget");
 
-	inline GpuBufferHandle vertex_buffer = render_graph.GpuBuffer("VertexBuffer");
-	inline GpuBufferHandle index_buffer = render_graph.GpuBuffer("IndexBuffer");
+	static GpuBufferHandle vertex_buffer = render_graph.GpuBuffer("VertexBuffer");
+	static GpuBufferHandle index_buffer = render_graph.GpuBuffer("IndexBuffer");
 
-	inline GpuBufferHandle vertex_buffer_sphere = render_graph.GpuBuffer("VertexBufferSphere");
-	inline GpuBufferHandle index_buffer_sphere = render_graph.GpuBuffer("IndexBufferSphere");
+	static GpuBufferHandle vertex_buffer_sphere = render_graph.GpuBuffer("VertexBufferSphere");
+	static GpuBufferHandle index_buffer_sphere = render_graph.GpuBuffer("IndexBufferSphere");
 
-	inline sakura::float4x4 view_proj;
-	inline std::vector<sakura::float4x4> worlds(TARGET_NUM * 4);
-	inline std::vector<sakura::float4x4> target_worlds(10 * 4);
+	static sakura::float4x4 view_proj;
+	static std::vector<sakura::float4x4> worlds(TARGET_NUM * 4);
+	static std::vector<sakura::float4x4> target_worlds(10 * 4);
 
 	class RenderPassSimple : public RenderPass
 	{

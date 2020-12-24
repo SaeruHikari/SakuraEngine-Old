@@ -47,7 +47,6 @@ function(SourceGroupByDir)
 endfunction(SourceGroupByDir)
 
 
-
 function(Module)
     CMAKE_PARSE_ARGUMENTS(  
         MODULE "" "NAME;TYPE;"  
@@ -86,12 +85,23 @@ function(Module)
     endforeach()
 
     if(${MODULE_TYPE} STREQUAL "Library")
-        add_library(${MODULE_NAME} SHARED ${MODULE_SRC})
-        target_compile_definitions(${MODULE_NAME} 
-            PRIVATE 
-            ${MODULE_NAME}API=${API_EXPORT_DEF}
-            ${MODULE_NAME}HIDDEN=${API_HIDDEN_DEF}
-        )
+
+        if(FULL_STATIC)
+            add_library(${MODULE_NAME} STATIC ${MODULE_SRC})
+            target_compile_definitions(${MODULE_NAME} 
+                PRIVATE 
+                ${MODULE_NAME}API= 
+                ${MODULE_NAME}HIDDEN= 
+            )
+        else()
+            add_library(${MODULE_NAME} SHARED ${MODULE_SRC})
+            target_compile_definitions(${MODULE_NAME} 
+                PRIVATE 
+                ${MODULE_NAME}API=${API_EXPORT_DEF}
+                ${MODULE_NAME}HIDDEN=${API_HIDDEN_DEF}
+            )
+        endif(FULL_STATIC)
+
         add_library(SakuraEngine::${MODULE_NAME} ALIAS ${MODULE_NAME})
     elseif(${MODULE_TYPE} STREQUAL "StaticLibrary")
         add_library(${MODULE_NAME} STATIC ${MODULE_SRC})
@@ -120,20 +130,37 @@ function(Module)
         ${MODULE_DEPS}
         ${MODULE_LINKS}
     )
-    foreach(dep ${MODULE_DEPS_PUBLIC})
+    if(FULL_STATIC)
+        foreach(dep ${MODULE_DEPS_PUBLIC})
         target_compile_definitions(${MODULE_NAME} 
             PUBLIC 
-            ${dep}API=${API_IMPORT_DEF}
-            ${dep}HIDDEN=${API_HIDDEN_DEF}
+            ${dep}API= 
+            ${dep}HIDDEN= 
         )
-    endforeach()
-    foreach(private_dep ${MODULE_DEPS})
-        target_compile_definitions(${MODULE_NAME} 
-            PRIVATE 
-            ${private_dep}API=${API_IMPORT_DEF}
-            ${private_dep}HIDDEN=${API_HIDDEN_DEF}
-        )
-    endforeach()
+        endforeach()
+        foreach(private_dep ${MODULE_DEPS})
+            target_compile_definitions(${MODULE_NAME} 
+                PRIVATE 
+                ${private_dep}API= 
+                ${private_dep}HIDDEN= 
+            )
+        endforeach()
+    else()
+        foreach(dep ${MODULE_DEPS_PUBLIC})
+            target_compile_definitions(${MODULE_NAME} 
+                PUBLIC 
+                ${dep}API=${API_IMPORT_DEF}
+                ${dep}HIDDEN=${API_HIDDEN_DEF}
+            )
+        endforeach()
+        foreach(private_dep ${MODULE_DEPS})
+            target_compile_definitions(${MODULE_NAME} 
+                PRIVATE 
+                ${private_dep}API=${API_IMPORT_DEF}
+                ${private_dep}HIDDEN=${API_HIDDEN_DEF}
+            )
+        endforeach()
+    endif(FULL_STATIC)
 
     install(TARGETS ${MODULE_NAME}
         EXPORT "SakuraEngine${CurrentScope}"

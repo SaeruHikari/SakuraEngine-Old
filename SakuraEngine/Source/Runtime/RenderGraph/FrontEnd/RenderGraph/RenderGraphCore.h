@@ -508,6 +508,8 @@ namespace sakura::graphics
 		};
 		using Flags = uint32;
 
+		// cn: Texture在一片内(显)存上的的DataLayout, 指示起始位置和行列排布.
+		// en: DataLayout of Texture on a slice of (video) memory, indicating the start position and row/column arrangement.
 		struct DataLayout
 		{
 			uint64_t offset = 0;

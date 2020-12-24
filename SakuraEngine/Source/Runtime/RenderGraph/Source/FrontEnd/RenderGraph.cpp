@@ -130,8 +130,6 @@ namespace sakura::graphics
 		}
 	}
 	
-	bool RenderGraphModule::render_graph_module_registered_
-		= IModule::Registry::regist("RenderGraph", &RenderGraphModule::create);
 	RenderGraphModule * RenderGraphModule::create()
 	{
 		return new RenderGraphModule();

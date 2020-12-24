@@ -215,7 +215,5 @@ namespace sakura::graphics
         static RenderGraphModule* create();
 	    bool StartUp() override;
 	    bool Terminate() override;
-    protected:
-        static bool render_graph_module_registered_;
     };
 }
