@@ -3,16 +3,7 @@
 
 namespace sakura
 {
-    struct RuntimeCoreAPI Monitor
-    {
-    	struct Info
-    	{
-            pos2d main_pos;
-            pos2d work_pos;
-            extent2d work_size;
-            extent2d main_size;
-    	};
-    };
+
 	
     // hdl of an actual window.
     struct RuntimeCoreAPI Window    
@@ -68,6 +59,19 @@ namespace sakura
 
         }
         void* hdl = nullptr;
+    };
+
+    struct RuntimeCoreAPI Monitor
+    {
+        struct Info
+        {
+            pos2d main_pos;
+            pos2d work_pos;
+            extent2d work_size;
+            extent2d main_size;
+        };
+
+        static pos2d screen_to_client(Window window, const pos2d& inPos);
     };
 	
 }

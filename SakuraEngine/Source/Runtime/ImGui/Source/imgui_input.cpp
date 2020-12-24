@@ -14,7 +14,7 @@
 
 namespace sakura::imgui
 {
-	static void imgui_update_mouse_and_buttons()
+	static void imgui_update_mouse_and_buttons(Window window)
 	{
         ImGuiIO& io = ImGui::GetIO();
         io.MouseHoveredViewport = 0;
@@ -31,19 +31,32 @@ namespace sakura::imgui
             io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
         }
 
-        // [2]
-        // Set Dear ImGui mouse pos from OS mouse pos + get buttons. (this is the common behavior)
-        int mouse_x_local, mouse_y_local;
+        io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+        io.MouseHoveredViewport = 0;
+		
         auto pos = input::cursor_pos();
-        mouse_x_local = pos.x;
-        mouse_y_local = pos.y;
         // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
         io.MouseDown[0] = input::key_down(input::EMouseKey::LB);      
         io.MouseDown[1] = input::key_down(input::EMouseKey::RB);
         io.MouseDown[2] = input::key_down(input::EMouseKey::MB);
 
-        // TODO: single-viewport only, add multi-viewport.
-        io.MousePos = ImVec2((float)mouse_x_local, (float)mouse_y_local);
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            // Multi-viewport mode: mouse position in OS absolute coordinates (io.MousePos is (0,0) when the mouse is on the upper-left of the primary monitor)
+            // This is the position you can get with GetCursorPos(). In theory adding viewport->Pos is also the reverse operation of doing ScreenToClient().
+            if (ImGui::FindViewportByPlatformHandle((void*)window.handle()) != NULL)
+                io.MousePos = ImVec2((float)pos.x, (float)pos.y);
+        }
+        else
+        {
+            // Single viewport mode: mouse position in client window coordinates (io.MousePos is (0,0) when the mouse is on the upper-left corner of the app window.)
+            // This is the position you can get with GetCursorPos() + ScreenToClient() or from WM_MOUSEMOVE.
+            //if (focused_hwnd == g_hWnd)
+            {
+                auto mouse_client_pos = Monitor::screen_to_client(window, pos);
+                io.MousePos = ImVec2((float)mouse_client_pos.x, (float)mouse_client_pos.y);
+            }
+        }
 	}
 
 	static bool imgui_update_cursor()
@@ -160,7 +173,7 @@ namespace sakura::imgui
         // Update Gamepads.
 
         imgui_update_monitors();
-        imgui_update_mouse_and_buttons();
+        imgui_update_mouse_and_buttons(window);
         imgui_update_cursor();
 		
         ImGui::NewFrame();

@@ -116,9 +116,8 @@ namespace sakura::imgui
                             //vkCmdSetScissor(command_buffer, 0, 1, &scissor);
                             // Draw
                             command_buffer.enqueue<RenderCommandDraw>(
-								RenderCommandDraw::VB(imgui_vertex_buffer),
-                                RenderCommandDraw::IB(imgui_index_buffer, pcmd->ElemCount, EIndexFormat::UINT16),
-                                1, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset, 0
+								RenderCommandDraw::VB(imgui_vertex_buffer), 
+                                RenderCommandDraw::IB(imgui_index_buffer, pcmd->ElemCount, EIndexFormat::UINT16)
                             );
                         }
                     }
@@ -164,6 +163,7 @@ namespace sakura::imgui
                 BufferDesc(EBufferUsage::CopyDst | EBufferUsage::VertexBuffer, vertex_size, vtx.data(), EBufferCPUAccess::None));
             device.create_buffer(imgui_index_buffer, 
                 BufferDesc(EBufferUsage::CopyDst | EBufferUsage::IndexBuffer, index_size, idx.data(), EBufferCPUAccess::None));
+            device.update_buffer(imgui_vertex_buffer, 0, vtx.data(), vertex_size);
         }
 
     	
@@ -219,8 +219,6 @@ namespace sakura::imgui
         imgui_vs = render_graph.GpuShader("ImGuiVertexShader");
         imgui_ps = render_graph.GpuShader("ImGuiPixelShader");
         imgui_render_pipeline = render_graph.RenderPipeline("ImGuiRenderPipeline");
-        imgui_vertex_buffer = render_graph.GpuBuffer("ImGuiVertexBuffer");
-        imgui_index_buffer = render_graph.GpuBuffer("ImGuiIndexBuffer");
         imgui_projection_matrix = render_graph.GpuBuffer("ImGuiProjectionMatrix");
 
         BufferDesc pmDesc =
@@ -328,10 +326,10 @@ namespace sakura::imgui
             }),
             VertexLayout(
                 {
-                    VertexLayout::Element("POSITION", EVertexFormat::FLOAT2, 0),
-                    VertexLayout::Element("TEXCOORD0", EVertexFormat::FLOAT2, 2 * sizeof(float)),
-                    VertexLayout::Element("COLOR0", EVertexFormat::FLOAT4, 4 * sizeof(float)),
-                }, VertexLayout::Frequency::PerVertexData, sizeof(float) * 8
+                    VertexLayout::Element("POSITION", EVertexFormat::FLOAT2, IM_OFFSETOF(ImDrawVert, pos)),
+                    VertexLayout::Element("TEXCOORD0", EVertexFormat::FLOAT2, IM_OFFSETOF(ImDrawVert, uv)),
+                    VertexLayout::Element("COLOR0", EVertexFormat::R8G8B8A8_UNORM, IM_OFFSETOF(ImDrawVert, col)),
+                }, VertexLayout::Frequency::PerVertexData, sizeof(ImDrawVert)
             ),
             BindingLayout(
                 {

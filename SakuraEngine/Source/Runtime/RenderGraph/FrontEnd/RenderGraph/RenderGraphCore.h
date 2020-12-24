@@ -74,7 +74,8 @@ namespace sakura::graphics
 		INT2,
 		INT3,
 		INT4,
-		COUNT
+		COUNT,
+		R8G8B8A8_UNORM = UCHAR4_NORM
 	};
 
 	enum class ETextureFormat : uint16
