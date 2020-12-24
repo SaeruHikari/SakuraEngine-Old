@@ -36,6 +36,9 @@ namespace sakura::graphics
 	{
 		UINT16 = 0x00000001,
 		UINT32 = 0x00000002,
+
+		// Useful for clusters or mesh-pipeline-workflow.
+		UINT8 = 0x00000003
 	};
 
 	enum class ESharingMode : uint8
@@ -355,35 +358,35 @@ namespace sakura::graphics
 	using RenderGraphId = sakura::GenerationalId;
 	struct RenderGraphAPI RenderObjectHandle
 	{
-		RenderObjectHandle(const RenderGraphId _id);
-		inline operator size_t() const { return _id; }
-		inline operator bool() const { return _id; }
-		inline RenderGraphId id() const { return _id; }
+		RenderObjectHandle(const RenderGraphId id_);
+		inline operator size_t() const { return id_; }
+		inline operator bool() const { return id_; }
+		inline RenderGraphId id() const { return id_; }
 	protected:
 		RenderObjectHandle();
-		RenderGraphId _id;
+		RenderGraphId id_;
 	};
 
 	struct RenderGraphAPI RenderPassHandle
 	{
-		RenderPassHandle(const RenderGraphId _id);
-		inline operator size_t() const { return _id; }
-		inline operator bool() const { return _id; }
-		inline RenderGraphId id() const { return _id; }
+		RenderPassHandle(const RenderGraphId id_);
+		inline operator size_t() const { return id_; }
+		inline operator bool() const { return id_; }
+		inline RenderGraphId id() const { return id_; }
 	protected:
 		RenderPassHandle();
-		RenderGraphId _id;
+		RenderGraphId id_;
 	};
 
 	struct RenderGraphAPI RenderResourceHandle
 	{
-		RenderResourceHandle(const RenderGraphId _id);
+		RenderResourceHandle(const RenderGraphId id_);
 		RenderResourceHandle();
-		inline operator size_t() const { return _id; }
-		inline operator bool() const { return _id; }
-		inline RenderGraphId id() const { return _id; }
+		inline operator size_t() const { return id_; }
+		inline operator bool() const { return id_; }
+		inline RenderGraphId id() const { return id_; }
 	protected:
-		RenderGraphId _id;
+		RenderGraphId id_;
 	};
 
 	struct RenderGraphAPI IGpuObject
@@ -405,7 +408,7 @@ namespace sakura::graphics
 	struct TypedRenderResourceHandle : public RenderResourceHandle
 	{
 		using ResourceType = _ResourceType;
-		TypedRenderResourceHandle(const RenderGraphId _id);
+		TypedRenderResourceHandle(const RenderGraphId id_);
 		TypedRenderResourceHandle() = default;
 		static_assert(std::is_base_of_v<IGpuMemoryResource, ResourceType>, "Resource Handle must be used with GPU Resources!");
 	};
@@ -413,7 +416,7 @@ namespace sakura::graphics
 	struct TypedRenderObjectHandle : public RenderObjectHandle
 	{
 		using ObjectType = _ObjectType;
-		TypedRenderObjectHandle(const RenderGraphId _id);
+		TypedRenderObjectHandle(const RenderGraphId id_);
 		TypedRenderObjectHandle() = default;
 		static_assert(std::is_base_of_v<IGpuObject, ObjectType>, "GPUObject Handle must be used with GPU Objects!");
 	};
@@ -451,10 +454,12 @@ namespace sakura::graphics
 	};
 	using BufferDescriptor = Buffer::Descriptor;
 	using EBufferUsage = Buffer::EUsage;
-	using BufferUsages = uint32;
+	using BufferUsages = Buffer::Usages;
 
 	struct Texture
 	{
+		using Format = ETextureFormat;
+		
 		// cn: 纹理的一般性用途, 用于辅助系统隐式地推导它的Barrier和DescriptorSet/View.
 		// en：Gneral purpose of texture, can assist the system to implicitly derive its Barrier and DescriptorSet/View.
 		// jp: テクスチャの一般的な目的は、システムがバリアとディスクリプタセット/ビューを暗黙的に導出するのを支援できます.

@@ -13,15 +13,15 @@ namespace sakura::graphics
 	}
 	
 	template<typename _ResourceType>
-	FORCEINLINE TypedRenderResourceHandle<_ResourceType>::TypedRenderResourceHandle(const RenderGraphId _id)
-		:RenderResourceHandle(_id)
+	FORCEINLINE TypedRenderResourceHandle<_ResourceType>::TypedRenderResourceHandle(const RenderGraphId id_)
+		:RenderResourceHandle(id_)
 	{
 
 	}
 
 	template<typename _ObjectType>
-	FORCEINLINE TypedRenderObjectHandle<_ObjectType>::TypedRenderObjectHandle(const RenderGraphId _id)
-		:RenderObjectHandle(_id)
+	FORCEINLINE TypedRenderObjectHandle<_ObjectType>::TypedRenderObjectHandle(const RenderGraphId id_)
+		:RenderObjectHandle(id_)
 	{
 
 	}
@@ -104,22 +104,22 @@ namespace sakura::graphics
 	}
 
 	FORCEINLINE RenderObjectHandle::RenderObjectHandle(RenderGraphId id)
-		: _id(id) {	}
+		: id_(id) {	}
 
 	FORCEINLINE RenderObjectHandle::RenderObjectHandle()
-		: _id(RenderGraphId::UNINITIALIZED) {	}
+		: id_(RenderGraphId::UNINITIALIZED) {	}
 
 	FORCEINLINE RenderPassHandle::RenderPassHandle(RenderGraphId id)
-		: _id(id) {	}
+		: id_(id) {	}
 
 	FORCEINLINE RenderPassHandle::RenderPassHandle()
-		: _id(RenderGraphId::UNINITIALIZED) {	}
+		: id_(RenderGraphId::UNINITIALIZED) {	}
 
 	FORCEINLINE RenderResourceHandle::RenderResourceHandle(RenderGraphId id)
-		: _id(id) {	}
+		: id_(id) {	}
 
 	FORCEINLINE RenderResourceHandle::RenderResourceHandle()
-		: _id(RenderGraphId::UNINITIALIZED) {	}
+		: id_(RenderGraphId::UNINITIALIZED) {	}
 
 	FORCEINLINE bool isMeshPipelineStage(const EShaderFrequency freq)
 	{
