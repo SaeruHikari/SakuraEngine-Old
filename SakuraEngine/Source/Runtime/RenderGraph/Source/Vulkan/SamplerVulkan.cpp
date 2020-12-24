@@ -4,7 +4,7 @@ using namespace sakura;
 using namespace sakura::graphics;
 
 sakura::graphics::vk::GpuSampler::GpuSampler(const GpuSamplerHandle handle, const vk::RenderDevice& dev,
-	VkDevice device, VkPhysicalDevice physicalDevice, const SamplerDesc& desc) noexcept
+	VkDevice device, VkPhysicalDevice physicalDevice, const SamplerDescriptor& desc) noexcept
 	:handle_(handle), desc_(desc), owned_device_(device)
 {
 	auto createInfo = vk::translate(desc);

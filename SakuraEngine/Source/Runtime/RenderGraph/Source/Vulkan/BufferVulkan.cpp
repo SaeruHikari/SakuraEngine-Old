@@ -18,7 +18,7 @@ uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, Vk
 }
 
 GpuBuffer::GpuBuffer(const GpuBufferHandle handle, const vk::RenderDevice& dev,
-	VkDevice device, VkPhysicalDevice physicalDevice, const BufferDesc& desc) noexcept
+	VkDevice device, VkPhysicalDevice physicalDevice, const BufferDescriptor& desc) noexcept
 	:owned_device_(device)
 {
 	VkBufferCreateInfo bufferInfo{};

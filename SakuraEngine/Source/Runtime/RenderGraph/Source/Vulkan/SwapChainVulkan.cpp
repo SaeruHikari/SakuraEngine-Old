@@ -19,7 +19,7 @@ VkExtent2D chooseSwapExtent(sakura::Window window, const VkSurfaceCapabilitiesKH
 
 
 sakura::graphics::vk::SwapChain::SwapChain(
-	const SwapChainHandle handle, const vk::RenderDevice& dev, const SwapChainDesc& desc)
+	const SwapChainHandle handle, const vk::RenderDevice& dev, const SwapChainDescriptor& desc)
 	:window_(desc.window), handle_(handle), device_(dev)
 {
 	extent_ = Window::extent(window_);

@@ -10,7 +10,7 @@ namespace sakura::graphics::vk
 	{
 	public:
 		RenderPipeline(RenderPipelineHandle handle, const vk::RenderDevice& render_device, 
-			VkDevice device, const RenderPipelineDesc& desc);
+			VkDevice device, const RenderPipelineDescriptor& desc);
 		~RenderPipeline();
 		RenderObjectHandle handle() const override;
 

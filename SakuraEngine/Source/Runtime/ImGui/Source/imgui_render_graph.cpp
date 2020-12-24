@@ -167,9 +167,9 @@ namespace sakura::imgui
                 idx_dst += cmd_list->IdxBuffer.Size;
             }
             device.create_buffer(imgui_vertex_buffer, 
-                BufferDesc(EBufferUsage::CopyDst | EBufferUsage::VertexBuffer, calc_align(vertex_size, 4), vtx.data(), EBufferCPUAccess::None));
+                BufferDescriptor(EBufferUsage::CopyDst | EBufferUsage::VertexBuffer, calc_align(vertex_size, 4), vtx.data(), EBufferCPUAccess::None));
             device.create_buffer(imgui_index_buffer, 
-                BufferDesc(EBufferUsage::CopyDst | EBufferUsage::IndexBuffer, calc_align(index_size, 4), idx.data(), EBufferCPUAccess::None));
+                BufferDescriptor(EBufferUsage::CopyDst | EBufferUsage::IndexBuffer, calc_align(index_size, 4), idx.data(), EBufferCPUAccess::None));
         }
 
     	
@@ -227,8 +227,8 @@ namespace sakura::imgui
         imgui_render_pipeline = render_graph.RenderPipeline("ImGuiRenderPipeline");
         imgui_projection_matrix = render_graph.GpuBuffer("ImGuiProjectionMatrix");
 
-        BufferDesc pmDesc =
-            BufferDesc(EBufferUsage::CopyDst | EBufferUsage::UniformBuffer, sizeof(float4x4), &projection_matrix, EBufferCPUAccess::None);
+        BufferDescriptor pmDesc =
+            BufferDescriptor(EBufferUsage::CopyDst | EBufferUsage::UniformBuffer, sizeof(float4x4), &projection_matrix, EBufferCPUAccess::None);
         device.create_buffer(imgui_projection_matrix, pmDesc);
     	
         ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -264,7 +264,7 @@ namespace sakura::imgui
 
         // Create & Initialize fonts texture.
         {
-            TextureDesc texDesc = {};
+            TextureDescriptor texDesc = {};
             texDesc.size = { static_cast<uint32>(width), static_cast<uint32>(height), 1 };
             texDesc.dimension = ETextureDimension::Texture2D;
             texDesc.format = ETextureFormat::R8G8B8A8_UNORM;
@@ -277,7 +277,7 @@ namespace sakura::imgui
 
             TextureSlice slice = {};
             slice.origin = { 0, 0, 0 };
-            slice.aspect = TextureSlice::All;
+            slice.aspect = Texture::EAspect::All;
             slice.mip_level = 0;
             TextureDataLayout layout = {};
             layout.bytes_per_raw = width * 4 * sizeof(char);
@@ -289,7 +289,7 @@ namespace sakura::imgui
 
         // Create fonst sampler.
         {
-            SamplerDesc samplerDesc = {};
+            SamplerDescriptor samplerDesc = {};
             samplerDesc.address_mode_u = ESamplerAddressMode::Repeat;
             samplerDesc.address_mode_v = ESamplerAddressMode::Repeat;
             samplerDesc.address_mode_w = ESamplerAddressMode::Repeat;
@@ -324,11 +324,11 @@ namespace sakura::imgui
         imgui_ps_spirv =
             sakura::development::compile_hlsl(imgui_pixel_shader, vars);
     	
-        RenderPipelineDesc pipelineDesc = RenderPipelineDesc(
+        RenderPipelineDescriptor pipelineDesc = RenderPipelineDescriptor(
             ShaderLayout({
                 // Create Actual ShaderResources on Device.
-                device.create_shader(imgui_vs, ShaderDesc("ImGuiVertexShader", "main", EShaderFrequency::VertexShader, imgui_vs_spirv)),
-                device.create_shader(imgui_ps, ShaderDesc("ImGuiPiexelShader", "main", EShaderFrequency::PixelShader, imgui_ps_spirv))
+                device.create_shader(imgui_vs, ShaderDescriptor("ImGuiVertexShader", "main", EShaderFrequency::VertexShader, imgui_vs_spirv)),
+                device.create_shader(imgui_ps, ShaderDescriptor("ImGuiPiexelShader", "main", EShaderFrequency::PixelShader, imgui_ps_spirv))
             }),
             VertexLayout(
                 {

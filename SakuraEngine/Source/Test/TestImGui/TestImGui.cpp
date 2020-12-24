@@ -59,7 +59,7 @@ int main(int, char**)
         assert(render_device != nullptr && "ERROR: Failed to create Vulkan device!");
     }
     // Create Swap Chains.
-    render_device->create_swap_chain(swap_chain, SwapChainDesc(EPresentMode::Mailbox, main_window, 3));
+    render_device->create_swap_chain(swap_chain, SwapChainDescriptor(EPresentMode::Mailbox, main_window, 3));
 	
     sakura::imgui::initialize(main_window);
     sakura::imgui::initialize_gfx(render_graph, *render_device);

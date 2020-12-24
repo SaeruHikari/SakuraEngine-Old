@@ -74,16 +74,16 @@ namespace sakura::graphics::vk
 		void write_texture(GpuTextureHandle texture, void const* data, size_t data_size, const TextureSlice& slice,
 			const TextureDataLayout& layout, extent3d write_size, QueueIndex queue_index) override;
     	
-		GpuShaderHandle create_shader(const GpuShaderHandle handle, const ShaderDesc& config) override;
-		GpuBufferHandle create_buffer(const GpuBufferHandle handle, const BufferDesc& config) override;
-		GpuTextureHandle create_texture(const GpuTextureHandle handle, const TextureDesc& desc) override;
-		GpuSamplerHandle create_sampler(const GpuSamplerHandle handle, const SamplerDesc& desc) override;
+		GpuShaderHandle create_shader(const GpuShaderHandle handle, const ShaderDescriptor& config) override;
+		GpuBufferHandle create_buffer(const GpuBufferHandle handle, const BufferDescriptor& config) override;
+		GpuTextureHandle create_texture(const GpuTextureHandle handle, const TextureDescriptor& desc) override;
+		GpuSamplerHandle create_sampler(const GpuSamplerHandle handle, const SamplerDescriptor& desc) override;
 		ComputePipelineHandle create_compute_pipeline(const ComputePipelineHandle handle,
-			const ComputePipelineDesc& desc) override;
+			const ComputePipelineDescriptor& desc) override;
     	
-		FenceHandle create_fence(const FenceHandle handle, const FenceDesc& desc) override;
-		SwapChainHandle create_swap_chain(const SwapChainHandle handle, const SwapChainDesc& desc) override;
-		RenderPipelineHandle create_render_pipeline(const RenderPipelineHandle handle, const RenderPipelineDesc& desc) override;
+		FenceHandle create_fence(const FenceHandle handle, const FenceDescriptor& desc) override;
+		SwapChainHandle create_swap_chain(const SwapChainHandle handle, const SwapChainDescriptor& desc) override;
+		RenderPipelineHandle create_render_pipeline(const RenderPipelineHandle handle, const RenderPipelineDescriptor& desc) override;
 
 		GpuBufferHandle update_buffer(const GpuBufferHandle handle, size_t offset, void* data, size_t size) override;
 

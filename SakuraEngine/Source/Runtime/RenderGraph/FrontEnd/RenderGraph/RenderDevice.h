@@ -137,17 +137,17 @@ namespace sakura::graphics
 		//     破棄に成功すると、ハンドルのインデックスが解放され、対応するジェネレーションが1つ増えます。
 		virtual void destroy(const RenderResourceHandle to_destroy) = 0;
 
-		virtual GpuShaderHandle create_shader(const GpuShaderHandle handle, const ShaderDesc& desc) = 0;
-		virtual GpuBufferHandle create_buffer(const GpuBufferHandle handle, const BufferDesc& desc) = 0;
-		virtual GpuTextureHandle create_texture(const GpuTextureHandle handle, const TextureDesc& desc) = 0;
-		virtual GpuSamplerHandle create_sampler(const GpuSamplerHandle handle, const SamplerDesc& desc) = 0;
+		virtual GpuShaderHandle create_shader(const GpuShaderHandle handle, const ShaderDescriptor& desc) = 0;
+		virtual GpuBufferHandle create_buffer(const GpuBufferHandle handle, const BufferDescriptor& desc) = 0;
+		virtual GpuTextureHandle create_texture(const GpuTextureHandle handle, const TextureDescriptor& desc) = 0;
+		virtual GpuSamplerHandle create_sampler(const GpuSamplerHandle handle, const SamplerDescriptor& desc) = 0;
 
-		virtual FenceHandle create_fence(const FenceHandle handle, const FenceDesc& desc) = 0;
-		virtual SwapChainHandle create_swap_chain(const SwapChainHandle handle, const SwapChainDesc& desc) = 0;
+		virtual FenceHandle create_fence(const FenceHandle handle, const FenceDescriptor& desc) = 0;
+		virtual SwapChainHandle create_swap_chain(const SwapChainHandle handle, const SwapChainDescriptor& desc) = 0;
 		virtual RenderPipelineHandle create_render_pipeline(
-			const RenderPipelineHandle handle, const RenderPipelineDesc& desc) = 0;
+			const RenderPipelineHandle handle, const RenderPipelineDescriptor& desc) = 0;
 		virtual ComputePipelineHandle create_compute_pipeline(
-			const ComputePipelineHandle handle, const ComputePipelineDesc& desc) = 0;
+			const ComputePipelineHandle handle, const ComputePipelineDescriptor& desc) = 0;
 
 		virtual GpuBufferHandle update_buffer(const GpuBufferHandle handle, size_t offset, void* data, size_t size) = 0;
 

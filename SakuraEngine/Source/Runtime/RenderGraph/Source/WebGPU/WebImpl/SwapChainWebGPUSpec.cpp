@@ -6,7 +6,7 @@ using namespace sakura::graphics;
 using namespace sakura::graphics::webgpu;
 
 void SwapChain::initPlatformSpecific(const SwapChainHandle handle, const webgpu::RenderDevice& dev,
-	const SwapChainDesc& desc)
+	const SwapChainDescriptor& desc)
 {
 	auto& window = desc.window;
 	WGPUSurfaceDescriptorFromCanvasHTMLSelector canvDesc = {};

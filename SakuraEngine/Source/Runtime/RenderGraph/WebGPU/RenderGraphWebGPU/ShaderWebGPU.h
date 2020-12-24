@@ -15,7 +15,7 @@ namespace sakura::graphics::webgpu
 	{
 	public:
 		GpuShader(const GpuShaderHandle handle,
-			webgpu::RenderDevice& dev, const ShaderDesc& desc) noexcept;
+			webgpu::RenderDevice& dev, const ShaderDescriptor& desc) noexcept;
 		~GpuShader();
 		RenderResourceHandle handle() const override;
 		size_t size() const override;
@@ -27,6 +27,6 @@ namespace sakura::graphics::webgpu
 		GpuShaderHandle _handle;
 		size_t size_ = 0;
 		WGPUShaderModule module_ref = nullptr;
-		ShaderDesc desc;
+		ShaderDescriptor desc;
 	};
 }

@@ -42,7 +42,7 @@ namespace sakura::graphics::vk
 
 	VkDescriptorType translate(BindingLayout::EType type);
 
-	VkSamplerCreateInfo translate(SamplerDesc desc);
+	VkSamplerCreateInfo translate(SamplerDescriptor desc);
 
 	VkSamplerAddressMode translate(ESamplerAddressMode mode);
 	

@@ -179,7 +179,7 @@ FORCEINLINE WGPUBlendOperation sakura::graphics::webgpu::translate(const EBlendO
 	}
 }
 
-FORCEINLINE WGPUBlendDescriptor sakura::graphics::webgpu::translate(const BlendDesc desc)
+FORCEINLINE WGPUBlendDescriptor sakura::graphics::webgpu::translate(const BlendSetting desc)
 {
 	WGPUBlendDescriptor result;
 	result.srcFactor = translate(desc.src_factor);
@@ -329,7 +329,7 @@ FORCEINLINE WGPUBufferUsageFlags sakura::graphics::webgpu::translate(const Buffe
 	return usages;
 }
 
-FORCEINLINE WGPUTextureDescriptor sakura::graphics::webgpu::translate(const TextureDesc& desc)
+FORCEINLINE WGPUTextureDescriptor sakura::graphics::webgpu::translate(const TextureDescriptor& desc)
 {
 	WGPUTextureDescriptor res = {};
 	res.size = { desc.size.width, desc.size.height, desc.size.depth };
@@ -458,7 +458,7 @@ FORCEINLINE WGPUBufferCopyView sakura::graphics::webgpu::translate(const Texture
 	return copyView;
 }
 
-FORCEINLINE WGPUSamplerDescriptor sakura::graphics::webgpu::translate(const SamplerDesc& desc)
+FORCEINLINE WGPUSamplerDescriptor sakura::graphics::webgpu::translate(const SamplerDescriptor& desc)
 {
 	WGPUSamplerDescriptor sampler = {};
 	sampler.addressModeU = translate(desc.address_mode_u);

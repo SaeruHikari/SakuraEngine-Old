@@ -15,7 +15,7 @@ namespace sakura::graphics::webgpu
 	{
 	public:
 		RenderPipeline(RenderPipelineHandle handle,
-			const webgpu::RenderDevice& device, const RenderPipelineDesc& desc);
+			const webgpu::RenderDevice& device, const RenderPipelineDescriptor& desc);
 		~RenderPipeline();
 		RenderObjectHandle handle() const override;
 

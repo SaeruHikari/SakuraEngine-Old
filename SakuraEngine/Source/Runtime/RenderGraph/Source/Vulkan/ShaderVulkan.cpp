@@ -6,7 +6,7 @@ using namespace sakura::graphics;
 sakura::graphics::vk::GpuShader::GpuShader(
 	const GpuShaderHandle handle, vk::RenderDevice& render_device,
 	VkDevice device,
-	const ShaderDesc& description) noexcept
+	const ShaderDescriptor& description) noexcept
 	:handle_(handle), desc_(description)
 {
 	VkShaderModuleCreateInfo createInfo = {};

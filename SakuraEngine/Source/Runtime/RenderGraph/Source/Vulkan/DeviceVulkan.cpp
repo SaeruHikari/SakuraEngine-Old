@@ -311,7 +311,7 @@ void RenderDevice::write_texture(GpuTextureHandle texture, void const* data, siz
 }
 
 sakura::graphics::GpuShaderHandle sakura::graphics::vk::RenderDevice::create_shader(
-	const GpuShaderHandle handle, const ShaderDesc& config)
+	const GpuShaderHandle handle, const ShaderDescriptor& config)
 {
 	return _create_resouce_impl<vk::GpuShader, GpuShaderHandle>(handle, *this,
 		// TODO: mGPU Support.
@@ -320,7 +320,7 @@ sakura::graphics::GpuShaderHandle sakura::graphics::vk::RenderDevice::create_sha
 }
 
 sakura::graphics::GpuBufferHandle sakura::graphics::vk::RenderDevice::create_buffer(
-	const GpuBufferHandle handle, const BufferDesc& config)
+	const GpuBufferHandle handle, const BufferDescriptor& config)
 {
 	return _create_resouce_impl<vk::GpuBuffer, GpuBufferHandle>(handle, *this,
 		// TODO: mGPU Support.
@@ -328,12 +328,12 @@ sakura::graphics::GpuBufferHandle sakura::graphics::vk::RenderDevice::create_buf
 		config);
 }
 
-GpuTextureHandle RenderDevice::create_texture(const GpuTextureHandle handle, const TextureDesc& desc)
+GpuTextureHandle RenderDevice::create_texture(const GpuTextureHandle handle, const TextureDescriptor& desc)
 {
 	return handle;
 }
 
-GpuSamplerHandle RenderDevice::create_sampler(const GpuSamplerHandle handle, const SamplerDesc& desc)
+GpuSamplerHandle RenderDevice::create_sampler(const GpuSamplerHandle handle, const SamplerDescriptor& desc)
 {
 	return _create_resouce_impl<vk::GpuSampler, GpuSamplerHandle>(handle, *this,
 		// TODO: mGPU Support.
@@ -342,27 +342,27 @@ GpuSamplerHandle RenderDevice::create_sampler(const GpuSamplerHandle handle, con
 }
 
 ComputePipelineHandle RenderDevice::create_compute_pipeline(const ComputePipelineHandle handle,
-	const ComputePipelineDesc& desc)
+	const ComputePipelineDescriptor& desc)
 {
 	sakura::error("UNIMPLEMENTED!");
 	return GenerationalId::UNINITIALIZED;
 }
 
 
-sakura::graphics::FenceHandle sakura::graphics::vk::RenderDevice::create_fence(const FenceHandle handle, const FenceDesc& desc)
+sakura::graphics::FenceHandle sakura::graphics::vk::RenderDevice::create_fence(const FenceHandle handle, const FenceDescriptor& desc)
 {
 
 	return handle;
 }
 
 sakura::graphics::SwapChainHandle sakura::graphics::vk::RenderDevice::create_swap_chain(
-	const SwapChainHandle handle, const SwapChainDesc& desc)
+	const SwapChainHandle handle, const SwapChainDescriptor& desc)
 {
 	return _create_object_impl<SwapChain, SwapChainHandle>(handle, *this, desc);
 }
 
 sakura::graphics::RenderPipelineHandle sakura::graphics::vk::RenderDevice::create_render_pipeline(
-	const RenderPipelineHandle handle, const RenderPipelineDesc& desc)
+	const RenderPipelineHandle handle, const RenderPipelineDescriptor& desc)
 {
 
 	return _create_object_impl<vk::RenderPipeline, RenderPipelineHandle>(handle, *this,

@@ -10,7 +10,7 @@ namespace sakura::graphics::vk
 	{
 	public:
 		GpuSampler(const GpuSamplerHandle handle, const vk::RenderDevice& dev,
-			VkDevice device, VkPhysicalDevice physicalDevice, const SamplerDesc& desc) noexcept;
+			VkDevice device, VkPhysicalDevice physicalDevice, const SamplerDescriptor& desc) noexcept;
 		~GpuSampler();
 
 		RenderResourceHandle handle() const override;
@@ -20,7 +20,7 @@ namespace sakura::graphics::vk
 		
 	protected:
 		VkDevice owned_device_ = nullptr;
-		SamplerDesc desc_;
+		SamplerDescriptor desc_;
 		GpuSamplerHandle handle_ = GenerationalId::UNINITIALIZED;
 	};
 }

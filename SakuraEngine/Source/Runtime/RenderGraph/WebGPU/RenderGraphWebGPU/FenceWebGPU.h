@@ -14,7 +14,7 @@ namespace sakura::graphics::webgpu
 	class RenderGraphWebGPUAPI Fence final : public IFence
 	{
 	public:
-		Fence(const FenceHandle handle, RenderDevice& dev, const FenceDesc& desc) noexcept;
+		Fence(const FenceHandle handle, RenderDevice& dev, const FenceDescriptor& desc) noexcept;
 		~Fence();
 		
 		const uint64 completed_value() const;

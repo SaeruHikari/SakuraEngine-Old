@@ -25,7 +25,7 @@ namespace sakura::graphics::webgpu
 	
 	WGPUBlendOperation translate(const EBlendOp op);
 	
-	WGPUBlendDescriptor translate(const BlendDesc desc);
+	WGPUBlendDescriptor translate(const BlendSetting desc);
 	
 	WGPUColorWriteMaskFlags translate(const ColorMask mask);
 
@@ -39,7 +39,7 @@ namespace sakura::graphics::webgpu
 
 	WGPUBufferUsageFlags translate(const BufferUsages usage, const EBufferCPUAccess access);
 
-	WGPUTextureDescriptor translate(const TextureDesc& desc);
+	WGPUTextureDescriptor translate(const TextureDescriptor& desc);
 
 	WGPUTextureDimension translate(const ETextureDimension dimension);
 	
@@ -52,7 +52,7 @@ namespace sakura::graphics::webgpu
 	WGPUTextureCopyView translate(const TextureSlice from, const WGPUTexture texture);
 	WGPUBufferCopyView translate(const TextureDataLayout layout, const WGPUBuffer buffer);
 
-	WGPUSamplerDescriptor translate(const SamplerDesc& desc);
+	WGPUSamplerDescriptor translate(const SamplerDescriptor& desc);
 	WGPUFilterMode translate(const EFilter filter);
 	WGPUAddressMode translate(const ESamplerAddressMode mode);
 	

@@ -210,13 +210,13 @@ namespace render_system
 		}
 
 		// Create Swap Chains.
-		render_device->create_swap_chain(swap_chain, SwapChainDesc(EPresentMode::Mailbox, main_window, 3));
+		render_device->create_swap_chain(swap_chain, SwapChainDescriptor(EPresentMode::Mailbox, main_window, 3));
 		// Init RenderPipeline Desc
-		RenderPipelineDesc pipelineDesc = RenderPipelineDesc(
+		RenderPipelineDescriptor pipelineDesc = RenderPipelineDescriptor(
 			ShaderLayout({
 				// Create Actual ShaderResources on Device.
-				render_device->create_shader(vertex_shader, ShaderDesc("VertexShader", "main", EShaderFrequency::VertexShader, vertex_shader_spirv)),
-				render_device->create_shader(pixel_shader, ShaderDesc("PiexelShader", "main", EShaderFrequency::PixelShader, pixel_shader_spirv))
+				render_device->create_shader(vertex_shader, ShaderDescriptor("VertexShader", "main", EShaderFrequency::VertexShader, vertex_shader_spirv)),
+				render_device->create_shader(pixel_shader, ShaderDescriptor("PiexelShader", "main", EShaderFrequency::PixelShader, pixel_shader_spirv))
 				}),
 			VertexLayout(
 				{
@@ -283,22 +283,22 @@ namespace render_system
 		};
 		// Create Buffers.
 		render_device->create_buffer(uniform_buffer,
-			BufferDesc(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4), &view_proj));
+			BufferDescriptor(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4), &view_proj));
 		render_device->create_buffer(uniform_buffer_per_target,
-			BufferDesc(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * target_worlds.size(), target_worlds.data()));
+			BufferDescriptor(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * target_worlds.size(), target_worlds.data()));
 		render_device->create_buffer(uniform_buffer_per_object,
-			BufferDesc(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * worlds.size(), worlds.data()));
+			BufferDescriptor(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * worlds.size(), worlds.data()));
 
 		render_device->create_buffer(vertex_buffer,
-			BufferDesc(EBufferUsage::VertexBuffer | EBufferUsage::CopyDst, sizeof(vertData), vertData));
+			BufferDescriptor(EBufferUsage::VertexBuffer | EBufferUsage::CopyDst, sizeof(vertData), vertData));
 		render_device->create_buffer(index_buffer,
-			BufferDesc(EBufferUsage::IndexBuffer | EBufferUsage::CopyDst, sizeof(indxData), &indxData));
+			BufferDescriptor(EBufferUsage::IndexBuffer | EBufferUsage::CopyDst, sizeof(indxData), &indxData));
 
 
 		render_device->create_buffer(vertex_buffer_sphere,
-			BufferDesc(EBufferUsage::VertexBuffer | EBufferUsage::CopyDst, sizeof(sphere_vertices), sphere_vertices));
+			BufferDescriptor(EBufferUsage::VertexBuffer | EBufferUsage::CopyDst, sizeof(sphere_vertices), sphere_vertices));
 		render_device->create_buffer(index_buffer_sphere,
-			BufferDesc(EBufferUsage::IndexBuffer | EBufferUsage::CopyDst, sizeof(sphere_indices), &sphere_indices));
+			BufferDescriptor(EBufferUsage::IndexBuffer | EBufferUsage::CopyDst, sizeof(sphere_indices), &sphere_indices));
 
 		sakura::info("All Tests Passed!");
 	}

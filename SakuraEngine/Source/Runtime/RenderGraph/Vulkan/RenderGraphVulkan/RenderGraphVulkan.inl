@@ -564,7 +564,7 @@ case VkFormat::VK_FORMAT_##_format:\
 		}
 	}
 
-	FORCEINLINE VkSamplerCreateInfo vk::translate(SamplerDesc desc)
+	FORCEINLINE VkSamplerCreateInfo vk::translate(SamplerDescriptor desc)
 	{
 		VkSamplerCreateInfo sampler = {};
 		sampler.addressModeU = translate(desc.address_mode_u);
