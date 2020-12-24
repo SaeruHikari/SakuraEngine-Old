@@ -117,7 +117,8 @@ namespace sakura::imgui
                             // Draw
                             command_buffer.enqueue<RenderCommandDraw>(
 								RenderCommandDraw::VB(imgui_vertex_buffer), 
-                                RenderCommandDraw::IB(imgui_index_buffer, pcmd->ElemCount, EIndexFormat::UINT16)
+                                RenderCommandDraw::IB(imgui_index_buffer, pcmd->ElemCount, EIndexFormat::UINT16), 
+                                1, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset, 0
                             );
                         }
                     }
@@ -130,6 +131,11 @@ namespace sakura::imgui
         return command_buffer;
     }
 
+    std::size_t calc_align(std::size_t n, std::size_t align)
+    {
+        return ((n + align - 1) / align) * align;
+    }
+	
     bool RenderPassImGui::construct(RenderGraph::Builder& builder, IRenderDevice& device) noexcept
     {
         ImDrawData* draw_data = ImGui::GetDrawData();
@@ -148,7 +154,8 @@ namespace sakura::imgui
             // Upload vertex/index data into a single contiguous GPU buffer
             std::vector<ImDrawVert> vtx; 
             std::vector<ImDrawIdx> idx;
-            vtx.resize(vertex_size / sizeof(ImDrawVert)); idx.resize(index_size / sizeof(ImDrawIdx));
+            vtx.resize(calc_align(vertex_size / sizeof(ImDrawVert), 4));
+        	idx.resize(calc_align(index_size / sizeof(ImDrawIdx), 4));
             ImDrawVert* vtx_dst = (ImDrawVert*)vtx.data();
             ImDrawIdx* idx_dst = (ImDrawIdx*)idx.data();
             for (int n = 0; n < draw_data->CmdListsCount; n++)
@@ -160,10 +167,9 @@ namespace sakura::imgui
                 idx_dst += cmd_list->IdxBuffer.Size;
             }
             device.create_buffer(imgui_vertex_buffer, 
-                BufferDesc(EBufferUsage::CopyDst | EBufferUsage::VertexBuffer, vertex_size, vtx.data(), EBufferCPUAccess::None));
+                BufferDesc(EBufferUsage::CopyDst | EBufferUsage::VertexBuffer, calc_align(vertex_size, 4), vtx.data(), EBufferCPUAccess::None));
             device.create_buffer(imgui_index_buffer, 
-                BufferDesc(EBufferUsage::CopyDst | EBufferUsage::IndexBuffer, index_size, idx.data(), EBufferCPUAccess::None));
-            device.update_buffer(imgui_vertex_buffer, 0, vtx.data(), vertex_size);
+                BufferDesc(EBufferUsage::CopyDst | EBufferUsage::IndexBuffer, calc_align(index_size, 4), idx.data(), EBufferCPUAccess::None));
         }
 
     	
