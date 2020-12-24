@@ -787,6 +787,7 @@ int main()
 		{
 			using namespace render_system;
 			static float f = 0.0f;
+			static bool show_another_window = true;
 			
 			imgui::new_frame(main_window, 1.f / 60.f);
 			imgui::Begin("Boid Settings");
@@ -812,6 +813,13 @@ int main()
 
 			imgui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / imgui::GetIO().Framerate, imgui::GetIO().Framerate);
 			imgui::End();
+
+
+			ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+			ImGui::Text("Hello from another window!");
+			if (ImGui::Button("Close Me"))
+				show_another_window = false;
+			ImGui::End();
 
 			imgui::Render();
 		}

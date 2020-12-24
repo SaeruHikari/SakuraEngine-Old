@@ -1,7 +1,7 @@
 ﻿#include "RenderGraphWebGPU/FenceWebGPU.h"
 #include "RenderGraphWebGPU/RenderGraphWebGPU.h"
 
-sakura::graphics::webgpu::Fence::Fence(const FenceHandle handle, RenderDevice& dev, const FenceDesc& desc) noexcept
+sakura::graphics::webgpu::Fence::Fence(const FenceHandle handle, RenderDevice& dev, const FenceDescriptor& desc) noexcept
 	:_handle(handle)
 {
 	WGPUFenceDescriptor fenceDesc = {};

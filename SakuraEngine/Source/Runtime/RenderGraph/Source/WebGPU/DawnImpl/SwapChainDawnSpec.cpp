@@ -54,7 +54,7 @@ WGPUBackendType RenderDevice::get_backend()
 }
 
 void SwapChain::initPlatformSpecific(const SwapChainHandle handle, const webgpu::RenderDevice& dev,
-	const SwapChainDesc& desc)
+	const SwapChainDescriptor& desc)
 {
 	auto backend = RenderDevice::get_backend();
 	auto& window = desc.window;

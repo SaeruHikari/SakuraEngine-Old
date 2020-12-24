@@ -13,52 +13,52 @@
 
 namespace sakura::graphics::webgpu
 {
-	RenderGraphWebGPUAPI WGPUShaderStage translate(const EShaderFrequency frequency);
+	WGPUShaderStage translate(const EShaderFrequency frequency);
 
-	RenderGraphWebGPUAPI WGPUBindingType translate(const BindingLayout::EType type);
+	WGPUBindingType translate(const BindingLayout::EType type);
 
-	RenderGraphWebGPUAPI WGPUTextureFormat translate(const ETextureFormat format);
+	WGPUTextureFormat translate(const ETextureFormat format);
 	
-	RenderGraphWebGPUAPI ETextureFormat translate(const WGPUTextureFormat format);
+	ETextureFormat translate(const WGPUTextureFormat format);
 
-	RenderGraphWebGPUAPI WGPUBlendFactor translate(const EBlendFactor factor);
+	WGPUBlendFactor translate(const EBlendFactor factor);
 	
-	RenderGraphWebGPUAPI WGPUBlendOperation translate(const EBlendOp op);
+	WGPUBlendOperation translate(const EBlendOp op);
 	
-	RenderGraphWebGPUAPI WGPUBlendDescriptor translate(const BlendDesc desc);
+	WGPUBlendDescriptor translate(const BlendSetting desc);
 	
-	RenderGraphWebGPUAPI WGPUColorWriteMaskFlags translate(const ColorMask mask);
+	WGPUColorWriteMaskFlags translate(const ColorMask mask);
 
-	RenderGraphWebGPUAPI WGPUVertexFormat translate(const EVertexFormat vertex_format);
+	WGPUVertexFormat translate(const EVertexFormat vertex_format);
 
-	RenderGraphWebGPUAPI WGPUIndexFormat translate(const EIndexFormat index_format);
+	WGPUIndexFormat translate(const EIndexFormat index_format);
 	
-	RenderGraphWebGPUAPI WGPUInputStepMode translate(const VertexLayout::Frequency vertex_format);
+	WGPUInputStepMode translate(const VertexLayout::Frequency vertex_format);
 	
-	RenderGraphWebGPUAPI WGPUPrimitiveTopology translate(const EPrimitiveTopology vertex_format);
+	WGPUPrimitiveTopology translate(const EPrimitiveTopology vertex_format);
 
-	RenderGraphWebGPUAPI WGPUBufferUsageFlags translate(const BufferUsages usage, const EBufferCPUAccess access);
+	WGPUBufferUsageFlags translate(const BufferUsages usage, const EBufferCPUAccess access);
 
-	RenderGraphWebGPUAPI WGPUTextureDescriptor translate(const TextureDesc& desc);
+	WGPUTextureDescriptor translate(const TextureDescriptor& desc);
 
-	RenderGraphWebGPUAPI WGPUTextureDimension translate(const ETextureDimension dimension);
+	WGPUTextureDimension translate(const ETextureDimension dimension);
 	
-	RenderGraphWebGPUAPI WGPULoadOp translate(const ELoadOp op);
-	RenderGraphWebGPUAPI WGPUStoreOp translate(const EStoreOp op);
+	WGPULoadOp translate(const ELoadOp op);
+	WGPUStoreOp translate(const EStoreOp op);
 
-	RenderGraphWebGPUAPI WGPUPresentMode translate(const EPresentMode mode);
+	WGPUPresentMode translate(const EPresentMode mode);
 
-	RenderGraphWebGPUAPI WGPUTextureAspect translate(const ETextureAspect aspect);
-	RenderGraphWebGPUAPI WGPUTextureCopyView translate(const TextureSlice from, const WGPUTexture texture);
-	RenderGraphWebGPUAPI WGPUBufferCopyView translate(const TextureDataLayout layout, const WGPUBuffer buffer);
+	WGPUTextureAspect translate(const ETextureAspect aspect);
+	WGPUTextureCopyView translate(const TextureSlice from, const WGPUTexture texture);
+	WGPUBufferCopyView translate(const TextureDataLayout layout, const WGPUBuffer buffer);
 
-	RenderGraphWebGPUAPI WGPUSamplerDescriptor translate(const SamplerDesc& desc);
-	RenderGraphWebGPUAPI WGPUFilterMode translate(const EFilter filter);
-	RenderGraphWebGPUAPI WGPUAddressMode translate(const ESamplerAddressMode mode);
+	WGPUSamplerDescriptor translate(const SamplerDescriptor& desc);
+	WGPUFilterMode translate(const EFilter filter);
+	WGPUAddressMode translate(const ESamplerAddressMode mode);
 	
-	RenderGraphWebGPUAPI WGPUTextureViewDimension match(const WGPUTextureDimension dimension);
+	WGPUTextureViewDimension match(const WGPUTextureDimension dimension);
 
-	
+
 	namespace detail
 	{
 		constexpr auto WebGPUTextureFormatNameLut = sakura::map_c<WGPUTextureFormat, sakura::string_view>(
@@ -141,7 +141,7 @@ namespace fmt
 	};
 }
 
-
+#include "RenderGraphWebGPU/RenderGraphWebGPU.inl"
 /*
  
 set_scissor_rect, // 

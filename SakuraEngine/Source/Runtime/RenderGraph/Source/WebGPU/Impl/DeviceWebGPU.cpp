@@ -644,28 +644,28 @@ sakura::graphics::IGpuObject* RenderDevice::optional_unsafe(const RenderObjectHa
 	}
 }
 
-GpuShaderHandle RenderDevice::create_shader(const GpuShaderHandle handle, const ShaderDesc& config)
+GpuShaderHandle RenderDevice::create_shader(const GpuShaderHandle handle, const ShaderDescriptor& config)
 {
     return _create_resouce_impl<webgpu::GpuShader, GpuShaderHandle>(handle, *this, config);
 }
 
-GpuBufferHandle RenderDevice::create_buffer(const GpuBufferHandle handle, const BufferDesc& config)
+GpuBufferHandle RenderDevice::create_buffer(const GpuBufferHandle handle, const BufferDescriptor& config)
 {
 	return _create_resouce_impl<webgpu::GPUBuffer, GpuBufferHandle>(handle, *this, config);
 }
 
-GpuTextureHandle RenderDevice::create_texture(const GpuTextureHandle handle, const TextureDesc& desc)
+GpuTextureHandle RenderDevice::create_texture(const GpuTextureHandle handle, const TextureDescriptor& desc)
 {
 	return _create_resouce_impl<webgpu::GpuTexture, GpuTextureHandle>(handle, *this, desc);
 }
 
-GpuSamplerHandle RenderDevice::create_sampler(const GpuSamplerHandle handle, const SamplerDesc& desc)
+GpuSamplerHandle RenderDevice::create_sampler(const GpuSamplerHandle handle, const SamplerDescriptor& desc)
 {
     return _create_resouce_impl<webgpu::GpuSampler, GpuSamplerHandle>(handle, *this, desc);
 }
 
 ComputePipelineHandle RenderDevice::create_compute_pipeline(const ComputePipelineHandle handle,
-	const ComputePipelineDesc& desc)
+	const ComputePipelineDescriptor& desc)
 {
     sakura::error("Unimplemented!");
     return GenerationalId::UNINITIALIZED;
@@ -685,17 +685,17 @@ void RenderDevice::write_texture(GpuTextureHandle texture, void const* data, siz
 
 
 SwapChainHandle RenderDevice::create_swap_chain(
-    const SwapChainHandle handle, const SwapChainDesc& desc)
+    const SwapChainHandle handle, const SwapChainDescriptor& desc)
 {
     return _create_object_impl<SwapChain, SwapChainHandle>(handle, *this, desc);
 }
 
-RenderPipelineHandle RenderDevice::create_render_pipeline(const RenderPipelineHandle handle, const RenderPipelineDesc& desc)
+RenderPipelineHandle RenderDevice::create_render_pipeline(const RenderPipelineHandle handle, const RenderPipelineDescriptor& desc)
 {
     return _create_object_impl<RenderPipeline, RenderPipelineHandle>(handle, *this, desc);
 }
 
-FenceHandle RenderDevice::create_fence(const FenceHandle handle, const FenceDesc& desc)
+FenceHandle RenderDevice::create_fence(const FenceHandle handle, const FenceDescriptor& desc)
 {
     return _create_object_impl<Fence, FenceHandle>(handle, *this, desc);
 }

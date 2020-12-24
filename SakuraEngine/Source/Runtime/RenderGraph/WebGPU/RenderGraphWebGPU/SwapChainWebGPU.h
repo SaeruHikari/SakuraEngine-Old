@@ -14,7 +14,7 @@ namespace sakura::graphics::webgpu
 	{
 	public:
 		SwapChain(const SwapChainHandle handle,
-			const webgpu::RenderDevice& dev, const SwapChainDesc& desc);
+			const webgpu::RenderDevice& dev, const SwapChainDescriptor& desc);
 		~SwapChain();
 		uint8 buffer_count() const override;
 		extent2d extent() const override;
@@ -34,6 +34,6 @@ namespace sakura::graphics::webgpu
 		extent2d _extent;
 		uint32 _buffer_count = 0;
 		void initPlatformSpecific(const SwapChainHandle handle,
-			const webgpu::RenderDevice& dev, const SwapChainDesc& desc);
+			const webgpu::RenderDevice& dev, const SwapChainDescriptor& desc);
 	};
 }

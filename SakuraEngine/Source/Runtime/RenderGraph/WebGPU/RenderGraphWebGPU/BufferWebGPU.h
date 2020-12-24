@@ -15,7 +15,7 @@ namespace sakura::graphics::webgpu
 	{
 	public:
 		GPUBuffer(const GpuBufferHandle handle,
-			const webgpu::RenderDevice& dev, const BufferDesc& desc) noexcept;
+			const webgpu::RenderDevice& dev, const BufferDescriptor& desc) noexcept;
 		virtual ~GPUBuffer();
 		RenderResourceHandle handle() const override;
 		size_t size() const override;
@@ -23,7 +23,7 @@ namespace sakura::graphics::webgpu
 		BufferUsages usages() const override;
 		WGPUBuffer buffer = nullptr;
 	protected:
-		BufferDesc desc_;
+		BufferDescriptor desc_;
 		GpuBufferHandle handle_;
 	};
 }

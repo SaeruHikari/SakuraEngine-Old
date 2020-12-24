@@ -4,7 +4,7 @@
 using namespace sakura::graphics::webgpu;
 
 SwapChain::SwapChain(const SwapChainHandle handle,
-	const webgpu::RenderDevice& dev, const SwapChainDesc& desc)
+	const webgpu::RenderDevice& dev, const SwapChainDescriptor& desc)
 	:_handle(handle), _window(desc.window), _buffer_count(desc.buffer_count)
 {
 	initPlatformSpecific(handle, dev, desc);

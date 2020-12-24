@@ -10,7 +10,7 @@ namespace sakura::graphics::vk
 	{
 	public:
 		GpuShader(const GpuShaderHandle handle,
-			vk::RenderDevice& dev, VkDevice device, const ShaderDesc& desc) noexcept;
+			vk::RenderDevice& dev, VkDevice device, const ShaderDescriptor& desc) noexcept;
 		~GpuShader();
 		RenderResourceHandle handle() const override;
 		size_t size() const override;
@@ -20,7 +20,7 @@ namespace sakura::graphics::vk
 		EShaderCodeFormat code_format() const override;
 
 		GpuShaderHandle handle_;
-		ShaderDesc desc_;
+		ShaderDescriptor desc_;
 		size_t size_ = 0;
 
 		VkShaderModule shader_module_ = VK_NULL_HANDLE;

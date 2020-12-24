@@ -15,7 +15,7 @@ namespace sakura::graphics::webgpu
 	{
 	public:
 		GpuSampler(const GpuSamplerHandle handle,
-			webgpu::RenderDevice& dev, const SamplerDesc& desc) noexcept;
+			webgpu::RenderDevice& dev, const SamplerDescriptor& desc) noexcept;
 		~GpuSampler();
 
 		RenderResourceHandle handle() const override;
@@ -23,7 +23,7 @@ namespace sakura::graphics::webgpu
 		WGPUSampler sampler = nullptr;
 	protected:
 		GpuSamplerHandle handle_ = GenerationalId::UNINITIALIZED;
-		SamplerDesc desc_;
+		SamplerDescriptor desc_;
 	};
 
 }

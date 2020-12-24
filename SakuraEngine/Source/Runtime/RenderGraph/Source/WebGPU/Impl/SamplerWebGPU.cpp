@@ -4,7 +4,7 @@ using namespace sakura;
 using namespace sakura::graphics;
 
 webgpu::GpuSampler::GpuSampler(const GpuSamplerHandle handle, webgpu::RenderDevice& dev,
-	const SamplerDesc& desc) noexcept
+	const SamplerDescriptor& desc) noexcept
 	:handle_(handle), desc_(desc)
 {
 	WGPUSamplerDescriptor sampler_desc = {};

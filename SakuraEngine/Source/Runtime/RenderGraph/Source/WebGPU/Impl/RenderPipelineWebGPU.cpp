@@ -2,7 +2,7 @@
 #include "System/Log.h"
 
 sakura::graphics::webgpu::RenderPipeline::RenderPipeline(RenderPipelineHandle handle,
-	const webgpu::RenderDevice& dev, const RenderPipelineDesc& desc)
+	const webgpu::RenderDevice& dev, const RenderPipelineDescriptor& desc)
 		:_handle(handle)
 {
     WGPURenderPipelineDescriptor rpDesc = {};

@@ -10,7 +10,7 @@ namespace sakura::graphics::vk
 	{
 	public:
 		GpuBuffer(const GpuBufferHandle handle, const vk::RenderDevice& dev, 
-			VkDevice device, VkPhysicalDevice physicalDevice, const BufferDesc& desc) noexcept;
+			VkDevice device, VkPhysicalDevice physicalDevice, const BufferDescriptor& desc) noexcept;
 		~GpuBuffer();
 		RenderResourceHandle handle() const override;
 		size_t size() const override;
@@ -22,7 +22,7 @@ namespace sakura::graphics::vk
 	
 		VkDevice owned_device_ = VK_NULL_HANDLE;
 	protected:
-		BufferDesc desc_;
+		BufferDescriptor desc_;
 		GpuBufferHandle handle_;
 	};
 }

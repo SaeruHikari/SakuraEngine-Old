@@ -11,7 +11,7 @@ namespace shaders::spirv
 
 sakura::graphics::webgpu::GpuShader::GpuShader(
 	const GpuShaderHandle handle, webgpu::RenderDevice& dev,
-	const ShaderDesc& description) noexcept
+	const ShaderDescriptor& description) noexcept
 	:_handle(handle), desc(description)
 {
 	// Find From Created Modules

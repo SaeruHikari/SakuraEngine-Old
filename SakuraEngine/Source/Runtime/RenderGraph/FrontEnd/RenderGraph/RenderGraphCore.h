@@ -6,6 +6,8 @@
 
 namespace sakura::graphics
 {
+	using extent2d = sakura::extent2d;
+	using extent3d = sakura::extent3d;
 	struct RenderCommandBuffer;
 	class RenderGraph;
 	namespace ____
@@ -34,6 +36,9 @@ namespace sakura::graphics
 	{
 		UINT16 = 0x00000001,
 		UINT32 = 0x00000002,
+
+		// Useful for clusters or mesh-pipeline-workflow.
+		UINT8 = 0x00000003
 	};
 
 	enum class ESharingMode : uint8
@@ -75,7 +80,21 @@ namespace sakura::graphics
 		INT3,
 		INT4,
 		COUNT,
-		R8G8B8A8_UNORM = UCHAR4_NORM
+		
+		R8G8_UNORM = UCHAR2_NORM,
+		R8G8_NORM = CHAR2_NORM,
+		R8G8B8A8_UNORM = UCHAR4_NORM,
+		R8G8B8A8_NORM = CHAR4_NORM,
+		R16G16_UNORM = USHORT2_NORM,
+		R16G16_NORM = SHORT2_NORM,
+		R16G16B16A16_UNORM = USHORT4_NORM,
+		R16G16B16A16_NORM = SHORT4_NORM,
+		R32G32B32A32_UINT = UINT4,
+		R32G32B32A32_INT = INT4,
+		R32G32B32A32_SINT = INT4,
+		R32G32_UINT = UINT2,
+		R32G32_INT = INT2,
+		R32G32_SINT = INT2,
 	};
 
 	enum class ETextureFormat : uint16
@@ -336,68 +355,39 @@ namespace sakura::graphics
 		Count
 	};
 
-	enum class EPresentMode : uint8
-	{
-		Immediate = 0,
-		FIFO = 1,
-		Mailbox = 2,
-		Count = 3
-	};
-
-	enum class ESamplerAddressMode : uint8
-	{
-		Repeat = 0,
-		MirroredRepeat = 1,
-		ClampToEdge = 2,
-		ClampToBorder = 3,
-		MirrorClampToEdge = 4
-	};
-	
 	using RenderGraphId = sakura::GenerationalId;
 	struct RenderGraphAPI RenderObjectHandle
 	{
-		RenderObjectHandle(const RenderGraphId _id);
-		inline operator size_t() const { return _id; }
-		inline operator bool() const { return _id; }
-		inline RenderGraphId id() const { return _id; }
+		RenderObjectHandle(const RenderGraphId id_);
+		inline operator size_t() const { return id_; }
+		inline operator bool() const { return id_; }
+		inline RenderGraphId id() const { return id_; }
 	protected:
 		RenderObjectHandle();
-		RenderGraphId _id;
+		RenderGraphId id_;
 	};
-	inline bool operator==(const RenderObjectHandle& lhs, const RenderObjectHandle& rhs) {
-		return size_t(lhs.id()) == size_t(rhs.id());
-	}
 
 	struct RenderGraphAPI RenderPassHandle
 	{
-		RenderPassHandle(const RenderGraphId _id);
-		inline operator size_t() const { return _id; }
-		inline operator bool() const { return _id; }
-		inline RenderGraphId id() const { return _id; }
+		RenderPassHandle(const RenderGraphId id_);
+		inline operator size_t() const { return id_; }
+		inline operator bool() const { return id_; }
+		inline RenderGraphId id() const { return id_; }
 	protected:
 		RenderPassHandle();
-		RenderGraphId _id;
+		RenderGraphId id_;
 	};
-	inline bool operator==(const RenderPassHandle& lhs, const RenderPassHandle& rhs) {
-		return size_t(lhs.id()) == size_t(rhs.id());
-	}
 
 	struct RenderGraphAPI RenderResourceHandle
 	{
-		RenderResourceHandle(const RenderGraphId _id);
+		RenderResourceHandle(const RenderGraphId id_);
 		RenderResourceHandle();
-		inline operator size_t() const { return _id; }
-		inline operator bool() const { return _id; }
-		inline RenderGraphId id() const { return _id; }
+		inline operator size_t() const { return id_; }
+		inline operator bool() const { return id_; }
+		inline RenderGraphId id() const { return id_; }
 	protected:
-		RenderGraphId _id;
+		RenderGraphId id_;
 	};
-	inline bool operator==(const RenderResourceHandle& lhs, const RenderResourceHandle& rhs) {
-		return size_t(lhs.id()) == size_t(rhs.id());
-	}
-
-	using extent2d = sakura::extent2d;
-	using extent3d = sakura::extent3d;
 
 	struct RenderGraphAPI IGpuObject
 	{
@@ -418,11 +408,7 @@ namespace sakura::graphics
 	struct TypedRenderResourceHandle : public RenderResourceHandle
 	{
 		using ResourceType = _ResourceType;
-		inline TypedRenderResourceHandle(const RenderGraphId _id)
-			:RenderResourceHandle(_id)
-		{
-
-		}
+		TypedRenderResourceHandle(const RenderGraphId id_);
 		TypedRenderResourceHandle() = default;
 		static_assert(std::is_base_of_v<IGpuMemoryResource, ResourceType>, "Resource Handle must be used with GPU Resources!");
 	};
@@ -430,24 +416,14 @@ namespace sakura::graphics
 	struct TypedRenderObjectHandle : public RenderObjectHandle
 	{
 		using ObjectType = _ObjectType;
-		TypedRenderObjectHandle(const RenderGraphId _id)
-			:RenderObjectHandle(_id)
-		{
-
-		}
+		TypedRenderObjectHandle(const RenderGraphId id_);
 		TypedRenderObjectHandle() = default;
 		static_assert(std::is_base_of_v<IGpuObject, ObjectType>, "GPUObject Handle must be used with GPU Objects!");
 	};
 
-
-
-
-
-
-	using BufferUsages = uint32;
-	struct RenderGraphAPI BufferDesc
+	struct Buffer
 	{
-		enum Usage
+		enum EUsage
 		{
 			Unknown,
 
@@ -462,21 +438,32 @@ namespace sakura::graphics
 			Query,
 			RayTracingAccelerateStructure
 		};
-		const BufferUsages usages = Usage::UniformBuffer;
-		const EBufferCPUAccess access = EBufferCPUAccess::None;
-		const size_t length = 0;
-		const void* data = nullptr;
-		BufferDesc(BufferUsages usage = Usage::UniformBuffer,
-			size_t length = 0, const void* data = nullptr,
-			const EBufferCPUAccess access = EBufferCPUAccess::None);
-	};
-	using EBufferUsage = BufferDesc::Usage;
 
-	using TextureUsages = uint32;
-	using TextureFlags = uint32;
-	struct RenderGraphAPI TextureDesc
+		using Usages = uint32;
+		
+		struct RenderGraphAPI Descriptor
+		{
+			const Usages usages = EUsage::UniformBuffer;
+			const EBufferCPUAccess access = EBufferCPUAccess::None;
+			const size_t length = 0;
+			const void* data = nullptr;
+			
+			Descriptor(Usages usage = EUsage::UniformBuffer, size_t length = 0, 
+				const void* data = nullptr, const EBufferCPUAccess access = EBufferCPUAccess::None);
+		};
+	};
+	using BufferDescriptor = Buffer::Descriptor;
+	using EBufferUsage = Buffer::EUsage;
+	using BufferUsages = Buffer::Usages;
+
+	struct Texture
 	{
-		enum Usage
+		using Format = ETextureFormat;
+		
+		// cn: 纹理的一般性用途, 用于辅助系统隐式地推导它的Barrier和DescriptorSet/View.
+		// en：Gneral purpose of texture, can assist the system to implicitly derive its Barrier and DescriptorSet/View.
+		// jp: テクスチャの一般的な目的は、システムがバリアとディスクリプタセット/ビューを暗黙的に導出するのを支援できます.
+		enum EUsage 
 		{
 			None = 0,
 			CopySrc = 0x00000001,
@@ -486,24 +473,25 @@ namespace sakura::graphics
 			Attachment = 0x00000010,
 			Present = 0x00000020
 		};
-		enum Dimension
+		using Usages = uint32;
+
+		// cn: 纹理的维度, 用于辅助系统创建默认的ImageView, 以及对内存布局做出优化.
+		// en: Dimension of the texture, can assist the system to create default ImageView, and optimize memory layout.
+		// jp: テクスチャのディメンション. システムがデフォルトのImageViewを作成し、メモリレイアウトを最適化するのに役立ちます.
+		enum class EDimension
 		{
 			Texture1D = 0,
 			Texture2D = 1,
 			Texture3D = 2
 		};
-		using Flags = uint32;
-		using Usages = uint32;
 
-		ETextureFormat format;
-		Dimension dimension = Dimension::Texture2D;
-		Usages usages = 0;
-		uint32 sample_count = 1;
-		uint32 mip_levels = 1;
-		extent3d size;
-
-		// Advanced Features
-		enum Flag
+		
+		// cn: 一些特殊杂项标记, 用于辅助系统打开可选特性或进行更多的隐式推导. 在一些平台上, 正确地设置这些flags会带来性能提升.
+		// en: Special miscellaneous flags assisting system to open optional features or perform more implicit deductions.
+		//     On some platforms, setting these flags correctly will bring performance improvements.
+		// jp: いくつかの特別なその他のフラグ、システムがオプション機能をエネーブル、より暗黙的な派生を実行したりするのを支援する。
+		//     一部のプラットフォームでは、これらのフラグを正しく設定すると、パフォーマンスが向上します。
+		enum Flag 
 		{
 			SparseBinding = 0x00000001,
 			SparseResidency = 0x00000002,
@@ -511,32 +499,110 @@ namespace sakura::graphics
 			MutableFormat = 0x00000008,
 			Cube = 0x00000010,
 			T2DArray = 0x00000020,
-			Alias = 0x00000400,
 			BlockButBitCompatible = 0x00000080,
-		};
-		Flags flags = 0;
-		bool force_linear = false;
-		uint32 array_layers = 1;
-		// multi-queue support.
-		ESharingMode sharing_mode = ESharingMode::Exclusive;
-	};
+			Alias = 0x00000400,
 
-	struct RenderGraphAPI SamplerDesc
-	{
-		ESamplerAddressMode address_mode_u = ESamplerAddressMode::MirroredRepeat;
-		ESamplerAddressMode address_mode_v = ESamplerAddressMode::MirroredRepeat;
-		ESamplerAddressMode address_mode_w = ESamplerAddressMode::MirroredRepeat;
-		bool anisotropy = true;
-		float max_anisotropy = 1.f;
-		float max_lod = 1000.f;
-		float min_lod = -1000.f;
-		EFilter mag_filter = EFilter::Linear;
-		EFilter min_filter = EFilter::Linear;
+			// Some custome flags, notice to avoid native API's bitflags.
+			
+			ForceLinear = 0x10000000
+		};
+		using Flags = uint32;
+
+		struct DataLayout
+		{
+			uint64_t offset = 0;
+			uint32_t bytes_per_raw = 0;
+			uint32_t rows_per_image = 0;
+		};
+
+		enum class EAspect
+		{
+			All,
+			StencilOnly,
+			DepthOnly
+		};
+		
+		struct Slice
+		{
+			EAspect aspect = EAspect::All;
+			uint32_t mip_level = 1;
+			pos3d origin = { 0, 0, 0 };
+		};
+		
+		struct Descriptor
+		{
+			// cn: 纹理的一般性用途, 用于辅助系统隐式地推导它的Barrier和DescriptorSet/View.
+			// en：Gneral purpose of texture, can assist the system to implicitly derive its Barrier and DescriptorSet/View.
+			// jp: テクスチャの一般的な目的は、システムがバリアとディスクリプタセット/ビューを暗黙的に導出するのを支援できます.
+			Usages usages = 0;
+
+			// cn: 纹理的维度, 用于辅助系统创建默认的ImageView, 以及对内存布局做出优化.
+			// en: Dimension of the texture, can assist the system to create default ImageView, and optimize memory layout.
+			// jp: テクスチャのディメンション. システムがデフォルトのImageViewを作成し、メモリレイアウトを最適化するのに役立ちます.
+			EDimension dimension = EDimension::Texture2D;
+
+			ETextureFormat format;
+			uint32 mip_levels = 1;
+			extent3d size;
+
+			// Advanced Features
+
+			// cn: 一些特殊杂项标记, 用于辅助系统打开可选特性或进行更多的隐式推导. 在一些平台上, 正确地设置这些flags会带来性能提升.
+			// en: Special miscellaneous flags assisting system to open optional features or perform more implicit deductions.
+			//     On some platforms, setting these flags correctly will bring performance improvements.
+			// jp: いくつかの特別なその他のフラグ、システムがオプション機能をエネーブル、より暗黙的な派生を実行したりするのを支援する。
+			//     一部のプラットフォームでは、これらのフラグを正しく設定すると、パフォーマンスが向上します。
+			Flags flags = 0;
+			uint32 sample_count = 1;
+			uint32 array_layers = 1;
+
+			// cn: 跨队列操作需要Resource具有ESharingMode::Concurrent属性.
+			// en: Cross-queue operation requires Resource to have ESharingMode::Concurrent attribute.
+			// jp: クロスキュー操作では、リソースにESharingMode :: Concurrent属性が必要です.
+			ESharingMode sharing_mode = ESharingMode::Exclusive;
+		};
+
 	};
-	
-	using ETextureDimension = TextureDesc::Dimension;
-	using ETextureFlag = TextureDesc::Flag;
-	using ETextureUsage = TextureDesc::Usage;
+	using TextureDescriptor = Texture::Descriptor;
+	using TextureUsages = uint32;
+	using TextureFlags = uint32;
+	using TextureDataLayout = Texture::DataLayout;
+	using TextureSlice = Texture::Slice;
+	using ETextureDimension = Texture::EDimension;
+	using ETextureFlag = Texture::Flag;
+	using ETextureUsage = Texture::EUsage;
+	using ETextureAspect = Texture::EAspect;
+
+
+	struct RenderGraphAPI Sampler
+	{
+		enum class EAddressMode : uint8
+		{
+			Repeat = 0,
+			MirroredRepeat = 1,
+			ClampToEdge = 2,
+			ClampToBorder = 3,
+			MirrorClampToEdge = 4
+		};
+		
+		struct Descriptor
+		{
+			EAddressMode address_mode_u = EAddressMode::MirroredRepeat;
+			EAddressMode address_mode_v = EAddressMode::MirroredRepeat;
+			EAddressMode address_mode_w = EAddressMode::MirroredRepeat;
+			bool anisotropy = true;
+			float max_anisotropy = 1.f;
+			float max_lod = 1000.f;
+			float min_lod = 0.f;
+			EFilter mag_filter = EFilter::Linear;
+			EFilter min_filter = EFilter::Linear;
+		};
+
+	};
+	using SamplerDescriptor = Sampler::Descriptor;
+	using ESamplerAddressMode = Sampler::EAddressMode;
+
+
 	
 	struct RenderGraphAPI IGpuShader : public IGpuMemoryResource
 	{
@@ -604,29 +670,9 @@ namespace sakura::graphics
 		//virtual bool completed() const = 0;
 	};
 	using FenceHandle = TypedRenderObjectHandle<IFence>;
-
 	using QueueIndex = size_t;
 
 
-	struct RenderGraphAPI TextureDataLayout
-	{
-		uint64_t offset = 0;
-		uint32_t bytes_per_raw = 0;
-		uint32_t rows_per_image = 0;
-	};
-	struct RenderGraphAPI TextureSlice
-	{
-		enum EAspect
-		{
-			All,
-			StencilOnly,
-			DepthOnly
-		};
-		EAspect aspect = EAspect::All;
-		uint32_t mip_level = 1;
-		pos3d origin = { 0, 0, 0 };
-	};
-	using ETextureAspect = TextureSlice::EAspect;
 	
 	struct RenderGraphAPI ShaderLayout
 	{
@@ -636,12 +682,6 @@ namespace sakura::graphics
 		template<size_t N>
 		constexpr explicit ShaderLayout(const GpuShaderHandle(&shaders)[N]);
 	};
-	template <size_t N>
-	constexpr ShaderLayout::ShaderLayout(const GpuShaderHandle(&_shaders)[N])
-		:shaders(_shaders), count(N)
-	{
-		
-	}
 
 	struct RenderGraphAPI VertexLayout
 	{
@@ -666,13 +706,7 @@ namespace sakura::graphics
 		VertexLayout(
 			const VertexLayout::Element(&vertex_elements)[N], const VertexLayout::Frequency frequecy, uint32 stride);
 	};
-	template <size_t N>
-	VertexLayout::VertexLayout(
-		const VertexLayout::Element(&vertex_elements)[N], const VertexLayout::Frequency frequecy, uint32 _stride)
-		:elements(vertex_elements, vertex_elements + N), freq(frequecy), stride(_stride)
-	{
-		
-	}
+
 
 	struct RenderGraphAPI BindingLayout
 	{
@@ -712,18 +746,6 @@ namespace sakura::graphics
 		explicit constexpr BindingLayout(const Set(&)[N]);
 		const sakura::vector<BindingLayout::Set> tables;
 	};
-	template <size_t N>
-	constexpr BindingLayout::Set::Set(const Slot(& _slots)[N])
-		:slots(_slots, _slots + N)
-	{
-		
-	}
-	template <size_t N>
-	constexpr BindingLayout::BindingLayout(const Set(& _tables)[N])
-		:tables(_tables, _tables + N)
-	{
-		
-	}
 	using BindingSlot = BindingLayout::Slot;
 	using BindingTable = BindingLayout::Set;
 	
@@ -737,7 +759,7 @@ namespace sakura::graphics
 			ELoadOp stencil_load_operation = ELoadOp::DontCare;
 			EStoreOp store_operation = EStoreOp::Count;
 			EStoreOp stencil_store_operation = EStoreOp::DontCare;
-			struct BlendDesc
+			struct BlendSetting
 			{
 				ELoadOp load_operation = ELoadOp::Count;
 				EStoreOp store_opeartion = EStoreOp::Count;
@@ -755,83 +777,82 @@ namespace sakura::graphics
 		explicit constexpr AttachmentLayout(const Slot(&)[N]);
 		const sakura::vector<Slot> slots;
 	};
-	template <size_t N>
-	constexpr AttachmentLayout::AttachmentLayout(const Slot(& attachments)[N])
-		:slots(attachments, attachments + N)
-	{
-		
-	}
 	using AttachmentSlot = AttachmentLayout::Slot;
-	using BlendDesc = AttachmentSlot::BlendDesc;
+	using BlendSetting = AttachmentSlot::BlendSetting;
 
-	struct RenderGraphAPI FenceDesc
+	struct RenderGraphAPI FenceDescriptor
 	{
 		const uint64 initial_value = 0;
 		
-		FenceDesc() = default;
-		FenceDesc(const uint64 initialValue) noexcept;
+		FenceDescriptor() = default;
+		FenceDescriptor(const uint64 initialValue) noexcept;
 	};
 	
-	struct RenderGraphAPI SwapChainDesc
+	enum class EPresentMode : uint8
+	{
+		Immediate = 0,
+		FIFO = 1,
+		Mailbox = 2,
+		Count = 3
+	};
+	struct RenderGraphAPI SwapChainDescriptor
 	{
 		const EPresentMode present_mode = EPresentMode::Mailbox;
 		const Window window = sakura::Window();
 		const uint8 buffer_count = 2;
-		
-		SwapChainDesc() = default;
-		SwapChainDesc(const EPresentMode presentMode, const Window window, const uint8 bufferCount) noexcept;
+
+		SwapChainDescriptor() = default;
+		SwapChainDescriptor(const EPresentMode presentMode, const Window window, const uint8 bufferCount) noexcept;
 	};
 	
-	struct RenderGraphAPI RenderPipelineDesc
+	struct RenderPipeline
 	{
-		EPrimitiveTopology primitive_topology = EPrimitiveTopology::TriangleList;
-		uint8 sample_count = 1;
-		uint32 sample_mask = 0xFFFFFFFF;
+		struct RenderGraphAPI Descriptor
+		{
+			EPrimitiveTopology primitive_topology = EPrimitiveTopology::TriangleList;
+			uint8 sample_count = 1;
+			uint32 sample_mask = 0xFFFFFFFF;
 
-		ECullMode cull_mode = ECullMode::Back;
-		EPolygonMode polygon_mode = EPolygonMode::FILL;
-		float lineWidth = 1.f;
+			ECullMode cull_mode = ECullMode::Back;
+			EPolygonMode polygon_mode = EPolygonMode::FILL;
+			float lineWidth = 1.f;
 
-		ShaderLayout shader_layout;
-		const sakura::vector<VertexLayout> vertex_layout;
-		BindingLayout binding_layout;
-		AttachmentLayout attachment_layout;
+			ShaderLayout shader_layout;
+			const sakura::vector<VertexLayout> vertex_layout;
+			BindingLayout binding_layout;
+			AttachmentLayout attachment_layout;
 
-		RenderPipelineDesc() = default;
-		explicit RenderPipelineDesc(
-			const ShaderLayout& shader_layout, const VertexLayout& vertex_layout,
-			const BindingLayout& binding_layout, const AttachmentLayout& attachment_layout,
-			const ECullMode cull_mode = ECullMode::Back,
-			const EPrimitiveTopology primitive_topology = EPrimitiveTopology::TriangleList,
-			const EPolygonMode polygon_mode = EPolygonMode::FILL,
-			uint8 sample_count = 1, uint32 sample_mask = 0xFFFFFFFF);
-		
-		template<size_t N>
-		explicit RenderPipelineDesc(
-			const ShaderLayout& shader_layout, const VertexLayout(&vertex_layouts)[N],
-			const BindingLayout binding_layout, const AttachmentLayout& attachment_layout,
-			const ECullMode cull_mode = ECullMode::Back,
-			const EPrimitiveTopology primitive_topology = EPrimitiveTopology::TriangleList,
-			const EPolygonMode polygon_mode = EPolygonMode::FILL,
-			uint8 sample_count = 1, uint32 sample_mask = 0xFFFFFFFF);
+			Descriptor() = default;
+			explicit Descriptor(
+				const ShaderLayout & shader_layout, const VertexLayout & vertex_layout,
+				const BindingLayout & binding_layout, const AttachmentLayout & attachment_layout,
+				const ECullMode cull_mode = ECullMode::Back,
+				const EPrimitiveTopology primitive_topology = EPrimitiveTopology::TriangleList,
+				const EPolygonMode polygon_mode = EPolygonMode::FILL,
+				uint8 sample_count = 1, uint32 sample_mask = 0xFFFFFFFF);
+
+			template<size_t N>
+			explicit Descriptor(
+				const ShaderLayout & shader_layout, const VertexLayout(&vertex_layouts)[N],
+				const BindingLayout binding_layout, const AttachmentLayout & attachment_layout,
+				const ECullMode cull_mode = ECullMode::Back,
+				const EPrimitiveTopology primitive_topology = EPrimitiveTopology::TriangleList,
+				const EPolygonMode polygon_mode = EPolygonMode::FILL,
+				uint8 sample_count = 1, uint32 sample_mask = 0xFFFFFFFF);
+		};
+
 	};
-	template <size_t N>
-	RenderPipelineDesc::RenderPipelineDesc(
-		const ShaderLayout& _shader_layout, const VertexLayout(&_vertex_layouts)[N],
-		const BindingLayout _binding_layout, const AttachmentLayout& _attachment_layout,
-		const ECullMode _cull_mode,
-		const EPrimitiveTopology _primitive_topology, const EPolygonMode _polygon_mode,
-		uint8 _sample_count, uint32 _sample_mask)
-		: primitive_topology(_primitive_topology), sample_count(_sample_count), sample_mask(_sample_mask),
-		shader_layout(_shader_layout), vertex_layout(_vertex_layouts, _vertex_layouts + N), binding_layout(_binding_layout),
-		attachment_layout(_attachment_layout), polygon_mode(_polygon_mode), cull_mode(_cull_mode)
+	using RenderPipelineDescriptor = RenderPipeline::Descriptor;
+	
+	struct ComputePipeline
 	{
-	}
-
-	struct RenderGraphAPI ComputePipelineDesc
-	{
+		struct RenderGraphAPI Descriptor
+		{
+			
+		};
 		
 	};
+	using ComputePipelineDescriptor = ComputePipeline::Descriptor;
 
 	
 	struct RenderGraphAPI Attachment
@@ -860,16 +881,9 @@ namespace sakura::graphics
 		
 		template<size_t N>
 		Attachment(const Slot(&slots)[N]) noexcept;
-		
 		Attachment() = default;
  	};
 
-	template <size_t N>
-	Attachment::Attachment(const Slot(&_slots)[N]) noexcept
-		:slots(_slots, _slots + N)
-	{
-		
-	}
 
 	struct RenderGraphAPI Binding
 	{
@@ -946,422 +960,29 @@ namespace sakura::graphics
 		Binding(const Set(&sets)[N]) noexcept;
 	};
 
-	template <size_t N>
-	Binding::Set::Set(const Slot(& _slots)[N]) noexcept
-		: slots(_slots, _slots + N), dynamic_offsets(N, 0)
-	{
-		
-	}
-	
-	template <typename I, size_t N>
-	Binding::Set::Set(const Slot(&_slots)[N], const I(&offsets)[N]) noexcept
-		:slots(_slots, _slots + N), dynamic_offsets(offsets, offsets + N)
-	{
-
-	}
-	
-	template <size_t N>
-	Binding::Binding(const Set(& _sets)[N]) noexcept
-		:sets(_sets, _sets + N)
-	{
-
-	}
-
-
-
 	// Shader Description struct
-	struct RenderGraphAPI ShaderDesc
+	struct RenderGraphAPI Shader
 	{
-		sakura::string name = "";
-		sakura::string entry = "";
-		EShaderFrequency frequency = EShaderFrequency::None;
+		struct RenderGraphAPI Descriptor
+		{
+			sakura::string name = "";
+			sakura::string entry = "";
+			EShaderFrequency frequency = EShaderFrequency::None;
 
-		const sakura::span<const std::byte> code;
+			const sakura::span<const std::byte> code;
 
-		ShaderDesc() = default;
-		explicit ShaderDesc(const sakura::string& name,
-			const sakura::string& entry, const EShaderFrequency frequency,
-			const sakura::span<const std::byte> code = {}) noexcept;
+			Descriptor() = default;
+			explicit Descriptor(const sakura::string & name,
+				const sakura::string & entry, const EShaderFrequency frequency,
+				const sakura::span<const std::byte> code = {}) noexcept;
+		};
 	};
-
+	using ShaderDescriptor = Shader::Descriptor;
 }
 
+#include "RenderGraph/RenderGraphCore.inl"
 
 
 
 
 
-
-
-
-
-
-
-
-namespace sakura::graphics
-{
-	namespace detail
-	{
-		constexpr auto ShaderFrequencyNameLut = sakura::map_c<sakura::graphics::EShaderFrequency, sakura::string_view>(
-			{
-				{ sakura::graphics::EShaderFrequency::None, "None" },
-				{ sakura::graphics::EShaderFrequency::VertexShader, "VertexShader" },
-				{ sakura::graphics::EShaderFrequency::PixelShader, "PixelShader" },
-				{ sakura::graphics::EShaderFrequency::ComputeShader, "ComputeShader" },
-
-				{ sakura::graphics::EShaderFrequency::TaskShader, "TaskShader" },
-				{ sakura::graphics::EShaderFrequency::MeshShader, "MeshShader" },
-
-				{ sakura::graphics::EShaderFrequency::AnyHitShader, "AnyHitShader" },
-				{ sakura::graphics::EShaderFrequency::CallableShader, "CallableShader" },
-				{ sakura::graphics::EShaderFrequency::ClosestHitShader, "ClosestHitShader" },
-				{ sakura::graphics::EShaderFrequency::IntersectionShader, "IntersectionShader" },
-				{ sakura::graphics::EShaderFrequency::MissShader, "MissShader" },
-				{ sakura::graphics::EShaderFrequency::RayGenerationShader, "RayGenerationShader" },
-			}
-		);
-		static_assert(ShaderFrequencyNameLut.size() == static_cast<int>(EShaderFrequency::Count),
-			"Found ShaderFrequency Not Registed Into LUT!");
-
-		constexpr auto LoadOpNameLut = sakura::map_c<sakura::graphics::ELoadOp, sakura::string_view>(
-			{
-				{ sakura::graphics::ELoadOp::Clear, "Clear" },
-				{ sakura::graphics::ELoadOp::Load, "Load" },
-				{ sakura::graphics::ELoadOp::DontCare, "DontCare" },
-			}
-		);
-		static_assert(LoadOpNameLut.size() == static_cast<int>(ELoadOp::Count),
-			"Found LoadOp Not Registed Into LUT!");
-		
-		constexpr auto StoreOpNameLut = sakura::map_c<sakura::graphics::EStoreOp, sakura::string_view>(
-			{
-				{ sakura::graphics::EStoreOp::Clear, "Clear" },
-				{ sakura::graphics::EStoreOp::Store, "Store" },
-				{ sakura::graphics::EStoreOp::DontCare, "DontCare" },
-			}
-		);
-		static_assert(StoreOpNameLut.size() == static_cast<int>(EStoreOp::Count),
-			"Found StoreOp Not Registed Into LUT!");
-		
-		
-		constexpr auto BindingTypeNameLut = sakura::map_c<sakura::graphics::BindingLayout::EType, sakura::string_view>(
-			{
-				{ sakura::graphics::BindingLayout::EType::Invalid, "Invalid" },
-				{ sakura::graphics::BindingLayout::EType::UniformBuffer, "UniformBuffer" },
-				{ sakura::graphics::BindingLayout::EType::StorageBuffer, "StorageBuffer" },
-				{ sakura::graphics::BindingLayout::EType::ReadonlyStorageBuffer, "ReadonlyStorageBuffer" },
-
-				{ sakura::graphics::BindingLayout::EType::Sampler, "Sampler" },
-				{ sakura::graphics::BindingLayout::EType::ComparisonSampler, "ComparisonSampler" },
-
-				{ sakura::graphics::BindingLayout::EType::SampledTexture, "SampledTexture" },
-				{ sakura::graphics::BindingLayout::EType::MultisampledTexture, "MultisampledTexture" },
-				{ sakura::graphics::BindingLayout::EType::ReadonlyStorageTexture, "ReadonlyStorageTexture" },
-				{ sakura::graphics::BindingLayout::EType::WriteonlyStorageTexture, "WriteonlyStorageTexture" },
-			}
-		);
-		static_assert(BindingTypeNameLut.size() == static_cast<int>(BindingLayout::EType::Count),
-			"Found BindingType Not Registed Into LUT!");
-
-		constexpr auto ShaderFormatNameLut = sakura::map_c<sakura::graphics::EShaderCodeFormat, sakura::string_view>(
-			{
-				{ sakura::graphics::EShaderCodeFormat::PSSL2, "PSSL2" },
-				{ sakura::graphics::EShaderCodeFormat::DXBC, "DXBC" },
-				{ sakura::graphics::EShaderCodeFormat::DXIL, "DXIL" },
-				{ sakura::graphics::EShaderCodeFormat::GLSL, "GLSL" },
-				{ sakura::graphics::EShaderCodeFormat::Spirv, "Spirv" },
-			}
-		);
-		static_assert(ShaderFormatNameLut.size() == static_cast<int>(EShaderCodeFormat::Count),
-			"Found ShaderFrequency Not Registed Into LUT!");
-
-		constexpr auto BlendOpNameLut = sakura::map_c<sakura::graphics::EBlendOp, sakura::string_view>(
-			{
-				{ sakura::graphics::EBlendOp::Add, "Add" },
-				{ sakura::graphics::EBlendOp::Subtract, "Subtract" },
-				{ sakura::graphics::EBlendOp::ReverseSubtract, "ReverseSubtract" },
-				{ sakura::graphics::EBlendOp::Min, "Min" },
-				{ sakura::graphics::EBlendOp::Max, "Max" },
-			}
-		);
-		constexpr auto BlendFactorNameLut = sakura::map_c<sakura::graphics::EBlendFactor, sakura::string_view>(
-			{
-				{ sakura::graphics::EBlendFactor::Zero, "Zero" },
-				{ sakura::graphics::EBlendFactor::One, "One" },
-				{ sakura::graphics::EBlendFactor::SrcColor, "SrcColor" },
-				{ sakura::graphics::EBlendFactor::OneMinusSrcColor, "OneMinusSrcColor" },
-				{ sakura::graphics::EBlendFactor::SrcAlpha, "SrcAlpha" },
-				{ sakura::graphics::EBlendFactor::OneMinusSrcAlpha, "OneMinusSrcAlpha" },
-				{ sakura::graphics::EBlendFactor::DstColor, "DstColor" },
-				{ sakura::graphics::EBlendFactor::OneMinusDstColor, "OneMinusDstColor" },
-				{ sakura::graphics::EBlendFactor::DstAlpha, "DstAlpha" },
-				{ sakura::graphics::EBlendFactor::OneMinusDstAlpha, "OneMinusDstAlpha" },
-				{ sakura::graphics::EBlendFactor::SrcAlphaSaturated, "SrcAlphaSaturated" },
-				{ sakura::graphics::EBlendFactor::BlendColor, "BlendColor" },
-				{ sakura::graphics::EBlendFactor::OneMinusBlendColor, "OneMinusBlendColor" },
-			}
-		);
-		constexpr auto ColorMaskNameLut = sakura::map_c<sakura::graphics::EColorMaskBits, sakura::string_view>(
-			{
-				{ sakura::graphics::EColorMaskBits::None, "None" },
-				{ sakura::graphics::EColorMaskBits::R, "R" },
-				{ sakura::graphics::EColorMaskBits::G, "G" },
-				{ sakura::graphics::EColorMaskBits::B, "B" },
-				{ sakura::graphics::EColorMaskBits::A, "A" },
-				{ sakura::graphics::EColorMaskBits::All, "All" },
-			}
-		);
-
-	}
-}
-
-namespace std
-{
-	template<> struct hash<sakura::graphics::RenderResourceHandle> 
-	{
-		sakura::size_t operator()(sakura::graphics::RenderResourceHandle handle) const
-		{
-			return std::hash<sakura::uint64>()(handle.id().storage());
-		}
-	};
-	
-	template<> struct hash<sakura::graphics::RenderObjectHandle>
-	{
-		sakura::size_t operator()(sakura::graphics::RenderObjectHandle handle) const
-		{
-			return std::hash<sakura::uint64>()(handle.id().storage());
-		}
-	};
-	
-	template<typename ResourceType> struct hash<sakura::graphics::TypedRenderResourceHandle<ResourceType>>
-	{
-		sakura::size_t operator()(sakura::graphics::TypedRenderResourceHandle<ResourceType> handle) const
-		{
-			return std::hash<sakura::uint64>()(handle.id().storage());
-		}
-	};
-
-	template<typename ObjectType> struct hash<sakura::graphics::TypedRenderObjectHandle<ObjectType>>
-	{
-		sakura::size_t operator()(sakura::graphics::TypedRenderObjectHandle<ObjectType> handle) const
-		{
-			return std::hash<sakura::uint64>()(handle.id().storage());
-		}
-	};
-}
-
-namespace fmt
-{
-	template<> struct formatter<sakura::graphics::BindingLayout::EType> : fmt::formatter<sakura::string_view>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::BindingLayout::EType type, FormatContext& ctx)
-		{
-			using namespace sakura::graphics;
-			using namespace sakura::graphics::detail;
-			sakura::string_view bindingTypeName = "Binding::EType:Undefined";
-			if (BindingTypeNameLut.find(type) != BindingTypeNameLut.end())
-				bindingTypeName = BindingTypeNameLut.find(type)->second;
-			return fmt::formatter<sakura::string_view>::format(bindingTypeName, ctx);
-		}
-	};
-	template<> struct formatter<sakura::graphics::EShaderCodeFormat> : fmt::formatter<sakura::string_view>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::EShaderCodeFormat fmt, FormatContext& ctx)
-		{
-			using namespace sakura::graphics;
-			using namespace sakura::graphics::detail;
-			sakura::string_view fmtName = "ShaderCodeFormat:Undefined";
-			if (ShaderFormatNameLut.find(fmt) != ShaderFormatNameLut.end())
-				fmtName = ShaderFormatNameLut.find(fmt)->second;
-			return fmt::formatter<sakura::string_view>::format(fmtName, ctx);
-		}
-	};
-	template<> struct formatter<sakura::graphics::EShaderFrequency> : fmt::formatter<sakura::string_view>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::EShaderFrequency freq, FormatContext& ctx)
-		{
-			using namespace sakura::graphics;
-			using namespace sakura::graphics::detail;
-			sakura::string_view freqName = "ShaderFrequency:Undefined";
-			if (ShaderFrequencyNameLut.find(freq) != ShaderFrequencyNameLut.end())
-				freqName = ShaderFrequencyNameLut.find(freq)->second;
-			return fmt::formatter<sakura::string_view>::format(freqName, ctx);
-		}
-	};
-	template<> struct formatter<sakura::graphics::EBlendOp> : fmt::formatter<sakura::string_view>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::EBlendOp op, FormatContext& ctx)
-		{
-			using namespace sakura::graphics;
-			using namespace sakura::graphics::detail;
-			sakura::string_view opName = "BlendOp:Undefined";
-			if (BlendOpNameLut.find(op) != BlendOpNameLut.end())
-				opName = BlendOpNameLut.find(op)->second;
-			return fmt::formatter<sakura::string_view>::format(opName, ctx);
-		}
-	};
-	template<> struct formatter<sakura::graphics::EBlendFactor> : fmt::formatter<sakura::string_view>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::EBlendFactor factor, FormatContext& ctx)
-		{
-			using namespace sakura::graphics;
-			using namespace sakura::graphics::detail;
-			sakura::string_view factorName = "EBlendFactor:Undefined";
-			if (BlendFactorNameLut.find(factor) != BlendFactorNameLut.end())
-				factorName = BlendFactorNameLut.find(factor)->second;
-			return fmt::formatter<sakura::string_view>::format(factorName, ctx);
-		}
-	};
-	template<> struct formatter<sakura::graphics::EColorMaskBits> : fmt::formatter<sakura::string_view>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::EColorMaskBits mask, FormatContext& ctx)
-		{
-			using namespace sakura::graphics;
-			using namespace sakura::graphics::detail;
-			sakura::string_view maskName = "EColorMaskBits:Undefined";
-			if (ColorMaskNameLut.find(mask) != ColorMaskNameLut.end())
-				maskName = ColorMaskNameLut.find(mask)->second;
-			return fmt::formatter<sakura::string_view>::format(maskName, ctx);
-		}
-	};
-	
-	template<> struct formatter<sakura::graphics::RenderResourceHandle> : fmt::formatter<sakura::graphics::RenderGraphId>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::RenderResourceHandle handle, FormatContext& ctx)
-		{
-			return fmt::formatter< sakura::graphics::RenderGraphId>::format(handle.id(), ctx);
-		}
-	};
-	template<> struct formatter<sakura::graphics::RenderObjectHandle> : fmt::formatter<sakura::graphics::RenderGraphId>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::RenderObjectHandle handle, FormatContext& ctx)
-		{
-			return fmt::formatter< sakura::graphics::RenderGraphId>::format(handle.id(), ctx);
-		}
-	};
-
-	template<typename ResourceType> struct formatter<sakura::graphics::TypedRenderResourceHandle<ResourceType>>
-		: fmt::formatter<sakura::graphics::RenderGraphId>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::TypedRenderResourceHandle<ResourceType> handle, FormatContext& ctx)
-		{
-			return fmt::formatter< sakura::graphics::RenderGraphId>::format(handle.id(), ctx);
-		}
-	};
-	template<typename ObjectType> struct formatter<sakura::graphics::TypedRenderObjectHandle<ObjectType>>
-		: fmt::formatter<sakura::graphics::RenderGraphId>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::TypedRenderObjectHandle<ObjectType> handle, FormatContext& ctx)
-		{
-			return fmt::formatter< sakura::graphics::RenderGraphId>::format(handle.id(), ctx);
-		}
-	};
-
-	
-	template<> struct formatter<sakura::graphics::ShaderDesc> : fmt::formatter<sakura::vfs::path>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::ShaderDesc desc, FormatContext& ctx)
-		{
-			using namespace sakura::graphics::detail;
-			constexpr sakura::string_view pathTitle = "Shader Name";
-			constexpr sakura::string_view freqTitle = "Shader Frequency";
-			constexpr sakura::string_view entryTitle = "Entry Point";
-			constexpr size_t widthLeft
-				= sakura::max(pathTitle.size(), freqTitle.size(), entryTitle.size());
-			size_t widthRight= sakura::max(
-					desc.name.size(), desc.entry.size(),
-					ShaderFrequencyNameLut.find(desc.frequency)->second.size()
-			);
-			return fmt::format_to(
-				ctx.out(),
-				"***{4:*^{2}}***\n"
-				"* {5: <{0}}   {6: >{1}} *\n"
-				"* {7: <{0}}   {8: >{1}} *\n"
-				"* {9: <{0}}   {10: >{1}} *\n"
-				"***{3:*^{2}}***\n",
-				widthLeft, widthRight, widthRight + widthLeft + 1,
-				"", //3 : none
-				" ShaderDesc ",//4 : TotalTitle
-				pathTitle, desc.name, //5, 6
-				freqTitle, desc.frequency,//7, 8
-				entryTitle, desc.entry//9, 10
-			);
-		}
-	};
-
-	template<> struct formatter<sakura::graphics::TextureDesc> : fmt::formatter<sakura::string_view>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::TextureDesc desc, FormatContext& ctx)
-		{
-			constexpr sakura::string_view widthTitle = "Texture Width";
-			constexpr sakura::string_view heightTitle = "Texture Height";
-			constexpr sakura::string_view depthTitle = "Texture Depth";
-			constexpr int widthLeft = sakura::max(widthTitle.size(), heightTitle.size(), depthTitle.size());
-			int widthRight = 30;
-			return fmt::format_to(
-				ctx.out(),
-				"***{4:*^{2}}***\n"
-				"* {5: <{0}}   {6: >{1}} *\n"
-				"* {7: <{0}}   {8: >{1}} *\n"
-				"* {9: <{0}}   {10: >{1}} *\n"
-				"***{3:*^{2}}***\n",
-				widthLeft, widthRight, widthRight + widthLeft + 1,
-				"", //3 : none
-				" Texture Desc ",//4 : TotalTitle
-				widthTitle, desc.size.width,//5, 6
-				heightTitle, desc.size.height, //7,8
-				depthTitle, desc.size.depth //9,10
-			);
-		}
-	};
-	//RenderAttachmentDesc
-	template<> struct formatter<sakura::graphics::Attachment::Slot> : fmt::formatter<sakura::graphics::TextureDesc>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::Attachment::Slot desc, FormatContext& ctx)
-		{
-			constexpr sakura::string_view widthTitle = " Attachment Desc ";
-			constexpr int widthLeft = sakura::max(widthTitle.size(), size_t(30));
-			int widthRight = 30;
-			return fmt::format_to(
-				ctx.out(),
-				"***{4:*^{2}}***\n"
-				"{5: ^{2}}\n",
-				widthLeft, widthRight, widthRight + widthLeft + 1,
-				"", //3 : none
-				widthTitle, 0//4: RTTitle, 5: TexDesc
-			);
-		}
-	};
-	template<> struct formatter<sakura::graphics::Attachment> : fmt::formatter<sakura::graphics::TextureDesc>
-	{
-		template<typename FormatContext>
-		auto format(sakura::graphics::Attachment desc, FormatContext& ctx)
-		{
-			constexpr sakura::string_view totalTitle = " Attachment Desc ";
-			constexpr size_t widthLeft = sakura::max(size_t(0), size_t(10));
-			size_t widthRight = 10;
-			return fmt::format_to(
-				ctx.out(),
-				"***{4:*^{2}}***\n"
-				,
-				widthLeft, widthRight, widthRight + widthLeft + 1,
-				"", //3 : none
-				totalTitle//4: RTTitle
-			);
-		}
-	};
-
-}

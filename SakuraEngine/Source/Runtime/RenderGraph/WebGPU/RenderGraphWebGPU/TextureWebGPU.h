@@ -13,7 +13,7 @@ namespace sakura::graphics::webgpu
 	{
 	public:
 		GpuTexture(const GpuTextureHandle handle,
-			const webgpu::RenderDevice& dev, const TextureDesc& desc) noexcept;
+			const webgpu::RenderDevice& dev, const TextureDescriptor& desc) noexcept;
 		~GpuTexture();
 		
 		RenderResourceHandle handle() const override;
@@ -27,7 +27,7 @@ namespace sakura::graphics::webgpu
 		WGPUTexture texture = nullptr;
 		WGPUTextureView default_view = nullptr;
 	protected:
-		TextureDesc desc_;
+		TextureDescriptor desc_;
 		GpuTextureHandle handle_;
 	};
 

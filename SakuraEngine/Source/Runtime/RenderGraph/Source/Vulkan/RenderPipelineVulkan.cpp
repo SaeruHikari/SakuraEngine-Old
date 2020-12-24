@@ -4,7 +4,7 @@ using namespace sakura::graphics;
 using namespace sakura::graphics::vk;
 
 sakura::graphics::vk::RenderPipeline::RenderPipeline(RenderPipelineHandle handle,
-	const vk::RenderDevice& render_device, VkDevice device, const RenderPipelineDesc& desc)
+	const vk::RenderDevice& render_device, VkDevice device, const RenderPipelineDescriptor& desc)
 	:handle_(handle), owned_device(device), render_device(render_device)
 {
 	// Binding Layout

@@ -4,7 +4,7 @@ using namespace sakura::graphics;
 using namespace sakura::graphics::webgpu;
 
 GpuTexture::GpuTexture(const GpuTextureHandle handle, const webgpu::RenderDevice& dev,
-	const TextureDesc& desc) noexcept
+	const TextureDescriptor& desc) noexcept
 	:handle_(handle), desc_(desc)
 {
 	WGPUTextureDescriptor textureDesc = translate(desc);

@@ -10,7 +10,7 @@ namespace sakura::graphics::vk
 		friend class RenderDevice;
 	public:
 		SwapChain(const SwapChainHandle handle,
-			const vk::RenderDevice& dev, const SwapChainDesc& desc);
+			const vk::RenderDevice& dev, const SwapChainDescriptor& desc);
 		~SwapChain();
 		
 		uint8 buffer_count() const override;
