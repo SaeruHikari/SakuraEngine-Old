@@ -24,7 +24,7 @@ GpuBuffer::GpuBuffer(const GpuBufferHandle handle, const vk::RenderDevice& dev,
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferInfo.size = desc.length;
-	bufferInfo.usage = translate(desc.usages);
+	bufferInfo.usage = translate(desc.usages, desc.access);
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer_) != VK_SUCCESS) 

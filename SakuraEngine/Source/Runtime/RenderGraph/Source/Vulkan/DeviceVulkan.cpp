@@ -546,7 +546,10 @@ bool sakura::graphics::vk::RenderDevice::execute(const RenderCommandBuffer& cmdB
 		vkQueueWaitIdle(master_device().master_queue.queue);
 	}
 	// TODO: Reset on Finish.
-	return vkResetCommandBuffer(cacheFrame.command_buffer_, 0);
+	if (cacheFrame.command_buffer_)
+		return vkResetCommandBuffer(cacheFrame.command_buffer_, 0);
+	else
+		return false;
 }
 
 // vk-command processors:

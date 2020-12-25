@@ -91,34 +91,37 @@ namespace render_system
 			const RenderGraph& rg, IRenderDevice& device) noexcept override
 		{
 			command_buffer.enqueue<RenderCommandBeginRenderPass>(render_pipeline, attachment);
-			Binding binding0 = Binding({
-				Binding::Set({
-					Binding::Slot(uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 4, 0)
-				}),
-				Binding::Set({
-					Binding::Slot(uniform_buffer, 0, sizeof(sakura::float4x4), 0)
-				})
-			});
-			//command_buffer.enqueue<RenderCommandSetScissorRect>(
-			//	0, device.backend() == EBackend::WebGPU ? main_window.extent().width / 2 + 10 : 0,
-			//	main_window.extent().width / 2, main_window.extent().height
-			//);
-			command_buffer.enqueue<RenderCommandUpdateBinding>(binding0);
-			command_buffer.enqueue<RenderCommandDraw>(
-				RenderCommandDraw::VB(rg.query<GpuBufferHandle>("VertexBufferSphere")),
-				RenderCommandDraw::IB(rg.query<GpuBufferHandle>("IndexBufferSphere"),
-					60, EIndexFormat::UINT16)
-			);
-			auto tn = target_worlds.size() / 4;
-			for (auto i = 1u; i < tn; i++)
+			if(!useVk)
 			{
-				Binding binding = Binding({
+				Binding binding0 = Binding({
 					Binding::Set({
-						Binding::Slot(uniform_buffer_per_target, 0,
-							sizeof(sakura::float4x4) * 4, 0)
-					}, { sizeof(sakura::float4x4) * i * 4 })
+						Binding::Slot(uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 4, 0)
+					}),
+					Binding::Set({
+						Binding::Slot(uniform_buffer, 0, sizeof(sakura::float4x4), 0)
+					})
 				});
-				command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 60);
+				//command_buffer.enqueue<RenderCommandSetScissorRect>(
+				//	0, device.backend() == EBackend::WebGPU ? main_window.extent().width / 2 + 10 : 0,
+				//	main_window.extent().width / 2, main_window.extent().height
+				//);
+				command_buffer.enqueue<RenderCommandUpdateBinding>(binding0);
+				command_buffer.enqueue<RenderCommandDraw>(
+					RenderCommandDraw::VB(rg.query<GpuBufferHandle>("VertexBufferSphere")),
+					RenderCommandDraw::IB(rg.query<GpuBufferHandle>("IndexBufferSphere"),
+						60, EIndexFormat::UINT16)
+					);
+				auto tn = target_worlds.size() / 4;
+				for (auto i = 1u; i < tn; i++)
+				{
+					Binding binding = Binding({
+						Binding::Set({
+							Binding::Slot(uniform_buffer_per_target, 0,
+								sizeof(sakura::float4x4) * 4, 0)
+						}, { sizeof(sakura::float4x4) * i * 4 })
+						});
+					command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 60);
+				}
 			}
 
 			
@@ -126,7 +129,10 @@ namespace render_system
 				Binding::Set({
 					Binding::Slot(uniform_buffer_per_object, 0,
 						sizeof(sakura::float4x4) * 4, 0)
-				}, { 0 }/*dynamic_offsets*/)
+				}, { 0 }/*dynamic_offsets*/),
+				Binding::Set({
+					Binding::Slot(uniform_buffer, 0, sizeof(sakura::float4x4), 0)
+				})
 			});
 			command_buffer.enqueue<RenderCommandUpdateBinding>(binding00);
 			command_buffer.enqueue<RenderCommandDraw>(
@@ -238,11 +244,7 @@ namespace render_system
 					}),
 				}),
 			AttachmentLayout(
-#ifndef SAKURA_TARGET_PLATFORM_EMSCRIPTEN
-				{ AttachmentLayout::Slot(ETextureFormat::R8G8B8A8_UNORM, ELoadOp::Clear, EStoreOp::Store) }
-#else
-				{ AttachmentLayout::Slot(ETextureFormat::B8G8R8A8_UNORM, ELoadOp::Clear, EStoreOp::Store) }
-#endif
+				{ AttachmentLayout::Slot(render_device->get<ISwapChain>(swap_chain)->render_format(), ELoadOp::Clear, EStoreOp::Store) }
 			),
 			ECullMode::Back, EPrimitiveTopology::TriangleList, EPolygonMode::FILL, 1, 0xFFFFFFFF
 		);
@@ -405,7 +407,7 @@ namespace render_system
 
 			render_device->update_buffer(uniform_buffer, 0, &view_proj, sizeof(view_proj));
 			render_device->update_buffer(
-			uniform_buffer_per_object, 0, worlds.data(), sizeof(float4x4) * worlds.size());
+				uniform_buffer_per_object, 0, worlds.data(), sizeof(float4x4) * worlds.size());
 			render_device->update_buffer(uniform_buffer_per_target,
 				0, target_worlds.data(), sizeof(float4x4) * target_worlds.size());
 		}

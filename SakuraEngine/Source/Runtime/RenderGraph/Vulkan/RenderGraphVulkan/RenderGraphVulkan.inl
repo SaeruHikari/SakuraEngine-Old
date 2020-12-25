@@ -358,7 +358,7 @@ case VkFormat::VK_FORMAT_##_format:\
 		}
 	}
 
-	FORCEINLINE VkBufferUsageFlags sakura::graphics::vk::translate(const BufferUsages usage, const EBufferCPUAccess access)
+	inline VkBufferUsageFlags sakura::graphics::vk::translate(const BufferUsages usage, const EBufferCPUAccess access)
 	{
 		using namespace sakura::graphics;
 		VkBufferUsageFlags usages = 0;

@@ -725,6 +725,9 @@ void DebugHeadingLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 	Local2XSystem<LocalToWorld>(ppl, wrd_filter);
 }
 
+const bool bUseImGui = !useVk;
+sakura::graphics::RenderPassHandle imgui_pass = sakura::GenerationalId::UNINITIALIZED;
+sakura::graphics::RenderCommandBuffer imgui_command_buffer("ImGuiRender", 4096);
 int main()
 {
 	if (!IModule::Registry::regist("ECS", &ECSModule::create) || !sakura::IModule::StartUp("ECS"))
@@ -737,10 +740,16 @@ int main()
 		sakura::error("Failed to StartUp RG!");
 		return -1;
 	}
-	render_system::initialize();
-
+	Timer timer;
+	double deltaTime = 0;
+	size_t cycle = 0;
+	task_system::Scheduler scheduler(task_system::Scheduler::Config::allCores());
+	scheduler.bind();
+	defer(scheduler.unbind());  // Automatically unbind before returning.
+	sakura::graphics::RenderCommandBuffer buffer = sakura::graphics::RenderCommandBuffer("", 4096 * 8 * 16 * 32);
+	
+	
 	using namespace sakura::ecs;
-
 
 	BoidSetting.AlignmentWeight = 1.f;
 	BoidSetting.TargetWeight = 1.f;
@@ -751,31 +760,24 @@ int main()
 	declare_components<Translation, Rotation, RotationEuler, Scale, LocalToWorld, LocalToParent, 
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading>();
 	SpawnBoidSetting();
-	//SpawnBoids(0);
 	SpawnBoidTargets(10);
-
-	// ImGui
-	sakura::graphics::RenderPassHandle imgui_pass = sakura::GenerationalId::UNINITIALIZED;
-	sakura::graphics::RenderCommandBuffer imgui_command_buffer("ImGuiRender", 4096);
+	
+	task_system::ecs::pipeline ppl(std::move(ctx));
+	if (!bUseImGui)
+	{
+		SpawnBoids(ppl, 20000);
+		ppl.wait();
+	}
+	render_system::initialize();
+	if(bUseImGui)
 	{
 		using namespace render_system;
+		// ImGui
 		imgui::initialize(main_window);
 		imgui::initialize_gfx(render_graph, *render_device);
 		imgui_pass = render_graph.create_render_pass<imgui::RenderPassImGui>(swap_chain, render_graph);
 	}
-
-	
-	task_system::Scheduler scheduler(task_system::Scheduler::Config::allCores());
-	scheduler.bind();
-	defer(scheduler.unbind());  // Automatically unbind before returning.3
-	Timer timer; 
-	double deltaTime = 0;
-	sakura::graphics::RenderCommandBuffer buffer =
-		sakura::graphics::RenderCommandBuffer("", 4096 * 8 * 16 * 32);
-	size_t cycle = 0;
-	
-	task_system::ecs::pipeline ppl(std::move(ctx));
-	render_system::PrepareCommandBuffer(buffer); // 0 + 2
+	render_system::PrepareCommandBuffer(buffer); 
 	// Game & Rendering Logic
 	while(sakura::Core::yield())
 	{
@@ -789,6 +791,7 @@ int main()
 		render_system::CollectAndUpload(ppl, deltaTime);
 
 		// IMGUI
+		if(bUseImGui)
 		{
 			using namespace render_system;
 			static float f = 0.0f;
@@ -830,11 +833,14 @@ int main()
 			render_system::Render(buffer); // 0 + 1
 
 			// 渲染ImGui
-			RenderPass* pass_ptr = render_graph.render_pass(imgui_pass);
-			pass_ptr->construct(render_graph.builder(imgui_pass), *render_device);
-			imgui_command_buffer.reset();
-			pass_ptr->execute(imgui_command_buffer, render_graph, *render_device);
-			render_device->execute(imgui_command_buffer, pass_ptr->handle());
+			if(bUseImGui)
+			{
+				RenderPass* pass_ptr = render_graph.render_pass(imgui_pass);
+				pass_ptr->construct(render_graph.builder(imgui_pass), *render_device);
+				imgui_command_buffer.reset();
+				pass_ptr->execute(imgui_command_buffer, render_graph, *render_device);
+				render_device->execute(imgui_command_buffer, pass_ptr->handle());
+			}
 
 			// Present
 			render_system::Present();
