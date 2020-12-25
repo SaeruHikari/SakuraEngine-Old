@@ -139,6 +139,44 @@ namespace sakura::imgui
     bool RenderPassImGui::construct(RenderGraph::Builder& builder, IRenderDevice& device) noexcept
     {
         ImDrawData* draw_data = ImGui::GetDrawData();
+
+        if(imgui_render_pipeline == GenerationalId::UNINITIALIZED)
+        {
+            imgui_render_pipeline = render_graph.RenderPipeline("ImGuiRenderPipeline");
+            RenderPipelineDescriptor pipelineDesc = RenderPipelineDescriptor(
+                ShaderLayout({
+                    // Create Actual ShaderResources on Device.
+                    device.create_shader(imgui_vs, ShaderDescriptor("ImGuiVertexShader", "main", EShaderFrequency::VertexShader, imgui_vs_spirv)),
+                    device.create_shader(imgui_ps, ShaderDescriptor("ImGuiPiexelShader", "main", EShaderFrequency::PixelShader, imgui_ps_spirv))
+                    }),
+                VertexLayout(
+                    {
+                        VertexLayout::Element("POSITION", EVertexFormat::FLOAT2, IM_OFFSETOF(ImDrawVert, pos)),
+                        VertexLayout::Element("TEXCOORD0", EVertexFormat::FLOAT2, IM_OFFSETOF(ImDrawVert, uv)),
+                        VertexLayout::Element("COLOR0", EVertexFormat::R8G8B8A8_UNORM, IM_OFFSETOF(ImDrawVert, col)),
+                    }, VertexLayout::Frequency::PerVertexData, sizeof(ImDrawVert)
+                    ),
+                BindingLayout(
+                    {
+                        BindingLayout::Set(
+                        {
+                            BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
+                        }),
+                        BindingLayout::Set(
+                        {
+                            BindingLayout::Slot(0, BindingLayout::Sampler, EShaderFrequency::PixelShader),
+                            BindingLayout::Slot(1, BindingLayout::SampledTexture, EShaderFrequency::PixelShader),
+                        }),
+                    }),
+                    AttachmentLayout(
+                        { AttachmentLayout::Slot(device.get<ISwapChain>(swap_chain)->render_format(), ELoadOp::Clear, EStoreOp::Store) }
+                    ),
+                ECullMode::Back, EPrimitiveTopology::TriangleList, EPolygonMode::FILL, 1, 0xFFFFFFFF
+            );
+            // Create Render pipeline.
+            device.create_render_pipeline(imgui_render_pipeline, pipelineDesc);
+        }
+    	
         if (draw_data->TotalVtxCount > 0)
         {
             // Create or resize the vertex/index buffers
@@ -224,7 +262,6 @@ namespace sakura::imgui
         imgui_fonts_sampler = render_graph.GpuSampler("ImGuiFontsSampler");
         imgui_vs = render_graph.GpuShader("ImGuiVertexShader");
         imgui_ps = render_graph.GpuShader("ImGuiPixelShader");
-        imgui_render_pipeline = render_graph.RenderPipeline("ImGuiRenderPipeline");
         imgui_projection_matrix = render_graph.GpuBuffer("ImGuiProjectionMatrix");
 
         BufferDescriptor pmDesc =
@@ -324,41 +361,6 @@ namespace sakura::imgui
         imgui_ps_spirv =
             sakura::development::compile_hlsl(imgui_pixel_shader, vars);
     	
-        RenderPipelineDescriptor pipelineDesc = RenderPipelineDescriptor(
-            ShaderLayout({
-                // Create Actual ShaderResources on Device.
-                device.create_shader(imgui_vs, ShaderDescriptor("ImGuiVertexShader", "main", EShaderFrequency::VertexShader, imgui_vs_spirv)),
-                device.create_shader(imgui_ps, ShaderDescriptor("ImGuiPiexelShader", "main", EShaderFrequency::PixelShader, imgui_ps_spirv))
-            }),
-            VertexLayout(
-                {
-                    VertexLayout::Element("POSITION", EVertexFormat::FLOAT2, IM_OFFSETOF(ImDrawVert, pos)),
-                    VertexLayout::Element("TEXCOORD0", EVertexFormat::FLOAT2, IM_OFFSETOF(ImDrawVert, uv)),
-                    VertexLayout::Element("COLOR0", EVertexFormat::R8G8B8A8_UNORM, IM_OFFSETOF(ImDrawVert, col)),
-                }, VertexLayout::Frequency::PerVertexData, sizeof(ImDrawVert)
-            ),
-            BindingLayout(
-                {
-                    BindingLayout::Set(
-                    {
-                        BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
-                    }),
-                    BindingLayout::Set(
-                    {
-                        BindingLayout::Slot(0, BindingLayout::Sampler, EShaderFrequency::PixelShader),
-                        BindingLayout::Slot(1, BindingLayout::SampledTexture, EShaderFrequency::PixelShader),
-                    }),
-            }),
-            AttachmentLayout(
-#ifndef SAKURA_TARGET_PLATFORM_EMSCRIPTEN
-            { AttachmentLayout::Slot(ETextureFormat::R8G8B8A8_UNORM, ELoadOp::Clear, EStoreOp::Store) }
-#else
-			{ AttachmentLayout::Slot(ETextureFormat::B8G8R8A8_UNORM, ELoadOp::Clear, EStoreOp::Store) }
-#endif
-			),
-            ECullMode::Back, EPrimitiveTopology::TriangleList, EPolygonMode::FILL, 1, 0xFFFFFFFF
-		);
-        // Create Render pipeline.
-        device.create_render_pipeline(imgui_render_pipeline, pipelineDesc);
+
     }
 }

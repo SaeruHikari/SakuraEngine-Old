@@ -12,6 +12,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBits
 bool checkDeviceExtensionSupport(VkPhysicalDevice device, std::set<std::string> requiredExtensions);
 std::vector<const char*> getRequiredDeviceExtensions(bool asMainDevice);
 VkSurfaceKHR createSurface(sakura::Window window, VkInstance instance);
+VkCommandPool createCommandPoolForQueue(uint32_t family_index, VkDevice logical_device, bool resetFlag = true);
+VkFence createFenceForQueue(VkDevice device, bool signalOnCreate = false);
 
 sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& config)
 	:name_(config.name)
@@ -120,7 +122,7 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 			auto& phy_dev = device_sets_[i];
 			std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 			std::vector<float> queuePriority; queuePriority.resize(100, 1.f);
-			// Create All Queues.
+
 			for(auto f = 0u; f < phy_dev.queue_families.size(); f++)
 			{
 				if ( (phy_dev.queue_families[f].queueFlags & VK_QUEUE_GRAPHICS_BIT) || 
@@ -135,23 +137,17 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 					queueCreateInfos.push_back(queueCreateInfo);
 				}
 			}
-
 			VkPhysicalDeviceFeatures deviceFeatures{};
-
 			VkDeviceCreateInfo createInfo{};
 			createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-
 			createInfo.queueCreateInfoCount = queueCreateInfos.size();
 			createInfo.pQueueCreateInfos = queueCreateInfos.data();
-
 			// Features
 			createInfo.pEnabledFeatures = &deviceFeatures;
-
 			// Extensions
 			auto devExts = getRequiredDeviceExtensions(master_device_index_ == i);
 			createInfo.enabledExtensionCount = devExts.size();
 			createInfo.ppEnabledExtensionNames = devExts.data();
-
 
 			// Layers
 			if (bEnableValidationLayers) {
@@ -168,11 +164,20 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 			}
 			else
 			{
+				// TODO : Refactor this.
+				phy_dev.command_pools.resize(phy_dev.queue_families.size());
+				for (auto f = 0u; f < phy_dev.queue_families.size(); f++)
+				{
+					phy_dev.command_pools[f] = createCommandPoolForQueue(f, phy_dev.logical_device);
+				}
+
+				// cn: 为创建好的设备创建queues.
 				for (auto gfxs = 0u; gfxs < phy_dev.graphics_queues.size(); gfxs++)
 				{
 					VkQueue q = VK_NULL_HANDLE;
 					vkGetDeviceQueue(phy_dev.logical_device, phy_dev.graphics_queues[gfxs].family_index, gfxs, &q);
 					phy_dev.graphics_queues[gfxs].queue = q;
+					phy_dev.graphics_queues[gfxs].block_fence = createFenceForQueue(phy_dev.logical_device);
 					findGfxQueue = true;
 
 					// cn: 尝试检查此queue对present的支持.
@@ -190,18 +195,20 @@ sakura::graphics::vk::RenderDevice::RenderDevice(const DeviceConfiguration& conf
 						}
 					}
 				}
-				for (auto gfxs = 0u; gfxs < phy_dev.compute_queues.size(); gfxs++)
+				for (auto cs = 0u; cs < phy_dev.compute_queues.size(); cs++)
 				{
 					VkQueue q = VK_NULL_HANDLE;
-					vkGetDeviceQueue(phy_dev.logical_device, phy_dev.compute_queues[gfxs].family_index, gfxs, &q);
-					phy_dev.compute_queues[gfxs].queue = q;
+					vkGetDeviceQueue(phy_dev.logical_device, phy_dev.compute_queues[cs].family_index, cs, &q);
+					phy_dev.compute_queues[cs].queue = q;
+					phy_dev.compute_queues[cs].block_fence = createFenceForQueue(phy_dev.logical_device);
 					findCmptQueue = true;
 				}
-				for (auto gfxs = 0u; gfxs < phy_dev.transfer_queues.size(); gfxs++)
+				for (auto transfers = 0u; transfers < phy_dev.transfer_queues.size(); transfers++)
 				{
 					VkQueue q = VK_NULL_HANDLE;
-					vkGetDeviceQueue(phy_dev.logical_device, phy_dev.transfer_queues[gfxs].family_index, gfxs, &q);
-					phy_dev.transfer_queues[gfxs].queue = q;
+					vkGetDeviceQueue(phy_dev.logical_device, phy_dev.transfer_queues[transfers].family_index, transfers, &q);
+					phy_dev.transfer_queues[transfers].queue = q;
+					phy_dev.transfer_queues[transfers].block_fence = createFenceForQueue(phy_dev.logical_device);
 					findTransferQueue = true;
 				}
 
@@ -254,60 +261,52 @@ sakura::string_view sakura::graphics::vk::RenderDevice::get_name() const
 	return name_;
 }
 
-
-
-
 QueueIndex RenderDevice::request_copy_queue() const
 {
-	sakura::error("Unimplemented!");
+	assert(0 && "Unimplemented!");
 	return QueueIndex(-1);
 }
 
 bool RenderDevice::execute_let_fly(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
 {
-	sakura::error("Unimplemented!");
+	assert(0 && "Unimplemented!");
 	return false;
 }
 
 bool RenderDevice::execute_let_fly(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
 {
-	sakura::error("Unimplemented!");
-	return false;
-}
-bool RenderDevice::execute_block(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
-{
-	sakura::error("Unimplemented!");
+	assert(0 && "Unimplemented!");
 	return false;
 }
 
 bool RenderDevice::execute_block(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
 {
-	sakura::error("Unimplemented!");
+	assert(0 && "Unimplemented!");
 	return false;
 }
 
 FenceHandle RenderDevice::execute(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
 {
-	sakura::error("Unimplemented!");
+	assert(0 && "Unimplemented!");
 	return GenerationalId::UNINITIALIZED;
 }
 
 FenceHandle RenderDevice::execute(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
 {
-	sakura::error("Unimplemented!");
+	assert(0 && "Unimplemented!");
 	return GenerationalId::UNINITIALIZED;
 }
 
 void RenderDevice::wait_idle()
 {
-	sakura::error("Unimplemented!");
+	assert(0 && "Unimplemented!");
 	return;
 }
 
 void RenderDevice::write_texture(GpuTextureHandle texture, void const* data, size_t data_size,
 	const TextureSlice& slice, const TextureDataLayout& layout, extent3d write_size, QueueIndex queue_index)
 {
-	sakura::error("Unimplemented!");
+	//assert(0 && "Unimplemented!");
 }
 
 sakura::graphics::GpuShaderHandle sakura::graphics::vk::RenderDevice::create_shader(
@@ -480,13 +479,8 @@ bool sakura::graphics::vk::RenderDevice::execute(const RenderCommandBuffer& cmdB
 		if (!cacheFrame.command_pool_)
 		{
 			VkCommandPoolCreateInfo poolInfo{};
-			poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-			poolInfo.queueFamilyIndex = master_device().master_queue.family_index;
-			poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-			if (vkCreateCommandPool(master_device().logical_device, &poolInfo, nullptr, &cacheFrame.command_pool_) != VK_SUCCESS)
-			{
-				sakura::error("failed to create command pool!");
-			}
+			cacheFrame.command_pool_ = 
+				createCommandPoolForQueue(master_device().master_queue.family_index, master_device().logical_device);
 		}
 		// Alloc Per Frame Now.
 		VkCommandBufferAllocateInfo allocInfo{};
@@ -554,6 +548,68 @@ bool sakura::graphics::vk::RenderDevice::execute(const RenderCommandBuffer& cmdB
 
 // vk-command processors:
 using PassCacheFrame = RenderDevice::PassCacheFrame;
+
+bool RenderDevice::execute_block(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
+{
+	switch (queue)
+	{
+	case ERenderQueueType::Copy:
+	{
+		auto& queueInfo = master_device().transfer_queues[0];
+		auto commandPool = master_device().command_pools[queueInfo.family_index];
+		VkCommandBuffer commandBuffer = nullptr;
+		// Alloc Per Frame Now.
+		VkCommandBufferAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.commandPool = commandPool;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandBufferCount = 1;
+		if (vkAllocateCommandBuffers(master_device().logical_device, &allocInfo, &commandBuffer) != VK_SUCCESS)
+		{
+			sakura::error("failed to allocate command buffers!");
+		}
+		for (auto& cmd : command_buffer)
+		{
+			compileCommand(commandBuffer, cmd);
+		}
+		VkSubmitInfo submitInfo{};
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer;
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		vkQueueSubmit(queueInfo.queue, 1, &submitInfo, queueInfo.block_fence);
+		vkWaitForFences(
+			master_device().logical_device, 1, &queueInfo.block_fence, VK_TRUE, UINT64_MAX);
+		return true;
+	}break;
+
+	default:
+		assert(0 && "Unimplemented!");
+		return false;
+	}
+	return false;
+}
+
+void RenderDevice::compileCommand(VkCommandBuffer commandBuffer, const RenderCommand* command)
+{
+	switch (command->type())
+	{
+	case ERenderCommandType::copy_buffer_to_texture:
+	{
+		auto& cmd = *static_cast<const RenderCommandCopyBufferToTexture*>(command);
+		compileCopyBufferToTexture(commandBuffer, cmd);
+	}break;
+	default:
+		sakura::error("NOT IMPLEMENTED!");
+		return;
+	}
+}
+
+void RenderDevice::compileCopyBufferToTexture(VkCommandBuffer commandBuffer,
+	const RenderCommandCopyBufferToTexture& command)
+{
+	
+}
+
 void sakura::graphics::vk::RenderDevice::processCommand(PassCacheFrame& cacheFrame, const RenderCommand* command) const
 {
 	switch (command->type())
@@ -605,7 +661,6 @@ void sakura::graphics::vk::RenderDevice::processCommandUpdateBinding(
 	{
 		if (!cache.descripter_pool_)
 		{
-			
 			VkDescriptorPoolSize poolSize{};
 			poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC; //
 			poolSize.descriptorCount = static_cast<uint32_t>(pipeline->binding_layouts.size());
@@ -651,7 +706,11 @@ void sakura::graphics::vk::RenderDevice::processCommandUpdateBinding(
 			}
 		}
 		std::vector<VkDescriptorBufferInfo> bufferInfos;
+		std::vector<VkDescriptorImageInfo> imageInfos;
+		std::vector<VkWriteDescriptorSet> writeDescriptorSets;
 		bufferInfos.reserve(writeSize);
+		imageInfos.reserve(writeSize);
+		writeDescriptorSets.reserve(writeSize);
 		for (auto i = 0u; i < binder.sets.size(); i++) // Sets
 		{
 			auto& set = binder.sets[i];
@@ -679,17 +738,54 @@ void sakura::graphics::vk::RenderDevice::processCommandUpdateBinding(
 					descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 					descriptorWrite.descriptorCount = 1;
 					descriptorWrite.pBufferInfo = &bufferInfos[bufferInfos.size() - 1];
+					writeDescriptorSets.emplace_back(descriptorWrite);
+				}
+				else if (auto samplerSet = slot.as_sampler();samplerSet)
+				{
+					VkDescriptorImageInfo imageInfo = {};
+					if (auto sampler = get<GpuSampler>(samplerSet->sampler); sampler)
+						imageInfo.sampler = sampler->sampler;
+					imageInfos.emplace_back(imageInfo);
+					
+					VkWriteDescriptorSet descriptorWrite = {};
+					descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET; //
+					descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+					descriptorWrite.descriptorCount = 1;
+					descriptorWrite.dstArrayElement = 0;
+					descriptorWrite.dstBinding = samplerSet->slot_index;
+					descriptorWrite.dstSet = cache.binding_sets_[i];
+					descriptorWrite.pImageInfo= &imageInfos[imageInfos.size() - 1];
+					writeDescriptorSets.emplace_back(descriptorWrite);
+				}
+				else if (auto texSet = slot.as_sampled_texture(); texSet)
+				{
+					VkDescriptorImageInfo imageInfo = {};
+					if (auto texture = get<GpuTexture>(texSet->texture); texture)
+						imageInfo.imageView = texture->image_view;
+					imageInfos.emplace_back(imageInfo);
 
-					vkUpdateDescriptorSets(
-						// TODO: mGPU
-						master_device().logical_device,
-						1, &descriptorWrite, 0, nullptr);
+					VkWriteDescriptorSet descriptorWrite = {};
+					descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET; //
+					descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+					descriptorWrite.descriptorCount = 1;
+					descriptorWrite.dstArrayElement = 0;
+					descriptorWrite.dstBinding = texSet->slot_index;
+					descriptorWrite.dstSet = cache.binding_sets_[i];
+					descriptorWrite.pImageInfo = &imageInfos[imageInfos.size() - 1];
+					writeDescriptorSets.emplace_back(descriptorWrite);
 				}
 				else
 				{
-					sakura::error("Unimplemented!");
+					assert(0 && "Unimplemented!");
 				}
-			}
+			} // end foreach slots
+
+			vkUpdateDescriptorSets(
+				// TODO: mGPU
+				master_device().logical_device,
+				writeDescriptorSets.size(), writeDescriptorSets.data(),
+				0, nullptr
+			);
 		}
 	}
 
@@ -902,6 +998,38 @@ VkSurfaceKHR sakura::graphics::vk::RenderDevice::create_and_validate_surface(Win
 
 
 // vk-implementation:
+VkFence createFenceForQueue(VkDevice device, bool signalOnCreate)
+{
+	VkFence fence = nullptr;
+	VkFenceCreateInfo fenceInfo = {};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	if (signalOnCreate)
+		fenceInfo.flags = VkFenceCreateFlagBits::VK_FENCE_CREATE_SIGNALED_BIT;
+	
+	if(vkCreateFence(device, &fenceInfo, nullptr, &fence) != VK_SUCCESS)
+	{
+		sakura::error("[RenderGraphVulkan]: Create Fence Failed!");
+	}
+	return fence;
+}
+
+VkCommandPool createCommandPoolForQueue(uint32_t family_index, VkDevice logical_device, bool resetFlag)
+{
+	VkCommandPoolCreateInfo poolInfo{};
+	VkCommandPool pool = nullptr;
+	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	poolInfo.queueFamilyIndex = family_index;
+	if (resetFlag)
+		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	else
+		poolInfo.flags = 0;
+	
+	if (vkCreateCommandPool(logical_device, &poolInfo, nullptr, &pool) != VK_SUCCESS)
+	{
+		sakura::error("failed to create command pool!");
+	}
+	return pool;
+}
 
 std::vector<const char*> getRequiredDeviceExtensions(bool asMainDevice)
 {
@@ -916,7 +1044,6 @@ std::vector<const char*> getRequiredDeviceExtensions(bool asMainDevice)
 
 	return extensions;
 }
-
 
 // cn: 检查设备扩展的支持.
 // en: Check device extensions support.

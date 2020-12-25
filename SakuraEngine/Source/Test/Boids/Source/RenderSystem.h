@@ -3,13 +3,11 @@
 
 #include "RenderGraph/RenderGraph.h"
 #include "RenderGraphWebGPU/RenderGraphWebGPU.h"
-#include "RenderGraphVulkan/RenderGraphVulkan.h"
 
 #include "ECS/ECS.h"
 #include "Boids.h"
 
-#define TARGET_NUM 20000
-const bool useVk = false;
+#define TARGET_NUM 5000
 
 namespace render_system
 {
@@ -91,7 +89,6 @@ namespace render_system
 			const RenderGraph& rg, IRenderDevice& device) noexcept override
 		{
 			command_buffer.enqueue<RenderCommandBeginRenderPass>(render_pipeline, attachment);
-			if(!useVk)
 			{
 				Binding binding0 = Binding({
 					Binding::Set({
@@ -123,7 +120,6 @@ namespace render_system
 					command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 60);
 				}
 			}
-
 			
 			Binding binding00 = Binding({
 				Binding::Set({
@@ -201,19 +197,12 @@ namespace render_system
 
 		// Create Devices
 		DeviceConfiguration deviceConfig;
-
-		if(!useVk)
 		{
 			deviceConfig.name = "DawnDevice";
 			render_device = new webgpu::RenderDevice(deviceConfig);
 			assert(render_device != nullptr && "ERROR: Failed to create Dawn device!");
 		}
-		else
-		{
-			deviceConfig.name = "VulkanDevice";
-			render_device = new vk::RenderDevice(deviceConfig);
-			assert(render_device != nullptr && "ERROR: Failed to create Vulkan device!");
-		}
+
 
 		// Create Swap Chains.
 		render_device->create_swap_chain(swap_chain, SwapChainDescriptor(EPresentMode::Mailbox, main_window, 3));

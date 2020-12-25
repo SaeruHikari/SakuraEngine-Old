@@ -296,7 +296,7 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
 	                    }
                         else
                         {
-                            sakura::error("Unimplemented!");
+                            assert(0 && "Unimplemented!");
                         }
                     }
 				}
@@ -353,25 +353,25 @@ QueueIndex RenderDevice::request_copy_queue() const
 
 bool RenderDevice::execute_let_fly(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
 {
-    sakura::error("Unimplemented!");
+    assert(0 && "Unimplemented!");
     return false;
 }
 
 bool RenderDevice::execute_let_fly(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
 {
-    sakura::error("Unimplemented!");
+    assert(0 && "Unimplemented!");
     return false;
 }
 
 bool RenderDevice::execute_block(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
 {
-    sakura::error("Unimplemented!");
+    assert(0 && "Unimplemented!");
     return false;
 }
 
 FenceHandle RenderDevice::execute(const ERenderQueueType queue, const RenderCommandBuffer& command_buffer)
 {
-	sakura::error("Unimplemented!");
+	assert(0 && "Unimplemented!");
     return GenerationalId::UNINITIALIZED;
 }
 
@@ -426,14 +426,14 @@ bool RenderDevice::execute_block(const QueueIndex queue, const RenderCommandBuff
     }
     else
     {
-        sakura::error("Unimplemented!");
+        assert(0 && "Unimplemented!");
         return false;
     }
 }
 
 FenceHandle RenderDevice::execute(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
 {
-    sakura::error("Unimplemented!");
+    assert(0 && "Unimplemented!");
     return GenerationalId::UNINITIALIZED;
 }
 
@@ -667,7 +667,7 @@ GpuSamplerHandle RenderDevice::create_sampler(const GpuSamplerHandle handle, con
 ComputePipelineHandle RenderDevice::create_compute_pipeline(const ComputePipelineHandle handle,
 	const ComputePipelineDescriptor& desc)
 {
-    sakura::error("Unimplemented!");
+    assert(0 && "Unimplemented!");
     return GenerationalId::UNINITIALIZED;
 }
 

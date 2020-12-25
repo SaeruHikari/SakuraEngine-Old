@@ -28,7 +28,7 @@ Module(
 )
 endif(FALSE)
 
-if(${vulkan})
+if(${vulkan} AND FALSE)
 Module(
     NAME RenderGraphVulkan
     TYPE Library
@@ -44,7 +44,7 @@ Module(
     LINKS
     LINKS_PUBLIC ${Vulkan_LIBRARY}
 )
-endif(${vulkan})
+endif()
 
 if(windows OR macos OR web)
   

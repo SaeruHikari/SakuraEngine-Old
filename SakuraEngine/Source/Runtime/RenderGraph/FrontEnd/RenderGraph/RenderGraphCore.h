@@ -471,7 +471,6 @@ namespace sakura::graphics
 			Sampled = 0x00000004,
 			Storage = 0x00000008,
 			Attachment = 0x00000010,
-			Present = 0x00000020
 		};
 		using Usages = uint32;
 

@@ -567,15 +567,113 @@ case VkFormat::VK_FORMAT_##_format:\
 	FORCEINLINE VkSamplerCreateInfo vk::translate(SamplerDescriptor desc)
 	{
 		VkSamplerCreateInfo sampler = {};
+		sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 		sampler.addressModeU = translate(desc.address_mode_u);
 		sampler.addressModeV = translate(desc.address_mode_v);
 		sampler.addressModeW = translate(desc.address_mode_w);
-		sampler.anisotropyEnable = desc.anisotropy;
+		// TODO: Fix this!
+		//sampler.anisotropyEnable = desc.anisotropy;
+		sampler.anisotropyEnable = VK_FALSE;
+		
 		sampler.maxAnisotropy = desc.max_anisotropy;
 		sampler.maxLod = desc.max_lod;
 		sampler.minLod = desc.min_lod;
 		sampler.magFilter = translate(desc.mag_filter);
 		sampler.minFilter = translate(desc.min_filter);
 		return sampler;
+	}
+
+	FORCEINLINE VkImageType vk::translate(ETextureDimension dimension)
+	{
+		switch (dimension)
+		{
+		case ETextureDimension::Texture2D:
+			return VkImageType::VK_IMAGE_TYPE_2D;
+		case Texture::EDimension::Texture1D:
+			return VkImageType::VK_IMAGE_TYPE_1D;
+		case Texture::EDimension::Texture3D:
+			return VkImageType::VK_IMAGE_TYPE_3D;
+		default:
+			return VkImageType::VK_IMAGE_TYPE_2D;
+		}
+	}
+
+	FORCEINLINE VkImageCreateInfo vk::translate(TextureDescriptor descriptor)
+	{
+		VkImageCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		createInfo.arrayLayers = descriptor.array_layers;
+		createInfo.format = translate(descriptor.format);
+		createInfo.extent = { descriptor.size.width, descriptor.size.height, descriptor.size.depth };
+		createInfo.imageType = translate(descriptor.dimension);
+		createInfo.initialLayout = VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL;
+		createInfo.sharingMode = translate(descriptor.sharing_mode);
+		createInfo.tiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
+		createInfo.mipLevels = descriptor.mip_levels;
+		createInfo.samples = (VkSampleCountFlagBits)descriptor.sample_count;
+		
+		createInfo.flags = 0;
+		createInfo.usage = 0;
+
+		if (descriptor.flags & ETextureFlag::ForceLinear)
+			createInfo.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
+		if (descriptor.flags & ETextureFlag::SparseAliased)
+			createInfo.flags |= VkImageCreateFlagBits::VK_IMAGE_CREATE_SPARSE_ALIASED_BIT;
+		if (descriptor.flags & ETextureFlag::SparseBinding)
+			createInfo.flags |= VkImageCreateFlagBits::VK_IMAGE_CREATE_SPARSE_BINDING_BIT;
+		if (descriptor.flags & ETextureFlag::SparseResidency)
+			createInfo.flags |= VkImageCreateFlagBits::VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT;
+		if (descriptor.flags & ETextureFlag::Alias)
+			createInfo.flags |= VkImageCreateFlagBits::VK_IMAGE_CREATE_ALIAS_BIT;
+		if (descriptor.flags & ETextureFlag::BlockButBitCompatible)
+			createInfo.flags |= VkImageCreateFlagBits::VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT;
+		if (descriptor.flags & ETextureFlag::MutableFormat)
+			createInfo.flags |= VkImageCreateFlagBits::VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+		if (descriptor.flags & ETextureFlag::Cube)
+			createInfo.flags |= VkImageCreateFlagBits::VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+		if (descriptor.flags & ETextureFlag::T2DArray)
+			createInfo.flags |= VkImageCreateFlagBits::VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
+
+		if (descriptor.usages & ETextureUsage::CopyDst)
+			createInfo.usage |= VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+		if (descriptor.usages & ETextureUsage::CopySrc)
+			createInfo.usage |= VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+		if (descriptor.usages & ETextureUsage::Attachment)
+			createInfo.usage |= VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		if (descriptor.usages & ETextureUsage::Sampled)
+			createInfo.usage |= VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT;
+		if (descriptor.usages & ETextureUsage::Storage)
+			createInfo.usage |= VkImageUsageFlagBits::VK_IMAGE_USAGE_STORAGE_BIT;
+		//TODO: VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT 
+		
+		return createInfo;
+	}
+
+	FORCEINLINE VkSharingMode vk::translate(ESharingMode mode)
+	{
+		switch(mode)
+		{
+		case ESharingMode::Concurrent:
+			return VkSharingMode::VK_SHARING_MODE_CONCURRENT;
+		case ESharingMode::Exclusive:
+			return VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
+		default:
+			return VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
+		}
+	}
+	
+	FORCEINLINE VkImageViewType vk::match(const ETextureDimension dimension)
+	{
+		switch (dimension)
+		{
+		case ETextureDimension::Texture2D:
+			return VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
+		case ETextureDimension::Texture1D:
+			return VkImageViewType::VK_IMAGE_VIEW_TYPE_1D;
+		case ETextureDimension::Texture3D:
+			return VkImageViewType::VK_IMAGE_VIEW_TYPE_3D;
+		default:
+			return VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
+		}
 	}
 }

@@ -29,6 +29,71 @@
 #include <cassert>
 #include <stdint.h>
 
+#define SAKURA_ERROR(node,...) printf_s(node, __VA_ARGS__)
+#define SAKURA_FATAL(node,...) printf_s(node, __VA_ARGS__)
+
+#if defined(__MINGW32__)
+# define SAKURA_ISSUE_BREAK() DebugBreak();
+#elif defined(_MSC_VER)
+# define SAKURA_ISSUE_BREAK() __debugbreak();
+#elif defined(__powerpc64__)
+# define SAKURA_ISSUE_BREAK() asm volatile ("tw 31,1,1");
+#elif defined(__i386__) || defined(__ia64__) || defined(__x86_64__)
+# define SAKURA_ISSUE_BREAK() asm("int $3");
+#else
+# include <stdlib.h>
+# define SAKURA_ISSUE_BREAK() abort();
+#endif
+
+#ifndef NDEBUG
+#ifndef SAKURA_ASSERT_ENABLED
+#define SAKURA_ASSERT_ENABLED
+#endif
+#endif
+
+#ifdef SAKURA_ASSERT_ENABLED
+#define SAKURA_BREAK() \
+  do { \
+    SAKURA_FATAL("BREAKPOINT HIT\n\tfile = %s\n\tline=%d\n", __FILE__, __LINE__); \
+    SAKURA_ISSUE_BREAK() \
+  } while (false)
+
+#define SAKURA_ASSERT(cond) \
+  do { \
+    if (!(cond)) { \
+      SAKURA_FATAL("ASSERTION FAILED\n\tfile = %s\n\tline = %d\n\tcond = %s\n", __FILE__, __LINE__, #cond); \
+      SAKURA_ISSUE_BREAK() \
+    } \
+  } while (false)
+
+#define SAKURA_ASSERT_MSG(cond, ...) \
+  do { \
+    if (!(cond)) { \
+	  SAKURA_FATAL("ASSERTION FAILED\n\tfile = %s\n\tline = %d\n\tcond = %s\n\tmessage = ", __FILE__, __LINE__, #cond); \
+      SAKURA_FATAL(__VA_ARGS__); \
+      SAKURA_FATAL("\n"); \
+      SAKURA_ISSUE_BREAK(); \
+    } \
+  } while (false)
+
+#define SAKURA_ASSERT_CMD(cond, cmd) \
+  do { \
+    if (!(cond)) { \
+      cmd; \
+    } \
+  } while (false)
+
+
+#else
+#define SAKURA_BREAK()
+#define SAKURA_ASSERT(cond)
+#define SAKURA_ASSERT_MSG(cond, ...)
+#define SAKURA_ASSERT_CMD(cond, cmd)
+#endif
+
+
+#define SAKURA_CACHELINE_SIZE 64 // TODO: actually determine this.
+
 #ifdef max
 #undef max
 #endif

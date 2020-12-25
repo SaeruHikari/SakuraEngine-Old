@@ -23,7 +23,7 @@ Module(
     DEPS
     DEPS_PUBLIC 
         RuntimeCore IMGUI_CORE
-        RenderGraph RenderGraphWebGPU RenderGraphVulkan
+        RenderGraph RenderGraphWebGPU
         ShaderCompiler
     INCLUDES_PUBLIC 
         /Include

@@ -47,9 +47,16 @@ namespace sakura::graphics::vk
 	VkSamplerAddressMode translate(ESamplerAddressMode mode);
 	
 	VkFilter translate(EFilter mode);
+
+	VkImageCreateInfo translate(TextureDescriptor descriptor);
 	
+	VkImageType translate(ETextureDimension dimension);
+
+	VkSharingMode translate(ESharingMode mode);
+
+	VkImageViewType match(const ETextureDimension dimension);
 	
-	const bool bEnableValidationLayers = false;
+	const bool bEnableValidationLayers = true;
 
 	// cn: 启动引擎所需的最小扩展集.
 	// en: The minimum set of extensions required to start the engine.

@@ -5,7 +5,7 @@ Module(
     DEPS
     DEPS_PUBLIC 
         RuntimeCore ECS 
-        RenderGraph RenderGraphWebGPU RenderGraphVulkan
+        RenderGraph RenderGraphWebGPU
         ShaderCompiler
         Tracker ImGui
     INCLUDES_PUBLIC 

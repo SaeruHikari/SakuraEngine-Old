@@ -340,8 +340,6 @@ FORCEINLINE WGPUTextureDescriptor sakura::graphics::webgpu::translate(const Text
 		res.usage |= WGPUTextureUsage::WGPUTextureUsage_CopyDst;
 	if (desc.usages & ETextureUsage::CopySrc)
 		res.usage |= WGPUTextureUsage::WGPUTextureUsage_CopySrc;
-	if (desc.usages & ETextureUsage::Present)
-		res.usage |= WGPUTextureUsage::WGPUTextureUsage_Present;
 	if (desc.usages & ETextureUsage::Sampled)
 		res.usage |= WGPUTextureUsage::WGPUTextureUsage_Sampled;
 	if (desc.usages & ETextureUsage::Storage)

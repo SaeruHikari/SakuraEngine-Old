@@ -725,7 +725,7 @@ void DebugHeadingLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 	Local2XSystem<LocalToWorld>(ppl, wrd_filter);
 }
 
-const bool bUseImGui = !useVk;
+const bool bUseImGui = true;
 sakura::graphics::RenderPassHandle imgui_pass = sakura::GenerationalId::UNINITIALIZED;
 sakura::graphics::RenderCommandBuffer imgui_command_buffer("ImGuiRender", 4096);
 int main()
@@ -765,7 +765,7 @@ int main()
 	task_system::ecs::pipeline ppl(std::move(ctx));
 	if (!bUseImGui)
 	{
-		SpawnBoids(ppl, 20000);
+		SpawnBoids(ppl, TARGET_NUM);
 		ppl.wait();
 	}
 	render_system::initialize();
@@ -811,7 +811,7 @@ int main()
 			}
 			imgui::SliderFloat("TimeScale", &TimeScale, 0, 10);
 			int prevBoidCount = BoidCount;
-			if (imgui::SliderInt("BoidCount", &BoidCount, 0, 20000))
+			if (imgui::SliderInt("BoidCount", &BoidCount, 0, TARGET_NUM))
 			{
 				UpdateBoidsCount(ppl, BoidCount - prevBoidCount);
 			}

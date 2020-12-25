@@ -6,6 +6,7 @@
 #include "vulkan/vulkan_win32.h"
 #endif
 #include "Containers/flat_map.hpp"
+#include "Containers/LockFree.hpp"
 
 namespace sakura::graphics::vk
 {
@@ -13,8 +14,9 @@ namespace sakura::graphics::vk
 
 	struct VulkanQueue
 	{
-		uint32_t family_index = 0;
-		VkQueue queue = VK_NULL_HANDLE;
+		size_t family_index = 0;
+		VkQueue queue = nullptr;
+		VkFence block_fence = nullptr;
 	};
 
 	struct VulkanDeviceSet
@@ -24,7 +26,10 @@ namespace sakura::graphics::vk
 
 		VkPhysicalDevice device;
 		VkDevice logical_device;
+		
 		std::vector<VkQueueFamilyProperties> queue_families;
+		
+		std::vector<VkCommandPool> command_pools;
 
 		std::vector<uint32_t> present_families;
 		std::vector<uint32_t> graphics_families;
@@ -34,6 +39,7 @@ namespace sakura::graphics::vk
 		std::vector<VulkanQueue> graphics_queues;
 		std::vector<VulkanQueue> compute_queues;
 		std::vector<VulkanQueue> transfer_queues;
+
 
 		// cn: graphics queues中一条支持GFX和present的queue.
 		//	   其index尽可能小，一般期望它是0.
@@ -130,6 +136,8 @@ namespace sakura::graphics::vk
 		sakura::vector<PassCacheFrame> pass_caches_;
 
 	protected:
+		void compileCommand(VkCommandBuffer commandBuffer, const RenderCommand* command);
+		void compileCopyBufferToTexture(VkCommandBuffer commandBuffer, const RenderCommandCopyBufferToTexture& command);
     	
 		void processCommand(PassCacheFrame& cache, const RenderCommand* command) const;
 		void processCommandUpdateBinding(PassCacheFrame& cache, const RenderCommandUpdateBinding& command) const;
