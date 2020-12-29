@@ -600,11 +600,11 @@ void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 		auto hds = init_component<Heading>(ctx, slice);
 		forloop(i, 0, slice.count)
 		{
-			std::uniform_real_distribution<float> uniform_dist(0, 1);
+			std::uniform_real_distribution<float> uniform_dist(-1, 1);
 			auto& el = get_random_engine();
 			sakura::Vector3f vector{ uniform_dist(el), uniform_dist(el), uniform_dist(el) };
 			hds[i] = math::normalize(vector);
-			trs[i] = s.random_point(el);
+			trs[i] = sakura::Vector3f::vector_zero();// s.random_point(el);
 		}
 	}
 }
