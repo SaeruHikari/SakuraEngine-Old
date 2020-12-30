@@ -11,7 +11,6 @@ GpuTexture::GpuTexture(const GpuTextureHandle handle, const webgpu::RenderDevice
 	texture = wgpuDeviceCreateTexture(dev.device, &textureDesc);
 	WGPUTextureViewDescriptor vdesc = {};
 
-	WGPUTextureViewDimension d;
 	vdesc.dimension = match(translate(desc.dimension));
 	vdesc.arrayLayerCount = desc.array_layers;
 	vdesc.aspect = WGPUTextureAspect_All;

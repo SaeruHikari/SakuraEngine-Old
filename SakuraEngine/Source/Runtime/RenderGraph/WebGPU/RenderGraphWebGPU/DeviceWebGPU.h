@@ -16,11 +16,21 @@ namespace sakura::graphics
 namespace sakura::graphics::webgpu
 {
 	class RenderPipeline;
+	struct RenderGraphWebGPUAPI RenderFrameWebGPU : public IRenderFrame
+	{
+		virtual ~RenderFrameWebGPU();
+		const void* raw() const override;
+		void* raw() override;
+		bool valid(const size_t currentFrame) const override;
+
+	protected:
+		size_t this_frame_ = 0;
+	};
 	
 	class RenderGraphWebGPUAPI RenderDevice final : public IRenderDevice
 	{
 	public:
-		RenderDevice(const DeviceConfiguration& config);
+		RenderDevice(const RenderGraph& renderGraph, const DeviceConfiguration& config);
 		~RenderDevice();
 		static WGPUBackendType get_backend();
 		
@@ -72,12 +82,15 @@ namespace sakura::graphics::webgpu
 		sakura::unordered_map<sakura::string, WGPUShaderModule> shader_modules;
 		struct PassCacheFrame
 		{
-			sakura::vector<WGPUTextureView> texture_views = sakura::vector<WGPUTextureView>(0); // [NOT FINISHED] Clear Every Frame.
-			sakura::vector< sakura::pair<sakura::vector<WGPUBindGroupEntry>, bool> > entries
-				= sakura::vector< sakura::pair<sakura::vector<WGPUBindGroupEntry>, bool> >(0); // Finished
-			sakura::vector<WGPUBindGroup> bind_groups = sakura::vector<WGPUBindGroup>(0); // Finished
-			RenderPipeline* pipeline = nullptr; // 
+			sakura::vector<WGPUTextureView> texture_views
+				= sakura::vector<WGPUTextureView>(0); // [NOT FINISHED] Clear Every Frame.
+			
+			sakura::vector< sakura::pair<sakura::vector<Binding>, bool> > entries
+				= sakura::vector< sakura::pair<sakura::vector<Binding>, bool> >(0); // Finished
 
+			sakura::vector<WGPUBindGroup> bind_groups = sakura::vector<WGPUBindGroup>(0); // Finished
+
+			RenderPipeline* pipeline = nullptr; // 
 			WGPUCommandBuffer commands = nullptr;
 			WGPUCommandEncoder encoder = nullptr;
 			WGPURenderPassEncoder pass_encoder = nullptr;
@@ -93,6 +106,7 @@ namespace sakura::graphics::webgpu
 		WGPUQueue default_queue = nullptr;
 		sakura::string name;
 
+		const RenderGraph& render_graph;
 	protected:
 		template <typename ResourceType, typename Handle, typename... Args>
 		Handle _create_resouce_impl(const Handle handle, Args&&... args) noexcept;
@@ -120,8 +134,6 @@ namespace sakura::graphics::webgpu
 		void processCommandCopyTextureToBuffer(WGPUCommandEncoder encoder, const RenderCommandCopyTextureToBuffer& command) const;
 		void processCommandCopyBufferToBuffer(WGPUCommandEncoder encoder, const RenderCommandCopyBufferToBuffer& command) const;
 		void processCommandCopyBufferToTexture(WGPUCommandEncoder encoder, const RenderCommandCopyBufferToTexture& command) const;
-
-
 	};
 }
 

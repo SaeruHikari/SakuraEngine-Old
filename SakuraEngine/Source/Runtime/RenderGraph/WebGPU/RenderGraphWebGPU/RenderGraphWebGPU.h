@@ -58,7 +58,6 @@ namespace sakura::graphics::webgpu
 	
 	WGPUTextureViewDimension match(const WGPUTextureDimension dimension);
 
-
 	namespace detail
 	{
 		constexpr auto WebGPUTextureFormatNameLut = sakura::map_c<WGPUTextureFormat, sakura::string_view>(

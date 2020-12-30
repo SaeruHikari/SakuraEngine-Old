@@ -90,19 +90,15 @@ namespace render_system
 		{
 			command_buffer.enqueue<RenderCommandBeginRenderPass>(render_pipeline, attachment);
 			{
-				Binding binding0 = Binding({
-					Binding::Set({
-						Binding::Slot(uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 4, 0)
-					}),
-					Binding::Set({
-						Binding::Slot(uniform_buffer, 0, sizeof(sakura::float4x4), 0)
-					})
-				});
 				//command_buffer.enqueue<RenderCommandSetScissorRect>(
 				//	0, device.backend() == EBackend::WebGPU ? main_window.extent().width / 2 + 10 : 0,
 				//	main_window.extent().width / 2, main_window.extent().height
 				//);
-				command_buffer.enqueue<RenderCommandUpdateBinding>(binding0);
+				command_buffer.enqueue<RenderCommandUpdateBinding>(
+					Binding(0, 0, uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 4, 0));
+				command_buffer.enqueue<RenderCommandUpdateBinding>(
+					Binding(1, 0, uniform_buffer, 0, sizeof(sakura::float4x4), 0));
+				
 				command_buffer.enqueue<RenderCommandDraw>(
 					RenderCommandDraw::VB(rg.query<GpuBufferHandle>("VertexBufferSphere")),
 					RenderCommandDraw::IB(rg.query<GpuBufferHandle>("IndexBufferSphere"),
@@ -111,26 +107,18 @@ namespace render_system
 				auto tn = target_worlds.size() / 4;
 				for (auto i = 1u; i < tn; i++)
 				{
-					Binding binding = Binding({
-						Binding::Set({
-							Binding::Slot(uniform_buffer_per_target, 0,
-								sizeof(sakura::float4x4) * 4, 0)
-						}, { sizeof(sakura::float4x4) * i * 4 })
-						});
-					command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 60);
+					// { sizeof(sakura::float4x4) * i * 4 })
+					command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(
+						Binding(0, 0, uniform_buffer_per_target, 0,sizeof(sakura::float4x4) * 4,
+							sizeof(sakura::float4x4) * i * 4),
+						60);
 				}
 			}
 			
-			Binding binding00 = Binding({
-				Binding::Set({
-					Binding::Slot(uniform_buffer_per_object, 0,
-						sizeof(sakura::float4x4) * 4, 0)
-				}, { 0 }/*dynamic_offsets*/),
-				Binding::Set({
-					Binding::Slot(uniform_buffer, 0, sizeof(sakura::float4x4), 0)
-				})
-			});
-			command_buffer.enqueue<RenderCommandUpdateBinding>(binding00);
+			command_buffer.enqueue<RenderCommandUpdateBinding>(
+				Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * 4, 0));
+			command_buffer.enqueue<RenderCommandUpdateBinding>(
+				Binding(1, 0, uniform_buffer, 0, sizeof(sakura::float4x4), 0));
 			command_buffer.enqueue<RenderCommandDraw>(
 				RenderCommandDraw::VB(rg.query<GpuBufferHandle>("VertexBuffer")),
 				RenderCommandDraw::IB(rg.query<GpuBufferHandle>("IndexBuffer"),
@@ -143,14 +131,11 @@ namespace render_system
 				ZoneScopedN("RenderPassExecute");
 				for (auto i = 0u; i < bn / N; i++)
 				{
-					Binding binding = Binding({
-						Binding::Set({
-							Binding::Slot(uniform_buffer_per_object, 0,
-								sizeof(sakura::float4x4) * 4, 
-								0)
-						}, { sizeof(sakura::float4x4) * (i + bn * n / N) * 4 })
-					});
-					command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(binding, 3);
+					//}, { sizeof(sakura::float4x4) * (i + bn * n / N) * 4 })
+					command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(
+						Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * 4,
+							sizeof(sakura::float4x4) * (i + bn * n / N) * 4),
+						3);
 				}
 			}
 			command_buffer.enqueue<RenderCommandEndRenderPass>();
@@ -199,7 +184,7 @@ namespace render_system
 		DeviceConfiguration deviceConfig;
 		{
 			deviceConfig.name = "DawnDevice";
-			render_device = new webgpu::RenderDevice(deviceConfig);
+			render_device = new webgpu::RenderDevice(render_graph, deviceConfig);
 			assert(render_device != nullptr && "ERROR: Failed to create Dawn device!");
 		}
 

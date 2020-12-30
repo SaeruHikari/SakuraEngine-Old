@@ -82,27 +82,6 @@ namespace sakura::graphics
 
 	}
 
-	template <size_t N>
-	FORCEINLINE Binding::Set::Set(const Slot(&_slots)[N]) noexcept
-		: slots(_slots, _slots + N), dynamic_offsets(N, 0)
-	{
-
-	}
-
-	template <typename I, size_t N>
-	FORCEINLINE Binding::Set::Set(const Slot(&_slots)[N], const I(&offsets)[N]) noexcept
-		:slots(_slots, _slots + N), dynamic_offsets(offsets, offsets + N)
-	{
-
-	}
-
-	template <size_t N>
-	FORCEINLINE Binding::Binding(const Set(&_sets)[N]) noexcept
-		:sets(_sets, _sets + N)
-	{
-
-	}
-
 	FORCEINLINE RenderObjectHandle::RenderObjectHandle(RenderGraphId id)
 		: id_(id) {	}
 
@@ -136,21 +115,22 @@ namespace sakura::graphics
 		return freq <= EShaderFrequency::MeshShader && freq >= EShaderFrequency::VertexShader;
 	}
 
-	FORCEINLINE Binding::Slot::Slot(GpuBufferHandle _buffer,
+	FORCEINLINE Binding::Binding(uint32_t set, uint32_t binding, GpuBufferHandle _buffer,
 		uint32 _slot_index, uint32 _size, uint32 _offset)
-		: content(Binding::Slot::Buffer{ _slot_index, _size, _offset, _buffer }) {	}
+		: target_set(set), target_binding(binding), offset_(_offset), content(Binding::Buffer{ _slot_index, _size, _buffer }) {	}
 
-	FORCEINLINE Binding::Slot::Slot(GpuTextureHandle texture, uint32 slot_index)
-		: content(Binding::Slot::SampledTexture(texture, slot_index)) {		}
+	FORCEINLINE Binding::Binding(uint32_t set, uint32_t binding, GpuTextureHandle texture, uint32 slot_index)
+		: target_set(set), target_binding(binding), content(Binding::SampledTexture{ texture, slot_index }) {		}
 
 
-	FORCEINLINE Binding::Slot::Slot(GpuSamplerHandle sampler, uint32 slot_index)
-		: content(Binding::Slot::Sampler{ slot_index, sampler }) {		}
+	FORCEINLINE Binding::Binding(uint32_t set, uint32_t binding, GpuSamplerHandle sampler, uint32 slot_index)
+		: target_set(set), target_binding(binding), content(Binding::Sampler{ slot_index, sampler }) {		}
 
 
 	FORCEINLINE Shader::Descriptor::Descriptor(const sakura::string& _name, const sakura::string& _entry,
 		const EShaderFrequency _frequency, const sakura::span<const std::byte> _code) noexcept
 		: code(_code), name(_name), entry(_entry), frequency(_frequency) {	}
+
 
 	FORCEINLINE VertexLayout::Element::Element(string _semantic_name, EVertexFormat _format, uint32 _offset) noexcept
 		:semantic_name(_semantic_name), format(_format), offset(_offset) {	}

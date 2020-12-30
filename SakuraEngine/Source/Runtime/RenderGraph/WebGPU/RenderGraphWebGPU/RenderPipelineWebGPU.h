@@ -21,6 +21,7 @@ namespace sakura::graphics::webgpu
 
 		sakura::vector<WGPUBindGroupLayout> bindingGroups;
 		WGPURenderPipeline renderPipeline = nullptr;
+		RenderPipelineDescriptor desc;
 	protected:
 		RenderPipelineHandle _handle;
 	};

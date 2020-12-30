@@ -144,7 +144,6 @@ void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, const RenderCo
 {
     if (command.instance_draw)
         goto DRAW_INSTANCE;
-
 	{
         const auto& vb_src = command.vb;
         const auto& ib_src = command.ib;
@@ -172,9 +171,58 @@ void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, const RenderCo
             assert(0 && "IB NOT FOUND");
         }
 	}
+
+    // Update Bindings
+    for (auto i = 0u; i < cacheFrame.bind_groups.size(); i++)
+    {
+        auto& bindGroup = cacheFrame.bind_groups[i];
+        std::vector<uint32> dynamic_offsets;
+        dynamic_offsets.reserve(cacheFrame.entries[i].first.size());
+        for (auto j = 0u; j < cacheFrame.entries[i].first.size(); j++)
+        {
+            auto& slot = cacheFrame.entries[i].first[j];
+            if (auto buf = slot.as_buffer(); buf)
+            {
+                dynamic_offsets.emplace_back(slot.offset());
+            }
+        }
+        if (bindGroup && cacheFrame.pass_encoder)
+            wgpuRenderPassEncoderSetBindGroup(cacheFrame.pass_encoder, i, bindGroup,
+                dynamic_offsets.size(),
+                dynamic_offsets.size() == 0 ? nullptr : dynamic_offsets.data());
+    }
 DRAW_INSTANCE:
     wgpuRenderPassEncoderDrawIndexed(cacheFrame.pass_encoder,
         static_cast<uint32>(command.ib.index_count), command.instance_count, 
+        command.first_index, command.base_vertex, command.first_instance);
+}
+
+void RenderDevice::processCommandDrawInstancedWithArgs(PassCacheFrame& cacheFrame, const RenderCommandDrawInstancedWithArgs& command) const
+{
+    if (command.binder)
+        processCommandUpdateBinding(cacheFrame, *command.binder);
+
+    // Update Bindings
+    for (auto i = 0u; i < cacheFrame.bind_groups.size(); i++)
+    {
+        auto& bindGroup = cacheFrame.bind_groups[i];
+        std::vector<uint32> dynamic_offsets;
+    	dynamic_offsets.reserve(cacheFrame.entries[i].first.size());
+    	for(auto j = 0u; j < cacheFrame.entries[i].first.size(); j++)
+    	{
+            auto& slot = cacheFrame.entries[i].first[j];
+    		if(auto buf = slot.as_buffer();buf)
+    		{
+                dynamic_offsets.emplace_back(slot.offset());
+    		}
+    	}
+        if (bindGroup && cacheFrame.pass_encoder)
+            wgpuRenderPassEncoderSetBindGroup(cacheFrame.pass_encoder, i, bindGroup,
+                dynamic_offsets.size(),
+                dynamic_offsets.size() == 0 ? nullptr : dynamic_offsets.data());
+    }
+	
+    wgpuRenderPassEncoderDrawIndexed(cacheFrame.pass_encoder, static_cast<uint32>(command.index_count), command.instance_count,
         command.first_index, command.base_vertex, command.first_instance);
 }
 
@@ -245,97 +293,104 @@ void RenderDevice::processCommand(PassCacheFrame& cacheFrame, const RenderComman
 
 void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cacheFrame, const sakura::graphics::Binding& binder) const
 {
+    // TODO: REFACTOR THIS.
+    const auto& bl = cacheFrame.pipeline->desc.binding_layout;// render_graph.builder(hdl).binding_layout;
+	if(cacheFrame.entries.empty())
 	{
-		auto* bindingDesc = &binder;
-		if (cacheFrame.bind_groups.size() < bindingDesc->sets.size())
-		{
-			cacheFrame.bind_groups.resize(bindingDesc->sets.size());
-			cacheFrame.entries.resize(bindingDesc->sets.size());
-		}
-		// Foreach BindingGroup.
-		for (auto i = 0u; i < bindingDesc->sets.size(); i++)
-		{
-			auto& bindGroup = cacheFrame.bind_groups[i];
-			auto set = bindingDesc->sets[i];
-            size_t dyn_c = 0;
-			// Matching Size.
-			if (cacheFrame.entries[i].first.size() != set.slots.size())
-			{
-				cacheFrame.entries[i].first.resize(set.slots.size());
-			}
-			auto& unchanged = cacheFrame.entries[i].second;
-			// Optionally Create Bindings
-			if (!unchanged)
-			{
-				for (auto j = 0u; j < set.slots.size(); j++)
-				{
-                    auto& slot = set.slots[j];
-                    auto& entry = cacheFrame.entries[i].first[j];
-					if(auto buf = slot.as_buffer();buf)
-					{
-                        entry.binding = buf->slot_index;
-                        entry.offset = buf->offset;
-                        entry.size = buf->size;
-                        dyn_c++;
-                        if (auto buff = get<GPUBuffer>(buf->buffer); buff)
-                            entry.buffer = buff->buffer;
-                        else
-                            assert(0 && "Buffer Not Found!");
-					}
-                    else if(auto sampler = slot.as_sampler();sampler)
-                    {
-                        entry.sampler = get<GpuSampler>(sampler->sampler)->sampler;
-                        entry.binding = sampler->slot_index;
-                    }
-                    else if(auto tex = slot.as_sampled_texture(); tex)
-                    {
-	                    if(tex->follow_default)
-	                    {
-                            entry.binding = tex->slot_index;
-                            entry.textureView = get<GpuTexture>(tex->texture)->default_view;
-	                    }
-                        else
-                        {
-                            assert(0 && "Unimplemented!");
-                        }
-                    }
-				}
-				WGPUBindGroupDescriptor bgDesc = {};
-				if (cacheFrame.pipeline && !cacheFrame.entries.empty())
-				{
-					bgDesc.layout = cacheFrame.pipeline->bindingGroups[i]; // Get Layout.
-					bgDesc.entryCount = static_cast<uint32>(cacheFrame.entries[i].first.size());
-					bgDesc.entries = cacheFrame.entries[i].first.data();
-					{
-						if (bindGroup)
-							wgpuBindGroupRelease(bindGroup);
-						bindGroup = wgpuDeviceCreateBindGroup(device, &bgDesc);
-					}
-				}
-				else
-				{
-					assert(0 && "Pipeline as NULL is invalid!");
-				}
-			}
-            if (bindGroup && cacheFrame.pass_encoder)
-                wgpuRenderPassEncoderSetBindGroup(cacheFrame.pass_encoder, i, bindGroup, 
-                    dyn_c,
-                    dyn_c == 0 ? nullptr : set.dynamic_offsets.data());
-		}// End Foreach BindingGroup.
+        cacheFrame.entries.resize(bl.tables.size());
+        for (auto i = 0u; i < cacheFrame.entries.size(); i++)
+        {
+            cacheFrame.entries[i].first.resize(bl.tables[i].slots.size());
+            cacheFrame.entries[i].second = false;
+        }
 	}
+    if (cacheFrame.bind_groups.empty())
+    {
+        cacheFrame.bind_groups.resize(bl.tables.size());
+    }
+	
+    auto* bindingDesc = &binder;
+    auto& bindGroup = cacheFrame.bind_groups[binder.set()];
+    auto& set = cacheFrame.entries[binder.set()];
+    if (cacheFrame.bind_groups.size() < bindingDesc->set() + 1 || cacheFrame.entries.size() < bindingDesc->set() + 1)
+    {
+        sakura::error("Binding Set OverRange!");
+    }
+    else if (cacheFrame.entries[bindingDesc->set()].first.size() < bindingDesc->bind() + 1)
+    {
+        sakura::error("Binding Slot OverRange!");
+    }
+	
+    // Create New Binding on Slot.
+    if (cacheFrame.entries[bindingDesc->set()].first.at(bindingDesc->bind()) != binder)
+    {
+        WGPUBindGroupDescriptor bgDesc = {};
+        sakura::vector<WGPUBindGroupEntry> entries = sakura::vector<WGPUBindGroupEntry>(set.first.size());
+        if (cacheFrame.pipeline && !cacheFrame.entries.empty())
+        {
+            set.second = true; // Set Dirty.
+        	
+        	bgDesc.layout = cacheFrame.pipeline->bindingGroups[binder.set()]; // Get Layout.
+            bgDesc.entryCount = static_cast<uint32>(cacheFrame.entries[binder.set()].first.size());
+        	for(auto i = 0u; i < set.first.size(); i++)
+        	{
+                set.first[i] = binder;
+
+                auto& entry = entries[i];
+                auto & slot = set.first[i];
+                if (auto buf = slot.as_buffer(); buf)
+                {
+                    entry.binding = buf->slot_index;
+                    entry.size = buf->size;
+                    entry.offset = 0;
+                    if (auto buff = get<GPUBuffer>(buf->buffer); buff)
+                        entry.buffer = buff->buffer;
+                    else
+                        assert(0 && "Buffer Not Found!");
+                }
+                else if (auto sampler = slot.as_sampler(); sampler)
+                {
+                    entry.sampler = get<GpuSampler>(sampler->sampler)->sampler;
+                    entry.binding = sampler->slot_index;
+                }
+                else if (auto tex = slot.as_sampled_texture(); tex)
+                {
+                    if (tex->follow_default)
+                    {
+                        entry.binding = tex->slot_index;
+                        entry.textureView = get<GpuTexture>(tex->texture)->default_view;
+                    }
+                    else
+                    {
+                        assert(0 && "Unimplemented!");
+                    }
+                }
+        	}
+            bgDesc.entries = entries.data();
+            {
+                if (bindGroup)
+                    wgpuBindGroupRelease(bindGroup);
+                bindGroup = wgpuDeviceCreateBindGroup(device, &bgDesc);
+            }
+        }
+        else
+        {
+            assert(0 && "Pipeline as NULL is invalid!");
+        }
+    }
+    else if (cacheFrame.entries[bindingDesc->set()].first.at(bindingDesc->bind()).offset() != binder.offset())
+    {
+        set.second = true; // Set Dirty.
+        for (auto i = 0u; i < set.first.size(); i++)
+        {
+            set.first[i] = binder;
+        }
+    }
 }
 
 void RenderDevice::processCommandUpdateBinding(PassCacheFrame& cacheFrame, const RenderCommandUpdateBinding& command) const
 {
     processCommandUpdateBinding(cacheFrame, command.binder);
-}
-
-void RenderDevice::processCommandDrawInstancedWithArgs(PassCacheFrame& cacheFrame, const RenderCommandDrawInstancedWithArgs& command) const
-{
-    if(command.binder)
-        processCommandUpdateBinding(cacheFrame, *command.binder);
-	wgpuRenderPassEncoderDrawIndexed(cacheFrame.pass_encoder, static_cast<uint32>(command.index_count), command.instance_count,
-		command.first_index, command.base_vertex, command.first_instance);
 }
 
 sakura::string_view RenderDevice::get_name() const
@@ -443,9 +498,28 @@ void RenderDevice::wait_idle()
 }
 
 
+RenderFrameWebGPU::~RenderFrameWebGPU()
+{
+	
+}
 
-RenderDevice::RenderDevice(const DeviceConfiguration& config)
-    :name(config.name)
+const void* RenderFrameWebGPU::raw() const
+{
+    return this;
+}
+
+void* RenderFrameWebGPU::raw()
+{
+    return this;
+}
+
+bool RenderFrameWebGPU::valid(const size_t currentFrame) const
+{
+    return currentFrame == this_frame_;
+}
+
+RenderDevice::RenderDevice(const RenderGraph& renderGraph, const DeviceConfiguration& config)
+    :name(config.name), render_graph(renderGraph)
 {
     initPlatformSpecific(config);
     // Get Default Queue
@@ -499,6 +573,7 @@ bool RenderDevice::execute(const RenderCommandBuffer& cmdBuffer, const RenderPas
     auto&& cacheFrame = pass_cache[hdl.id().index()];
     {// create pass cache objects.
         cacheFrame.encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);// create encoder
+
         //WGPUFenceDescriptor desc = {};
         //cacheFrame.committed_fence =
         //    cacheFrame.committed_fence ? cacheFrame.committed_fence : wgpuQueueCreateFence(default_queue, &desc);

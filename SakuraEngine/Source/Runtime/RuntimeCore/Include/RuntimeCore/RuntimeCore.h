@@ -53,6 +53,14 @@ namespace sakura
 		static std::thread::id main_thread_id_;
 	};
 	typedef Core CoreContext;
+
+	struct RuntimeCoreAPI IFrame
+	{
+		virtual ~IFrame() = default;
+		virtual const void* raw() const = 0;
+		virtual void* raw() = 0;
+		virtual bool valid(const size_t currentFrame) const = 0;
+	};
 }
 
 struct RuntimeCoreAPI RuntimeCoreModule

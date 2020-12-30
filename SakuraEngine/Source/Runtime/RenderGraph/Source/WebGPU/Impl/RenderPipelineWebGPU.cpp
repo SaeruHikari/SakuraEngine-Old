@@ -3,7 +3,7 @@
 
 sakura::graphics::webgpu::RenderPipeline::RenderPipeline(RenderPipelineHandle handle,
 	const webgpu::RenderDevice& dev, const RenderPipelineDescriptor& desc)
-		:_handle(handle)
+		:_handle(handle), desc(desc)
 {
     WGPURenderPipelineDescriptor rpDesc = {};
 	// PipelineLayout (Bindings).

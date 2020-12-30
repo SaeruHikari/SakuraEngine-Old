@@ -35,6 +35,11 @@ namespace sakura::graphics
 		return passes.at(handle.id().index()).second;
 	}
 
+	const RenderGraph::Builder& RenderGraph::builder(const RenderPassHandle handle) const
+	{
+		return passes.at(handle.id().index()).second;
+	}
+
 	const RenderResourceHandle RenderGraph::query(const sakura::string& name) const
 	{
 		auto res = named_handles_.find(name);

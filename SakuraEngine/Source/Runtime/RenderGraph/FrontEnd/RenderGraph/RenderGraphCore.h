@@ -3,6 +3,7 @@
 #include "Containers/constexpr_map.hpp"
 #include "System/vfs/path.h"
 #include "System/Window.h"
+#include "RuntimeCore/RuntimeCore.h"
 
 namespace sakura::graphics
 {
@@ -888,77 +889,109 @@ namespace sakura::graphics
 
 	struct RenderGraphAPI Binding
 	{
-		struct RenderGraphAPI Slot
+		struct Buffer
 		{
-			struct Buffer
-			{
-				uint32 slot_index = 0;
-				uint32 size = 0;
-				uint32 offset = 0;
-				GpuBufferHandle buffer = RenderGraphId::UNINITIALIZED;
-			};
+			uint32 slot_index = 0;
+			uint32 size = 0;
+			GpuBufferHandle buffer = RenderGraphId::UNINITIALIZED;
 
-			struct Sampler
+			FORCEINLINE bool operator==(const Buffer& other) const
 			{
-				uint32 slot_index = 0;
-				GpuSamplerHandle sampler = RenderGraphId::UNINITIALIZED;
-			};
-
-			struct SampledTexture
-			{
-				uint32 slot_index = 0;
-				const bool follow_default = true;
-				
-				ETextureFormat format = ETextureFormat::Count;
-				ETextureDimension dimension = ETextureDimension::Texture2D;
-				ETextureAspect aspect = ETextureAspect::All;
-				uint32_t base_mip_level = 0;
-				uint32_t mip_level_count = 0;
-				uint32_t base_array_layer = 0;
-				uint32_t array_layer_count = 1;
-				
-				GpuTextureHandle texture = RenderGraphId::UNINITIALIZED;
-
-				FORCEINLINE SampledTexture(GpuTextureHandle handle, uint32_t slot_index)
-					: slot_index(slot_index), texture(handle), follow_default(true){}
-			};
-			
-			FORCEINLINE auto as_buffer() const
-			{
-				return std::get_if<Buffer>(&content);
+				return std::tie(slot_index, size, buffer)
+					== std::tie(other.slot_index, other.size, other.buffer);
 			}
-
-			FORCEINLINE auto as_sampler() const
-			{
-				return std::get_if<Sampler>(&content);
-			}
-
-			FORCEINLINE auto as_sampled_texture() const
-			{
-				return std::get_if<SampledTexture>(&content);
-			}
-			
-			Slot(GpuBufferHandle buffer = RenderGraphId::UNINITIALIZED,
-				uint32 slot_index = 0, uint32 size = 0, uint32 offset = 0);
-			Slot(GpuTextureHandle texture, uint32 slot_index = 0);
-			Slot(GpuSamplerHandle texture, uint32 slot_index = 0);
-		protected:
-			std::variant<Buffer, Sampler, SampledTexture> content;
 		};
-		struct RenderGraphAPI Set
+
+		struct Sampler
 		{
-			Set() = default;
-			template<size_t N>
-			Set(const Slot(&slots)[N]) noexcept;
-			template<typename I, size_t N>
-			Set(const Slot(&slots)[N], const I(&dynamic_offsets)[N]) noexcept;
-			const sakura::vector<Slot> slots;
-			const sakura::vector<uint32_t> dynamic_offsets;
+			uint32 slot_index = 0;
+			GpuSamplerHandle sampler = RenderGraphId::UNINITIALIZED;
+
+			FORCEINLINE bool operator==(const Sampler& other) const
+			{
+				return std::tie(slot_index, sampler) == std::tie(other.slot_index, other.sampler);
+			}
 		};
-		const sakura::vector<Set> sets;
+
+		struct SampledTexture
+		{
+			GpuTextureHandle texture = RenderGraphId::UNINITIALIZED;
+			uint32 slot_index = 0;
+			bool follow_default = true;
+
+			ETextureFormat format = ETextureFormat::Count;
+			ETextureDimension dimension = ETextureDimension::Texture2D;
+			ETextureAspect aspect = ETextureAspect::All;
+			uint32_t base_mip_level = 0;
+			uint32_t mip_level_count = 0;
+			uint32_t base_array_layer = 0;
+			uint32_t array_layer_count = 1;
+
+			FORCEINLINE bool operator==(const SampledTexture& other) const
+			{
+				return std::tie(texture, slot_index, follow_default, format, dimension, aspect,
+					base_mip_level, mip_level_count, base_array_layer, array_layer_count) ==
+					std::tie(other.texture, other.slot_index, other.follow_default, other.format, other.dimension, other.aspect, other.base_mip_level, other.mip_level_count, other.base_array_layer, other.array_layer_count);
+			}
+		};
+
+		FORCEINLINE auto as_buffer() const
+		{
+			return std::get_if<Buffer>(&content);
+		}
+
+		FORCEINLINE auto as_sampler() const
+		{
+			return std::get_if<Sampler>(&content);
+		}
+
+		FORCEINLINE auto as_sampled_texture() const
+		{
+			return std::get_if<SampledTexture>(&content);
+		}
+
+		FORCEINLINE uint32 set() const
+		{
+			return target_set;
+		}
+
+		FORCEINLINE uint32 bind() const
+		{
+			return target_binding;
+		}
+
+		FORCEINLINE uint32 offset() const
+		{
+			return offset_;
+		}
+		
+		FORCEINLINE bool operator==(const Binding& other) const
+		{
+			return content == other.content;
+		}
+
+		FORCEINLINE bool operator!=(const Binding& other) const
+		{
+			return !(*this == other);
+		}
+
+		FORCEINLINE void operator=(const Binding& other)
+		{
+			target_set = other.set();
+			target_binding = other.bind();
+			content = other.content;
+			offset_ = other.offset();
+		}
 		Binding() = default;
-		template<size_t N>
-		Binding(const Set(&sets)[N]) noexcept;
+		Binding(uint32_t set, uint32_t binding, GpuBufferHandle buffer = RenderGraphId::UNINITIALIZED,
+			uint32 slot_index = 0, uint32 size = 0, uint32 offset = 0);
+		Binding(uint32_t set, uint32_t binding, GpuTextureHandle texture, uint32 slot_index = 0);
+		Binding(uint32_t set, uint32_t binding, GpuSamplerHandle texture, uint32 slot_index = 0);
+	protected:
+		uint32 offset_ = 0;
+		uint32 target_set = 0;
+		uint32 target_binding = 0;
+		std::variant<Buffer, Sampler, SampledTexture> content = {};
 	};
 
 	// Shader Description struct
@@ -979,6 +1012,15 @@ namespace sakura::graphics
 		};
 	};
 	using ShaderDescriptor = Shader::Descriptor;
+
+
+	// cn: 渲染帧, 一般盛装有一帧之内的各种渲染状态.
+	// en: Rendered frames generally contain various rendering states within one frame.
+	// jp: レンダリングされたフレームには、通常、フレーム内にさまざまなレンダリング状態が含まれます。
+	struct RenderGraphAPI IRenderFrame : public IFrame
+	{
+		virtual ~IRenderFrame() = default;
+	};
 }
 
 #include "RenderGraph/RenderGraphCore.inl"

@@ -132,6 +132,7 @@ namespace sakura::graphics
     	
         RenderPass* render_pass(const RenderPassHandle handle);
         RenderGraph::Builder& builder(const RenderPassHandle handle);
+        const RenderGraph::Builder& builder(const RenderPassHandle handle) const;
 
         const RenderResourceHandle query(const sakura::string& name) const;
     	template<typename T>

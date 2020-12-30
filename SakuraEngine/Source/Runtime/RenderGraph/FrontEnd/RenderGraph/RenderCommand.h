@@ -104,7 +104,7 @@ namespace sakura::graphics
     {
         RenderCommandUpdateBinding(const Binding& binding) noexcept;
 
-        Binding binder = Binding();
+        Binding binder;
     };
 
     struct RenderCommandFence final
@@ -132,7 +132,7 @@ namespace sakura::graphics
         size_t first_index = 0;
         size_t base_vertex = 0;
         size_t first_instance = 0;
-		std::optional<Binding> binder = Binding();
+        std::optional<Binding> binder;
 
 		RenderCommandDrawInstancedWithArgs(const Binding& binder, const uint32 index_count,
 			const uint32 instance_count = 1, const uint32 first_index = 0, uint32 baseVertex = 0, uint32 firstInstance = 0);

@@ -37,16 +37,10 @@ namespace sakura::imgui
     static void imgui_setup_render_state(graphics::RenderCommandBuffer& command_buffer, ImDrawData* draw_data, int fb_width, int fb_height)
     {
         command_buffer.enqueue<RenderCommandBeginRenderPass>(imgui_render_pipeline, attachment);
-        Binding binding = Binding({
-                Binding::Set({
-                    Binding::Slot(imgui_projection_matrix, 0, sizeof(sakura::float4x4), 0)
-                }),
-                Binding::Set({
-                    Binding::Slot(imgui_fonts_sampler, 0),
-                    Binding::Slot(imgui_fonts_texture, 1)
-                })
-            });
-        command_buffer.enqueue<RenderCommandUpdateBinding>(binding);
+        command_buffer.enqueue<RenderCommandUpdateBinding>(
+            Binding(0, 0, imgui_projection_matrix, 0, sizeof(sakura::float4x4), 0));
+        command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, imgui_fonts_sampler, 0));
+        command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(2, 0, imgui_fonts_texture, 0));
     }
 	
     const RenderCommandBuffer& RenderPassImGui::execute(RenderCommandBuffer& command_buffer, const RenderGraph& rg,
@@ -165,7 +159,10 @@ namespace sakura::imgui
                         BindingLayout::Set(
                         {
                             BindingLayout::Slot(0, BindingLayout::Sampler, EShaderFrequency::PixelShader),
-                            BindingLayout::Slot(1, BindingLayout::SampledTexture, EShaderFrequency::PixelShader),
+                        }),
+                    	BindingLayout::Set(
+                        {
+                            BindingLayout::Slot(0, BindingLayout::SampledTexture, EShaderFrequency::PixelShader),
                         }),
                     }),
                     AttachmentLayout(
