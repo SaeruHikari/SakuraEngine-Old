@@ -891,32 +891,29 @@ namespace sakura::graphics
 	{
 		struct Buffer
 		{
-			uint32 slot_index = 0;
 			uint32 size = 0;
 			GpuBufferHandle buffer = RenderGraphId::UNINITIALIZED;
 
 			FORCEINLINE bool operator==(const Buffer& other) const
 			{
-				return std::tie(slot_index, size, buffer)
-					== std::tie(other.slot_index, other.size, other.buffer);
+				return std::tie(size, buffer)
+					== std::tie(other.size, other.buffer);
 			}
 		};
 
 		struct Sampler
 		{
-			uint32 slot_index = 0;
 			GpuSamplerHandle sampler = RenderGraphId::UNINITIALIZED;
 
 			FORCEINLINE bool operator==(const Sampler& other) const
 			{
-				return std::tie(slot_index, sampler) == std::tie(other.slot_index, other.sampler);
+				return std::tie(sampler) == std::tie(other.sampler);
 			}
 		};
 
 		struct SampledTexture
 		{
 			GpuTextureHandle texture = RenderGraphId::UNINITIALIZED;
-			uint32 slot_index = 0;
 			bool follow_default = true;
 
 			ETextureFormat format = ETextureFormat::Count;
@@ -929,9 +926,9 @@ namespace sakura::graphics
 
 			FORCEINLINE bool operator==(const SampledTexture& other) const
 			{
-				return std::tie(texture, slot_index, follow_default, format, dimension, aspect,
+				return std::tie(texture, follow_default, format, dimension, aspect,
 					base_mip_level, mip_level_count, base_array_layer, array_layer_count) ==
-					std::tie(other.texture, other.slot_index, other.follow_default, other.format, other.dimension, other.aspect, other.base_mip_level, other.mip_level_count, other.base_array_layer, other.array_layer_count);
+					std::tie(other.texture, other.follow_default, other.format, other.dimension, other.aspect, other.base_mip_level, other.mip_level_count, other.base_array_layer, other.array_layer_count);
 			}
 		};
 
@@ -985,8 +982,8 @@ namespace sakura::graphics
 		Binding() = default;
 		Binding(uint32_t set, uint32_t binding, GpuBufferHandle buffer = RenderGraphId::UNINITIALIZED,
 			uint32 slot_index = 0, uint32 size = 0, uint32 offset = 0);
-		Binding(uint32_t set, uint32_t binding, GpuTextureHandle texture, uint32 slot_index = 0);
-		Binding(uint32_t set, uint32_t binding, GpuSamplerHandle texture, uint32 slot_index = 0);
+		Binding(uint32_t set, uint32_t binding, GpuTextureHandle texture);
+		Binding(uint32_t set, uint32_t binding, GpuSamplerHandle texture);
 	protected:
 		uint32 offset_ = 0;
 		uint32 target_set = 0;

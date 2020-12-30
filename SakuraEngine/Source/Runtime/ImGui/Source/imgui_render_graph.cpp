@@ -39,8 +39,8 @@ namespace sakura::imgui
         command_buffer.enqueue<RenderCommandBeginRenderPass>(imgui_render_pipeline, attachment);
         command_buffer.enqueue<RenderCommandUpdateBinding>(
             Binding(0, 0, imgui_projection_matrix, 0, sizeof(sakura::float4x4), 0));
-        command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, imgui_fonts_sampler, 0));
-        command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(2, 0, imgui_fonts_texture, 0));
+        command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, imgui_fonts_sampler));
+        command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(2, 0, imgui_fonts_texture));
     }
 	
     const RenderCommandBuffer& RenderPassImGui::execute(RenderCommandBuffer& command_buffer, const RenderGraph& rg,

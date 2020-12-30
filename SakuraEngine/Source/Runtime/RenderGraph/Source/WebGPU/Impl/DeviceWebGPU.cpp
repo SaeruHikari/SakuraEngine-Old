@@ -340,7 +340,7 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
                 auto & slot = set.first[i];
                 if (auto buf = slot.as_buffer(); buf)
                 {
-                    entry.binding = buf->slot_index;
+                    entry.binding = slot.bind();
                     entry.size = buf->size;
                     entry.offset = 0;
                     if (auto buff = get<GPUBuffer>(buf->buffer); buff)
@@ -351,13 +351,13 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
                 else if (auto sampler = slot.as_sampler(); sampler)
                 {
                     entry.sampler = get<GpuSampler>(sampler->sampler)->sampler;
-                    entry.binding = sampler->slot_index;
+                    entry.binding = slot.bind();
                 }
                 else if (auto tex = slot.as_sampled_texture(); tex)
                 {
                     if (tex->follow_default)
                     {
-                        entry.binding = tex->slot_index;
+                        entry.binding = slot.bind();
                         entry.textureView = get<GpuTexture>(tex->texture)->default_view;
                     }
                     else

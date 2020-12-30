@@ -117,14 +117,14 @@ namespace sakura::graphics
 
 	FORCEINLINE Binding::Binding(uint32_t set, uint32_t binding, GpuBufferHandle _buffer,
 		uint32 _slot_index, uint32 _size, uint32 _offset)
-		: target_set(set), target_binding(binding), offset_(_offset), content(Binding::Buffer{ _slot_index, _size, _buffer }) {	}
+		: target_set(set), target_binding(binding), offset_(_offset), content(Binding::Buffer{ _size, _buffer }) {	}
 
-	FORCEINLINE Binding::Binding(uint32_t set, uint32_t binding, GpuTextureHandle texture, uint32 slot_index)
-		: target_set(set), target_binding(binding), content(Binding::SampledTexture{ texture, slot_index }) {		}
+	FORCEINLINE Binding::Binding(uint32_t set, uint32_t binding, GpuTextureHandle texture)
+		: target_set(set), target_binding(binding), content(Binding::SampledTexture{ texture }) {		}
 
 
-	FORCEINLINE Binding::Binding(uint32_t set, uint32_t binding, GpuSamplerHandle sampler, uint32 slot_index)
-		: target_set(set), target_binding(binding), content(Binding::Sampler{ slot_index, sampler }) {		}
+	FORCEINLINE Binding::Binding(uint32_t set, uint32_t binding, GpuSamplerHandle sampler)
+		: target_set(set), target_binding(binding), content(Binding::Sampler{ sampler }) {		}
 
 
 	FORCEINLINE Shader::Descriptor::Descriptor(const sakura::string& _name, const sakura::string& _entry,
