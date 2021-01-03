@@ -678,6 +678,23 @@ void UpdateBoidsCount(task_system::ecs::pipeline& ppl, int Count)
 		DestroyBoids(ppl, -Count);
 }
 
+int CountBoids(task_system::ecs::pipeline& ppl)
+{
+	using namespace sakura::ecs;
+	filters filter;
+	filter.archetypeFilter = {
+		{complist<LocalToWorld, Boid>}, //all
+		{}, //any
+		{} //none
+	};
+	auto& ctx = (world&)ppl; //warning! 解放!
+	int counter = 0;
+	for (auto at : ctx.query(filter.archetypeFilter))
+		for (auto j : ctx.query(at.type))
+			counter += j->get_count();
+	return counter;
+}
+
 void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 {
 	using namespace sakura::ecs;
@@ -819,9 +836,8 @@ int main()
 	uint32_t current_frame = 0;
 	int selected_frame = 0;
 	std::deque<std::vector<char>> snapshots;
-	size_t frame_index = 0;
 	size_t memory_used = 0;
-	size_t memory_size_limit = 1024;
+	int memory_size_limit = 4096;
 	// Game & Rendering Logic
 	while(sakura::Core::yield())
 	{
@@ -832,8 +848,6 @@ int main()
 		if (!rolling_back)
 		{
 			BoidMainLoop(ppl, deltaTime * TimeScale);
-			frame_index++;
-			selected_frame = current_frame = frame_index;
 
 			ppl.wait();
 			auto& ctx = (ecs::world&)ppl;
@@ -844,17 +858,18 @@ int main()
 			ctx.serialize(&archive);
 			memory_used += snapshot.size();
 			snapshots.emplace_back(std::move(snapshot));
-			if (memory_used > memory_size_limit * 1024)
+			while (memory_used > (long long)memory_size_limit * 1024 * 1024)
 			{
 				memory_used -= snapshots.front().size();
 				snapshots.pop_front();
 			}
+			selected_frame = current_frame = snapshots.size();
 		}
 		else if(selected_frame != current_frame)
 		{
 			ppl.wait();
 			auto& ctx = (ecs::world&)ppl;
-			auto data = snapshots[snapshots.size() - (frame_index - selected_frame) - 1].data();
+			auto data = snapshots[selected_frame].data();
 			buffer_deserializer archive(data);
 			ctx.deserialize(&archive);
 			current_frame = selected_frame;
@@ -871,6 +886,25 @@ int main()
 			
 			imgui::new_frame(main_window, 1.f / 60.f);
 			imgui::Begin("Boid Settings");
+			if (imgui::SliderInt("Frame", &selected_frame, 0, snapshots.size() - 1))
+				rolling_back = true;
+			imgui::SameLine();
+			if (imgui::Button(rolling_back ? "Play" : "Pause", ImVec2(-1, 20)))
+			{
+				rolling_back = !rolling_back;
+				while (snapshots.size() > (current_frame + 1))
+				{
+					memory_used -= snapshots.back().size();
+					snapshots.pop_back();
+				}
+				// Boids 的生成可能被回滚了
+				BoidCount = CountBoids(ppl);
+			}
+			imgui::InputInt("Memory Usage", &memory_size_limit, 256);
+			imgui::SameLine();
+			imgui::ProgressBar((float)memory_used / ((double)memory_size_limit * 1024 * 1024));
+
+
 			bool UpdateBoid = false;
 			UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
 			UpdateBoid |= imgui::SliderFloat("TargetWeight", &BoidSetting.TargetWeight, 0, 10);
@@ -884,16 +918,10 @@ int main()
 			}
 			imgui::SliderFloat("TimeScale", &TimeScale, 0, 10);
 			int prevBoidCount = BoidCount;
-			if (imgui::SliderInt("BoidCount", &BoidCount, 0, TARGET_NUM))
+			if (!rolling_back && imgui::SliderInt("BoidCount", &BoidCount, 0, TARGET_NUM))
 			{
 				UpdateBoidsCount(ppl, BoidCount - prevBoidCount);
 			}
-			if(imgui::SliderInt("Frame", &selected_frame, frame_index - snapshots.size() + 1, frame_index))
-				rolling_back = true;
-			imgui::SameLine();
-			if (imgui::Button(rolling_back ? "Play" : "Pause", ImVec2(50, 20)))
-				rolling_back = !rolling_back;
-
 			//if (imgui::SliderInt("LeaderCount", &LeaderCount, 0, 100)){}
 
 			//imgui::SameLine();
