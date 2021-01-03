@@ -14,6 +14,7 @@
 #include "System/Log.h"
 
 #include "ECS/ECS.h"
+#include "RingBuffer.h"
 
 #include "TransformComponents.h"
 #include "RenderSystem.h"
@@ -57,6 +58,41 @@ struct Timer
 		return delta_time;
 	}
 	std::chrono::system_clock::time_point tmpt;
+};
+
+
+
+struct buffer_serializer final : sakura::ecs::serializer_i
+{
+	std::vector<char>& buffer;
+	buffer_serializer(std::vector<char>& buffer)
+		: buffer(buffer) {}
+	void stream(const void* data, uint32_t bytes) override
+	{
+		if (bytes == 0)
+			return;
+		size_t size = buffer.size();
+		buffer.resize(size + bytes);
+		memcpy(&buffer[size], data, bytes);
+	}
+	bool is_serialize() override { return true; }
+};
+struct buffer_deserializer final : sakura::ecs::serializer_i
+{
+	const char* buffer;
+	size_t offset = 0;
+	int i = 0;
+	buffer_deserializer(const char* buffer)
+		: buffer(buffer) {}
+	void stream(const void* data, uint32_t bytes) override
+	{
+		void* mdata = const_cast<void*>(data);
+		if (bytes == 0)
+			return;
+		memcpy(mdata, &buffer[offset], bytes);
+		offset += bytes;
+	}
+	bool is_serialize() override { return false; }
 };
 
 
@@ -724,7 +760,6 @@ void DebugHeadingLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 	};
 	Local2XSystem<LocalToWorld>(ppl, wrd_filter);
 }
-
 const bool bUseImGui = true;
 sakura::graphics::RenderPassHandle imgui_pass = sakura::GenerationalId::UNINITIALIZED;
 sakura::graphics::RenderCommandBuffer imgui_command_buffer("ImGuiRender", 4096);
@@ -777,7 +812,16 @@ int main()
 		imgui::initialize_gfx(render_graph, *render_device);
 		imgui_pass = render_graph.create_render_pass<imgui::RenderPassImGui>(swap_chain, render_graph);
 	}
-	render_system::PrepareCommandBuffer(buffer); 
+	render_system::PrepareCommandBuffer(buffer);
+
+
+	bool rolling_back = false;
+	uint32_t current_frame = 0;
+	int selected_frame = 0;
+	std::deque<std::vector<char>> snapshots;
+	size_t frame_index = 0;
+	size_t memory_used = 0;
+	size_t memory_size_limit = 1024;
 	// Game & Rendering Logic
 	while(sakura::Core::yield())
 	{
@@ -785,7 +829,36 @@ int main()
 		timer.start_up(); 
 		ppl.inc_timestamp();
 		
-		BoidMainLoop(ppl, deltaTime * TimeScale);
+		if (!rolling_back)
+		{
+			BoidMainLoop(ppl, deltaTime * TimeScale);
+			frame_index++;
+			selected_frame = current_frame = frame_index;
+
+			ppl.wait();
+			auto& ctx = (ecs::world&)ppl;
+			std::vector<char> snapshot;
+			if(snapshots.size()>0)
+				snapshot.reserve(snapshots.back().size());
+			buffer_serializer archive(snapshot);
+			ctx.serialize(&archive);
+			memory_used += snapshot.size();
+			snapshots.emplace_back(std::move(snapshot));
+			if (memory_used > memory_size_limit * 1024)
+			{
+				memory_used -= snapshots.front().size();
+				snapshots.pop_front();
+			}
+		}
+		else if(selected_frame != current_frame)
+		{
+			ppl.wait();
+			auto& ctx = (ecs::world&)ppl;
+			auto data = snapshots[snapshots.size() - (frame_index - selected_frame) - 1].data();
+			buffer_deserializer archive(data);
+			ctx.deserialize(&archive);
+			current_frame = selected_frame;
+		}
 
 		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
 		render_system::CollectAndUpload(ppl, deltaTime);
@@ -815,6 +888,12 @@ int main()
 			{
 				UpdateBoidsCount(ppl, BoidCount - prevBoidCount);
 			}
+			if(imgui::SliderInt("Frame", &selected_frame, frame_index - snapshots.size() + 1, frame_index))
+				rolling_back = true;
+			imgui::SameLine();
+			if (imgui::Button(rolling_back ? "Play" : "Pause", ImVec2(50, 20)))
+				rolling_back = !rolling_back;
+
 			//if (imgui::SliderInt("LeaderCount", &LeaderCount, 0, 100)){}
 
 			//imgui::SameLine();
