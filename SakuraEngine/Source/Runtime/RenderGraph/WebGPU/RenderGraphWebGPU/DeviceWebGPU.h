@@ -123,6 +123,8 @@ namespace sakura::graphics::webgpu
 		void processCommandUpdateBinding(PassCacheFrame& cache, const sakura::graphics::Binding& binder) const;
 		void processCommandDrawInstancedWithArgs(PassCacheFrame& cache, const RenderCommandDrawInstancedWithArgs& command) const;
 		void processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command) const;
+		void processCommandSetVB(PassCacheFrame& cacheFrame, const RenderCommandSetVB& command) const;
+		void processCommandSetIB(PassCacheFrame& cacheFrame, const RenderCommandSetIB& command) const;
 		void processCommandDrawIndirect(PassCacheFrame& cache, const RenderCommandDrawIndirect& command) const;
 		void processCommandBeginRenderPass(PassCacheFrame& cache, const RenderCommandBeginRenderPass& command) const;
 		void processCommandEndRenderPass(PassCacheFrame& cache, const RenderCommandEndRenderPass& command) const;

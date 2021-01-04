@@ -171,6 +171,9 @@ namespace sakura::graphics
 	enum class ERenderCommandType : uint32_t
 	{
 		set_scissor_rect,
+		set_vbs,
+		set_ib,
+
 		draw,
 		draw_indirect,
 

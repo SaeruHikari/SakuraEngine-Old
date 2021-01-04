@@ -140,6 +140,34 @@ namespace sakura::graphics
 			const uint32 instance_count = 1, const uint32 first_index = 0, uint32 baseVertex = 0, uint32 firstInstance = 0);
 	}; 
 
+    struct RenderCommandSetVB final
+        : public RenderCommandTyped<ERenderCommandType::set_vbs, ERenderQueueType::Graphics>
+    {
+        GpuBufferHandle vertex_buffer;
+        size_t stride = 0;
+        size_t offset = 0;
+        
+        RenderCommandSetVB(const GpuBufferHandle handle, const size_t offset = 0, const size_t stride = 0);
+    };
+
+    struct RenderCommandSetIB final
+        : public RenderCommandTyped<ERenderCommandType::set_ib, ERenderQueueType::Graphics>
+    {
+        size_t offset = 0;
+        size_t stride = 0;
+        EIndexFormat format = EIndexFormat::UINT16;
+        GpuBufferHandle index_buffer;
+
+        RenderCommandSetIB(GpuBufferHandle index_buffer, 
+            EIndexFormat format = EIndexFormat::UINT16, size_t offset = 0, size_t stride = 0);
+    };
+    FORCEINLINE RenderCommandSetIB::RenderCommandSetIB(GpuBufferHandle indexBuffer,
+        EIndexFormat format, size_t offset, size_t stride)
+        : index_buffer(indexBuffer), format(format), offset(offset), stride(stride)
+    {
+
+    }
+
     struct RenderCommandDrawIndirect final
 		: public RenderCommandTyped<ERenderCommandType::draw_indirect, ERenderQueueType::Graphics>
 	{
@@ -150,26 +178,7 @@ namespace sakura::graphics
     struct RenderCommandDraw final
         : public RenderCommandTyped<ERenderCommandType::draw, ERenderQueueType::Graphics>
     {
-        struct VB
-        {
-            size_t offset = 0;
-            size_t stride = 0;
-            GpuBufferHandle vertex_buffer;
-            VB() = default;
-            explicit VB(GpuBufferHandle vertex_buffer, size_t offset = 0, size_t stride = 0);
-        }vb;
-        struct IB
-        {
-            size_t offset = 0;
-            size_t stride = 0;
-            EIndexFormat format = EIndexFormat::UINT16;
-            GpuBufferHandle index_buffer;
-            size_t index_count = 0;
-            IB() = default;
-            explicit IB(GpuBufferHandle index_buffer, size_t indexCount,
-                EIndexFormat format = EIndexFormat::UINT16, size_t offset = 0, size_t stride = 0);
-        }ib;
-    	
+        uint32 index_count = 0;
         uint32 instance_count = 1;
         uint32 first_index = 0;
         uint32 base_vertex = 0;
@@ -178,13 +187,8 @@ namespace sakura::graphics
 
         RenderCommandDraw(const uint32 index_count,
             const uint32 instance_count = 1, const uint32 first_index = 0, uint32 baseVertex = 0, uint32 firstInstance = 0);
-        RenderCommandDraw(const VB& vb, const IB& ib,
-            uint32 instanceCount = 1, uint32 firstIndex = 0, uint32 baseVertex = 0, uint32 firstInstance = 0);
     };
 
-
-
-	
     FORCEINLINE RenderCommandCopyTextureToTexture::RenderCommandCopyTextureToTexture(GpuTextureHandle source,
 	    GpuTextureHandle destination, extent3d copy_size, uint32_t mip_level)
 		:src(source), src_slice(TextureSlice{ETextureAspect::All, mip_level, {0, 0, 0}}),
@@ -259,34 +263,21 @@ namespace sakura::graphics
 
     }
 	
-    FORCEINLINE RenderCommandDraw::VB::VB(
-        GpuBufferHandle vb, size_t _offset, size_t _stride)
-        :offset(_offset), stride(_stride), vertex_buffer(vb)
+    FORCEINLINE RenderCommandSetVB::RenderCommandSetVB(
+        const GpuBufferHandle handle_, const size_t offset_, const size_t stride_)
+        : vertex_buffer(handle_), stride(stride_), offset(offset_)
     {
 
     }
-	
-    FORCEINLINE RenderCommandDraw::IB::IB(GpuBufferHandle ib, size_t indexCount,
-        EIndexFormat _format, size_t _offset, size_t _stride)
-        : offset(_offset), stride(_stride), format(_format), index_buffer(ib), index_count(indexCount)
-    {
+        
 
-    }
 
     FORCEINLINE RenderCommandDraw::RenderCommandDraw(const uint32 index_count,
         const uint32 instanceCount, const uint32 firstIndex, uint32 baseVertex, uint32 firstInstance)
-        : instance_draw(true), instance_count(instanceCount), first_index(firstIndex), base_vertex(baseVertex), first_instance(firstInstance)
+        : instance_draw(true), instance_count(instanceCount), index_count(index_count),
+        first_index(firstIndex), base_vertex(baseVertex), first_instance(firstInstance)
     {
-        ib.index_count = index_count;
+      
     }
-
-    FORCEINLINE RenderCommandDraw::RenderCommandDraw(const VB& _vbs, const IB& _ib,
-        uint32 instanceCount, uint32 firstIndex, uint32 baseVertex, uint32 firstInstance)
-        : instance_draw(false), vb(_vbs), ib(_ib),
-        instance_count(instanceCount), first_index(firstIndex), base_vertex(baseVertex), first_instance(firstInstance)
-    {
-
-    }
-
 }
 

@@ -140,37 +140,39 @@ void RenderDevice::processCommandDrawIndirect(PassCacheFrame& cache, const Rende
     }
 }
 
+void RenderDevice::processCommandSetVB(PassCacheFrame& cacheFrame, const RenderCommandSetVB& command) const
+{
+    if (auto vb = get<GPUBuffer>(command.vertex_buffer); vb)
+    {
+        wgpuRenderPassEncoderSetVertexBuffer(cacheFrame.pass_encoder, 0, vb->buffer, command.offset, command.stride);
+    }
+    else
+    {
+        assert(0 && "VB NOT FOUND");
+    }
+}
+
+void RenderDevice::processCommandSetIB(PassCacheFrame& cacheFrame, const RenderCommandSetIB& command) const
+{
+    if (auto ib = get<GPUBuffer>(command.index_buffer); ib)
+    {
+#ifdef _____DESPERATED // Emscripten hasn't yet caught up with the API changes
+        wgpuRenderPassEncoderSetIndexBuffer(*pass, ib->buffer, ib_src.offset, ib_src.stride);
+#else
+        wgpuRenderPassEncoderSetIndexBuffer(
+            cacheFrame.pass_encoder, ib->buffer, translate(command.format), command.offset, command.stride);
+#endif
+    }
+    else
+    {
+        assert(0 && "IB NOT FOUND");
+    }
+}
+
 void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command) const
 {
     if (command.instance_draw)
         goto DRAW_INSTANCE;
-	{
-        const auto& vb_src = command.vb;
-        const auto& ib_src = command.ib;
-
-        if (auto vb = get<GPUBuffer>(vb_src.vertex_buffer); vb)
-        {
-            wgpuRenderPassEncoderSetVertexBuffer(cacheFrame.pass_encoder, 0, vb->buffer, vb_src.offset, vb_src.stride);
-        }
-        else
-        {
-            assert(0 && "VB NOT FOUND");
-        }
-
-        if(auto ib = get<GPUBuffer>(ib_src.index_buffer);ib)
-		{
-#ifdef _____DESPERATED // Emscripten hasn't yet caught up with the API changes
-	        wgpuRenderPassEncoderSetIndexBuffer(*pass, ib->buffer, ib_src.offset, ib_src.stride);
-#else
-            wgpuRenderPassEncoderSetIndexBuffer(
-                cacheFrame.pass_encoder, ib->buffer, translate(ib_src.format), ib_src.offset, ib_src.stride);
-#endif
-        }
-        else
-        {
-            assert(0 && "IB NOT FOUND");
-        }
-	}
 
     // Update Bindings
     for (auto i = 0u; i < cacheFrame.bind_groups.size(); i++)
@@ -193,7 +195,7 @@ void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, const RenderCo
     }
 DRAW_INSTANCE:
     wgpuRenderPassEncoderDrawIndexed(cacheFrame.pass_encoder,
-        static_cast<uint32>(command.ib.index_count), command.instance_count, 
+        static_cast<uint32>(command.index_count), command.instance_count, 
         command.first_index, command.base_vertex, command.first_instance);
 }
 
@@ -244,6 +246,16 @@ void RenderDevice::processCommand(PassCacheFrame& cacheFrame, const RenderComman
     {
         auto& cmd = *static_cast<const RenderCommandSetScissorRect*>(command);
         processCommandSetScissorRect(cacheFrame, cmd);
+    }break;
+    case ERenderCommandType::set_ib:
+    {
+        auto& cmd = *static_cast<const RenderCommandSetIB*>(command);
+        processCommandSetIB(cacheFrame, cmd);
+    }break;
+    case ERenderCommandType::set_vbs:
+    {
+        auto& cmd = *static_cast<const RenderCommandSetVB*>(command);
+        processCommandSetVB(cacheFrame, cmd);
     }break;
     case ERenderCommandType::draw:
     {
@@ -403,8 +415,6 @@ QueueIndex RenderDevice::request_copy_queue() const
 	// WebGPU supports only main queue.
     return 0;
 }
-
-
 
 bool RenderDevice::execute_let_fly(const QueueIndex queue, const RenderCommandBuffer& command_buffer)
 {

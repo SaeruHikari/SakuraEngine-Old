@@ -109,10 +109,11 @@ namespace sakura::imgui
                             scissor_extent.height = (uint32_t)(clip_rect.w - clip_rect.y);
                             //vkCmdSetScissor(command_buffer, 0, 1, &scissor);
                             // Draw
-                            command_buffer.enqueue<RenderCommandDraw>(
-								RenderCommandDraw::VB(imgui_vertex_buffer), 
-                                RenderCommandDraw::IB(imgui_index_buffer, pcmd->ElemCount, EIndexFormat::UINT16), 
-                                1, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset, 0
+                            command_buffer.enqueue<RenderCommandSetVB>(imgui_vertex_buffer);
+                            command_buffer.enqueue<RenderCommandSetIB>(imgui_index_buffer, EIndexFormat::UINT16);
+
+                            command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(
+                                pcmd->ElemCount, 1, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset, 0
                             );
                         }
                     }
