@@ -177,8 +177,6 @@ namespace sakura::graphics
 		draw,
 		draw_indirect,
 
-		draw_instanced_with_args,
-
 		dispatch,
 		dispatch_indirect,
 

@@ -99,7 +99,6 @@ sakura::graphics::webgpu::RenderPipeline::RenderPipeline(RenderPipelineHandle ha
 #ifdef __EMSCRIPTEN__ // Emscripten hasn't yet caught up with the API changes
 	vertState.indexFormat = WGPUIndexFormat_Uint16;
 #endif
-	// TODO: We only support one VertexBuffer now, Do something with this?
     vertState.vertexBufferCount = static_cast<uint32>(vertDescs.size());
     vertState.vertexBuffers = vertDescs.data(); 
     rpDesc.vertexState = &vertState;

@@ -121,7 +121,6 @@ namespace sakura::graphics::webgpu
 		// Graphics
 		void processCommandUpdateBinding(PassCacheFrame& cache, const RenderCommandUpdateBinding& command) const;
 		void processCommandUpdateBinding(PassCacheFrame& cache, const sakura::graphics::Binding& binder) const;
-		void processCommandDrawInstancedWithArgs(PassCacheFrame& cache, const RenderCommandDrawInstancedWithArgs& command) const;
 		void processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command) const;
 		void processCommandSetVB(PassCacheFrame& cacheFrame, const RenderCommandSetVB& command) const;
 		void processCommandSetIB(PassCacheFrame& cacheFrame, const RenderCommandSetIB& command) const;

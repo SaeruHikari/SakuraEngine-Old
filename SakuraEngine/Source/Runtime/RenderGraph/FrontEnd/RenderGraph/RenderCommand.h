@@ -124,30 +124,15 @@ namespace sakura::graphics
         uint32 height;
     };
 
-    struct RenderCommandDrawInstancedWithArgs final
-        : public RenderCommandTyped<ERenderCommandType::draw_instanced_with_args, ERenderQueueType::Graphics>
-    {
-        size_t index_count = 0;
-        size_t instance_count = 1;
-        size_t first_index = 0;
-        size_t base_vertex = 0;
-        size_t first_instance = 0;
-        std::optional<Binding> binder;
-
-		RenderCommandDrawInstancedWithArgs(const Binding& binder, const uint32 index_count,
-			const uint32 instance_count = 1, const uint32 first_index = 0, uint32 baseVertex = 0, uint32 firstInstance = 0);
-		RenderCommandDrawInstancedWithArgs(const uint32 index_count,
-			const uint32 instance_count = 1, const uint32 first_index = 0, uint32 baseVertex = 0, uint32 firstInstance = 0);
-	}; 
-
     struct RenderCommandSetVB final
         : public RenderCommandTyped<ERenderCommandType::set_vbs, ERenderQueueType::Graphics>
     {
         GpuBufferHandle vertex_buffer;
         size_t stride = 0;
         size_t offset = 0;
+        uint32_t slot = 0;
         
-        RenderCommandSetVB(const GpuBufferHandle handle, const size_t offset = 0, const size_t stride = 0);
+        RenderCommandSetVB(const uint32_t slot, const GpuBufferHandle handle, const size_t offset = 0, const size_t stride = 0);
     };
 
     struct RenderCommandSetIB final
@@ -161,12 +146,6 @@ namespace sakura::graphics
         RenderCommandSetIB(GpuBufferHandle index_buffer, 
             EIndexFormat format = EIndexFormat::UINT16, size_t offset = 0, size_t stride = 0);
     };
-    FORCEINLINE RenderCommandSetIB::RenderCommandSetIB(GpuBufferHandle indexBuffer,
-        EIndexFormat format, size_t offset, size_t stride)
-        : index_buffer(indexBuffer), format(format), offset(offset), stride(stride)
-    {
-
-    }
 
     struct RenderCommandDrawIndirect final
 		: public RenderCommandTyped<ERenderCommandType::draw_indirect, ERenderQueueType::Graphics>
@@ -238,24 +217,6 @@ namespace sakura::graphics
     {
 
     }
-	
-    FORCEINLINE RenderCommandDrawInstancedWithArgs::RenderCommandDrawInstancedWithArgs(
-        const Binding& binder_, const uint32 index_count_, const uint32 instance_count_ /*= 1*/,
-        const uint32 first_index_ /*= 0*/, uint32 baseVertex_ /*= 0*/, uint32 firstInstance_ /*= 0*/)
-        :binder(binder_), index_count(index_count_), instance_count(instance_count_),
-        first_index(first_index_), base_vertex(baseVertex_), first_instance(firstInstance_)
-    {
-
-    }
-
-    FORCEINLINE RenderCommandDrawInstancedWithArgs::RenderCommandDrawInstancedWithArgs(
-        const uint32 index_count_, const uint32 instance_count_ /*= 1*/,
-        const uint32 first_index_ /*= 0*/, uint32 baseVertex_ /*= 0*/, uint32 firstInstance_ /*= 0*/)
-        :binder(std::nullopt), index_count(index_count_), instance_count(instance_count_),
-        first_index(first_index_), base_vertex(baseVertex_), first_instance(firstInstance_)
-    {
-
-    }
 
     FORCEINLINE RenderCommandUpdateBinding::RenderCommandUpdateBinding(const Binding& binding) noexcept
         :binder(binding)
@@ -263,14 +224,19 @@ namespace sakura::graphics
 
     }
 	
-    FORCEINLINE RenderCommandSetVB::RenderCommandSetVB(
+    FORCEINLINE RenderCommandSetVB::RenderCommandSetVB(const uint32_t slot_,
         const GpuBufferHandle handle_, const size_t offset_, const size_t stride_)
-        : vertex_buffer(handle_), stride(stride_), offset(offset_)
+        : slot(slot_), vertex_buffer(handle_), stride(stride_), offset(offset_)
     {
 
     }
         
+    FORCEINLINE RenderCommandSetIB::RenderCommandSetIB(GpuBufferHandle indexBuffer,
+        EIndexFormat format, size_t offset, size_t stride)
+        : index_buffer(indexBuffer), format(format), offset(offset), stride(stride)
+    {
 
+    }
 
     FORCEINLINE RenderCommandDraw::RenderCommandDraw(const uint32 index_count,
         const uint32 instanceCount, const uint32 firstIndex, uint32 baseVertex, uint32 firstInstance)

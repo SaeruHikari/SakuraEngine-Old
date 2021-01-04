@@ -90,43 +90,37 @@ namespace render_system
 		{
 			command_buffer.enqueue<RenderCommandBeginRenderPass>(render_pipeline, attachment);
 			{
-				//command_buffer.enqueue<RenderCommandSetScissorRect>(
-				//	0, device.backend() == EBackend::WebGPU ? main_window.extent().width / 2 + 10 : 0,
-				//	main_window.extent().width / 2, main_window.extent().height
-				//);
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 0, uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 4, 0));
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(sakura::float4x4), 0));
-				command_buffer.enqueue<RenderCommandSetVB>(rg.query<GpuBufferHandle>("VertexBufferSphere"));
+				command_buffer.enqueue<RenderCommandSetVB>(0, rg.query<GpuBufferHandle>("VertexBufferSphere"));
 				command_buffer.enqueue<RenderCommandSetIB>(rg.query<GpuBufferHandle>("IndexBufferSphere"), EIndexFormat::UINT16);
 
 				auto tn = target_worlds.size() / 4;
 				for (auto i = 0u; i < tn; i++)
 				{
-					// { sizeof(sakura::float4x4) * i * 4 })
-					command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(
-						Binding(0, 0, uniform_buffer_per_target, 0,sizeof(sakura::float4x4) * 4,
-							sizeof(sakura::float4x4) * i * 4),
-						60);
+					command_buffer.enqueue<RenderCommandUpdateBinding>(
+						Binding(0, 0, uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 4, sizeof(sakura::float4x4) * i * 4));
+					command_buffer.enqueue<RenderCommandDraw>(60);
 				}
 			}
 			
-			command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * 4, 0));
-			command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(sakura::float4x4), 0));
-			command_buffer.enqueue<RenderCommandSetVB>(rg.query<GpuBufferHandle>("VertexBuffer"));
-			command_buffer.enqueue<RenderCommandSetIB>(rg.query<GpuBufferHandle>("IndexBuffer"), EIndexFormat::UINT16);
-
-			static constexpr size_t N = 10;
-			auto bn = worlds.size() / 4;
-			for (auto n = 0u; n < N; n++)
 			{
-				ZoneScopedN("RenderPassExecute");
-				for (auto i = 0u; i < bn / N; i++)
+				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * 4, 0));
+				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(sakura::float4x4), 0));
+				command_buffer.enqueue<RenderCommandSetVB>(0, rg.query<GpuBufferHandle>("VertexBuffer"));
+				command_buffer.enqueue<RenderCommandSetIB>(rg.query<GpuBufferHandle>("IndexBuffer"), EIndexFormat::UINT16);
+
+				static constexpr size_t N = 10;
+				auto bn = worlds.size() / 4;
+				for (auto n = 0u; n < N; n++)
 				{
-					//}, { sizeof(sakura::float4x4) * (i + bn * n / N) * 4 })
-					command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(
-						Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * 4,
-							sizeof(sakura::float4x4) * (i + bn * n / N) * 4),
-						3);
+					ZoneScopedN("RenderPassExecute");
+					for (auto i = 0u; i < bn / N; i++)
+					{
+						command_buffer.enqueue<RenderCommandUpdateBinding>(
+							Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * 4, sizeof(sakura::float4x4) * (i + bn * n / N) * 4));
+						command_buffer.enqueue<RenderCommandDraw>(3);
+					}
 				}
 			}
 			command_buffer.enqueue<RenderCommandEndRenderPass>();
@@ -199,13 +193,11 @@ namespace render_system
 				{
 					BindingLayout::Set(
 					{
-						BindingLayout::Slot(
-							0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
+						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
 					}),
 					BindingLayout::Set(
 					{
-						BindingLayout::Slot(
-							0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
+						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
 					}),
 				}),
 			AttachmentLayout(

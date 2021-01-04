@@ -144,7 +144,7 @@ void RenderDevice::processCommandSetVB(PassCacheFrame& cacheFrame, const RenderC
 {
     if (auto vb = get<GPUBuffer>(command.vertex_buffer); vb)
     {
-        wgpuRenderPassEncoderSetVertexBuffer(cacheFrame.pass_encoder, 0, vb->buffer, command.offset, command.stride);
+        wgpuRenderPassEncoderSetVertexBuffer(cacheFrame.pass_encoder, command.slot, vb->buffer, command.offset, command.stride);
     }
     else
     {
@@ -171,8 +171,8 @@ void RenderDevice::processCommandSetIB(PassCacheFrame& cacheFrame, const RenderC
 
 void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command) const
 {
-    if (command.instance_draw)
-        goto DRAW_INSTANCE;
+    //if (command.instance_draw)
+    //    goto DRAW_INSTANCE;
 
     // Update Bindings
     for (auto i = 0u; i < cacheFrame.bind_groups.size(); i++)
@@ -196,35 +196,6 @@ void RenderDevice::processCommandDraw(PassCacheFrame& cacheFrame, const RenderCo
 DRAW_INSTANCE:
     wgpuRenderPassEncoderDrawIndexed(cacheFrame.pass_encoder,
         static_cast<uint32>(command.index_count), command.instance_count, 
-        command.first_index, command.base_vertex, command.first_instance);
-}
-
-void RenderDevice::processCommandDrawInstancedWithArgs(PassCacheFrame& cacheFrame, const RenderCommandDrawInstancedWithArgs& command) const
-{
-    if (command.binder)
-        processCommandUpdateBinding(cacheFrame, *command.binder);
-
-    // Update Bindings
-    for (auto i = 0u; i < cacheFrame.bind_groups.size(); i++)
-    {
-        auto& bindGroup = cacheFrame.bind_groups[i];
-        std::vector<uint32> dynamic_offsets;
-    	dynamic_offsets.reserve(cacheFrame.entries[i].first.size());
-    	for(auto j = 0u; j < cacheFrame.entries[i].first.size(); j++)
-    	{
-            auto& slot = cacheFrame.entries[i].first[j];
-    		if(auto buf = slot.as_buffer();buf)
-    		{
-                dynamic_offsets.emplace_back(slot.offset());
-    		}
-    	}
-        if (bindGroup && cacheFrame.pass_encoder)
-            wgpuRenderPassEncoderSetBindGroup(cacheFrame.pass_encoder, i, bindGroup,
-                dynamic_offsets.size(),
-                dynamic_offsets.size() == 0 ? nullptr : dynamic_offsets.data());
-    }
-	
-    wgpuRenderPassEncoderDrawIndexed(cacheFrame.pass_encoder, static_cast<uint32>(command.index_count), command.instance_count,
         command.first_index, command.base_vertex, command.first_instance);
 }
 
@@ -272,11 +243,6 @@ void RenderDevice::processCommand(PassCacheFrame& cacheFrame, const RenderComman
         auto& cmd = *static_cast<const RenderCommandUpdateBinding*>(command);
         processCommandUpdateBinding(cacheFrame, cmd);
     }break;
-	case ERenderCommandType::draw_instanced_with_args:
-	{
-		auto& cmd = *static_cast<const RenderCommandDrawInstancedWithArgs*>(command);
-        processCommandDrawInstancedWithArgs(cacheFrame, cmd);
-	}break;
     case ERenderCommandType::copy_texture_to_texture:
     {
         auto& cmd = *static_cast<const RenderCommandCopyTextureToTexture*>(command);

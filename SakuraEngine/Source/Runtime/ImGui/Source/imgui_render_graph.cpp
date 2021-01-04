@@ -37,8 +37,7 @@ namespace sakura::imgui
     static void imgui_setup_render_state(graphics::RenderCommandBuffer& command_buffer, ImDrawData* draw_data, int fb_width, int fb_height)
     {
         command_buffer.enqueue<RenderCommandBeginRenderPass>(imgui_render_pipeline, attachment);
-        command_buffer.enqueue<RenderCommandUpdateBinding>(
-            Binding(0, 0, imgui_projection_matrix, 0, sizeof(sakura::float4x4), 0));
+        command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 0, imgui_projection_matrix, 0, sizeof(sakura::float4x4), 0));
         command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, imgui_fonts_sampler));
         command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(2, 0, imgui_fonts_texture));
     }
@@ -109,10 +108,10 @@ namespace sakura::imgui
                             scissor_extent.height = (uint32_t)(clip_rect.w - clip_rect.y);
                             //vkCmdSetScissor(command_buffer, 0, 1, &scissor);
                             // Draw
-                            command_buffer.enqueue<RenderCommandSetVB>(imgui_vertex_buffer);
+                            command_buffer.enqueue<RenderCommandSetVB>(0, imgui_vertex_buffer);
                             command_buffer.enqueue<RenderCommandSetIB>(imgui_index_buffer, EIndexFormat::UINT16);
 
-                            command_buffer.enqueue<RenderCommandDrawInstancedWithArgs>(
+                            command_buffer.enqueue<RenderCommandDraw>(
                                 pcmd->ElemCount, 1, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset, 0
                             );
                         }
