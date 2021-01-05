@@ -62,7 +62,7 @@ sakura::graphics::webgpu::RenderPipeline::RenderPipeline(RenderPipelineHandle ha
                 break;
             default:
                 sakura::error("[RenderGraphWebGPU]: Shader {} with Unsupported Frequency: {} in RenderPipeline", shaderHandle, freq);
-            }
+            }   
         }
         else
         {
