@@ -845,6 +845,9 @@ int main()
 		ZoneScoped;
 		timer.start_up(); 
 		ppl.inc_timestamp();
+
+		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
+		render_system::CollectAndUpload(ppl, deltaTime);
 		
 		if (!bUseSnapshot)
 		{
@@ -883,15 +886,12 @@ int main()
 			}
 		}
 
-		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
-		render_system::CollectAndUpload(ppl, deltaTime);
-
 		// IMGUI
 		if(bUseImGui)
 		{
 			using namespace render_system;
 			static float f = 0.0f;
-			
+			ZoneScopedN("ImGui Command");
 			imgui::new_frame(main_window, deltaTime);
 			imgui::Begin("Boid Settings");
 
@@ -947,6 +947,7 @@ int main()
 		cycle += 1;
 
 		{
+			ZoneScopedN("Render");
 			using namespace render_system;
 			
 			// 开始渲染已经准备好的那帧 Command Buffer, 目前 Compile 内联在渲染系统中.
