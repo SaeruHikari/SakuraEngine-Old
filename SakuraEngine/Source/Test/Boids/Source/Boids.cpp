@@ -315,6 +315,7 @@ void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 	return task_system::ecs::schedule_init(ppl, pass,
 		[vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass) mutable
 		{
+			ZoneScopedN("Resize CopyTarget");
 			vector->resize(pipeline.pass_size(pass));
 		},
 		[vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
@@ -482,6 +483,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		task_system::ecs::schedule_init(ppl, pass,
 			[newHeadings](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass) mutable
 			{
+				ZoneScopedN("Resize newHeading");
 				newHeadings->resize(pipeline.pass_size(pass));
 			},
 			[headings, kdtree, targetTree, newHeadings, deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
