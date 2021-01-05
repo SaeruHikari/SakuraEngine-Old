@@ -441,24 +441,24 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		complist<Boid> //shared
 	};
 	//构造 kdtree, 提取 headings
-	auto positions = make_resource<std::vector<BoidPosition>>();
-	auto headings = make_resource<std::vector<sakura::Vector3f>>();
-	auto kdtree = make_resource<core::algo::kdtree<BoidPosition>>();
+	static auto positions = make_resource<std::vector<BoidPosition>>();
+	static auto headings = make_resource<std::vector<sakura::Vector3f>>();
+	static auto kdtree = make_resource<core::algo::kdtree<BoidPosition>>();
 	{
 		ZoneScopedN("Schedule Copy Translation and Heading");
 		CopyComponent<Translation>(ppl, boidFilter, positions);
 		CopyComponent<Heading>(ppl, boidFilter, headings);
 		shared_entry shareList[] = { read(positions), write(kdtree) };
-		task_system::ecs::schedule_custom(ppl, ppl.create_custom_pass(shareList), [positions, kdtree]() mutable
+		task_system::ecs::schedule_custom(ppl, ppl.create_custom_pass(shareList), []() mutable
 			{
 				ZoneScopedN("Build Boid KDTree");
-				kdtree->initialize(std::move(*positions));
+				kdtree->initialize(*positions);
 			});
 	}
 
 	//收集目标和障碍物
-	auto targets = make_resource<std::vector<BoidPosition>>();
-	auto targetTree = make_resource<core::algo::kdtree<BoidPosition>>();
+	static auto targets = make_resource<std::vector<BoidPosition>>();
+	static auto targetTree = make_resource<core::algo::kdtree<BoidPosition>>();
 	{
 		filters targetFilter;
 		targetFilter.archetypeFilter =
@@ -467,26 +467,26 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		};
 		CopyComponent<Translation>(ppl, targetFilter, targets);
 		shared_entry shareList[] = { read(targets), write(targetTree) };
-		task_system::ecs::schedule_custom(ppl, ppl.create_custom_pass(shareList), [targets, targetTree]() mutable
+		task_system::ecs::schedule_custom(ppl, ppl.create_custom_pass(shareList), []() mutable
 			{
 				ZoneScopedN("Build Target KDTree");
-				targetTree->initialize(std::move(*targets));
+				targetTree->initialize(*targets);
 			});
 	}
 	//计算新的朝向
-	auto newHeadings = make_resource<chunk_vector<sakura::Vector3f>>();
+	static auto newHeadings = make_resource<chunk_vector<sakura::Vector3f>>();
 	{
 		shared_entry shareList[] = { read(kdtree), read(headings), read(targetTree), write(newHeadings) };
 		def paramList = 
 			boost::hana::make_tuple( param<const Heading>, param<const Translation>, param<const Boid> );
 		auto pass = ppl.create_pass(boidFilter, paramList, shareList);
 		task_system::ecs::schedule_init(ppl, pass,
-			[newHeadings](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass) mutable
+			[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass) mutable
 			{
 				ZoneScopedN("Resize newHeading");
 				newHeadings->resize(pipeline.pass_size(pass));
 			},
-			[headings, kdtree, targetTree, newHeadings, deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
+			[deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
 			{
 				ZoneScopedN("Boid Main");
 				auto o = operation{ paramList, pass, tk };
@@ -550,7 +550,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		def paramList = 
 			boost::hana::make_tuple( param<Heading>, param<Translation>, param<const Boid> );
 		return task_system::ecs::schedule(ppl, ppl.create_pass(boidFilter, paramList, shareList),
-			[newHeadings, deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
+			[deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
 			{
 				ZoneScopedN("Apply Boid");
 				auto o = operation{ paramList, pass, tk };
@@ -865,6 +865,7 @@ int main()
 				BoidMainLoop(ppl, deltaTime * TimeScale);
 
 				ppl.wait();
+				ZoneScopedN("Take Snapshot");
 				auto& ctx = (ecs::world&)ppl;
 				std::vector<char> snapshot;
 				if (snapshots.size() > 0)
@@ -883,6 +884,7 @@ int main()
 			else if (selected_frame != current_frame)
 			{
 				ppl.wait();
+				ZoneScopedN("Load Snapshot");
 				auto& ctx = (ecs::world&)ppl;
 				auto data = snapshots[selected_frame].data();
 				buffer_deserializer archive(data);
