@@ -2,7 +2,7 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-//#define TRACY_ENABLE
+#define TRACY_ENABLE
 #include "tracy/Tracy.hpp"
 
 #include "RuntimeCore/RuntimeCore.h"
@@ -942,6 +942,8 @@ int main()
 			// 渲染ImGui
 			if(bUseImGui)
 			{
+				ZoneScopedN("ImGui Construct And Render");
+
 				RenderPass* pass_ptr = render_graph.render_pass(imgui_pass);
 				pass_ptr->construct(render_graph.builder(imgui_pass), *render_device);
 				imgui_command_buffer.reset();

@@ -128,8 +128,12 @@ namespace sakura::graphics
 
 
 	FORCEINLINE Shader::Descriptor::Descriptor(const sakura::string& _name, const sakura::string& _entry,
-		const EShaderFrequency _frequency, const sakura::span<const std::byte> _code) noexcept
-		: code(_code), name(_name), entry(_entry), frequency(_frequency) {	}
+		const EShaderFrequency _frequency, const sakura::span<const std::byte> _code, const EShaderLanguage sl) noexcept
+		: code(_code), name(_name), entry(_entry), frequency(_frequency), shader_language(sl) {	}
+
+	FORCEINLINE Shader::Descriptor::Descriptor(const sakura::string& _name, const sakura::string& _entry,
+		const EShaderFrequency _frequency, const char* _src, const EShaderLanguage sl) noexcept
+		: src(_src), name(_name), entry(_entry), frequency(_frequency), shader_language(sl) {	}
 
 
 	FORCEINLINE VertexLayout::Element::Element(string _semantic_name, EVertexFormat _format, uint32 _offset) noexcept

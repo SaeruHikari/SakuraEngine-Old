@@ -172,19 +172,19 @@ void RenderDevice::processCommandSetIB(PassCacheFrame& cacheFrame, const RenderC
 void RenderDevice::updateBindGroups(PassCacheFrame& cacheFrame)
 {
     // Update Bindings
-    for (auto i = 0u; i < cacheFrame.entries.size(); i++)
+    for (auto i = 0u; i < cacheFrame.sets.size(); i++)
     {
-        auto& set = cacheFrame.entries[i];
+        auto& set = cacheFrame.sets[i];
         WGPUBindGroupDescriptor bgDesc = {};
-        sakura::vector<WGPUBindGroupEntry> entries = sakura::vector<WGPUBindGroupEntry>(set.first.size());
+        sakura::vector<WGPUBindGroupEntry> sets = sakura::vector<WGPUBindGroupEntry>(set.first.size());
         auto& bindGroup = cacheFrame.bind_groups[i];
 
         for (auto& binder : set.first)
         {
             bgDesc.layout = cacheFrame.pipeline->bindingGroups[binder.set()]; // Get Layout.
-            bgDesc.entryCount = static_cast<uint32>(cacheFrame.entries[binder.set()].first.size());
+            bgDesc.entryCount = static_cast<uint32>(cacheFrame.sets[binder.set()].first.size());
 
-            auto& entry = entries[binder.bind()];
+            auto& entry = sets[binder.bind()];
             auto& slot = set.first[binder.bind()];
 
             entry.binding = slot.bind();
@@ -214,7 +214,7 @@ void RenderDevice::updateBindGroups(PassCacheFrame& cacheFrame)
             }
         }
 
-        bgDesc.entries = entries.data();
+        bgDesc.entries = sets.data();
         if (bindGroup)
             wgpuBindGroupRelease(bindGroup);
         bindGroup = wgpuDeviceCreateBindGroup(device, &bgDesc);
@@ -223,24 +223,29 @@ void RenderDevice::updateBindGroups(PassCacheFrame& cacheFrame)
 
 void RenderDevice::setBindGroups(PassCacheFrame& cacheFrame)
 {
-    for (auto i = 0u; i < cacheFrame.bind_groups.size(); i++)
+    auto& binding_layout = cacheFrame.pipeline->desc.binding_layout;
+    for (auto i = 0u; i < binding_layout.tables.size(); i++)
     {
-        auto& set = cacheFrame.entries[i];
+        auto& set = cacheFrame.sets[i];
+        auto& table = binding_layout.tables[i];
         {
             // Remove Dirty Flag.
             set.second = false;
 
             auto& bindGroup = cacheFrame.bind_groups[i];
             std::vector<uint32> dynamic_offsets;
-            dynamic_offsets.reserve(cacheFrame.entries[i].first.size());
-            for (auto j = 0u; j < cacheFrame.entries[i].first.size(); j++)
+            dynamic_offsets.reserve(cacheFrame.sets[i].first.size());
+
+            for (auto j = 0u; j < table.slots.size(); j++)
             {
-                auto& slot = cacheFrame.entries[i].first[j];
-                if (auto buf = slot.as_buffer(); buf)
+                auto& slot = table.slots[j];
+                auto& bind = cacheFrame.sets[i].first[j];
+                if (slot.binding_type == BindingLayout::UniformBuffer)
                 {
-                    dynamic_offsets.emplace_back(slot.offset());
+                    dynamic_offsets.emplace_back(bind.offset());
                 }
             }
+
             if (bindGroup && cacheFrame.pass_encoder)
                 wgpuRenderPassEncoderSetBindGroup(cacheFrame.pass_encoder, i, bindGroup,
                     dynamic_offsets.size(),
@@ -331,13 +336,14 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
 {
     // TODO: REFACTOR THIS.
     const auto& bl = cacheFrame.pipeline->desc.binding_layout;// render_graph.builder(hdl).binding_layout;
-	if(cacheFrame.entries.empty())
+	if(cacheFrame.sets.empty())
 	{
-        cacheFrame.entries.resize(bl.tables.size());
-        for (auto i = 0u; i < cacheFrame.entries.size(); i++)
+        cacheFrame.sets.resize(bl.tables.size());
+        for (auto i = 0u; i < cacheFrame.sets.size(); i++)
         {
-            cacheFrame.entries[i].first.resize(bl.tables[i].slots.size());
-            cacheFrame.entries[i].second = false;
+            cacheFrame.sets[i].first.resize(bl.tables[i].slots.size());
+
+            cacheFrame.sets[i].second = false;
         }
 	}
     if (cacheFrame.bind_groups.empty())
@@ -346,20 +352,20 @@ void RenderDevice::processCommandUpdateBinding(RenderDevice::PassCacheFrame& cac
     }
 	
     auto* bindingDesc = &binder;
-    auto& set = cacheFrame.entries[binder.set()];
-    if (cacheFrame.bind_groups.size() < bindingDesc->set() + 1 || cacheFrame.entries.size() < bindingDesc->set() + 1)
+    auto& set = cacheFrame.sets[binder.set()];
+    if (cacheFrame.bind_groups.size() < bindingDesc->set() + 1 || cacheFrame.sets.size() < bindingDesc->set() + 1)
     {
         sakura::error("Binding Set OverRange!");
     }
-    else if (cacheFrame.entries[bindingDesc->set()].first.size() < bindingDesc->bind() + 1)
+    else if (cacheFrame.sets[bindingDesc->set()].first.size() < bindingDesc->bind() + 1)
     {
         sakura::error("Binding Slot OverRange!");
     }
 	
     // Create New Binding on Slot.
-    if (cacheFrame.entries[bindingDesc->set()].first.at(bindingDesc->bind()) != binder)
+    if (cacheFrame.sets[bindingDesc->set()].first.at(bindingDesc->bind()) != binder)
     {
-        if (cacheFrame.pipeline && !cacheFrame.entries.empty())
+        if (cacheFrame.pipeline && !cacheFrame.sets.empty())
         {
             set.second = true; // Set Dirty.
             set.first[binder.bind()] = binder;

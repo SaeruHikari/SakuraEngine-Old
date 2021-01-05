@@ -85,7 +85,7 @@ namespace sakura::graphics::webgpu
 			sakura::vector<WGPUTextureView> texture_views
 				= sakura::vector<WGPUTextureView>(0); // [NOT FINISHED] Clear Every Frame.
 			
-			sakura::vector< sakura::pair<sakura::vector<Binding>, bool> > entries
+			sakura::vector< sakura::pair<sakura::vector<Binding>, bool> > sets
 				= sakura::vector< sakura::pair<sakura::vector<Binding>, bool> >(0); // Finished
 			sakura::vector<WGPUBindGroup> bind_groups = sakura::vector<WGPUBindGroup>(0); // Finished
 
