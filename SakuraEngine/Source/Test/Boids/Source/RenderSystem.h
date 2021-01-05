@@ -61,12 +61,12 @@ namespace render_system
 
 	const sakura::string vertex_shader_wgsl =
 		u8"\
-		[[location(0)]] var<in> positionIn : vec3<f32>;\n\
-		[[location(1)]] var<in> colorIn : vec3<f32>; \n\
-		[[builtin(instance_idx)]] var<in> InstanceIdx : u32;\n\
+		[[location(0)]] var<in> positionIn: vec3<f32>;\n\
+		[[location(1)]] var<in> colorIn: vec3<f32>; \n\
+		[[builtin(instance_idx)]] var<in> InstanceIdx: u32;\n\
 		\n\
-		[[location(0)]] var<out> v_color : vec3<f32>; \n\
-		[[builtin(position)]] var<out> Position : vec4<f32>;\n\
+		[[location(0)]] var<out> v_color: vec3<f32>; \n\
+		[[builtin(position)]] var<out> Position: vec4<f32>;\n\
 		\n\
 		[[block]] struct WorldProjection \n\
 		{\n\
@@ -90,8 +90,8 @@ namespace render_system
 
 	const sakura::string pixel_shader_wgsl =
 		u8"\
-		[[location(0)]] var<in> v_color : vec3<f32>;\
-		[[location(0)]] var<out> outColor : vec4<f32>;\
+		[[location(0)]] var<in> v_color: vec3<f32>;\
+		[[location(0)]] var<out> outColor: vec4<f32>;\
 		\
 		[[stage(fragment)]]\
 		fn main() -> void {\
@@ -406,7 +406,7 @@ namespace render_system
 		}
 
 		{
-			ZoneScopedN("RenderAndPresent");
+			ZoneScopedN("Render");
 			RenderPass* pass_ptr = render_graph.render_pass(pass);
 			render_device->execute(buffer, pass_ptr->handle());
 		}

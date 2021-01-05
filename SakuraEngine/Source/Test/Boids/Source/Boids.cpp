@@ -540,7 +540,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 						(*newHeadings)[index + i] = math::normalize((hds[i] + (newHeading - hds[i]) * deltaTime * boid->TurnSpeed));
 					}
 				}
-			}, 100);
+			}, 500);
 	}
 	//结果转换
 	{
@@ -846,6 +846,9 @@ int main()
 		timer.start_up(); 
 		ppl.inc_timestamp();
 		
+		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
+		render_system::CollectAndUpload(ppl, deltaTime);
+
 		if (!bUseSnapshot)
 		{
 			BoidMainLoop(ppl, deltaTime * TimeScale);
@@ -882,16 +885,15 @@ int main()
 				current_frame = selected_frame;
 			}
 		}
-
-		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
-		render_system::CollectAndUpload(ppl, deltaTime);
-
+	
 		// IMGUI
-		if(bUseImGui)
+		if (bUseImGui)
 		{
+			ZoneScopedN("ImGui Construct");
+
 			using namespace render_system;
 			static float f = 0.0f;
-			
+
 			imgui::new_frame(main_window, deltaTime);
 			imgui::Begin("Boid Settings");
 
@@ -943,19 +945,17 @@ int main()
 			imgui::End();
 			imgui::Render();
 		}
-		
 		cycle += 1;
-
 		{
 			using namespace render_system;
-			
+
 			// 开始渲染已经准备好的那帧 Command Buffer, 目前 Compile 内联在渲染系统中.
 			render_system::Render(buffer); // 0 + 1
 
 			// 渲染ImGui
-			if(bUseImGui)
+			if (bUseImGui)
 			{
-				ZoneScopedN("ImGui Construct And Render");
+				ZoneScopedN("ImGui Render");
 
 				RenderPass* pass_ptr = render_graph.render_pass(imgui_pass);
 				pass_ptr->construct(render_graph.builder(imgui_pass), *render_device);
@@ -968,7 +968,6 @@ int main()
 			render_system::Present();
 		}
 
-		
 		if (cycle % 60 == 0)
 			render_system::main_window.set_title(fmt::format(L"SakuraEngine: {:.2f} FPS", 1.0 / deltaTime).c_str());
 
