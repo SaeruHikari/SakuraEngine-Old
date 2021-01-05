@@ -22,10 +22,18 @@ sakura::graphics::webgpu::GpuShader::GpuShader(
 	}
 	else //No Existed Shader Module, Create One.
 	{
+		const char* src = nullptr;
 		const uint32_t* code = nullptr;
 		if(desc.code.empty())
 		{
-			assert(0 && "Only Support WithCode Mode!");
+			if (desc.src)
+			{
+				src = desc.src;
+			}
+			else
+			{
+				assert(0 && "Only Support WithCode Mode!");
+			}
 		}
 		else
 		{ 
@@ -34,13 +42,27 @@ sakura::graphics::webgpu::GpuShader::GpuShader(
 		}
 		const char* label = nullptr;
 
-		WGPUShaderModuleSPIRVDescriptor spirv = {};
-		spirv.chain.sType = WGPUSType_ShaderModuleSPIRVDescriptor;
-		spirv.codeSize = size_ / sizeof(uint32);
-		spirv.code = code;
+
 		WGPUShaderModuleDescriptor moduleDesc = {};
-		moduleDesc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(&spirv);
-		moduleDesc.label = label;
+		WGPUShaderModuleSPIRVDescriptor spirv = {};
+		WGPUShaderModuleWGSLDescriptor wgsl = {};
+		if (desc.shader_language == EShaderLanguage::SPIRV)
+		{
+			spirv.chain.sType = WGPUSType_ShaderModuleSPIRVDescriptor;
+			spirv.codeSize = size_ / sizeof(uint32);
+			spirv.code = code;
+
+			moduleDesc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(&spirv);
+			moduleDesc.label = label;
+		}
+		else if (desc.shader_language == EShaderLanguage::WGSL)
+		{
+			wgsl.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
+			wgsl.source = src;
+
+			moduleDesc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(&wgsl);
+			moduleDesc.label = label;
+		}
 		module_ref = wgpuDeviceCreateShaderModule(dev.device, &moduleDesc);
 		if (!module_ref)
 		{

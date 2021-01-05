@@ -31,17 +31,18 @@ namespace render_system
 		{\
 			float4x4 view_proj;\
 		};\
-		[[vk::binding(0, 0)]] cbuffer ub2\
+		struct Wrds\
 		{\
 			float4x4 world;\
 			float4x4 world1;\
 			float4x4 world2;\
 			float4x4 world3;\
 		};\
-		VertexOut main(VertexIn vin)\
+		[[vk::binding(0, 0)]] ConstantBuffer<Wrds> worlds[];\
+		VertexOut main(VertexIn vin, uint iID : SV_InstanceID)\
 		{\
 			VertexOut vout;\
-			float4 posW = mul(float4(vin.aPos, 1.0f), world);\
+			float4 posW = mul(float4(vin.aPos, 1.0f), worlds[0].world);\
 			vout.position = mul(posW, view_proj);\
 			vout.vCol = vin.aCol;\
 			return vout;\
@@ -55,6 +56,47 @@ namespace render_system
 		float4 main(VertexOut pin) : SV_TARGET\
 		{\
 			return float4(pin.vCol.xyz, 1.f);\
+		}";
+
+
+	const sakura::string vertex_shader_wgsl =
+		u8"\
+		[[location(0)]] var<in> positionIn : vec3<f32>;\n\
+		[[location(1)]] var<in> colorIn : vec3<f32>; \n\
+		[[builtin(instance_idx)]] var<in> InstanceIdx : u32;\n\
+		\n\
+		[[location(0)]] var<out> v_color : vec3<f32>; \n\
+		[[builtin(position)]] var<out> Position : vec4<f32>;\n\
+		\n\
+		[[block]] struct WorldProjection \n\
+		{\n\
+			[[offset(0)]] value: mat4x4<f32>;\n\
+		};\n\
+		[[block]] struct PositionsBuffer \n\
+		{\n\
+			[[offset(0)]] world: [[stride(64)]] array<mat4x4<f32>>;\n\
+		}; \n\
+		[[set(0), binding(0)]] var<storage_buffer> worlds: [[access(read)]] PositionsBuffer;\n\
+		[[set(1), binding(0)]] var<uniform> view_proj: WorldProjection;\n\
+		\n\
+		[[stage(vertex)]]\n\
+		fn main() -> void {\n\
+			var posIn : vec4<f32> = vec4<f32>(positionIn.x, positionIn.y, positionIn.z, 1.0);\n\
+			var posW : vec4<f32> = posIn * worlds.world[InstanceIdx];\n\
+			Position = posW * view_proj.value;\n\
+			v_color = colorIn;\n\
+			return;\n\
+		}";
+
+	const sakura::string pixel_shader_wgsl =
+		u8"\
+		[[location(0)]] var<in> v_color : vec3<f32>;\
+		[[location(0)]] var<out> outColor : vec4<f32>;\
+		\
+		[[stage(fragment)]]\
+		fn main() -> void {\
+			outColor = vec4<f32>(v_color.x, v_color.y, v_color.z, 1.0);\n\
+			return;\
 		}";
 
 	static sakura::Window main_window;
@@ -76,8 +118,8 @@ namespace render_system
 	static GpuBufferHandle index_buffer_sphere = render_graph.GpuBuffer("IndexBufferSphere");
 
 	static sakura::float4x4 view_proj;
-	static std::vector<sakura::float4x4> worlds(TARGET_NUM * 4);
-	static std::vector<sakura::float4x4> target_worlds(10 * 4);
+	static std::vector<sakura::float4x4> worlds(TARGET_NUM);
+	static std::vector<sakura::float4x4> target_worlds(10);
 
 	class RenderPassSimple : public RenderPass
 	{
@@ -90,38 +132,30 @@ namespace render_system
 		{
 			command_buffer.enqueue<RenderCommandBeginRenderPass>(render_pipeline, attachment);
 			{
-				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 0, uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 4, 0));
+				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 0, uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 10, 0));
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(sakura::float4x4), 0));
 				command_buffer.enqueue<RenderCommandSetVB>(0, rg.query<GpuBufferHandle>("VertexBufferSphere"));
 				command_buffer.enqueue<RenderCommandSetIB>(rg.query<GpuBufferHandle>("IndexBufferSphere"), EIndexFormat::UINT16);
 
 				auto tn = target_worlds.size() / 4;
-				for (auto i = 0u; i < tn; i++)
 				{
-					command_buffer.enqueue<RenderCommandUpdateBinding>(
-						Binding(0, 0, uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 4, sizeof(sakura::float4x4) * i * 4));
-					command_buffer.enqueue<RenderCommandDraw>(60);
+					command_buffer.enqueue<RenderCommandDraw>(60, target_worlds.size());
 				}
 			}
 			
 			{
-				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * 4, 0));
+				command_buffer.enqueue<RenderCommandUpdateBinding>(
+					Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * TARGET_NUM, 0));
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(sakura::float4x4), 0));
 				command_buffer.enqueue<RenderCommandSetVB>(0, rg.query<GpuBufferHandle>("VertexBuffer"));
 				// Mention that you can also do like this.
 				// command_buffer.enqueue<RenderCommandSetVB>(1, rg.query<GpuBufferHandle>("VertexBuffer1"));
 				command_buffer.enqueue<RenderCommandSetIB>(rg.query<GpuBufferHandle>("IndexBuffer"), EIndexFormat::UINT16);
 
-				static constexpr size_t N = 10;
-				auto bn = worlds.size() / 4;
-				for (auto n = 0u; n < N; n++)
 				{
 					ZoneScopedN("RenderPassExecute");
-					for (auto i = 0u; i < bn / N; i++)
 					{
-						command_buffer.enqueue<RenderCommandUpdateBinding>(
-							Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * 4, sizeof(sakura::float4x4) * (i + bn * n / N) * 4));
-						command_buffer.enqueue<RenderCommandDraw>(3);
+						command_buffer.enqueue<RenderCommandDraw>(3, worlds.size());
 					}
 				}
 			}
@@ -175,15 +209,16 @@ namespace render_system
 			assert(render_device != nullptr && "ERROR: Failed to create Dawn device!");
 		}
 
-
 		// Create Swap Chains.
 		render_device->create_swap_chain(swap_chain, SwapChainDescriptor(EPresentMode::Mailbox, main_window, 3));
 		// Init RenderPipeline Desc
 		RenderPipelineDescriptor pipelineDesc = RenderPipelineDescriptor(
 			ShaderLayout({
 				// Create Actual ShaderResources on Device.
-				render_device->create_shader(vertex_shader, ShaderDescriptor("VertexShader", "main", EShaderFrequency::VertexShader, vertex_shader_spirv)),
-				render_device->create_shader(pixel_shader, ShaderDescriptor("PiexelShader", "main", EShaderFrequency::PixelShader, pixel_shader_spirv))
+				render_device->create_shader(vertex_shader, ShaderDescriptor("VertexShader",
+					"main", EShaderFrequency::VertexShader, vertex_shader_wgsl.c_str(), EShaderLanguage::WGSL)),
+				render_device->create_shader(pixel_shader, ShaderDescriptor("PiexelShader",
+					"main", EShaderFrequency::PixelShader, pixel_shader_wgsl.c_str(), EShaderLanguage::WGSL))
 				}),
 			VertexLayout(
 				{
@@ -195,7 +230,7 @@ namespace render_system
 				{
 					BindingLayout::Set(
 					{
-						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
+						BindingLayout::Slot(0, BindingLayout::ReadonlyStorageBuffer, EShaderFrequency::VertexShader),
 					}),
 					BindingLayout::Set(
 					{
@@ -246,9 +281,9 @@ namespace render_system
 		render_device->create_buffer(uniform_buffer,
 			BufferDescriptor(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4), &view_proj));
 		render_device->create_buffer(uniform_buffer_per_target,
-			BufferDescriptor(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * target_worlds.size(), target_worlds.data()));
+			BufferDescriptor(EBufferUsage::StorageBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * target_worlds.size(), target_worlds.data()));
 		render_device->create_buffer(uniform_buffer_per_object,
-			BufferDescriptor(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * worlds.size(), worlds.data()));
+			BufferDescriptor(EBufferUsage::StorageBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * worlds.size(), worlds.data()));
 
 		render_device->create_buffer(vertex_buffer,
 			BufferDescriptor(EBufferUsage::VertexBuffer | EBufferUsage::CopyDst, sizeof(vertData), vertData));
@@ -288,7 +323,7 @@ namespace render_system
 			task_system::ecs::schedule_init(ppl, pass,
 				[&world](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass)
 				{
-					world.resize(pipeline.pass_size(task_pass) * 4);
+					world.resize(pipeline.pass_size(task_pass));
 				},
 				[&world](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
 				{
@@ -301,11 +336,8 @@ namespace render_system
 					for (auto i = 0u; i < o.get_count(); i++)
 					{
 						auto l2w = sakura::math::transpose(l2ws[i]);
-						int j = (i + index) * 4;
+						int j = (i + index);
 						world[j] = l2w;
-						world[j + 1] = l2w;
-						world[j + 2] = l2w;
-						world[j + 3] = l2w;
 					}
 				}, maxSlice);
 			return pass;
@@ -336,6 +368,8 @@ namespace render_system
 
 	void Present()
 	{
+		ZoneScopedN("Present");
+
 		render_device->present(swap_chain);
 	}
 

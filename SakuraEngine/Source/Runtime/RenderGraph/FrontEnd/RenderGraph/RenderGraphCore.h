@@ -235,6 +235,18 @@ namespace sakura::graphics
 		ReadWrite
 	};
 
+	enum class EShaderLanguage
+	{
+		HLSL,
+		SPIRV,
+		GLSL,
+		WGSL,
+		PSSL,
+		PSSL2,
+		MTL,
+		Count
+	};
+
 	// Shader Frequency
 	enum class EShaderFrequency : uint32
 	{
@@ -1001,13 +1013,19 @@ namespace sakura::graphics
 			sakura::string name = "";
 			sakura::string entry = "";
 			EShaderFrequency frequency = EShaderFrequency::None;
+			EShaderLanguage shader_language = EShaderLanguage::SPIRV;
 
 			const sakura::span<const std::byte> code;
+			const char* src = nullptr;
 
 			Descriptor() = default;
 			explicit Descriptor(const sakura::string & name,
 				const sakura::string & entry, const EShaderFrequency frequency,
-				const sakura::span<const std::byte> code = {}) noexcept;
+				const sakura::span<const std::byte> code = {}, const EShaderLanguage sl = EShaderLanguage::SPIRV) noexcept;
+			
+			explicit Descriptor(const sakura::string & name,
+				const sakura::string & entry, const EShaderFrequency frequency,
+				const char* src = nullptr, const EShaderLanguage sl = EShaderLanguage::HLSL) noexcept;
 		};
 	};
 	using ShaderDescriptor = Shader::Descriptor;
