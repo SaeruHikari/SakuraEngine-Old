@@ -846,7 +846,7 @@ int main()
 		timer.start_up(); 
 		ppl.inc_timestamp();
 		
-		if (bUseSnapshot)
+		if (!bUseSnapshot)
 		{
 			BoidMainLoop(ppl, deltaTime * TimeScale);
 		}
