@@ -87,7 +87,6 @@ namespace sakura::graphics::webgpu
 			
 			sakura::vector< sakura::pair<sakura::vector<Binding>, bool> > entries
 				= sakura::vector< sakura::pair<sakura::vector<Binding>, bool> >(0); // Finished
-
 			sakura::vector<WGPUBindGroup> bind_groups = sakura::vector<WGPUBindGroup>(0); // Finished
 
 			RenderPipeline* pipeline = nullptr; // 
@@ -115,20 +114,23 @@ namespace sakura::graphics::webgpu
 		
 		void initPlatformSpecific(const DeviceConfiguration& config);
 
-		void processCommand(PassCacheFrame& cache, const RenderCommand* command) const;
-		void compileCommand(WGPUCommandEncoder encoder, const RenderCommand* command) const;
+		void processCommand(PassCacheFrame& cache, const RenderCommand* command);
+		void compileCommand(WGPUCommandEncoder encoder, const RenderCommand* command);
 		
+		void updateBindGroups(PassCacheFrame& cache);
+		void setBindGroups(PassCacheFrame& cache);
+
 		// Graphics
-		void processCommandUpdateBinding(PassCacheFrame& cache, const RenderCommandUpdateBinding& command) const;
-		void processCommandUpdateBinding(PassCacheFrame& cache, const sakura::graphics::Binding& binder) const;
-		void processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command) const;
-		void processCommandSetVB(PassCacheFrame& cacheFrame, const RenderCommandSetVB& command) const;
-		void processCommandSetIB(PassCacheFrame& cacheFrame, const RenderCommandSetIB& command) const;
-		void processCommandDrawIndirect(PassCacheFrame& cache, const RenderCommandDrawIndirect& command) const;
-		void processCommandBeginRenderPass(PassCacheFrame& cache, const RenderCommandBeginRenderPass& command) const;
-		void processCommandEndRenderPass(PassCacheFrame& cache, const RenderCommandEndRenderPass& command) const;
-		void processCommandSetScissorRect(PassCacheFrame& cache, const RenderCommandSetScissorRect& command) const;
-		void processCommandFence(const RenderCommandFence& command, WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass) const;
+		void processCommandUpdateBinding(PassCacheFrame& cache, const RenderCommandUpdateBinding& command);
+		void processCommandUpdateBinding(PassCacheFrame& cache, const sakura::graphics::Binding& binder);
+		void processCommandDraw(PassCacheFrame& cacheFrame, const RenderCommandDraw& command);
+		void processCommandSetVB(PassCacheFrame& cacheFrame, const RenderCommandSetVB& command);
+		void processCommandSetIB(PassCacheFrame& cacheFrame, const RenderCommandSetIB& command);
+		void processCommandDrawIndirect(PassCacheFrame& cache, const RenderCommandDrawIndirect& command);
+		void processCommandBeginRenderPass(PassCacheFrame& cache, const RenderCommandBeginRenderPass& command);
+		void processCommandEndRenderPass(PassCacheFrame& cache, const RenderCommandEndRenderPass& command);
+		void processCommandSetScissorRect(PassCacheFrame& cache, const RenderCommandSetScissorRect& command);
+		void processCommandFence(const RenderCommandFence& command, WGPUCommandEncoder* encoder, WGPURenderPassEncoder* pass);
 
 		// Copy/Transfer
 		void processCommandCopyTextureToTexture(WGPUCommandEncoder encoder, const RenderCommandCopyTextureToTexture& command) const;

@@ -32,11 +32,11 @@
 #include <chrono>
 #include <string>
 #include <string_view>
-#include <any>
 #include <variant>
 #include <array>
 #include <unordered_map>
 #include <gsl/span>
+#include <atomic>
 
 namespace utf_converter
 {
@@ -239,24 +239,6 @@ namespace sakura
         struct __function_traits<R(C::*)(As...) const> : public __function_traits_base<R, As...> {};
         template<typename F>
         struct __function_traits : public __function_traits<decltype(&F::operator())> {};
-
-
-        template <int ind, typename... T>
-        class helper {
-        public:
-            static void set_tuple(std::tuple<T...>& t, const std::vector<std::any>& v) {
-                std::get<ind>(t) = std::any_cast<typename std::tuple_element<ind, std::tuple<T...> >::type>(v[ind]);
-                helper<(ind - 1), T...>::set_tuple(t, v);
-            }
-        };
-
-        template <typename... T>
-        class helper<0, T...> {
-        public:
-            static void set_tuple(std::tuple<T...>& t, const std::vector<std::any>& v) {
-                std::get<0>(t) = std::any_cast<typename std::tuple_element<0, std::tuple<T...> >::type>(v[0]);
-            }
-        };
     }
 
     template<typename F>
@@ -272,19 +254,12 @@ namespace sakura
         return call_function(invoker, f, std::make_index_sequence<sizeof...(T)>(), t);
     }
 
-    template <typename... T>
-    std::tuple<T...> create_tuple(const std::vector<std::any>& init) {
-        std::tuple<T...> res;
-        detail::helper<sizeof...(T) - 1, T...>::set_tuple(res, init);
-        return res;
-    }
-
     template <class, template <class, class...> class>
     struct is_instance_of : public std::false_type {};
     template <class...Ts, template <class, class...> class U>
     struct is_instance_of<U<Ts...>, U> : public std::true_type {};
     template <typename C, template <class, class...> class T>
-    inline constexpr bool is_instance_of_v = is_instance_of<C, T>::value;
+    static constexpr bool is_instance_of_v = is_instance_of<C, T>::value;
 
     template<class T, typename U>
     constexpr std::ptrdiff_t member_offset(U T::* member)
@@ -331,7 +306,7 @@ namespace sakura
     template <class T>
     using is_complete = decltype(is_complete_impl(std::declval<T*>()));
     template <class T>
-    inline constexpr bool is_complete_v = is_complete<T>::value;
+    static constexpr bool is_complete_v = is_complete<T>::value;
 
     namespace detail
     {

@@ -60,7 +60,7 @@ namespace sakura
               float2 uv  : TEXCOORD0;\
             };\
             [[vk::binding(0, 1)]] SamplerState sampler0 : register(s0);\
-            [[vk::binding(0, 2)]] Texture2D texture0 : register(t0);\
+            [[vk::binding(1, 1)]] Texture2D texture0 : register(t0);\
             \
             float4 main(PS_INPUT input) : SV_Target\
             {\

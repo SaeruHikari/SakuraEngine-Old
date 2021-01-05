@@ -42,6 +42,11 @@ THE SOFTWARE.
 #include <cassert>
 #endif
 
+#ifdef SAKURA_TARGET_PLATFORM_PROSPERO
+#include <sceerror.h>
+#include <kernel.h>
+#endif
+
 BEGIN_XG_NAMESPACE
 
 #ifdef GUID_ANDROID
@@ -307,6 +312,42 @@ Guid newGuid()
 		bytes.byte15
 	}};
 	return Guid{std::move(byteArray)};
+}
+#endif
+
+#ifdef SAKURA_TARGET_PLATFORM_PROSPERO
+
+Guid newGuid()
+{
+	SceKernelUuid uu = {};
+	if(sceKernelUuidCreate(&uu) != SCE_OK)
+	{
+
+	}
+	std::array<unsigned char, 16> bytes =
+	{
+		(unsigned char)((uu.timeLow >> 24) & 0xFF),
+		(unsigned char)((uu.timeLow >> 16) & 0xFF),
+		(unsigned char)((uu.timeLow >> 8) & 0xFF),
+		(unsigned char)((uu.timeLow) & 0xff),
+
+		(unsigned char)((uu.timeMid >> 8) & 0xFF),
+		(unsigned char)((uu.timeMid) & 0xff),
+
+		(unsigned char)((uu.timeHiAndVersion >> 8) & 0xFF),
+		(unsigned char)((uu.timeHiAndVersion) & 0xFF),
+
+		(unsigned char)uu.clockSeqHiAndReserved,
+		(unsigned char)uu.clockSeqLow,
+		(unsigned char)uu.node[0],
+		(unsigned char)uu.node[1],
+		(unsigned char)uu.node[2],
+		(unsigned char)uu.node[3],
+		(unsigned char)uu.node[4],
+		(unsigned char)uu.node[5],
+	};
+
+	return Guid{std::move(bytes)};
 }
 #endif
 

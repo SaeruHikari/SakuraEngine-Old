@@ -26,6 +26,8 @@ elseif(APPLE)
 elseif(ANDROID)
     # GUID_ANDROID is used in the headers, so make PUBLIC
     target_compile_definitions(crossguid PUBLIC GUID_ANDROID)
+elseif(SAKURA_PLATFORM MATCHES "prospero")
+  
 else()
     find_package(Libuuid REQUIRED)
     if (NOT LIBUUID_FOUND)

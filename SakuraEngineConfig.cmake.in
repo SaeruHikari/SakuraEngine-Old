@@ -24,7 +24,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BIN_DIR}/Release)
 link_directories(${PROJECT_BIN_DIR}/$<$<CONFIG:Debug>:Release>$<$<CONFIG:Release>:Debug>)
 set(SAKURA_PROJECT_FINAL_BIN_DIR ${PROJECT_BIN_DIR}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>)
 
-if(__COMPILER_PS5)
+if(SAKURA_PLATFORM MATCHES "prospero")
 else()
 find_package(Threads REQUIRED)
 endif()

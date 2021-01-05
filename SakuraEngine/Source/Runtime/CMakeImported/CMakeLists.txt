@@ -1,4 +1,4 @@
-if(__COMPILER_PS5)
+if(SAKURA_PLATFORM MATCHES "prospero")
 else()
     add_subdirectory(marl)
     CMakeImportedModule(

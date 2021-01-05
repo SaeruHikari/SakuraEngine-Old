@@ -965,7 +965,8 @@ namespace sakura::graphics
 		
 		FORCEINLINE bool operator==(const Binding& other) const
 		{
-			return content == other.content;
+			return content == other.content && target_binding == other.target_binding 
+				&& target_set == other.target_set && other.offset_ == offset_;
 		}
 
 		FORCEINLINE bool operator!=(const Binding& other) const

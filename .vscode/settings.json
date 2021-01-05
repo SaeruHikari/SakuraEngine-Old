@@ -134,6 +134,8 @@
         "gsl_assert": "cpp",
         "complex": "cpp",
         "execution": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "csignal": "cpp",
+        "coroutine": "cpp"
     },
 }

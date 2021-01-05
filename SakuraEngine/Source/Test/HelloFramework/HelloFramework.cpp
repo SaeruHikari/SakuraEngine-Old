@@ -2,6 +2,6 @@
 
 int main(void)
 {
-
+    sakura::error("WTF");
     return 0;
 }

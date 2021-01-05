@@ -108,6 +108,8 @@ namespace render_system
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * 4, 0));
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(sakura::float4x4), 0));
 				command_buffer.enqueue<RenderCommandSetVB>(0, rg.query<GpuBufferHandle>("VertexBuffer"));
+				// Mention that you can also do like this.
+				// command_buffer.enqueue<RenderCommandSetVB>(1, rg.query<GpuBufferHandle>("VertexBuffer1"));
 				command_buffer.enqueue<RenderCommandSetIB>(rg.query<GpuBufferHandle>("IndexBuffer"), EIndexFormat::UINT16);
 
 				static constexpr size_t N = 10;

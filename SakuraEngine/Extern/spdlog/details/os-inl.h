@@ -8,7 +8,7 @@
 #endif
 
 #include <spdlog/common.h>
-
+#include <cstdlib>
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
@@ -87,6 +87,9 @@ SPDLOG_INLINE std::tm localtime(const std::time_t &time_tt) SPDLOG_NOEXCEPT
 #ifdef _WIN32
     std::tm tm;
     ::localtime_s(&tm, &time_tt);
+#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+    std::tm tm;
+    ::localtime_s(&time_tt, &tm);
 #else
     std::tm tm;
     ::localtime_r(&time_tt, &tm);
@@ -106,6 +109,9 @@ SPDLOG_INLINE std::tm gmtime(const std::time_t &time_tt) SPDLOG_NOEXCEPT
 #ifdef _WIN32
     std::tm tm;
     ::gmtime_s(&tm, &time_tt);
+#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+    std::tm tm;
+    ::gmtime_s(&time_tt, &tm);
 #else
     std::tm tm;
     ::gmtime_r(&time_tt, &tm);
@@ -326,6 +332,8 @@ SPDLOG_INLINE size_t _thread_id() SPDLOG_NOEXCEPT
 #define SYS_gettid __NR_gettid
 #endif
     return static_cast<size_t>(::syscall(SYS_gettid));
+#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+    return static_cast<size_t>(::scePthreadGetthreadid());
 #elif defined(_AIX) || defined(__DragonFly__) || defined(__FreeBSD__)
     return static_cast<size_t>(::pthread_getthreadid_np());
 #elif defined(__NetBSD__)
@@ -396,6 +404,8 @@ SPDLOG_INLINE bool is_color_terminal() SPDLOG_NOEXCEPT
 {
 #ifdef _WIN32
     return true;
+#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+    return false;
 #else
     static constexpr std::array<const char *, 14> terms = {
         {"ansi", "color", "console", "cygwin", "gnome", "konsole", "kterm", "linux", "msys", "putty", "rxvt", "screen", "vt100", "xterm"}};
@@ -416,9 +426,10 @@ SPDLOG_INLINE bool is_color_terminal() SPDLOG_NOEXCEPT
 // Source: https://github.com/agauniyal/rang/
 SPDLOG_INLINE bool in_terminal(FILE *file) SPDLOG_NOEXCEPT
 {
-
 #ifdef _WIN32
     return ::_isatty(_fileno(file)) != 0;
+#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+    return false;
 #else
     return ::isatty(fileno(file)) != 0;
 #endif
@@ -543,6 +554,8 @@ std::string SPDLOG_INLINE getenv(const char *field)
     bool ok = ::getenv_s(&len, buf, sizeof(buf), field) == 0;
     return ok ? buf : std::string{};
 #endif
+#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+    return "";
 #else // revert to getenv
     char *buf = ::getenv(field);
     return buf ? buf : std::string{};

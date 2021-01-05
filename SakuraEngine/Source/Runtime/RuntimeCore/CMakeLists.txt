@@ -1,6 +1,6 @@
 project(RuntimeCore VERSION 0.0.1)
 
-if(__COMPILER_PS5)
+if(SAKURA_PLATFORM MATCHES "prospero")
 else()
     set(MARL marl)
 endif()

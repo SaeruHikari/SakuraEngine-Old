@@ -793,7 +793,7 @@ int main()
 		return -1;
 	}
 	Timer timer;
-	double deltaTime = 0;
+	double deltaTime = 1.f / 60.f;
 	size_t cycle = 0;
 	task_system::Scheduler scheduler(task_system::Scheduler::Config::allCores());
 	scheduler.bind();
@@ -884,7 +884,7 @@ int main()
 			using namespace render_system;
 			static float f = 0.0f;
 			
-			imgui::new_frame(main_window, 1.f / 60.f);
+			imgui::new_frame(main_window, deltaTime);
 			imgui::Begin("Boid Settings");
 			if (imgui::SliderInt("Frame", &selected_frame, 0, snapshots.size() - 1))
 				rolling_back = true;

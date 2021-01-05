@@ -102,6 +102,10 @@
 #endif
 
 #ifdef _MSC_VER
+    #pragma warning(disable:4251)//template dll interface
+    #pragma warning(disable:5030)//unknown-attributes
+    #pragma warning(disable:26812)//enum -> enum class
+
     #pragma warning(disable: 4244)
     #pragma warning(disable: 4267)
 #endif
@@ -271,6 +275,3 @@ FORCEINLINE To force_cast(From f)
 #endif
 */
 //#define RenderGraphAPI __declspec(dllexport)
-#pragma warning(disable:4251)//template dll interface
-#pragma warning(disable:5030)//unknown-attributes
-#pragma warning(disable:26812)//enum -> enum class
