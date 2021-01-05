@@ -778,6 +778,7 @@ void DebugHeadingLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 	Local2XSystem<LocalToWorld>(ppl, wrd_filter);
 }
 const bool bUseImGui = true;
+const bool bUseSnapshot = false;
 sakura::graphics::RenderPassHandle imgui_pass = sakura::GenerationalId::UNINITIALIZED;
 sakura::graphics::RenderCommandBuffer imgui_command_buffer("ImGuiRender", 4096);
 int main()
@@ -845,34 +846,41 @@ int main()
 		timer.start_up(); 
 		ppl.inc_timestamp();
 		
-		if (!rolling_back)
+		if (bUseSnapshot)
 		{
 			BoidMainLoop(ppl, deltaTime * TimeScale);
-
-			ppl.wait();
-			auto& ctx = (ecs::world&)ppl;
-			std::vector<char> snapshot;
-			if(snapshots.size()>0)
-				snapshot.reserve(snapshots.back().size());
-			buffer_serializer archive(snapshot);
-			ctx.serialize(&archive);
-			memory_used += snapshot.size();
-			snapshots.emplace_back(std::move(snapshot));
-			while (memory_used > (long long)memory_size_limit * 1024 * 1024)
-			{
-				memory_used -= snapshots.front().size();
-				snapshots.pop_front();
-			}
-			selected_frame = current_frame = snapshots.size();
 		}
-		else if(selected_frame != current_frame)
+		else
 		{
-			ppl.wait();
-			auto& ctx = (ecs::world&)ppl;
-			auto data = snapshots[selected_frame].data();
-			buffer_deserializer archive(data);
-			ctx.deserialize(&archive);
-			current_frame = selected_frame;
+			if (!rolling_back)
+			{
+				BoidMainLoop(ppl, deltaTime * TimeScale);
+
+				ppl.wait();
+				auto& ctx = (ecs::world&)ppl;
+				std::vector<char> snapshot;
+				if (snapshots.size() > 0)
+					snapshot.reserve(snapshots.back().size());
+				buffer_serializer archive(snapshot);
+				ctx.serialize(&archive);
+				memory_used += snapshot.size();
+				snapshots.emplace_back(std::move(snapshot));
+				while (memory_used > (long long)memory_size_limit * 1024 * 1024)
+				{
+					memory_used -= snapshots.front().size();
+					snapshots.pop_front();
+				}
+				selected_frame = current_frame = snapshots.size();
+			}
+			else if (selected_frame != current_frame)
+			{
+				ppl.wait();
+				auto& ctx = (ecs::world&)ppl;
+				auto data = snapshots[selected_frame].data();
+				buffer_deserializer archive(data);
+				ctx.deserialize(&archive);
+				current_frame = selected_frame;
+			}
 		}
 
 		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
@@ -886,23 +894,28 @@ int main()
 			
 			imgui::new_frame(main_window, deltaTime);
 			imgui::Begin("Boid Settings");
-			if (imgui::SliderInt("Frame", &selected_frame, 0, snapshots.size() - 1))
-				rolling_back = true;
-			imgui::SameLine();
-			if (imgui::Button(rolling_back ? "Play" : "Pause", ImVec2(-1, 20)))
+
+			if (bUseSnapshot)
 			{
-				rolling_back = !rolling_back;
-				while (snapshots.size() > (current_frame + 1))
+
+				if (imgui::SliderInt("Frame", &selected_frame, 0, snapshots.size() - 1))
+					rolling_back = true;
+				imgui::SameLine();
+				if (imgui::Button(rolling_back ? "Play" : "Pause", ImVec2(-1, 20)))
 				{
-					memory_used -= snapshots.back().size();
-					snapshots.pop_back();
+					rolling_back = !rolling_back;
+					while (snapshots.size() > (current_frame + 1))
+					{
+						memory_used -= snapshots.back().size();
+						snapshots.pop_back();
+					}
+					// Boids 的生成可能被回滚了
+					BoidCount = CountBoids(ppl);
 				}
-				// Boids 的生成可能被回滚了
-				BoidCount = CountBoids(ppl);
+				imgui::InputInt("Memory Usage", &memory_size_limit, 256);
+				imgui::SameLine();
+				imgui::ProgressBar((float)memory_used / ((double)memory_size_limit * 1024 * 1024));
 			}
-			imgui::InputInt("Memory Usage", &memory_size_limit, 256);
-			imgui::SameLine();
-			imgui::ProgressBar((float)memory_used / ((double)memory_size_limit * 1024 * 1024));
 
 
 			bool UpdateBoid = false;
