@@ -25,6 +25,8 @@
 #include <iostream>
 #include <random>
 #include <cmath>
+#include <fstream>
+#include <filesystem>
 
 #include "imgui/sakura_imgui.h"
 
@@ -107,11 +109,11 @@ void ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f)
 	using namespace ecs;
 	static_assert(std::is_invocable<F, value_type_t<T>, const value_type_t<Ts>...>(), "wrong signature of convert function");
 	static size_t timestamp = 0;
-	filter.chunkFilter =
+	/*filter.chunkFilter =
 	{
 		complist<Ts...>,
 		timestamp
-	};
+	};*/
 	def paramList = boost::hana::make_tuple(
 		param<T>,
 		param<const Ts>...
@@ -429,6 +431,33 @@ void update_maximum(std::atomic<T>& maximum_value, T const& value) noexcept
 	{
 	}
 }
+
+void BoidMoveSystem(task_system::ecs::pipeline& ppl, float deltaTime)
+{
+	using namespace ecs;
+	filters boidFilter;
+	boidFilter.archetypeFilter =
+	{
+		{complist<Boid, Translation, Heading>}, //all
+		{}, //any
+		{}, //none
+		complist<Boid> //shared
+	};
+	def paramList =
+		boost::hana::make_tuple(param<const Heading>, param<Translation>, param<const Boid>);
+	return task_system::ecs::schedule(ppl, ppl.create_pass(boidFilter, paramList),
+		[deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
+		{
+			ZoneScopedN("Move Boid");
+			auto o = operation{ paramList, pass, tk };
+			auto hds = o.get_parameter<const Heading>();
+			auto trs = o.get_parameter_owned<Translation>();
+			auto boid = o.get_parameter<const Boid>(); //这玩意是 shared
+			forloop(i, 0, o.get_count())
+				trs[i] = trs[i] + hds[i] * deltaTime * boid->MoveSpeed;
+		}, 2000);
+}
+
 void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 {
 	using namespace ecs;
@@ -526,7 +555,9 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 					forloop(i, 0, o.get_count())
 					{
 						//寻找一个目标
-						targetings[i] = (*targetTree)[targetTree->search_nearest(trs[i])].value;
+						int id = targetTree->search_nearest(trs[i]);
+						if(id != -1)
+							targetings[i] = (*targetTree)[id].value;
 					}
 				}
 				
@@ -548,22 +579,17 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	{
 		shared_entry shareList[] = { read(newHeadings) };
 		def paramList = 
-			boost::hana::make_tuple( param<Heading>, param<Translation>, param<const Boid> );
+			boost::hana::make_tuple( param<Heading> );
 		return task_system::ecs::schedule(ppl, ppl.create_pass(boidFilter, paramList, shareList),
 			[deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
 			{
-				ZoneScopedN("Apply Boid");
+				ZoneScopedN("Apply Boid Heading");
 				auto o = operation{ paramList, pass, tk };
 				auto index = o.get_index();
 				auto hds = o.get_parameter<Heading>();
-				auto trs = o.get_parameter_owned<Translation>();
-				auto boid = o.get_parameter<const Boid>(); //这玩意是 shared
 				forloop(i, 0, o.get_count())
-				{
 					hds[i] = (*newHeadings)[i + index];
-					trs[i] = trs[i] + hds[i] * deltaTime * boid->MoveSpeed;
-				}
-			}, 500);
+			}, 2000);
 	}
 }
 
@@ -617,6 +643,16 @@ void SpawnBoidSetting()
 		*bs = BoidSetting;
 		BoidSettingEntity = ctx.get_entities(slice.c)[slice.start];
 	}
+}
+
+core::entity GetBoidSetting(sakura::ecs::pipeline& ppl)
+{
+	using namespace sakura::ecs;
+
+	archetype_filter filter = { complist<Boid>, {}, {}, {}, {}, complist<Boid> };
+	for (auto pf : ppl.query(filter))
+		for (auto i : ppl.query(pf.type))
+			return ppl.get_entities(i)[0];
 }
 
 void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
@@ -696,6 +732,7 @@ int CountBoids(task_system::ecs::pipeline& ppl)
 			counter += j->get_count();
 	return counter;
 }
+bool bDebugHeading = false;
 
 void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 {
@@ -705,7 +742,11 @@ void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 
 	RandomTargetSystem(ppl);
 	MoveTowardSystem(ppl, deltaTime);
-	BoidsSystem(ppl, deltaTime);
+	if (!bDebugHeading)
+	{
+		BoidsSystem(ppl, deltaTime);
+	}
+	BoidMoveSystem(ppl, deltaTime);
 	HeadingSystem(ppl);
 
 	filters wrd_filter;
@@ -727,60 +768,8 @@ void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 	World2LocalSystem(ppl);
 }
 
-void DebugHeadingLoop(task_system::ecs::pipeline& ppl, float deltaTime)
-{
-	using namespace sakura::ecs;
-	static Vector3f directions[] = {
-		{0, 1, 0},
-		{0, -1, 0},
-		{1, 0, 0},
-		{-1, 0, 0},
-		{0, 0, 1},
-		{0, 0, -1}
-	};
-	const float Interval = 3;
-	static int dir = 0;
-	static float TimeRemain = Interval;
-	TimeRemain -= deltaTime;
-	if (TimeRemain < 0)
-	{
-		const auto index = dir % ARRAYSIZE(directions);
-		auto dd = directions[index].data_view();
-		std::cout << "direction " << index << " x:" <<dd[0]<<" y:"<<dd[1]<<" z:" << dd[2] << std::endl;
-		filters filter;
-		filter.archetypeFilter =
-		{
-			{complist<Boid, Heading>}
-		};
-		def paramList = boost::hana::make_tuple(
-			param<Heading>
-		);
-		static std::random_device r;
-		static std::default_random_engine el(r());
-		task_system::ecs::schedule(ppl, ppl.create_pass(filter, paramList),
-			[index](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
-			{
-				auto o = operation{ paramList, pass, tk };
-				auto hds = o.get_parameter<Heading>();
-				forloop(i, 0, o.get_count())
-					hds[i] = directions[index];
-			});
-
-		TimeRemain = Interval;
-		dir++;
-	}
-	HeadingSystem(ppl);
-
-	filters wrd_filter;
-	wrd_filter.archetypeFilter = {
-		{complist<LocalToWorld>},
-		{complist<Translation, Scale, Rotation>},
-		{complist<LocalToParent, Parent>}
-	};
-	Local2XSystem<LocalToWorld>(ppl, wrd_filter);
-}
 const bool bUseImGui = true;
-const bool bUseSnapshot = false;
+bool bUseSnapshot = false;
 sakura::graphics::RenderPassHandle imgui_pass = sakura::GenerationalId::UNINITIALIZED;
 sakura::graphics::RenderCommandBuffer imgui_command_buffer("ImGuiRender", 4096);
 int main()
@@ -889,6 +878,7 @@ int main()
 				auto data = snapshots[selected_frame].data();
 				buffer_deserializer archive(data);
 				ctx.deserialize(&archive);
+				BoidSettingEntity = GetBoidSetting(ppl);
 				current_frame = selected_frame;
 			}
 		}
@@ -902,7 +892,48 @@ int main()
 			ZoneScopedN("ImGui Command");
 			imgui::new_frame(main_window, deltaTime);
 			imgui::Begin("Boid Settings");
-
+			static std::mutex fileLock;
+			if (imgui::Button("Save Snapshot", ImVec2(120, 20)))
+			{
+				ppl.wait();
+				auto& ctx = (ecs::world&)ppl;
+				std::vector<char> snapshot;
+				buffer_serializer archive(snapshot);
+				ctx.serialize(&archive);
+				std::thread writeThread([snapshot = std::move(snapshot)]()
+				{
+					auto file = std::fstream("test.snapshot", std::ios::out | std::ios::binary);
+					if (file)
+					{
+						std::unique_lock _(fileLock);
+						file.write(snapshot.data(), snapshot.size());
+					}
+				});
+				writeThread.detach();
+			}
+			imgui::SameLine();
+			if (imgui::Button("Load Snapshot", ImVec2(120, 20)))
+			{
+				auto file = std::fstream("test.snapshot", std::ios::in | std::ios::binary);
+				if (file)
+				{
+					ppl.wait();
+					auto& ctx = (ecs::world&)ppl;
+					fileLock.lock(); 
+					file.seekg(0, std::ios_base::end);
+					auto size = file.tellg();
+					std::unique_ptr<char[]> data(new char[size]);
+					file.seekg(0, std::ios_base::beg);
+					file.read(data.get(), size);
+					file.close();
+					fileLock.unlock();
+					buffer_deserializer archive(data.get());
+					ctx.deserialize(&archive);
+					BoidSettingEntity = GetBoidSetting(ppl);
+					BoidCount = CountBoids(ppl);
+				}
+			}
+			imgui::Checkbox("Snapshot Every Frame", &bUseSnapshot);
 			if (bUseSnapshot)
 			{
 
@@ -924,8 +955,7 @@ int main()
 				imgui::SameLine();
 				imgui::ProgressBar((float)memory_used / ((double)memory_size_limit * 1024 * 1024));
 			}
-
-
+			imgui::Checkbox("Debug Heading", &bDebugHeading);
 			bool UpdateBoid = false;
 			UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
 			UpdateBoid |= imgui::SliderFloat("TargetWeight", &BoidSetting.TargetWeight, 0, 10);
