@@ -91,35 +91,38 @@ namespace sakura::task_system::ecs
 
 	template<bool ForceParallel = false, bool ForceNoParallel = false, class F>
 	FORCEINLINE void schedule(
-		pipeline& pipeline, std::shared_ptr<pass> p, F&& t, int maxSlice = -1, std::vector<task_system::Event> externalDependencies = {})
+		pipeline& pipeline, std::shared_ptr<pass> p, F&& t, int batchCount, std::vector<task_system::Event> externalDependencies = {})
 	{
 		static_assert(std::is_invocable_v<std::decay_t<F>, const task_system::ecs::pipeline&, const pass&, const sakura::ecs::task&>,
 			"F must be an invokable of void(const ecs::pipeline&, const ecs::pass&, const ecs::task&)>");
 		static_assert(!(ForceParallel & ForceNoParallel),
 			"A schedule can not force both parallel and not parallel!");
-		task_system::schedule([&, p, maxSlice, t, externalDependencies = std::move(externalDependencies)]() mutable
+		task_system::schedule([&, p, batchCount, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
 			defer(p->event.signal());
 			//defer(tasks.reset());
 			p->wait_for_dependencies();
 			for (auto& ed : externalDependencies)
 				ed.wait();
-			auto tasks = pipeline.create_tasks(*p, maxSlice);
-
-			constexpr auto MinParallelTask = 10u;
-			const bool recommandParallel = !p->hasRandomWrite && tasks.size > MinParallelTask;
+			auto [tasks, groups] = pipeline.create_tasks(*p, batchCount);
+			constexpr auto MinParallelTask = 8u;
+			const bool recommandParallel = !p->hasRandomWrite && groups.size > MinParallelTask;
 			if (pipeline.force_no_parallel)
 				goto FORCE_NO_PARALLEL;
-			if ((recommandParallel & !ForceNoParallel) || ForceParallel)
+			if ((recommandParallel && !ForceNoParallel) || ForceParallel)
 			{
-				task_system::WaitGroup tasksGroup((uint32_t)tasks.size);
-				forloop(tsk, 0, tasks.size)
+				task_system::WaitGroup tasksGroup((uint32_t)groups.size);
+				forloop(grp, 0, groups.size)
 				{
-					auto& tk = tasks[tsk];
-					task_system::schedule([&, tasksGroup] {
+					auto& gp = groups[grp];
+					task_system::schedule([&, gp, tasksGroup] {
 						// Decrement the WaitGroup counter when the task has finished.
 						defer(tasksGroup.done());
-						t(pipeline, *p, tk);
+						forloop(tsk, gp.begin, gp.end)
+						{
+							auto& tk = tasks[tsk];
+							t(pipeline, *p, tk);
+						}
 						});
 				}
 				tasksGroup.wait();
@@ -138,7 +141,7 @@ namespace sakura::task_system::ecs
 
 	template<bool ForceParallel = false, bool ForceNoParallel = false, class F, class F2>
 	FORCEINLINE void schedule_init(
-		pipeline& pipeline, std::shared_ptr<pass> p, F&& f, F2&& t, int maxSlice = -1, std::vector<task_system::Event> externalDependencies = {})
+		pipeline& pipeline, std::shared_ptr<pass> p, F&& f, F2&& t, int batchCount, std::vector<task_system::Event> externalDependencies = {})
 	{
 		static_assert(std::is_invocable_v<std::decay_t<F>, const task_system::ecs::pipeline&, const pass&>,
 			"F must be an invokable of void(const ecs::pipeline&, const ecs::pass&)>");
@@ -146,29 +149,33 @@ namespace sakura::task_system::ecs
 			"F2 must be an invokable of void(const ecs::pipeline&, const ecs::pass&, const ecs::task&)>");
 		static_assert(!(ForceParallel & ForceNoParallel),
 			"A schedule can not force both parallel and not parallel!");
-		task_system::schedule([&, p, maxSlice, f, t, externalDependencies = std::move(externalDependencies)]() mutable
+		task_system::schedule([&, p, batchCount, f, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
 			defer(p->event.signal());
 			//defer(tasks.reset());
 			p->wait_for_dependencies();
 			for (auto& ed : externalDependencies)
 				ed.wait();
-			auto tasks = pipeline.create_tasks(*p, maxSlice);
+			auto [tasks, groups] = pipeline.create_tasks(*p, batchCount);
 			f(pipeline, *p);
-			constexpr auto MinParallelTask = 10u;
-			const bool recommandParallel = !p->hasRandomWrite && tasks.size > MinParallelTask;
+			constexpr auto MinParallelTask = 8u;
+			const bool recommandParallel = !p->hasRandomWrite && groups.size > MinParallelTask;
 			if (pipeline.force_no_parallel)
 				goto FORCE_NO_PARALLEL;
-			if ((recommandParallel & !ForceNoParallel) || ForceParallel)
+			if ((recommandParallel && !ForceNoParallel) || ForceParallel)
 			{
-				task_system::WaitGroup tasksGroup((uint32_t)tasks.size);
-				forloop(tsk, 0, tasks.size)
+				task_system::WaitGroup tasksGroup((uint32_t)groups.size);
+				forloop(grp, 0, groups.size)
 				{
-					auto& tk = tasks[tsk];
-					task_system::schedule([&, tasksGroup] {
+					auto& gp = groups[grp];
+					task_system::schedule([&, gp, tasksGroup] {
 						// Decrement the WaitGroup counter when the task has finished.
 						defer(tasksGroup.done());
-						t(pipeline, *p, tk);
+						forloop(tsk, gp.begin, gp.end)
+						{
+							auto& tk = tasks[tsk];
+							t(pipeline, *p, tk);
+						}
 						});
 				}
 				tasksGroup.wait();

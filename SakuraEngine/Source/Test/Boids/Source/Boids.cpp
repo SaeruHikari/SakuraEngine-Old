@@ -131,7 +131,7 @@ void ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f)
 				auto params = hana::transform(arrays, [i](auto v) { return v?v + i:nullptr; });
 				hana::unpack(params, f);
 			}
-		}, 500);
+		}, 200);
 }
 
 template<class T>
@@ -273,7 +273,7 @@ void Child2WorldSystem(task_system::ecs::pipeline& ppl)
 					children2World::solve(l2ws[i], child);
 				}
 			}
-		});
+		}, 100);
 }
 
 void World2LocalSystem(task_system::ecs::pipeline& ppl)
@@ -304,11 +304,11 @@ void World2LocalSystem(task_system::ecs::pipeline& ppl)
 			{
 				w2ls[i] = sakura::math::inverse(l2ws[i]);
 			}
-		});
+		}, 200);
 }
 
-template<class C, class T>
-void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector, int maxSlice = -1)
+template<class C, bool useMemcpy = true, class T>
+void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector)
 {
 	using namespace ecs;
 	def paramList = boost::hana::make_tuple( param<const C> );
@@ -326,9 +326,34 @@ void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 			auto o = operation{ paramList, pass, tk };
 			auto index = o.get_index();
 			auto comps = o.get_parameter<const C>();
-			forloop(i, 0, o.get_count())
-				(*vector)[index + i] = comps[i];
-		}, maxSlice);
+			if constexpr(useMemcpy)
+				memcpy((*vector).data() + index, comps, o.get_count() * sizeof(C));
+			else
+				forloop(i, 0, o.get_count())
+					(*vector)[index + i] = comps[i];
+		}, 2000);
+}
+
+template<class C, bool useMemcpy = true, class T>
+void FillComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector)
+{
+	using namespace ecs;
+	def paramList = boost::hana::make_tuple(param<C>);
+	shared_entry shareList[] = { read(vector) };
+	auto pass = ppl.create_pass(filter, paramList, shareList);
+	return task_system::ecs::schedule(ppl, pass,
+		[vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
+		{
+			ZoneScopedN("FillComponent");
+			auto o = operation{ paramList, pass, tk };
+			auto index = o.get_index();
+			auto comps = o.get_parameter<C>();
+			if constexpr (useMemcpy)
+				memcpy(comps, (*vector).data() + index, o.get_count() * sizeof(C));
+			else
+				forloop(i, 0, o.get_count())
+				comps[i] = (*vector)[index + i];
+		}, 2000);
 }
 
 struct BoidPosition
@@ -392,7 +417,7 @@ void RandomTargetSystem(task_system::ecs::pipeline& ppl)
 					mts[i].Target = sphere.random_point(get_random_engine());
 				}
 			}
-		});
+		}, 200);
 }
 
 void MoveTowardSystem(task_system::ecs::pipeline& ppl, float deltaTime)
@@ -417,7 +442,7 @@ void MoveTowardSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 			auto trs = o.get_parameter<Translation>();
 			forloop(i, 0, o.get_count())
 				trs[i] = trs[i] + math::normalize(mts[i].Target - trs[i]) * mts[i].MoveSpeed * deltaTime;
-		});
+		}, 400);
 }
 std::atomic<size_t> averageNeighberCount = 0;
 std::atomic<size_t> maxNeighberCount = 0;
@@ -455,7 +480,7 @@ void BoidMoveSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 			auto boid = o.get_parameter<const Boid>(); //这玩意是 shared
 			forloop(i, 0, o.get_count())
 				trs[i] = trs[i] + hds[i] * deltaTime * boid->MoveSpeed;
-		}, 2000);
+		}, 500);
 }
 
 void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
@@ -474,7 +499,6 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	static auto headings = make_resource<std::vector<sakura::Vector3f>>();
 	static auto kdtree = make_resource<core::algo::kdtree<BoidPosition>>();
 	{
-		ZoneScopedN("Schedule Copy Translation and Heading");
 		CopyComponent<Translation>(ppl, boidFilter, positions);
 		CopyComponent<Heading>(ppl, boidFilter, headings);
 		shared_entry shareList[] = { read(positions), write(kdtree) };
@@ -503,7 +527,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 			});
 	}
 	//计算新的朝向
-	static auto newHeadings = make_resource<chunk_vector<sakura::Vector3f>>();
+	static auto newHeadings = make_resource<std::vector<sakura::Vector3f>>();
 	{
 		shared_entry shareList[] = { read(kdtree), read(headings), read(targetTree), write(newHeadings) };
 		def paramList = 
@@ -537,7 +561,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 					{
 						//收集附近单位的位置和朝向信息
 						neighbers.clear();
-						kdtree->search_k_radius(trs[i], boid->SightRadius, 10, neighbers);
+						kdtree->search_k_radius(trs[i], boid->SightRadius, 8, neighbers);
 						alignments[i] = sakura::Vector3f::vector_zero();
 						separations[i] = sakura::Vector3f::vector_zero();
 						for (auto ng : neighbers)
@@ -573,23 +597,11 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 						(*newHeadings)[index + i] = math::normalize((hds[i] + (newHeading - hds[i]) * deltaTime * boid->TurnSpeed));
 					}
 				}
-			}, 500);
+			}, 100);
 	}
 	//结果转换
 	{
-		shared_entry shareList[] = { read(newHeadings) };
-		def paramList = 
-			boost::hana::make_tuple( param<Heading> );
-		return task_system::ecs::schedule(ppl, ppl.create_pass(boidFilter, paramList, shareList),
-			[deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
-			{
-				ZoneScopedN("Apply Boid Heading");
-				auto o = operation{ paramList, pass, tk };
-				auto index = o.get_index();
-				auto hds = o.get_parameter<Heading>();
-				forloop(i, 0, o.get_count())
-					hds[i] = (*newHeadings)[i + index];
-			}, 2000);
+		FillComponent<Heading>(ppl, boidFilter, newHeadings);
 	}
 }
 
@@ -800,7 +812,7 @@ int main()
 	BoidSetting.SeparationWeight = 2.f;
 	BoidSetting.TurnSpeed = 2.f;
 	BoidSetting.MoveSpeed = 250.f;
-	BoidSetting.SightRadius = 10.f;
+	BoidSetting.SightRadius = 20.f;
 	declare_components<Translation, Rotation, RotationEuler, Scale, LocalToWorld, LocalToParent, 
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading>();
 	SpawnBoidSetting();
@@ -837,9 +849,6 @@ int main()
 		timer.start_up(); 
 		ppl.inc_timestamp();
 
-		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
-		render_system::CollectAndUpload(ppl, deltaTime);
-		
 		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
 		render_system::CollectAndUpload(ppl, deltaTime);
 
@@ -879,6 +888,7 @@ int main()
 				buffer_deserializer archive(data);
 				ctx.deserialize(&archive);
 				BoidSettingEntity = GetBoidSetting(ppl);
+				BoidSetting = *(const Boid*)ctx.get_component_ro(BoidSettingEntity, cid<Boid>);
 				current_frame = selected_frame;
 			}
 		}
@@ -930,6 +940,7 @@ int main()
 					buffer_deserializer archive(data.get());
 					ctx.deserialize(&archive);
 					BoidSettingEntity = GetBoidSetting(ppl);
+					BoidSetting = *(const Boid*)ctx.get_component_ro(BoidSettingEntity, cid<Boid>);
 					BoidCount = CountBoids(ppl);
 				}
 			}
@@ -955,6 +966,8 @@ int main()
 				imgui::SameLine();
 				imgui::ProgressBar((float)memory_used / ((double)memory_size_limit * 1024 * 1024));
 			}
+			else
+				rolling_back = false;
 			imgui::Checkbox("Debug Heading", &bDebugHeading);
 			bool UpdateBoid = false;
 			UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
