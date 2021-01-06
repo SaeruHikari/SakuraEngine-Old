@@ -20,7 +20,7 @@ namespace sakura
 
 #ifdef SAKURA_TARGET_PLATFORM_WIN
 #include "Platform/Windows/Memory.inl"
-#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+#elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
 #include "Platform/PlayStation/Memory.inl"
 #elif defined(SAKURA_TARGET_PLATFORM_EMSCRIPTEN)
 #include "Platform/Web/Memory.inl"
