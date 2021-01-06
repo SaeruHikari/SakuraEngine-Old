@@ -63,10 +63,11 @@ namespace sakura::task_system::ecs
 		{
 			allpasses.erase(remove_if(allpasses.begin(), allpasses.end(), [](auto& n) {return n.expired(); }), allpasses.end());
 		}
-		void sync_dependencies(gsl::span<custom_pass*> dependencies) const
+		void sync_dependencies(gsl::span<std::weak_ptr<core::codebase::custom_pass>> dependencies) const override
 		{
-			for (auto dp : dependencies)
-				((custom_pass*)dp)->event.wait();
+			for (auto dpr : dependencies)
+				if(auto dp = dpr.lock())
+					((custom_pass*)dp.get())->event.wait();
 		}
 		void sync_all() const
 		{
