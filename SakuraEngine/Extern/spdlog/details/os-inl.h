@@ -87,7 +87,7 @@ SPDLOG_INLINE std::tm localtime(const std::time_t &time_tt) SPDLOG_NOEXCEPT
 #ifdef _WIN32
     std::tm tm;
     ::localtime_s(&tm, &time_tt);
-#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+#elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
     std::tm tm;
     ::localtime_s(&time_tt, &tm);
 #else
@@ -109,7 +109,7 @@ SPDLOG_INLINE std::tm gmtime(const std::time_t &time_tt) SPDLOG_NOEXCEPT
 #ifdef _WIN32
     std::tm tm;
     ::gmtime_s(&tm, &time_tt);
-#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+#elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
     std::tm tm;
     ::gmtime_s(&time_tt, &tm);
 #else
@@ -332,7 +332,7 @@ SPDLOG_INLINE size_t _thread_id() SPDLOG_NOEXCEPT
 #define SYS_gettid __NR_gettid
 #endif
     return static_cast<size_t>(::syscall(SYS_gettid));
-#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+#elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
     return static_cast<size_t>(::scePthreadGetthreadid());
 #elif defined(_AIX) || defined(__DragonFly__) || defined(__FreeBSD__)
     return static_cast<size_t>(::pthread_getthreadid_np());
@@ -404,7 +404,7 @@ SPDLOG_INLINE bool is_color_terminal() SPDLOG_NOEXCEPT
 {
 #ifdef _WIN32
     return true;
-#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+#elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
     return false;
 #else
     static constexpr std::array<const char *, 14> terms = {
@@ -428,7 +428,7 @@ SPDLOG_INLINE bool in_terminal(FILE *file) SPDLOG_NOEXCEPT
 {
 #ifdef _WIN32
     return ::_isatty(_fileno(file)) != 0;
-#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+#elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
     return false;
 #else
     return ::isatty(fileno(file)) != 0;
@@ -554,7 +554,7 @@ std::string SPDLOG_INLINE getenv(const char *field)
     bool ok = ::getenv_s(&len, buf, sizeof(buf), field) == 0;
     return ok ? buf : std::string{};
 #endif
-#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+#elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
     return "";
 #else // revert to getenv
     char *buf = ::getenv(field);

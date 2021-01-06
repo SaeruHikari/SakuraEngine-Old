@@ -42,7 +42,7 @@ THE SOFTWARE.
 #include <cassert>
 #endif
 
-#ifdef SAKURA_TARGET_PLATFORM_PROSPERO
+#ifdef SAKURA_TARGET_PLATFORM_PLAYSTATION
 #include <sceerror.h>
 #include <kernel.h>
 #endif
@@ -315,7 +315,7 @@ Guid newGuid()
 }
 #endif
 
-#ifdef SAKURA_TARGET_PLATFORM_PROSPERO
+#ifdef SAKURA_TARGET_PLATFORM_PLAYSTATION
 
 Guid newGuid()
 {

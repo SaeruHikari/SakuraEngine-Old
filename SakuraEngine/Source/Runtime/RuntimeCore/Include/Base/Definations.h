@@ -253,7 +253,7 @@ FORCEINLINE To force_cast(From f)
 #define API EMSCRIPTEN_KEEPALIVE
 #define SHAREDLOCAL __attribute__((visibility("hidden")))
 #define __stdcall 
-#elif defined(SAKURA_TARGET_PLATFORM_PROSPERO)
+#elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
 #define SHAREDEXPORT __declspec(dllexport)
 #ifdef API_EXPORTS
 #define API __declspec(dllexport)
