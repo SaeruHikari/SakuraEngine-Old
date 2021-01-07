@@ -1,6 +1,7 @@
 [submodule "SakuraEngine/Source/Runtime/CMakeImported/marl"]
 	path = SakuraEngine/Source/Runtime/CMakeImported/marl
-	url = git@github.com:google/marl.git
+	url = git@github.com:SaeruHikari/marl.git
+
 [submodule "SakuraEngine/Source/Runtime/CMakeImported/Dots"]
 	path = SakuraEngine/Source/Runtime/CMakeImported/Dots
 	url = git@github.com:BenzzzX/Dots.git
