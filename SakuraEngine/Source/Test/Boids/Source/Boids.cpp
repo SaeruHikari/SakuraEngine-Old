@@ -201,7 +201,7 @@ sakura::Quaternion ToOrientationQuat(sakura::Vector3f dir)
 	// Essentially an optimized Vector->Rotator->Quat made possible by knowing Roll == 0, and avoiding radians->degrees->radians.
 	// This is done to avoid adding any roll (which our API states as a constraint).
 	auto dv = dir.data_view();
-	float X = dv[2], Y = dv[1], Z = -dv[0];
+	float X = dv[0], Y = dv[1], Z = dv[2];
 	const float YawRad = math::atan2(Y, X);
 	const float PitchRad = math::atan2(Z, math::sqrt(X * X + Y * Y));
 
@@ -217,15 +217,15 @@ void HeadingSystem(task_system::ecs::pipeline& ppl)
 	using namespace ecs;
 	filters filter;
 	filter.archetypeFilter = {
-		{complist<Rotation, Heading>}
+		{complist<Rotation, Heading, Translation>}
 	};
 
-	ConvertSystem<Rotation, Heading>(ppl, filter,
-		[](sakura::Quaternion* dst, const sakura::Vector3f* inHeading)
+	ConvertSystem<Rotation, Heading, Translation>(ppl, filter,
+		[](sakura::Quaternion* dst, const sakura::Vector3f* inHeading, const sakura::Vector3f* inTranslation)
 		{
-			//*dst = math::look_at_quaternion(*inTranslation, sakura::Vector3f(0, 0, 0.f));
-			*dst = ToOrientationQuat(Vector3f(0.f, 1.f, 0.f));
-			//*dst = ToOrientationQuat(*inHeading);
+			//*dst = math::look_at_quaternion(sakura::Vector3f(0.f, 0.f, 0.f), sakura::Vector3f(0, 1.f, 0.f));
+			//*dst = ToOrientationQuat(Vector3f(0.f, 1.f, 0.f));
+			*dst = ToOrientationQuat(*inHeading);
 		} TracyLocation("HeadingToQuat"));
 }
 
@@ -1019,7 +1019,7 @@ int main()
 			}
 			else
 				rolling_back = false;
-			static sakura::Vector3f ResetHeadingTo(0.f, 1.f, 0.f);
+			static sakura::Vector3f ResetHeadingTo(1.f, 1.f, -1.f);
 			imgui::InputFloat3("", ResetHeadingTo.data_view().data());
 			imgui::SameLine();
 			if (imgui::Button("Reset Heading", ImVec2(100, 20)))

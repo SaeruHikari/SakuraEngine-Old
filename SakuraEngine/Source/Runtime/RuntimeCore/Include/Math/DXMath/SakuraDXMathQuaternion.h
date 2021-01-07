@@ -29,7 +29,8 @@ namespace sakura::math::__quaternion
         const sakura::float4x4 rotation
     )
     {
-        DirectX::XMMATRIX rot = DirectX::XMLoadFloat4x4A(reinterpret_cast<const DirectX::XMFLOAT4X4A*>(rotation.data_view().data()));
+        DirectX::XMMATRIX rot = DirectX::XMLoadFloat4x4A(
+			reinterpret_cast<const DirectX::XMFLOAT4X4A*>(rotation.data_view().data()));
         return DirectX::XMQuaternionRotationMatrix(rot);
     }
 
