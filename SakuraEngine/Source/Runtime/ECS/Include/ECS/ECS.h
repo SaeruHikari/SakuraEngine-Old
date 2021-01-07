@@ -119,7 +119,7 @@ namespace sakura::task_system::ecs
 			const bool recommandParallel = !p->hasRandomWrite && groups.size > MinParallelTask;
 			if (pipeline.force_no_group_parallel)
 				goto FORCE_NO_GROUP_PARALLEL;
-			if ((recommandParallel && !ForceNoParallel) || ForceParallel)
+			if ((recommandParallel && !ForceNoGroupParallel) || ForceParallel)
 			{
 				task_system::WaitGroup tasksGroup((uint32_t)groups.size);
 				forloop(grp, 0, groups.size)
