@@ -653,6 +653,7 @@ void SpawnBoidTargets(int Count)
 		}
 	}
 }
+
 void SpawnBoidSetting()
 {
 	using namespace sakura::ecs;
@@ -757,6 +758,25 @@ int CountBoids(task_system::ecs::pipeline& ppl)
 			counter += j->get_count();
 	return counter;
 }
+
+void ResetHeading(task_system::ecs::pipeline& ppl, sakura::Vector3f newHeading)
+{
+	using namespace ecs;
+	filters boidFilter;
+	boidFilter.archetypeFilter =
+	{
+		{complist<Boid, Translation, Heading>}, //all
+		{}, //any
+		{}, //none
+		complist<Boid> //shared
+	};
+	ConvertSystem<Heading>(ppl, boidFilter,
+		[newHeading](sakura::Vector3f* heading)
+		{
+			*heading = newHeading;
+		} TracyLocation("Reset Heading"));
+}
+
 bool bDebugHeading = false;
 
 void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
@@ -795,6 +815,7 @@ void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 
 const bool bUseImGui = true;
 bool bUseSnapshot = false;
+float SnaphotRate = 30.f;
 bool bNoGroupParallel = false;
 bool bNoFibers = false;
 sakura::graphics::RenderPassHandle imgui_pass = sakura::GenerationalId::UNINITIALIZED;
@@ -857,6 +878,8 @@ int main()
 	std::deque<std::vector<char>> snapshots;
 	size_t memory_used = 0;
 	int memory_size_limit = 4096;
+	float snapshotTimer = 0.f;
+	const float snapshotInterval = 1.f / SnaphotRate;
 	// Game & Rendering Logic
 	while(sakura::Core::yield())
 	{
@@ -879,26 +902,31 @@ int main()
 			if (!rolling_back)
 			{
 				BoidMainLoop(ppl, deltaTime * TimeScale);
-
+				snapshotTimer += deltaTime;
 				ppl.wait();
-				ZoneScopedN("Take Snapshot");
-				auto& ctx = (ecs::world&)ppl;
-				std::vector<char> snapshot;
-				if (snapshots.size() > 0)
-					snapshot.reserve(snapshots.back().size());
-				buffer_serializer archive(snapshot);
-				ctx.serialize(&archive);
-				memory_used += snapshot.size();
-				snapshots.emplace_back(std::move(snapshot));
-				while (memory_used > (long long)memory_size_limit * 1024 * 1024)
+				if (snapshotTimer > snapshotInterval)
 				{
-					memory_used -= snapshots.front().size();
-					snapshots.pop_front();
+					snapshotTimer = 0.f;
+					ZoneScopedN("Take Snapshot");
+					auto& ctx = (ecs::world&)ppl;
+					std::vector<char> snapshot;
+					if (snapshots.size() > 0)
+						snapshot.reserve(snapshots.back().size());
+					buffer_serializer archive(snapshot);
+					ctx.serialize(&archive);
+					memory_used += snapshot.size();
+					snapshots.emplace_back(std::move(snapshot));
+					while (memory_used > (long long)memory_size_limit * 1024 * 1024)
+					{
+						memory_used -= snapshots.front().size();
+						snapshots.pop_front();
+					}
+					selected_frame = current_frame = snapshots.size();
 				}
-				selected_frame = current_frame = snapshots.size();
 			}
 			else if (selected_frame != current_frame)
 			{
+				snapshotTimer = 0.f;
 				ppl.wait();
 				ZoneScopedN("Load Snapshot");
 				auto& ctx = (ecs::world&)ppl;
@@ -991,6 +1019,11 @@ int main()
 			}
 			else
 				rolling_back = false;
+			static sakura::Vector3f ResetHeadingTo(0.f, -1.f, 0.f);
+			imgui::InputFloat3("", ResetHeadingTo.data_view().data());
+			imgui::SameLine();
+			if (imgui::Button("Reset Heading", ImVec2(100, 20)))
+				ResetHeading(ppl, ResetHeadingTo);
 			imgui::Checkbox("Debug Heading", &bDebugHeading);
 			bool UpdateBoid = false;
 			UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
