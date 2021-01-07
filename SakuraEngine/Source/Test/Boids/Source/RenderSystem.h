@@ -7,7 +7,7 @@
 #include "ECS/ECS.h"
 #include "Boids.h"
 
-#define TARGET_NUM 150000
+#define TARGET_NUM 15000
 
 namespace render_system
 {
@@ -82,8 +82,7 @@ namespace render_system
 		[[stage(vertex)]]\n\
 		fn main() -> void {\n\
 			var posIn : vec4<f32> = vec4<f32>(positionIn.x, positionIn.y, positionIn.z, 1.0);\n\
-			var posW : vec4<f32> = posIn * worlds.world[InstanceIdx];\n\
-			Position = posW * view_proj.value;\n\
+			Position = posIn * worlds.world[InstanceIdx] * view_proj.value;\n\
 			v_color = colorIn;\n\
 			return;\n\
 		}";
@@ -384,18 +383,18 @@ namespace render_system
 		pass_ptr->execute(buffer, render_graph, *render_device);
 	}
 
+	float X = 0.f;
+	float Y = 0.f;
+	float Z = 0.f;
+
 	void Render(const RenderCommandBuffer& buffer)
 	{
 		{
 			ZoneScopedN("Upload");
-			sakura::float4x4 offset = math::make_transform(sakura::Vector3f(0, 0, -1.f) * 500);
-			sakura::float4x4 view = sakura::math::look_at_matrix(
-				sakura::Vector3f(0, 0, -1.f) * 1, Vector3f::vector_zero());
-			sakura::float4x4 proj =
-					sakura::math::perspective_fov(0.25f * 3.1415926f * 2, 1080.f / 1920.f, 1.0f, 1000.0f);
+			sakura::float4x4 view = sakura::math::look_at_matrix(Vector3f(X, Y, Z), sakura::Vector3f(X, Y, Z + 500.f));
+			sakura::float4x4 proj = sakura::math::perspective_fov(0.25f * 3.1415926f * 2, 1080.f / 1920.f, 1.0f, 1000.0f);
 
-			view_proj = sakura::math::multiply(offset, view);
-			view_proj = sakura::math::multiply(view_proj, proj);
+			view_proj = sakura::math::multiply(view, proj);
 			view_proj = sakura::math::transpose(view_proj);
 
 			render_device->update_buffer(uniform_buffer, 0, &view_proj, sizeof(view_proj));

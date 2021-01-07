@@ -201,7 +201,7 @@ sakura::Quaternion ToOrientationQuat(sakura::Vector3f dir)
 	// Essentially an optimized Vector->Rotator->Quat made possible by knowing Roll == 0, and avoiding radians->degrees->radians.
 	// This is done to avoid adding any roll (which our API states as a constraint).
 	auto dv = dir.data_view();
-	float X = dv[0], Y = dv[1], Z = dv[2];
+	float X = dv[2], Y = dv[1], Z = -dv[0];
 	const float YawRad = math::atan2(Y, X);
 	const float PitchRad = math::atan2(Z, math::sqrt(X * X + Y * Y));
 
@@ -214,17 +214,18 @@ sakura::Quaternion ToOrientationQuat(sakura::Vector3f dir)
 
 void HeadingSystem(task_system::ecs::pipeline& ppl)
 {
-
 	using namespace ecs;
 	filters filter;
 	filter.archetypeFilter = {
-		{complist<Heading, Rotation>}
+		{complist<Rotation, Heading>}
 	};
-	;
+
 	ConvertSystem<Rotation, Heading>(ppl, filter,
 		[](sakura::Quaternion* dst, const sakura::Vector3f* inHeading)
 		{
-			*dst = ToOrientationQuat(*inHeading);
+			//*dst = math::look_at_quaternion(*inTranslation, sakura::Vector3f(0, 0, 0.f));
+			*dst = ToOrientationQuat(Vector3f(0.f, 1.f, 0.f));
+			//*dst = ToOrientationQuat(*inHeading);
 		} TracyLocation("HeadingToQuat"));
 }
 
@@ -689,7 +690,7 @@ void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 		{&BoidSettingEntity, 1}
 	};
 	sphere s;
-	s.center = Vector3f::vector_zero();
+	s.center = sakura::Vector3f(0, 0, 1.f) * 500;
 	s.radius = Radius;
 	for (auto slice : ppl.allocate(type, Count))
 	{
@@ -702,7 +703,7 @@ void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 			auto& el = get_random_engine();
 			sakura::Vector3f vector{ uniform_dist(el), uniform_dist(el), uniform_dist(el) };
 			hds[i] = math::normalize(vector);
-			trs[i] = sakura::Vector3f::vector_zero();// s.random_point(el);
+			trs[i] = sakura::Vector3f(0, 0, 1.f) * 500;// s.random_point(el);
 		}
 	}
 }
@@ -964,6 +965,9 @@ int main()
 			imgui::Checkbox("Snapshot Every Frame", &bUseSnapshot);
 			imgui::Checkbox("Close Fibers Dispatch", &bNoFibers);
 			imgui::Checkbox("Close Group Parallel", &bNoGroupParallel);
+			imgui::SliderFloat("X", &render_system::X, -400, 400);
+			imgui::SliderFloat("Y", &render_system::Y, -400, 400);
+			imgui::SliderFloat("Z", &render_system::Z, -400, 400);
 			if (bUseSnapshot)
 			{
 
