@@ -103,8 +103,18 @@ std::size_t calc_align(std::size_t n, std::size_t align)
 	return ((n + align - 1) / align)* align;
 }
 
+#ifdef TRACY_ENABLE
+#define ZoneScopedExternal( source ) tracy::ScopedZone ___tracy_scoped_zone( &source, true );
+#define TracyLocation( name ) ,[]()->const tracy::SourceLocationData& { static constexpr tracy::SourceLocationData _ { name, __FUNCTION__,  __FILE__, (uint32_t)__LINE__, 0 }; return _; }()
+#define TracyParam( varname ) ,const tracy::SourceLocationData& varname
+#else
+#define ZoneScopedExternal( source ) 
+#define TracyLocation( name ) 
+#define TracyParam( varname ) 
+#endif
+
 template<class T, class... Ts, class F>
-void ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f)
+void ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f TracyParam(TracyLoc))
 {
 	using namespace ecs;
 	static_assert(std::is_invocable<F, value_type_t<T>, const value_type_t<Ts>...>(), "wrong signature of convert function");
@@ -120,9 +130,9 @@ void ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f)
 	);
 	timestamp = ppl.get_timestamp();
 	return task_system::ecs::schedule(ppl, ppl.create_pass(filter, paramList),
-		[f](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const task& tk)
+		[&, f](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const task& tk)
 		{
-			ZoneScopedN("ConvertSystem");
+			ZoneScopedExternal(TracyLoc);
 			auto o = operation{ paramList, pass, tk };
 			hana::tuple arrays = boost::hana::make_tuple(
 				o.get_parameter<T>(), o.get_parameter<const Ts>()...);
@@ -135,7 +145,7 @@ void ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f)
 }
 
 template<class T>
-void Local2XSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter)
+void Local2XSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter TracyParam(TracyLoc))
 {
 	return ConvertSystem<T, Translation, Rotation, Scale>(ppl, filter,
 		[](typename T::value_type* dst, const sakura::Vector3f* inTranslation, const sakura::Quaternion* inQuaternion, const sakura::Vector3f* inScale)
@@ -145,7 +155,7 @@ void Local2XSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter)
 			const Quaternion quaternion = inQuaternion ? *inQuaternion : Quaternion::identity();
 
 			*dst = math::make_transform(translation, scale, quaternion);
-		});
+		}, TracyLoc);
 }
 
 void RotationEulerSystem(task_system::ecs::pipeline& ppl)
@@ -159,7 +169,7 @@ void RotationEulerSystem(task_system::ecs::pipeline& ppl)
 		[](sakura::Quaternion* dst, const sakura::Rotator* inRotator)
 		{
 			*dst = math::quaternion_from_rotator(*inRotator);
-		});
+		} TracyLocation("EulerToQuat"));
 }
 
 void RotateByAxisSystem(task_system::ecs::pipeline& ppl, float deltaTime)
@@ -210,11 +220,12 @@ void HeadingSystem(task_system::ecs::pipeline& ppl)
 	filter.archetypeFilter = {
 		{complist<Heading, Rotation>}
 	};
+	;
 	ConvertSystem<Rotation, Heading>(ppl, filter,
 		[](sakura::Quaternion* dst, const sakura::Vector3f* inHeading)
 		{
 			*dst = ToOrientationQuat(*inHeading);
-		});
+		} TracyLocation("HeadingToQuat"));
 }
 
 void Child2WorldSystem(task_system::ecs::pipeline& ppl)
@@ -308,7 +319,7 @@ void World2LocalSystem(task_system::ecs::pipeline& ppl)
 }
 
 template<class C, bool useMemcpy = true, class T>
-void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector)
+void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector TracyParam(TracyLoc))
 {
 	using namespace ecs;
 	def paramList = boost::hana::make_tuple( param<const C> );
@@ -320,9 +331,9 @@ void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 			ZoneScopedN("Resize CopyTarget");
 			vector->resize(pipeline.pass_size(pass));
 		},
-		[vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
+		[&, vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
 		{
-			ZoneScopedN("CopyComponent");
+			ZoneScopedExternal(TracyLoc);
 			auto o = operation{ paramList, pass, tk };
 			auto index = o.get_index();
 			auto comps = o.get_parameter<const C>();
@@ -335,16 +346,16 @@ void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 }
 
 template<class C, bool useMemcpy = true, class T>
-void FillComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector)
+void FillComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector TracyParam(TracyLoc))
 {
 	using namespace ecs;
 	def paramList = boost::hana::make_tuple(param<C>);
 	shared_entry shareList[] = { read(vector) };
 	auto pass = ppl.create_pass(filter, paramList, shareList);
 	return task_system::ecs::schedule(ppl, pass,
-		[vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
+		[&, vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
 		{
-			ZoneScopedN("FillComponent");
+			ZoneScopedExternal(TracyLoc);
 			auto o = operation{ paramList, pass, tk };
 			auto index = o.get_index();
 			auto comps = o.get_parameter<C>();
@@ -503,7 +514,8 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	static auto positions = make_resource<std::vector<BoidPosition>>();
 	static auto kdtree = make_resource<core::algo::kdtree<BoidPosition>>();
 	{
-		CopyComponent<Translation>(ppl, boidFilter, positions);
+		;
+		CopyComponent<Translation>(ppl, boidFilter, positions TracyLocation("CopyPosition"));
 		shared_entry shareList[] = { read(positions), write(kdtree) };
 		task_system::ecs::schedule_custom(ppl, ppl.create_custom_pass(shareList), []() mutable
 			{
@@ -516,7 +528,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	static auto targets = make_resource<std::vector<BoidPosition>>();
 	static auto targetTree = make_resource<core::algo::kdtree<BoidPosition>>();
 	{
-		CopyComponent<Translation>(ppl, targetFilter, targets);
+		CopyComponent<Translation>(ppl, targetFilter, targets TracyLocation("CopyTargetPosition"));
 		shared_entry shareList[] = { read(targets), write(targetTree) };
 		task_system::ecs::schedule_custom(ppl, ppl.create_custom_pass(shareList), []() mutable
 			{
@@ -528,7 +540,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	static auto headings = make_resource<std::vector<sakura::Vector3f>>();
 	static auto newHeadings = make_resource<std::vector<sakura::Vector3f>>();
 	{
-		CopyComponent<Heading>(ppl, boidFilter, headings);
+		CopyComponent<Heading>(ppl, boidFilter, headings  TracyLocation("CopyHeading"));
 		shared_entry shareList[] = { read(kdtree), read(headings), read(targetTree), write(newHeadings) };
 		def paramList = 
 			boost::hana::make_tuple( param<const Heading>, param<const Translation>, param<const Boid> );
@@ -601,7 +613,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	}
 	//结果转换
 	{
-		FillComponent<Heading>(ppl, boidFilter, newHeadings);
+		FillComponent<Heading>(ppl, boidFilter, newHeadings TracyLocation("CopyBackHeading"));
 	}
 }
 
@@ -767,7 +779,7 @@ void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 		{complist<Translation, Scale, Rotation>},
 		{complist<LocalToParent, Parent>}
 	};
-	Local2XSystem<LocalToWorld>(ppl, wrd_filter);
+	Local2XSystem<LocalToWorld>(ppl, wrd_filter TracyLocation("LocalToWorld"));
 
 	filters c2p_filter;
 	c2p_filter.archetypeFilter = {
@@ -775,7 +787,7 @@ void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 		{complist<Translation, Scale, Rotation>},
 		{}
 	};
-	Local2XSystem<LocalToParent>(ppl, c2p_filter);
+	Local2XSystem<LocalToParent>(ppl, c2p_filter TracyLocation("LocalToParent"));
 	Child2WorldSystem(ppl);
 	World2LocalSystem(ppl);
 }
