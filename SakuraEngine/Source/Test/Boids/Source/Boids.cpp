@@ -494,13 +494,16 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		{}, //none
 		complist<Boid> //shared
 	};
+	filters targetFilter;
+	targetFilter.archetypeFilter =
+	{
+		{complist<BoidTarget, Translation>}
+	};
 	//构造 kdtree, 提取 headings
 	static auto positions = make_resource<std::vector<BoidPosition>>();
-	static auto headings = make_resource<std::vector<sakura::Vector3f>>();
 	static auto kdtree = make_resource<core::algo::kdtree<BoidPosition>>();
 	{
 		CopyComponent<Translation>(ppl, boidFilter, positions);
-		CopyComponent<Heading>(ppl, boidFilter, headings);
 		shared_entry shareList[] = { read(positions), write(kdtree) };
 		task_system::ecs::schedule_custom(ppl, ppl.create_custom_pass(shareList), []() mutable
 			{
@@ -513,11 +516,6 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	static auto targets = make_resource<std::vector<BoidPosition>>();
 	static auto targetTree = make_resource<core::algo::kdtree<BoidPosition>>();
 	{
-		filters targetFilter;
-		targetFilter.archetypeFilter =
-		{
-			{complist<BoidTarget, Translation>}
-		};
 		CopyComponent<Translation>(ppl, targetFilter, targets);
 		shared_entry shareList[] = { read(targets), write(targetTree) };
 		task_system::ecs::schedule_custom(ppl, ppl.create_custom_pass(shareList), []() mutable
@@ -527,8 +525,10 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 			});
 	}
 	//计算新的朝向
+	static auto headings = make_resource<std::vector<sakura::Vector3f>>();
 	static auto newHeadings = make_resource<std::vector<sakura::Vector3f>>();
 	{
+		CopyComponent<Heading>(ppl, boidFilter, headings);
 		shared_entry shareList[] = { read(kdtree), read(headings), read(targetTree), write(newHeadings) };
 		def paramList = 
 			boost::hana::make_tuple( param<const Heading>, param<const Translation>, param<const Boid> );
