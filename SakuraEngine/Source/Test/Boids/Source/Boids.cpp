@@ -652,6 +652,7 @@ void SpawnBoidTargets(int Count)
 		}
 	}
 }
+
 void SpawnBoidSetting()
 {
 	using namespace sakura::ecs;
@@ -756,6 +757,25 @@ int CountBoids(task_system::ecs::pipeline& ppl)
 			counter += j->get_count();
 	return counter;
 }
+
+void ResetHeading(task_system::ecs::pipeline& ppl, sakura::Vector3f newHeading)
+{
+	using namespace ecs;
+	filters boidFilter;
+	boidFilter.archetypeFilter =
+	{
+		{complist<Boid, Translation, Heading>}, //all
+		{}, //any
+		{}, //none
+		complist<Boid> //shared
+	};
+	ConvertSystem<Heading>(ppl, boidFilter,
+		[newHeading](sakura::Vector3f* heading)
+		{
+			*heading = newHeading;
+		} TracyLocation("Reset Heading"));
+}
+
 bool bDebugHeading = false;
 
 void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
@@ -987,6 +1007,11 @@ int main()
 			}
 			else
 				rolling_back = false;
+			static sakura::Vector3f ResetHeadingTo(0.f, 1.f, 0.f);
+			imgui::InputFloat3("", ResetHeadingTo.data_view().data());
+			imgui::SameLine();
+			if (imgui::Button("Reset Heading", ImVec2(100, 20)))
+				ResetHeading(ppl, ResetHeadingTo);
 			imgui::Checkbox("Debug Heading", &bDebugHeading);
 			bool UpdateBoid = false;
 			UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
