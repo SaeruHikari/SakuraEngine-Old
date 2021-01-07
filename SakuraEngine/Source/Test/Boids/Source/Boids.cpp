@@ -794,6 +794,8 @@ void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 
 const bool bUseImGui = true;
 bool bUseSnapshot = false;
+bool bNoGroupParallel = false;
+bool bNoFibers = false;
 sakura::graphics::RenderPassHandle imgui_pass = sakura::GenerationalId::UNINITIALIZED;
 sakura::graphics::RenderCommandBuffer imgui_command_buffer("ImGuiRender", 4096);
 int main()
@@ -859,7 +861,10 @@ int main()
 	{
 		ZoneScoped;
 		timer.start_up(); 
+
 		ppl.inc_timestamp();
+		ppl.force_no_fibers = bNoFibers;
+		ppl.force_no_group_parallel = bNoGroupParallel;
 
 		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
 		render_system::CollectAndUpload(ppl, deltaTime);
@@ -957,6 +962,8 @@ int main()
 				}
 			}
 			imgui::Checkbox("Snapshot Every Frame", &bUseSnapshot);
+			imgui::Checkbox("Close Fibers Dispatch", &bNoFibers);
+			imgui::Checkbox("Close Group Parallel", &bNoGroupParallel);
 			if (bUseSnapshot)
 			{
 
