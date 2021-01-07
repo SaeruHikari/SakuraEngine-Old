@@ -691,7 +691,7 @@ void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 		{&BoidSettingEntity, 1}
 	};
 	sphere s;
-	s.center = sakura::Vector3f(0, 0, 1.f) * 500;
+	s.center = sakura::Vector3f(0, 0, 500.f);
 	s.radius = Radius;
 	for (auto slice : ppl.allocate(type, Count))
 	{
@@ -704,7 +704,7 @@ void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 			auto& el = get_random_engine();
 			sakura::Vector3f vector{ uniform_dist(el), uniform_dist(el), uniform_dist(el) };
 			hds[i] = math::normalize(vector);
-			trs[i] = sakura::Vector3f(0, 0, 1.f) * 500;// s.random_point(el);
+			trs[i] = sakura::Vector3f(0, 0, 500.f);// s.random_point(el);
 		}
 	}
 }
@@ -1019,7 +1019,7 @@ int main()
 			}
 			else
 				rolling_back = false;
-			static sakura::Vector3f ResetHeadingTo(0.f, -1.f, 0.f);
+			static sakura::Vector3f ResetHeadingTo(0.f, 1.f, 0.f);
 			imgui::InputFloat3("", ResetHeadingTo.data_view().data());
 			imgui::SameLine();
 			if (imgui::Button("Reset Heading", ImVec2(100, 20)))
