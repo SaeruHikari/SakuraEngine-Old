@@ -73,7 +73,8 @@ namespace sakura::task_system::ecs
 			wait();
 		}
 		mutable std::vector<std::weak_ptr<custom_pass>> allpasses;
-		bool force_no_parallel = false;
+		bool force_no_group_parallel = false;
+		bool force_no_fibers = false;
 	};
 #ifndef ZoneScopedN
 #define ZoneScopedN(...)
@@ -93,7 +94,7 @@ namespace sakura::task_system::ecs
 		});
 	}
 
-	template<bool ForceParallel = false, bool ForceNoParallel = false, class F, class F2>
+	template<bool ForceParallel = false, bool ForceNoGroupParallel = false, bool ForceNotFiber = false, class F, class F2>
 	FORCEINLINE void schedule_init(
 		pipeline& pipeline, std::shared_ptr<pass> p, F&& f, F2&& t, int batchCount, std::vector<task_system::Event> externalDependencies = {})
 	{
@@ -101,9 +102,9 @@ namespace sakura::task_system::ecs
 			"F must be an invokable of void(const ecs::pipeline&, const ecs::pass&)>");
 		static_assert(std::is_invocable_v<std::decay_t<F2>, const task_system::ecs::pipeline&, const pass&, const sakura::ecs::task&>,
 			"F2 must be an invokable of void(const ecs::pipeline&, const ecs::pass&, const ecs::task&)>");
-		static_assert(!(ForceParallel & ForceNoParallel),
+		static_assert(!(ForceParallel & ForceNoGroupParallel),
 			"A schedule can not force both parallel and not parallel!");
-		task_system::schedule([&, p, batchCount, f, t, externalDependencies = std::move(externalDependencies)]() mutable
+		auto toSchedule = [&, p, batchCount, f, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
 			defer(p->event.signal());
 			auto [tasks, groups] = pipeline.create_tasks(*p, batchCount);
@@ -116,8 +117,8 @@ namespace sakura::task_system::ecs
 			ZoneScopedN("Task");
 			constexpr auto MinParallelTask = 8u;
 			const bool recommandParallel = !p->hasRandomWrite && groups.size > MinParallelTask;
-			if (pipeline.force_no_parallel)
-				goto FORCE_NO_PARALLEL;
+			if (pipeline.force_no_group_parallel)
+				goto FORCE_NO_GROUP_PARALLEL;
 			if ((recommandParallel && !ForceNoParallel) || ForceParallel)
 			{
 				task_system::WaitGroup tasksGroup((uint32_t)groups.size);
@@ -138,14 +139,19 @@ namespace sakura::task_system::ecs
 			}
 			else
 			{
-			FORCE_NO_PARALLEL:
+			FORCE_NO_GROUP_PARALLEL:
 				std::for_each(
 					tasks.begin(), tasks.end(), [&, t](auto& tk) mutable
 					{
 						t(pipeline, *p, tk);
 					});
 			}
-		});
+		};
+		
+		if (ForceNotFiber || pipeline.force_no_fibers)
+			toSchedule();
+		else
+			task_system::schedule(toSchedule);
 	}
 
 	template<bool ForceParallel = false, bool ForceNoParallel = false, class F>
