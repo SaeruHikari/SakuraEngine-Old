@@ -136,7 +136,6 @@ namespace render_system
 				command_buffer.enqueue<RenderCommandSetVB>(0, rg.query<GpuBufferHandle>("VertexBufferSphere"));
 				command_buffer.enqueue<RenderCommandSetIB>(rg.query<GpuBufferHandle>("IndexBufferSphere"), EIndexFormat::UINT16);
 
-				auto tn = target_worlds.size();
 				{
 					command_buffer.enqueue<RenderCommandDraw>(60, target_worlds.size());
 				}

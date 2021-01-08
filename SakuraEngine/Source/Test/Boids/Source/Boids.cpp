@@ -463,7 +463,16 @@ void BoidMoveSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 			auto rots = o.get_parameter<Rotation>(); 
 			forloop(i, 0, o.get_count())
 			{
-				rots[i] = math::look_at_quaternion(Vector3f(-hds[i][0], -hds[i][1], hds[i][2]));
+				Quaternion rot = {};
+				const auto v1 = Vector3f(0.f, 0.f, 1.f);
+				const auto v2 = hds[i];
+				Vector3f a = math::cross_product(v1, v2);
+				rot = Quaternion(a[0], a[1], a[2],
+					sqrt(v1.length_squared() * v2.length_squared()) + math::dot_product(v1, v2));
+				rot = math::normalize(rot);
+
+				rots[i] = rot;
+
 				trs[i] = trs[i] + hds[i] * deltaTime * boid->MoveSpeed;
 			}
 		}, 500);
