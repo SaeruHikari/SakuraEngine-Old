@@ -134,16 +134,12 @@ void ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f 
 		{
 			ZoneScopedExternal(TracyLoc);
 			auto o = operation{ paramList, pass, tk };
-			auto arrays = std::make_tuple(
+			hana::tuple arrays = boost::hana::make_tuple(
 				o.get_parameter<T>(), o.get_parameter<const Ts>()...);
-			//hana::tuple arrays = boost::hana::make_tuple(
-			//	o.get_parameter<T>(), o.get_parameter<const Ts>()...);
 			forloop(i, 0, o.get_count())
 			{
-				auto caller = [&](auto... v) { f((v ? v + i : nullptr)...); };
-				std::apply(caller, arrays);
-			//	auto params = hana::transform(arrays, [i](auto v) { return v ? v + i : nullptr; });
-			//	hana::unpack(params, f);
+				auto params = hana::transform(arrays, [i](auto v) { return v ? v + i : nullptr; });
+				hana::unpack(params, f);
 			}
 		}, 200);
 }
