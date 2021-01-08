@@ -67,7 +67,7 @@ namespace sakura::math::__matrix
 	{
 		return DirectX::XMMatrixLookAtLH(
 			__vector::load_float3_w1(Eye.data_view()),
-			__vector::load_float3_w0(At.data_view()),
+			__vector::load_float3_w1(At.data_view()),
 			DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f)
 		);
 	}

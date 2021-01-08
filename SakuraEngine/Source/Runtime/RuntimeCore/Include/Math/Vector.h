@@ -77,6 +77,16 @@ namespace sakura
         {
             return vec * Scale;
         }
+        
+        FORCEINLINE const T operator[](size_t idx) const
+        {
+            return data_view()[idx];
+        }
+
+        FORCEINLINE T operator[](size_t idx)
+        {
+            return data_view()[idx];
+        }
 
 		Vector operator/(T Scale) const;
 		bool operator==(const Vector V) const;

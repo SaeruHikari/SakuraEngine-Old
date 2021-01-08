@@ -143,19 +143,10 @@ namespace sakura::math
 
 	FORCEINLINE Quaternion look_at_quaternion
 	(
-		const Vector3f Eye,
-		const Vector3f At
-	)
-	{
-		return sakura::math::quaternion_from_rotation(sakura::math::look_at_matrix(Eye, At));
-	}
-
-	FORCEINLINE Quaternion look_at_quaternion
-	(
 		const Vector3f direction
 	)
 	{
-		return look_at_quaternion(Vector3f(0.f, 0.f, 0.f), direction);
+		return sakura::math::quaternion_from_rotation(sakura::math::look_at_matrix(Vector3f::vector_zero(), direction));
 	}
 
 	FORCEINLINE Quaternion quaternion_from_axis

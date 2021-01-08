@@ -7,7 +7,7 @@
 #include "ECS/ECS.h"
 #include "Boids.h"
 
-#define TARGET_NUM 15000
+#define TARGET_NUM 10000
 
 namespace render_system
 {
@@ -247,8 +247,8 @@ namespace render_system
 		// create the buffers (x, y, r, g, b)
 		float const vertData[] = {
 			 -4.f, 0.f, -4.f,    0.f / 256.f, 49.f / 256.f, 79.f / 256.f, // BL
-			 10.f, 0.f, 0.f,    137.f / 256.f, 190.f / 256.f, 178.f / 256.f, // top
-			 -4.f, 0.f, 4.f,     0.f / 256.f, 49.f / 256.f, 79.f / 256.f, // BR
+			 0.f, 0.f, 10.f,    137.f / 256.f, 190.f / 256.f, 178.f / 256.f, // top
+			 4.f, 0.f, -4.f,     0.f / 256.f, 49.f / 256.f, 79.f / 256.f, // BR
 		}; // triangle on XY-Plane.
 		uint16_t const indxData[] = { 0, 1, 2, 0 };
 

@@ -12,7 +12,7 @@ struct Translation
 	sakura::Vector3f value;
 };
 
-struct Rotation
+struct alignas(16) Rotation
 {
 	using value_type = sakura::Quaternion;
 	static constexpr auto guid = "D694D636-FE05-4382-9543-1FE9517B14D6"_guid;

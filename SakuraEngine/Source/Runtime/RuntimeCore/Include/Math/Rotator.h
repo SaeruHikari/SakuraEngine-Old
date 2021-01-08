@@ -19,7 +19,6 @@ namespace sakura
 			return *this;
 		}
 
-        /** Rotation around the right axis (around Y axis), Looking up and down (0=Straight Ahead, +Up, -Down) */
 		FORCEINLINE float pitch() const
 		{
 			return data_view()[0];
@@ -28,7 +27,7 @@ namespace sakura
 		{
 			m_[0] = value;
 		}
-        /** Rotation around the up axis (around Z axis), Running in circles 0=East, +North, -South. */
+
 		FORCEINLINE float yaw() const
 		{
 			return data_view()[1];
@@ -37,7 +36,7 @@ namespace sakura
 		{
 			m_[1] = value;
 		}
-        /** Rotation around the forward axis (around X axis), Tilting your head, 0=Straight, +Clockwise, -CCW. */
+
 		FORCEINLINE float roll() const
 		{
 			return data_view()[2];

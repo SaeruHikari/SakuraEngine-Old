@@ -196,39 +196,6 @@ void RotateByAxisSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		}, 500);
 }
 
-sakura::Quaternion ToOrientationQuat(sakura::Vector3f dir)
-{
-	// Essentially an optimized Vector->Rotator->Quat made possible by knowing Roll == 0, and avoiding radians->degrees->radians.
-	// This is done to avoid adding any roll (which our API states as a constraint).
-	auto dv = dir.data_view();
-	float X = dv[0], Y = dv[1], Z = dv[2];
-	const float YawRad = math::atan2(Y, X);
-	const float PitchRad = math::atan2(Z, math::sqrt(X * X + Y * Y));
-
-	const float DIVIDE_BY_2 = 0.5f;
-	float SP = math::sin(PitchRad * DIVIDE_BY_2), SY = sin(YawRad * DIVIDE_BY_2);
-	float CP = math::cos(PitchRad * DIVIDE_BY_2), CY = cos(YawRad * DIVIDE_BY_2);
-
-	return { SP * SY, -SP * CY, CP * SY, CP * CY };
-}
-
-void HeadingSystem(task_system::ecs::pipeline& ppl)
-{
-	using namespace ecs;
-	filters filter;
-	filter.archetypeFilter = {
-		{complist<Rotation, Heading, Translation>}
-	};
-
-	ConvertSystem<Rotation, Heading, Translation>(ppl, filter,
-		[](sakura::Quaternion* dst, const sakura::Vector3f* inHeading, const sakura::Vector3f* inTranslation)
-		{
-			//*dst = math::look_at_quaternion(sakura::Vector3f(0.f, 0.f, 0.f), sakura::Vector3f(0, 1.f, 0.f));
-			//*dst = ToOrientationQuat(Vector3f(0.f, 1.f, 0.f));
-			*dst = ToOrientationQuat(*inHeading);
-		} TracyLocation("HeadingToQuat"));
-}
-
 void Child2WorldSystem(task_system::ecs::pipeline& ppl)
 {
 	using namespace ecs;
@@ -469,19 +436,22 @@ void update_maximum(std::atomic<T>& maximum_value, T const& value) noexcept
 	}
 }
 
+float DirX = 0.f;
+float DirY = 1.f;
+float DirZ = 0.5f;
 void BoidMoveSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 {
 	using namespace ecs;
 	filters boidFilter;
 	boidFilter.archetypeFilter =
 	{
-		{complist<Boid, Translation, Heading>}, //all
+		{complist<Boid, Rotation, Translation, Heading>}, //all
 		{}, //any
 		{}, //none
 		complist<Boid> //shared
 	};
 	def paramList =
-		boost::hana::make_tuple(param<const Heading>, param<Translation>, param<const Boid>);
+		boost::hana::make_tuple(param<const Heading>, param<Translation>, param<const Boid>, param<Rotation>);
 	return task_system::ecs::schedule(ppl, ppl.create_pass(boidFilter, paramList),
 		[deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
@@ -490,8 +460,12 @@ void BoidMoveSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 			auto hds = o.get_parameter<const Heading>();
 			auto trs = o.get_parameter_owned<Translation>();
 			auto boid = o.get_parameter<const Boid>(); //这玩意是 shared
+			auto rots = o.get_parameter<Rotation>(); 
 			forloop(i, 0, o.get_count())
+			{
+				rots[i] = math::look_at_quaternion(Vector3f(-hds[i][0], -hds[i][1], hds[i][2]));
 				trs[i] = trs[i] + hds[i] * deltaTime * boid->MoveSpeed;
+			}
 		}, 500);
 }
 
@@ -783,7 +757,6 @@ void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 {
 	using namespace sakura::ecs;
 	ZoneScopedN("Schedule Systems")
-	RotationEulerSystem(ppl);
 
 	RandomTargetSystem(ppl);
 	MoveTowardSystem(ppl, deltaTime);
@@ -792,7 +765,6 @@ void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 		BoidsSystem(ppl, deltaTime);
 	}
 	BoidMoveSystem(ppl, deltaTime);
-	HeadingSystem(ppl);
 
 	filters wrd_filter;
 	wrd_filter.archetypeFilter = {
@@ -996,6 +968,9 @@ int main()
 			imgui::SliderFloat("X", &render_system::X, -400, 400);
 			imgui::SliderFloat("Y", &render_system::Y, -400, 400);
 			imgui::SliderFloat("Z", &render_system::Z, -400, 400);
+			imgui::SliderFloat("Roll(Z)", &DirZ, -1, 1);
+			imgui::SliderFloat("Yaw(Y)", &DirY, -1, 1);
+			imgui::SliderFloat("Pitch(X)", &DirX, -1, 1);
 			if (bUseSnapshot)
 			{
 
@@ -1019,11 +994,10 @@ int main()
 			}
 			else
 				rolling_back = false;
-			static sakura::Vector3f ResetHeadingTo(1.f, 1.f, -1.f);
-			imgui::InputFloat3("", ResetHeadingTo.data_view().data());
-			imgui::SameLine();
+			sakura::Vector3f ResetHeadingTo(DirX, DirY, DirZ);
 			if (imgui::Button("Reset Heading", ImVec2(100, 20)))
 				ResetHeading(ppl, ResetHeadingTo);
+			imgui::SameLine();
 			imgui::Checkbox("Debug Heading", &bDebugHeading);
 			bool UpdateBoid = false;
 			UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
