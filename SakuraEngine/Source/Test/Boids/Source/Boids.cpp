@@ -134,12 +134,16 @@ void ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f 
 		{
 			ZoneScopedExternal(TracyLoc);
 			auto o = operation{ paramList, pass, tk };
-			hana::tuple arrays = boost::hana::make_tuple(
+			auto arrays = std::make_tuple(
 				o.get_parameter<T>(), o.get_parameter<const Ts>()...);
+			//hana::tuple arrays = boost::hana::make_tuple(
+			//	o.get_parameter<T>(), o.get_parameter<const Ts>()...);
 			forloop(i, 0, o.get_count())
 			{
-				auto params = hana::transform(arrays, [i](auto v) { return v?v + i:nullptr; });
-				hana::unpack(params, f);
+				auto caller = [&](auto... v) { f((v ? v + i : nullptr)...); };
+				std::apply(caller, arrays);
+			//	auto params = hana::transform(arrays, [i](auto v) { return v ? v + i : nullptr; });
+			//	hana::unpack(params, f);
 			}
 		}, 200);
 }
@@ -156,6 +160,62 @@ void Local2XSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter TracyPa
 
 			*dst = math::make_transform(translation, scale, quaternion);
 		}, TracyLoc);
+}
+
+sakura::Quaternion ToRot(const sakura::Vector3f& hd)
+{
+
+	Quaternion rot = {};
+	const auto v1 = Vector3f(0.f, 0.f, 1.f);
+	const auto v2 = hd;
+	Vector3f a = math::cross_product(v1, v2);
+	rot = Quaternion(a[0], a[1], a[2],
+		sqrt(v1.length_squared() * v2.length_squared()) + math::dot_product(v1, v2));
+	return math::normalize(rot);
+}
+
+void LocalToWorldSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, float deltaTime)
+{
+	using namespace ecs;
+	static size_t timestamp = 0;
+	/*filter.chunkFilter =
+	{
+		complist<Ts...>,
+		timestamp
+	};*/
+	def paramList = boost::hana::make_tuple(
+		param< Translation>, param<const Rotation>, param<const Scale>, param<const Heading>, param<LocalToWorld>, param<const Boid>
+	);
+	timestamp = ppl.get_timestamp();
+	return task_system::ecs::schedule(ppl, ppl.create_pass(filter, paramList),
+		[deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const task& tk)
+		{
+			ZoneScopedN("LocalToWorld");
+			auto o = operation{ paramList, pass, tk };
+			auto rots = o.get_parameter<const Rotation>();
+			auto hds = o.get_parameter<const Heading>();
+			auto trs = o.get_parameter<Translation>();
+			auto scl = o.get_parameter<const Scale>();
+			auto boid = o.get_parameter<const Boid>();
+			auto l2w = o.get_parameter<LocalToWorld>();
+			forloop(i, 0, o.get_count())
+			{
+				sakura::Quaternion rot;
+				if (rots)
+					rot = rots[i];
+				else if (hds)
+				{
+					trs[i] += hds[i] * deltaTime * boid->MoveSpeed;
+					rot = ToRot(hds[i]);
+				}
+				else
+					rot = sakura::Quaternion::identity();
+				l2w[i] = sakura::math::make_transform(
+					trs ? trs[i] : sakura::Vector3f::vector_zero(),
+					scl ? scl[i] : sakura::Vector3f::vector_one(),
+					rot);
+			}
+		}, 200);
 }
 
 void RotationEulerSystem(task_system::ecs::pipeline& ppl)
@@ -445,13 +505,13 @@ void BoidMoveSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	filters boidFilter;
 	boidFilter.archetypeFilter =
 	{
-		{complist<Boid, Rotation, Translation, Heading>}, //all
+		{complist<Boid, Translation, Heading>}, //all
 		{}, //any
 		{}, //none
 		complist<Boid> //shared
 	};
 	def paramList =
-		boost::hana::make_tuple(param<const Heading>, param<Translation>, param<const Boid>, param<Rotation>);
+		boost::hana::make_tuple(param<const Heading>, param<Translation>, param<const Boid>);
 	return task_system::ecs::schedule(ppl, ppl.create_pass(boidFilter, paramList),
 		[deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
@@ -460,21 +520,8 @@ void BoidMoveSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 			auto hds = o.get_parameter<const Heading>();
 			auto trs = o.get_parameter_owned<Translation>();
 			auto boid = o.get_parameter<const Boid>(); //这玩意是 shared
-			auto rots = o.get_parameter<Rotation>(); 
 			forloop(i, 0, o.get_count())
-			{
-				Quaternion rot = {};
-				const auto v1 = Vector3f(0.f, 0.f, 1.f);
-				const auto v2 = hds[i];
-				Vector3f a = math::cross_product(v1, v2);
-				rot = Quaternion(a[0], a[1], a[2],
-					sqrt(v1.length_squared() * v2.length_squared()) + math::dot_product(v1, v2));
-				rot = math::normalize(rot);
-
-				rots[i] = rot;
-
 				trs[i] = trs[i] + hds[i] * deltaTime * boid->MoveSpeed;
-			}
 		}, 500);
 }
 
@@ -670,7 +717,7 @@ void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 	//创建 Boid
 	entity_type type
 	{
-		complist<Translation, Heading, Rotation, LocalToWorld>,
+		complist<Translation, Heading, LocalToWorld>,
 		{&BoidSettingEntity, 1}
 	};
 	sphere s;
@@ -687,7 +734,8 @@ void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 			auto& el = get_random_engine();
 			sakura::Vector3f vector{ uniform_dist(el), uniform_dist(el), uniform_dist(el) };
 			hds[i] = math::normalize(vector);
-			trs[i] = sakura::Vector3f(0, 0, 500.f);// s.random_point(el);
+			trs[i] = sakura::Vector3f(0, 0, 500.f);
+			//trs[i] = s.random_point(el);
 		}
 	}
 }
@@ -753,14 +801,82 @@ void ResetHeading(task_system::ecs::pipeline& ppl, sakura::Vector3f newHeading)
 		{}, //none
 		complist<Boid> //shared
 	};
-	ConvertSystem<Heading>(ppl, boidFilter,
-		[newHeading](sakura::Vector3f* heading)
+	ConvertSystem<Heading, Translation>(ppl, boidFilter,
+		[newHeading](sakura::Vector3f* heading, const sakura::Vector3f* trs)
 		{
-			*heading = newHeading;
+			if (trs->data_view()[1] < 0.f)
+				*heading = newHeading;
 		} TracyLocation("Reset Heading"));
 }
 
-bool bDebugHeading = false;
+void ResetRotation(task_system::ecs::pipeline& ppl)
+{
+	using namespace ecs;
+	filters boidFilter;
+	boidFilter.archetypeFilter =
+	{
+		{complist<Boid, Translation, Rotation>}, //all
+		{}, //any
+		{}, //none
+		complist<Boid> //shared
+	};
+	ConvertSystem<Rotation, Translation>(ppl, boidFilter,
+		[](sakura::Quaternion* quat, const sakura::Vector3f* trs)
+		{
+			if (trs->data_view()[1] < 0.f)
+				*quat = sakura::Quaternion(1,1,1,1);
+		} TracyLocation("Reset Rotation"));
+}
+
+void ResetTransform(task_system::ecs::pipeline& ppl)
+{
+
+	using namespace ecs;
+	filters boidFilter;
+	boidFilter.archetypeFilter =
+	{
+		{complist<Boid, Translation, LocalToWorld>}, //all
+		{}, //any
+		{}, //none
+		complist<Boid> //shared
+	};
+	/*filter.chunkFilter =
+	{
+		complist<Ts...>,
+		timestamp
+	};*/
+	def paramList = boost::hana::make_tuple(
+		param<const Translation>, param<const Rotation>, param<const Scale>, param<const Heading>, param<LocalToWorld>
+	);
+	return task_system::ecs::schedule(ppl, ppl.create_pass(boidFilter, paramList),
+		[&](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const task& tk)
+		{
+			ZoneScopedN("Reset Transform");
+			auto o = operation{ paramList, pass, tk };
+			auto rots = o.get_parameter<const Rotation>();
+			auto hds = o.get_parameter<const Heading>();
+			auto trs = o.get_parameter<const Translation>();
+			auto scl = o.get_parameter<const Scale>();
+			auto l2w = o.get_parameter<LocalToWorld>();
+			forloop(i, 0, o.get_count())
+			{
+				if (trs[i].data_view()[1] < 0.f)
+					l2w[i] = sakura::math::make_transform(trs[i]);
+			}
+		}, 200);
+
+	using namespace ecs;
+	ConvertSystem<LocalToWorld, Translation>(ppl, boidFilter,
+		[](sakura::Matrix4x4* transfrom, const sakura::Vector3f* trs)
+		{
+			if (trs->data_view()[1] < 0.f)
+				*transfrom = sakura::math::make_transform(*trs);
+		} TracyLocation("Reset Transform"));
+}
+
+bool bEnableBoids = false;
+bool bEnableBoidsMove = false;
+bool bEnableL2W = true;
 
 void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 {
@@ -769,19 +885,27 @@ void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 
 	RandomTargetSystem(ppl);
 	MoveTowardSystem(ppl, deltaTime);
-	if (!bDebugHeading)
+	if (bEnableBoids)
 	{
 		BoidsSystem(ppl, deltaTime);
 	}
-	BoidMoveSystem(ppl, deltaTime);
+	if (bEnableBoidsMove)
+	{
 
-	filters wrd_filter;
-	wrd_filter.archetypeFilter = {
-		{complist<LocalToWorld>},
-		{complist<Translation, Scale, Rotation>},
-		{complist<LocalToParent, Parent>}
-	};
-	Local2XSystem<LocalToWorld>(ppl, wrd_filter TracyLocation("LocalToWorld"));
+		BoidMoveSystem(ppl, deltaTime);
+	}
+	if (bEnableL2W)
+	{
+		filters wrd_filter;
+		wrd_filter.archetypeFilter = {
+			{complist<LocalToWorld>},
+			{complist<Translation, Scale, Rotation>},
+			{complist<LocalToParent, Parent>}
+		};
+		LocalToWorldSystem(ppl, wrd_filter, deltaTime);
+		//Local2XSystem<LocalToWorld>(ppl, wrd_filter TracyLocation("LocalToWorld"));
+	}
+
 
 	filters c2p_filter;
 	c2p_filter.archetypeFilter = {
@@ -797,8 +921,8 @@ void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 const bool bUseImGui = true;
 bool bUseSnapshot = false;
 float SnaphotRate = 30.f;
-bool bNoGroupParallel = false;
-bool bNoFibers = false;
+bool bNoGroupParallel = true;
+bool bNoFibers = true;
 sakura::graphics::RenderPassHandle imgui_pass = sakura::GenerationalId::UNINITIALIZED;
 sakura::graphics::RenderCommandBuffer imgui_command_buffer("ImGuiRender", 4096);
 int main()
@@ -828,9 +952,9 @@ int main()
 	BoidSetting.TargetWeight = 1.f;
 	BoidSetting.SeparationWeight = 2.f;
 	BoidSetting.TurnSpeed = 2.f;
-	BoidSetting.MoveSpeed = 250.f;
+	BoidSetting.MoveSpeed = 0.f;
 	BoidSetting.SightRadius = 20.f;
-	declare_components<Translation, Rotation, RotationEuler, Scale, LocalToWorld, LocalToParent, 
+	declare_components<Rotation, Translation, RotationEuler, Scale, LocalToWorld, LocalToParent,
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading>();
 	SpawnBoidSetting();
 	SpawnBoidTargets(10);
@@ -1006,8 +1130,13 @@ int main()
 			sakura::Vector3f ResetHeadingTo(DirX, DirY, DirZ);
 			if (imgui::Button("Reset Heading", ImVec2(100, 20)))
 				ResetHeading(ppl, ResetHeadingTo);
-			imgui::SameLine();
-			imgui::Checkbox("Debug Heading", &bDebugHeading);
+			if (imgui::Button("Reset Rotation", ImVec2(100, 20)))
+				ResetRotation(ppl);
+			if (imgui::Button("Reset Transform", ImVec2(100, 20)))
+				ResetTransform(ppl);
+			imgui::Checkbox("Enable Boids", &bEnableBoids);
+			imgui::Checkbox("Enable Boids Move", &bEnableBoidsMove);
+			imgui::Checkbox("Enable L2W", &bEnableL2W);
 			bool UpdateBoid = false;
 			UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
 			UpdateBoid |= imgui::SliderFloat("TargetWeight", &BoidSetting.TargetWeight, 0, 10);
