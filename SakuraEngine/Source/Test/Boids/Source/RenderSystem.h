@@ -79,11 +79,17 @@ namespace render_system
 		[[set(0), binding(0)]] var<storage_buffer> worlds: [[access(read)]] PositionsBuffer;\n\
 		[[set(1), binding(0)]] var<uniform> view_proj: WorldProjection;\n\
 		\n\
+		fn rand(p0 : u32, p1 : u32) -> f32 {\n\
+			var p : vec2<f32> = vec2<f32>(f32(p0), f32(p1));\n\
+			var K1 : vec2<f32> = vec2<f32>(23.14069263277926, 2.665144142690225);\n\
+			return fract(cos(dot(p,K1)) * 12345.6789);\n\
+		}\n\
+		\n\
 		[[stage(vertex)]]\n\
 		fn main() -> void {\n\
 			var posIn : vec4<f32> = vec4<f32>(positionIn.x, positionIn.y, positionIn.z, 1.0);\n\
 			Position = posIn * worlds.world[InstanceIdx] * view_proj.value;\n\
-			v_color = colorIn;\n\
+			v_color = vec3<f32>(rand(InstanceIdx, InstanceIdx + 3), rand(InstanceIdx, InstanceIdx + 2), rand(InstanceIdx, InstanceIdx + 1));\n\
 			return;\n\
 		}";
 
