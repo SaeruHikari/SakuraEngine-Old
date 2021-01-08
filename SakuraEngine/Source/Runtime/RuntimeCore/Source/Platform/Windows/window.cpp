@@ -1,5 +1,4 @@
-﻿#include <System/Window.h>
-#include "System/Log.h"
+﻿#include <RuntimeCore/RuntimeCore.h>
 #include "Platform/Windows/Windows.h"
 
 namespace sakura::windows
@@ -106,7 +105,16 @@ namespace sakura::windows
 	* \param[in] hWnd window handle
 	* \param[in[ uMsg message type
 	*/
-	LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wParam, LPARAM const lParam) {
+	LRESULT CALLBACK windowEvents(HWND const hWnd, UINT const uMsg, WPARAM const wParam, LPARAM const lParam) 
+	{
+		LRESULT lResult = 0;
+		bool handled = false;
+		if (auto rx_msg = sakura::Core::find_messenger(reinterpret_cast<const void*>(hWnd)); rx_msg)
+		{
+			std::tie(handled, lResult) = ((WinMessages*)rx_msg)->message(hWnd, uMsg, wParam, lParam);
+		}
+
+
 		switch (uMsg) {
 		case WM_SIZE:
 			/*
@@ -225,7 +233,14 @@ namespace sakura::windows
 		}
 #endif
 		}
-		return DefWindowProc(hWnd, uMsg, wParam, lParam);
+		if (!handled)
+		{
+			lResult = DefWindowProc(hWnd, uMsg, wParam, lParam);
+		}
+		if (uMsg == WM_NCDESTROY) {
+			sakura::Core::unbind(hWnd);
+		}
+		return lResult;
 	}
 }
 
@@ -310,6 +325,7 @@ sakura::Window sakura::Window::create(const desc& desc) noexcept
 			RegisterHotKey(window, VK_SNAPSHOT, 0, VK_SNAPSHOT);
 			ShowWindow(window, SW_SHOWDEFAULT);
 			sakura::Window res(window);
+			sakura::Core::bind(res);
 			return res;
 		}
 		UnregisterClass(wndClass.lpszClassName, wndClass.hInstance);
