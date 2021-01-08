@@ -461,11 +461,12 @@ void BoidMoveSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 			auto trs = o.get_parameter_owned<Translation>();
 			auto boid = o.get_parameter<const Boid>(); //这玩意是 shared
 			auto rots = o.get_parameter<Rotation>(); 
+
 			forloop(i, 0, o.get_count())
 			{
 				Quaternion rot = {};
 				const auto v1 = Vector3f(0.f, 0.f, 1.f);
-				const auto v2 = hds[i];
+				const auto v2 = math::normalize(hds[i]);
 				Vector3f a = math::cross_product(v1, v2);
 				rot = Quaternion(a[0], a[1], a[2],
 					sqrt(v1.length_squared() * v2.length_squared()) + math::dot_product(v1, v2));
