@@ -62,20 +62,6 @@ namespace sakura::graphics
 	}
 
 	template <size_t N>
-	FORCEINLINE RenderPipeline::Descriptor::Descriptor(
-		const ShaderLayout& _shader_layout, const VertexLayout(&_vertex_layouts)[N],
-		const BindingLayout _binding_layout, const AttachmentLayout& _attachment_layout,
-		const ECullMode _cull_mode,
-		const EPrimitiveTopology _primitive_topology, const EPolygonMode _polygon_mode,
-		uint8 _sample_count, uint32 _sample_mask)
-		: primitive_topology(_primitive_topology), sample_count(_sample_count), sample_mask(_sample_mask),
-		shader_layout(_shader_layout), vertex_layout(_vertex_layouts, _vertex_layouts + N), binding_layout(_binding_layout),
-		attachment_layout(_attachment_layout), polygon_mode(_polygon_mode), cull_mode(_cull_mode)
-	{
-		
-	}
-	
-	template <size_t N>
 	FORCEINLINE Attachment::Attachment(const Slot(&_slots)[N]) noexcept
 		:slots(_slots, _slots + N)
 	{
@@ -159,11 +145,35 @@ namespace sakura::graphics
 
 	FORCEINLINE RenderPipeline::Descriptor::Descriptor(const ShaderLayout& _shader_layout, const VertexLayout& _vertex_layout,
 		const BindingLayout& _binding_layout, const AttachmentLayout& _attachment_layout,
+		const DepthStencilDescriptor _depth_stencil,
 		const ECullMode _cull_mode,
 		const EPrimitiveTopology _primitive_topology, const EPolygonMode _polygon_mode, uint8 _sample_count, uint32 _sample_mask)
 		: primitive_topology(_primitive_topology), sample_count(_sample_count), sample_mask(_sample_mask),
 		shader_layout(_shader_layout), vertex_layout({ _vertex_layout }), binding_layout(_binding_layout),
-		attachment_layout(_attachment_layout), polygon_mode(_polygon_mode), cull_mode(_cull_mode) {	}
+		attachment_layout(_attachment_layout), depth_stencil(_depth_stencil), polygon_mode(_polygon_mode), cull_mode(_cull_mode) {	}
+
+	template <size_t N>
+	FORCEINLINE RenderPipeline::Descriptor::Descriptor(
+		const ShaderLayout& _shader_layout, const VertexLayout(&_vertex_layouts)[N],
+		const BindingLayout _binding_layout, const AttachmentLayout& _attachment_layout,
+		const DepthStencilDescriptor _depth_stencil,
+		const ECullMode _cull_mode,
+		const EPrimitiveTopology _primitive_topology, const EPolygonMode _polygon_mode,
+		uint8 _sample_count, uint32 _sample_mask)
+		: primitive_topology(_primitive_topology), sample_count(_sample_count), sample_mask(_sample_mask),
+		shader_layout(_shader_layout), vertex_layout(_vertex_layouts, _vertex_layouts + N), binding_layout(_binding_layout),
+		attachment_layout(_attachment_layout), depth_stencil(_depth_stencil), polygon_mode(_polygon_mode), cull_mode(_cull_mode)
+	{
+
+	}
+
+	FORCEINLINE DepthStencil::Descriptor::Descriptor(const ETextureFormat _format, bool _depth_write,
+		ECompareFunction _depth_compare, uint32_t _stencil_read_mask, uint32_t _stencil_write_mask)
+		:format(_format), depth_write(_depth_write), depth_compare(_depth_compare),
+		stencil_read_mask(_stencil_read_mask), stencil_write_mask(_stencil_write_mask)
+	{
+
+	}
 
 	FORCEINLINE Buffer::Descriptor::Descriptor(BufferUsages _usage, size_t _length,
 		const void* _data, const EBufferCPUAccess _access)

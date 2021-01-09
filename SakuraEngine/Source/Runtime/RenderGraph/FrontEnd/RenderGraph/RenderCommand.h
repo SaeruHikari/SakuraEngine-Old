@@ -88,9 +88,10 @@ namespace sakura::graphics
         : public RenderCommandTyped<ERenderCommandType::begin_render_pass, ERenderQueueType::Graphics>
     {
         RenderCommandBeginRenderPass(
-            RenderPipelineHandle pipeline, const Attachment& attachment);
+            RenderPipelineHandle pipeline, const Attachment& attachment, const DepthStencil& depth_stencil = {});
         RenderPipelineHandle pipeline = RenderGraphId::UNINITIALIZED;
         Attachment attachments;
+        DepthStencil depth_stencil;
     };
 
     struct RenderCommandEndRenderPass final
@@ -205,8 +206,8 @@ namespace sakura::graphics
     }
 
     FORCEINLINE RenderCommandBeginRenderPass::RenderCommandBeginRenderPass(
-        RenderPipelineHandle ppl, const Attachment& att)
-        :pipeline(ppl), attachments(att)
+        RenderPipelineHandle ppl, const Attachment& att, const DepthStencil& ds)
+        :pipeline(ppl), attachments(att), depth_stencil(ds)
     {
 
     }

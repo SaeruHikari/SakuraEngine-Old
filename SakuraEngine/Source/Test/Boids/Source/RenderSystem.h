@@ -122,6 +122,8 @@ namespace render_system
 	static GpuBufferHandle vertex_buffer_sphere = render_graph.GpuBuffer("VertexBufferSphere");
 	static GpuBufferHandle index_buffer_sphere = render_graph.GpuBuffer("IndexBufferSphere");
 
+	static GpuTextureHandle boids_depth_stencil = render_graph.GpuTexture("BoidsDepthStencil");
+
 	static sakura::float4x4 view_proj;
 	static std::vector<sakura::float4x4> worlds(TARGET_NUM);
 	static std::vector<sakura::float4x4> target_worlds(10);
@@ -135,7 +137,7 @@ namespace render_system
 			RenderCommandBuffer& command_buffer,
 			const RenderGraph& rg, IRenderDevice& device) noexcept override
 		{
-			command_buffer.enqueue<RenderCommandBeginRenderPass>(render_pipeline, attachment);
+			command_buffer.enqueue<RenderCommandBeginRenderPass>(render_pipeline, attachment, ds);
 			{
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 0, uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 10, 0));
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(sakura::float4x4), 0));
@@ -173,9 +175,13 @@ namespace render_system
 				Attachment::Slot(swap_chain, sakura::double4(), ELoadOp::Clear, EStoreOp::Store)
 			});
 			builder.write(attachment);
+			ds.clear_depth = 0.f;
+			ds.ds_attachment = boids_depth_stencil;
+			//builder.write(ds);
 			return builder.apply();
 		}
 		Attachment attachment;
+		DepthStencil ds;
 	};
 	RenderPassHandle pass = render_graph.create_render_pass<RenderPassSimple>();
 
@@ -215,6 +221,7 @@ namespace render_system
 
 		// Create Swap Chains.
 		render_device->create_swap_chain(swap_chain, SwapChainDescriptor(EPresentMode::Mailbox, main_window, 3));
+		auto chain_ptr = render_device->get<ISwapChain>(swap_chain);
 		// Init RenderPipeline Desc
 		RenderPipelineDescriptor pipelineDesc = RenderPipelineDescriptor(
 			ShaderLayout({
@@ -244,6 +251,7 @@ namespace render_system
 			AttachmentLayout(
 				{ AttachmentLayout::Slot(render_device->get<ISwapChain>(swap_chain)->render_format(), ELoadOp::Clear, EStoreOp::Store) }
 			),
+			DepthStencilDescriptor(ETextureFormat::D32_FLOAT, true, ECompareFunction::Greater),
 			ECullMode::Back, EPrimitiveTopology::TriangleList, EPolygonMode::FILL, 1, 0xFFFFFFFF
 		);
 
@@ -281,6 +289,17 @@ namespace render_system
 			3,10,7, 10,6,7, 6,11,7, 6,0,11, 6,1,0,
 			10,1,6, 11,0,9, 2,11,9, 5,2,9,  11,2,7
 		};
+		// Create Depth-Stencil
+		TextureDescriptor texDesc = {};
+		texDesc.size = { chain_ptr->extent().width, chain_ptr->extent().height, 1 };
+		texDesc.dimension = ETextureDimension::Texture2D;
+		texDesc.format = ETextureFormat::D32_FLOAT;
+		texDesc.mip_levels = 1;
+		texDesc.sharing_mode = ESharingMode::Exclusive;
+		texDesc.sample_count = 1;
+		texDesc.array_layers = 1;
+		texDesc.usages = ETextureUsage::Attachment;
+		render_device->create_texture(boids_depth_stencil, texDesc);
 		// Create Buffers.
 		render_device->create_buffer(uniform_buffer,
 			BufferDescriptor(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4), &view_proj));
@@ -318,7 +337,6 @@ namespace render_system
 		ZoneScopedN("CollectAndUpload");
 		auto Collect = [&ppl](filters& filter, std::vector<sakura::float4x4>& world, int maxSlice = 500)
 		{
-
 			static constexpr auto paramList = boost::hana::make_tuple(
 				// read.
 				param<const LocalToWorld>

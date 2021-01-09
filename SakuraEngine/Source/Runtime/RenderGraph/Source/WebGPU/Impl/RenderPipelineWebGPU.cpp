@@ -108,6 +108,7 @@ sakura::graphics::webgpu::RenderPipeline::RenderPipeline(RenderPipelineHandle ha
 
     // Attachments
     sakura::vector<WGPUColorStateDescriptor> colorDescs(desc.attachment_layout.slots.size());
+    WGPUDepthStencilStateDescriptor dsDesc = {};
     for (size_t i = 0u; i < desc.attachment_layout.slots.size(); i++)
     {
         auto& colorDesc = colorDescs[i];
@@ -119,6 +120,22 @@ sakura::graphics::webgpu::RenderPipeline::RenderPipeline(RenderPipelineHandle ha
     }
     rpDesc.colorStateCount = static_cast<uint32>(desc.attachment_layout.slots.size());
     rpDesc.colorStates = colorDescs.data();
+    // Depth Stencil.
+    if (desc.depth_stencil.format != ETextureFormat::Count)
+    {
+        dsDesc.format = translate(desc.depth_stencil.format);
+
+        dsDesc.depthWriteEnabled = desc.depth_stencil.depth_write;
+        dsDesc.depthCompare = translate(desc.depth_stencil.depth_compare);
+        
+        dsDesc.stencilReadMask = desc.depth_stencil.stencil_read_mask;
+        dsDesc.stencilWriteMask = desc.depth_stencil.stencil_write_mask;
+        dsDesc.stencilFront.compare = translate(desc.depth_stencil.stencil_front_compare);
+
+        dsDesc.stencilBack.compare = translate(desc.depth_stencil.stencil_back_compare);
+        
+        rpDesc.depthStencilState = &dsDesc;
+    }
 
     // Sample Mask
     rpDesc.sampleMask = desc.sample_mask;

@@ -179,6 +179,32 @@ FORCEINLINE WGPUBlendOperation sakura::graphics::webgpu::translate(const EBlendO
 	}
 }
 
+FORCEINLINE WGPUCompareFunction sakura::graphics::webgpu::translate(const ECompareFunction compare_function)
+{
+	switch (compare_function)
+	{
+	case ECompareFunction::Always:
+		return WGPUCompareFunction::WGPUCompareFunction_Always;
+	case ECompareFunction::Equal:
+		return WGPUCompareFunction::WGPUCompareFunction_Equal;
+	case ECompareFunction::Greater:
+		return WGPUCompareFunction::WGPUCompareFunction_Greater;
+	case ECompareFunction::GreaterEqual:
+		return WGPUCompareFunction::WGPUCompareFunction_GreaterEqual;
+	case ECompareFunction::Less:
+		return WGPUCompareFunction::WGPUCompareFunction_Less;
+	case ECompareFunction::LessEqual:
+		return WGPUCompareFunction::WGPUCompareFunction_LessEqual;
+	case ECompareFunction::Never:
+		return WGPUCompareFunction::WGPUCompareFunction_Never;
+	case ECompareFunction::NotEqual:
+		return WGPUCompareFunction::WGPUCompareFunction_NotEqual;
+	case ECompareFunction::Undefined:
+	default:
+		return WGPUCompareFunction::WGPUCompareFunction_Undefined;
+	}
+}
+
 FORCEINLINE WGPUBlendDescriptor sakura::graphics::webgpu::translate(const BlendSetting desc)
 {
 	WGPUBlendDescriptor result;

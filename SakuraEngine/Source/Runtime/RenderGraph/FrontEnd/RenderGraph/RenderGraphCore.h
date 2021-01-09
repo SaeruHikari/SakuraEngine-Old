@@ -344,6 +344,18 @@ namespace sakura::graphics
 	};
 	using ColorMask = uint8;
 
+	enum class EStencilOp : uint8
+	{
+		Keep = 0,
+		Zero = 1,
+		Replace = 2,
+		Invert = 3,
+		IncrementClamp = 4,
+		DecrementClamp = 5,
+		IncrementWrap = 6,
+		DecrementWrap = 7
+	};
+
 	enum class ELoadOp : uint8
 	{
 		Clear = 0,
@@ -795,6 +807,55 @@ namespace sakura::graphics
 	using AttachmentSlot = AttachmentLayout::Slot;
 	using BlendSetting = AttachmentSlot::BlendSetting;
 
+	enum class ECompareFunction : uint8
+	{
+		Undefined = 0,
+		Never = 1,
+		Less = 2,
+		LessEqual = 3,
+		Greater = 4,
+		GreaterEqual = 5,
+		Equal = 6,
+		NotEqual = 7,
+		Always = 8
+	};
+
+	struct RenderGraphAPI DepthStencil
+	{
+		struct RenderGraphAPI Descriptor
+		{
+			ETextureFormat format = ETextureFormat::Count;
+			bool depth_write = false;
+			ECompareFunction depth_compare = ECompareFunction::Less;
+			uint32_t stencil_read_mask = 0;
+			uint32_t stencil_write_mask = 0;
+			
+			ECompareFunction stencil_front_compare = ECompareFunction::Never;
+			EStencilOp front_fail_op = EStencilOp::Keep;
+			EStencilOp front_depth_fail_op = EStencilOp::Keep;
+			EStencilOp front_pass_op = EStencilOp::Keep;
+
+			ECompareFunction stencil_back_compare = ECompareFunction::Never;
+			EStencilOp back_fail_op = EStencilOp::Keep;
+			EStencilOp back_depth_fail_op = EStencilOp::Keep;
+			EStencilOp back_pass_op = EStencilOp::Keep;
+
+			Descriptor() = default;
+			Descriptor(const ETextureFormat format, bool depth_write,
+				ECompareFunction depth_compare = ECompareFunction::Less,
+				uint32_t stencil_read_mask = 0, uint32_t stencil_write_mask = 0);
+		};
+
+		GpuTextureHandle ds_attachment;
+		float clear_depth = 1.f;
+		ELoadOp depth_load_op = ELoadOp::Clear;
+		EStoreOp depth_store_op = EStoreOp::Store;
+		uint32 clear_stencil = 0;
+		ELoadOp stencil_load_op = ELoadOp::Clear;
+		EStoreOp stencil_store_op = EStoreOp::Store;
+	};
+	using DepthStencilDescriptor = DepthStencil::Descriptor;
+
 	struct RenderGraphAPI FenceDescriptor
 	{
 		const uint64 initial_value = 0;
@@ -810,6 +871,7 @@ namespace sakura::graphics
 		Mailbox = 2,
 		Count = 3
 	};
+
 	struct RenderGraphAPI SwapChainDescriptor
 	{
 		const EPresentMode present_mode = EPresentMode::Mailbox;
@@ -836,11 +898,13 @@ namespace sakura::graphics
 			const sakura::vector<VertexLayout> vertex_layout;
 			BindingLayout binding_layout;
 			AttachmentLayout attachment_layout;
+			DepthStencilDescriptor depth_stencil;
 
 			Descriptor() = default;
 			explicit Descriptor(
-				const ShaderLayout & shader_layout, const VertexLayout & vertex_layout,
-				const BindingLayout & binding_layout, const AttachmentLayout & attachment_layout,
+				const ShaderLayout& shader_layout, const VertexLayout& vertex_layout,
+				const BindingLayout& binding_layout, const AttachmentLayout& attachment_layout,
+				const DepthStencilDescriptor depth_stencil = {},
 				const ECullMode cull_mode = ECullMode::Back,
 				const EPrimitiveTopology primitive_topology = EPrimitiveTopology::TriangleList,
 				const EPolygonMode polygon_mode = EPolygonMode::FILL,
@@ -849,13 +913,13 @@ namespace sakura::graphics
 			template<size_t N>
 			explicit Descriptor(
 				const ShaderLayout & shader_layout, const VertexLayout(&vertex_layouts)[N],
-				const BindingLayout binding_layout, const AttachmentLayout & attachment_layout,
+				const BindingLayout binding_layout, const AttachmentLayout& attachment_layout,
+				const DepthStencilDescriptor depth_stencil = {},
 				const ECullMode cull_mode = ECullMode::Back,
 				const EPrimitiveTopology primitive_topology = EPrimitiveTopology::TriangleList,
 				const EPolygonMode polygon_mode = EPolygonMode::FILL,
 				uint8 sample_count = 1, uint32 sample_mask = 0xFFFFFFFF);
 		};
-
 	};
 	using RenderPipelineDescriptor = RenderPipeline::Descriptor;
 	

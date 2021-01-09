@@ -26,6 +26,8 @@ namespace sakura::graphics::webgpu
 	WGPUBlendOperation translate(const EBlendOp op);
 	
 	WGPUBlendDescriptor translate(const BlendSetting desc);
+
+	WGPUCompareFunction translate(const ECompareFunction compare_function);
 	
 	WGPUColorWriteMaskFlags translate(const ColorMask mask);
 
