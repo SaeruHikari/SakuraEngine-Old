@@ -967,6 +967,7 @@ int main()
 			imgui::Checkbox("Snapshot Every Frame", &bUseSnapshot);
 			imgui::Checkbox("Close Fibers Dispatch", &bNoFibers);
 			imgui::Checkbox("Close Group Parallel", &bNoGroupParallel);
+			imgui::InputFloat("TestInput", &render_system::X);
 			imgui::SliderFloat("X", &render_system::X, -400, 400);
 			imgui::SliderFloat("Y", &render_system::Y, -400, 400);
 			imgui::SliderFloat("Z", &render_system::Z, -400, 400);

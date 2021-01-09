@@ -146,6 +146,35 @@ namespace sakura::imgui
         io.KeyMap[ImGuiKey_Y] = static_cast<int>(EKeyCode::Y);
         io.KeyMap[ImGuiKey_Z] = static_cast<int>(EKeyCode::Z);
 
+        // RX on OS MessageBus.
+        auto rx_os = sakura::Core::find_messenger(window.handle());
+        rx_os->messages<OSKeyboardMessage>().subscribe([](auto m)
+            {
+                ImGuiIO& io = ImGui::GetIO();
+
+                if (m.message == SM_KEYUP || m.message == SM_SYS_KEYUP)
+                {
+                    if ((uint32)m.key_code < 256)
+                        io.KeysDown[(uint32)m.key_code] = 0;
+                }
+                else if (m.message == SM_KEYDOWN || m.message == SM_SYS_KEYDOWN)
+                {
+                    if ((uint32)m.key_code < 256)
+                        io.KeysDown[(uint32)m.key_code] = 1;
+                }
+            });
+#ifdef SAKURA_TARGET_PLATFORM_WIN
+        windows::WinMessages* rx_win = static_cast<windows::WinMessages*>(rx_os);
+        rx_win->messages_win<WM_CHAR>().
+            subscribe([](auto m)
+            {
+                ImGuiIO& io = ImGui::GetIO();
+
+                if (m.wParam > 0 && m.wParam < 0x10000)
+                    io.AddInputCharacterUTF16((unsigned short)m.wParam);
+            });
+
+#endif
 		
 		ImGuiViewport* viewport = ImGui::GetMainViewport();
 		viewport->PlatformHandle = window.handle();

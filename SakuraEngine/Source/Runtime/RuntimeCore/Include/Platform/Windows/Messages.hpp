@@ -32,16 +32,16 @@ namespace sakura::windows
 		std::tuple<bool, LRESULT> message(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 	public:
-		rxcpp::observable<WinMessage> messages() {
+		rxcpp::observable<WinMessage> messages_win() {
 			return subject_win_.get_observable();
 		}
 
 		template<UINT WM>
-		rxcpp::observable<WinMessage> messages() {
-			return messages().filter(WinMessage::is<WM>());
+		rxcpp::observable<WinMessage> messages_win() {
+			return messages_win().filter(WinMessage::is<WM>());
 		}
 
-		FORCEINLINE WinMessages();
+		FORCEINLINE WinMessages(const Window window);
 		FORCEINLINE ~WinMessages() override;
 
 		FORCEINLINE rxcpp::observable<WinMessage> win_messages()
@@ -49,6 +49,7 @@ namespace sakura::windows
 			return subject_win_.get_observable();
 		}
 	private:
+		void onKeyboard();
 		void onPresent();
 		rxcpp::subjects::subject<WinMessage> subject_win_;
 		rxcpp::subscriber<WinMessage> subscriber_win_;
@@ -66,24 +67,54 @@ namespace sakura::windows
 		return std::make_tuple(result.handled, result.lres);
 	}
 
+	FORCEINLINE void WinMessages::onKeyboard()
+	{
+		messages_win<WM_KEYDOWN>().
+			subscribe([this](auto m)
+				{
+					os_subscriber_.on_next(OSMessage{ SM_KEYDOWN });
+					kb_subscriber_.on_next(OSKeyboardMessage{ SM_KEYDOWN, (input::EKeyCode)m.wParam });
+				});
+		messages_win<WM_SYSKEYDOWN>().
+			subscribe([this](auto m)
+				{
+					os_subscriber_.on_next(OSMessage{ SM_SYS_KEYDOWN });
+					kb_subscriber_.on_next(OSKeyboardMessage{ SM_SYS_KEYDOWN, (input::EKeyCode)m.wParam });
+				});
+
+		messages_win<WM_KEYUP>().
+			subscribe([this](auto m)
+				{
+					os_subscriber_.on_next(OSMessage{ SM_KEYUP });
+					kb_subscriber_.on_next(OSKeyboardMessage{ SM_KEYUP, (input::EKeyCode)m.wParam });
+				});
+		messages_win<WM_SYSKEYUP>().
+			subscribe([this](auto m)
+				{
+					os_subscriber_.on_next(OSMessage{ SM_SYS_KEYUP });
+					kb_subscriber_.on_next(OSKeyboardMessage{ SM_SYS_KEYUP, (input::EKeyCode)m.wParam });
+				});
+	}
+
 	FORCEINLINE void WinMessages::onPresent()
 	{
-		messages<WM_PAINT>().
+		messages_win<WM_PAINT>().
 			subscribe([this](auto m) 
 		{
 			m.handled(); // skip DefWindowProc
-			//PAINTSTRUCT ps;
-			//BeginPaint(mWindow, &ps);
-			//EndPaint(mWindow, &ps);
+			PAINTSTRUCT ps;
+			BeginPaint(static_cast<HWND>(window_.handle()), &ps);
+			EndPaint(static_cast<HWND>(window_.handle()), &ps);
 
-			os_subscriber_.on_next(OSMessage{WM_PAINT});
+			os_subscriber_.on_next(OSMessage{ WM_PAINT });
 		});
 	}
 
-	FORCEINLINE WinMessages::WinMessages()
-		: OSMessages(), subscriber_win_(subject_win_.get_subscriber())
+	FORCEINLINE WinMessages::WinMessages(const Window window)
+		: OSMessages(window), subscriber_win_(subject_win_.get_subscriber())
 	{
-	
+		onPresent();
+		onKeyboard();
 	}
 
 	FORCEINLINE WinMessages::~WinMessages()
