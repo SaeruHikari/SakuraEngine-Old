@@ -161,7 +161,7 @@ namespace render_system
 	struct PassCB
 	{
 		sakura::float4x4 view_proj;
-		float lightdir[4];
+		float lightdir[4] = {-1.f, -1.f, 0.f, 0.f};
 		float lightcolor[4] = { 80.f / 255.f, 88.f / 255.f, 115.f / 255.f, 255.f / 255.f };
 		float eyepos[4] = {0.f, 0.f, 0.f, 1.f};
 		float ambient[4] = { 211.f / 255.f, 199.f / 255.f, 255.f / 255.f, 150.f / 255.f };
