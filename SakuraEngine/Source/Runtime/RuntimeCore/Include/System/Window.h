@@ -3,8 +3,6 @@
 
 namespace sakura
 {
-
-	
     // hdl of an actual window.
     struct RuntimeCoreAPI Window    
     {
