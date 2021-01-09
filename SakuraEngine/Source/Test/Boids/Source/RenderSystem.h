@@ -7,7 +7,7 @@
 #include "ECS/ECS.h"
 #include "Boids.h"
 
-#define TARGET_NUM 120000
+#define TARGET_NUM 12000
 
 namespace render_system
 {
@@ -17,92 +17,116 @@ namespace render_system
 	inline sakura::vector<std::byte> vertex_shader_spirv;
 	inline sakura::vector<std::byte> pixel_shader_spirv;
 	const sakura::string vertex_shader_hlsl = 
-		u8"struct VertexIn\
-		{\
-			float3 aPos : SV_Position;\
-			float3 aCol : COLOR;\
-		};\
-		struct VertexOut\
-		{\
-			float4 position : SV_Position;\
-			float3 vCol : COLOR;\
-		};\
-		[[vk::binding(0, 1)]] cbuffer ub\
-		{\
-			float4x4 view_proj;\
-		};\
-		struct Wrds\
-		{\
-			float4x4 world;\
-			float4x4 world1;\
-			float4x4 world2;\
-			float4x4 world3;\
-		};\
-		[[vk::binding(0, 0)]] ConstantBuffer<Wrds> worlds[];\
-		VertexOut main(VertexIn vin, uint iID : SV_InstanceID)\
-		{\
-			VertexOut vout;\
-			float4 posW = mul(float4(vin.aPos, 1.0f), worlds[0].world);\
-			vout.position = mul(posW, view_proj);\
-			vout.vCol = vin.aCol;\
-			return vout;\
-		}";
+		u8R"(struct VertexIn
+		{
+			float3 aPos : SV_Position;
+			float3 aCol : COLOR;
+		};
+		struct VertexOut
+		{
+			float4 position : SV_Position;
+			float3 vCol : COLOR;
+		};
+		[[vk::binding(0, 1)]] cbuffer ub
+		{
+			float4x4 view_proj;
+		};
+		struct Wrds
+		{
+			float4x4 world;
+			float4x4 world1;
+			float4x4 world2;
+			float4x4 world3;
+		};
+		[[vk::binding(0, 0)]] ConstantBuffer<Wrds> worlds[];
+		VertexOut main(VertexIn vin, uint iID : SV_InstanceID)
+		{
+			VertexOut vout;
+			float4 posW = mul(float4(vin.aPos, 1.0f), worlds[0].world);
+			vout.position = mul(posW, view_proj);
+			vout.vCol = vin.aCol;
+			return vout;
+		})";
 	const sakura::string pixel_shader_hlsl =
-		u8"struct VertexOut\
-		{\
-			float4 position : SV_Position;\
-			float3 vCol : COLOR;\
-		};\
-		float4 main(VertexOut pin) : SV_TARGET\
-		{\
-			return float4(pin.vCol.xyz, 1.f);\
-		}";
+		u8R"(struct VertexOut
+		{
+			float4 position : SV_Position;
+			float3 vCol : COLOR;
+		};
+		float4 main(VertexOut pin) : SV_TARGET
+		{
+			return float4(pin.vCol.xyz, 1.f);
+		})";
 
 
 	const sakura::string vertex_shader_wgsl =
-		u8"\
-		[[location(0)]] var<in> positionIn: vec3<f32>;\n\
-		[[location(1)]] var<in> colorIn: vec3<f32>; \n\
-		[[builtin(instance_idx)]] var<in> InstanceIdx: u32;\n\
-		\n\
-		[[location(0)]] var<out> v_color: vec3<f32>; \n\
-		[[builtin(position)]] var<out> Position: vec4<f32>;\n\
-		\n\
-		[[block]] struct WorldProjection \n\
-		{\n\
-			[[offset(0)]] value: mat4x4<f32>;\n\
-		};\n\
-		[[block]] struct PositionsBuffer \n\
-		{\n\
-			[[offset(0)]] world: [[stride(64)]] array<mat4x4<f32>>;\n\
-		}; \n\
-		[[set(0), binding(0)]] var<storage_buffer> worlds: [[access(read)]] PositionsBuffer;\n\
-		[[set(1), binding(0)]] var<uniform> view_proj: WorldProjection;\n\
-		\n\
-		fn rand(p0 : u32, p1 : u32) -> f32 {\n\
-			var p : vec2<f32> = vec2<f32>(f32(p0), f32(p1));\n\
-			var K1 : vec2<f32> = vec2<f32>(23.14069263277926, 2.665144142690225);\n\
-			return fract(cos(dot(p,K1)) * 12345.6789);\n\
-		}\n\
-		\n\
-		[[stage(vertex)]]\n\
-		fn main() -> void {\n\
-			var posIn : vec4<f32> = vec4<f32>(positionIn.x, positionIn.y, positionIn.z, 1.0);\n\
-			Position = posIn * worlds.world[InstanceIdx] * view_proj.value;\n\
-			v_color = vec3<f32>(rand(InstanceIdx, InstanceIdx + 3), rand(InstanceIdx, InstanceIdx + 2), rand(InstanceIdx, InstanceIdx + 1));\n\
-			return;\n\
-		}";
+		u8R"(
+		[[location(0)]] var<in> positionIn: vec3<f32>;
+		[[location(1)]] var<in> colorIn: vec3<f32>; 
+		[[builtin(instance_idx)]] var<in> InstanceIdx: u32;
+		
+		[[location(0)]] var<out> v_color: vec3<f32>; 
+		[[location(1)]] var<out> v_normal: vec3<f32>; 
+		[[location(2)]] var<out> v_position: vec3<f32>; 
+
+		[[builtin(position)]] var<out> Position: vec4<f32>;
+		
+		[[block]] struct WorldProjection 
+		{
+			[[offset(0)]] value: mat4x4<f32>;
+		};
+		[[block]] struct PositionsBuffer 
+		{
+			[[offset(0)]] world: [[stride(64)]] array<mat4x4<f32>>;
+		}; 
+		[[set(0), binding(0)]] var<storage_buffer> worlds: [[access(read)]] PositionsBuffer;
+		[[set(1), binding(0)]] var<uniform> view_proj: WorldProjection;
+		
+		fn rand(p0 : u32, p1 : u32) -> f32 {
+			var p : vec2<f32> = vec2<f32>(f32(p0), f32(p1));
+			var K1 : vec2<f32> = vec2<f32>(23.14069263277926, 2.665144142690225);
+			return fract(cos(dot(p,K1)) * 12345.6789);
+		}
+		
+		[[stage(vertex)]]
+		fn main() -> void {
+			var posIn : vec4<f32> = vec4<f32>(positionIn.x, positionIn.y, positionIn.z, 1.0);
+			var world : mat4x4<f32> = worlds.world[InstanceIdx];
+			var worldPos : vec4<f32> = posIn * world;
+			v_position = vec3<f32>(worldPos.x, worldPos.y, worldPos.z);
+			Position = worldPos * view_proj.value;
+			v_color = vec3<f32>(rand(InstanceIdx, InstanceIdx + 3), rand(InstanceIdx, InstanceIdx + 2), rand(InstanceIdx, InstanceIdx + 1));
+			const normal : vec3<f32> = vec3<f32>(0.0,1.0,0.0);
+			v_normal = normal * mat3x3<f32>(
+								vec3<f32>(world[0][0], world[0][1], world[0][2]), 
+								vec3<f32>(world[1][0], world[1][1], world[1][2]), 
+								vec3<f32>(world[2][0], world[2][1], world[2][2]));
+			return;
+		})";
 
 	const sakura::string pixel_shader_wgsl =
-		u8"\
-		[[location(0)]] var<in> v_color: vec3<f32>;\
-		[[location(0)]] var<out> outColor: vec4<f32>;\
-		\
-		[[stage(fragment)]]\
-		fn main() -> void {\
-			outColor = vec4<f32>(v_color.x, v_color.y, v_color.z, 1.0);\n\
-			return;\
-		}";
+		u8R"(
+		[[location(0)]] var<in> v_color: vec3<f32>;
+		[[location(1)]] var<in> v_normal: vec3<f32>;
+		[[location(2)]] var<in> v_position: vec3<f32>;
+		[[location(0)]] var<out> outColor: vec4<f32>;
+		[[builtin(front_facing)]] var<in> is_front : bool;
+		[[stage(fragment)]]
+		fn main() -> void {
+			const lightdir : vec3<f32> = vec3<f32>(0.0, -1.0, 0.0);
+			const lightcolor : vec3<f32> = vec3<f32>(0.5, 0.5, 0.5);
+			const eyepos : vec3<f32> = vec3<f32>(0.0, 0.0, 0.0);
+			const ambient : vec3<f32> = vec3<f32>(0.2, 0.2, 0.2);
+			var normal : vec3<f32> = v_normal;
+			if(!is_front) { normal = -normal; }
+			var V : vec3<f32> = normalize(v_position);
+			var H : vec3<f32> = normalize(lightdir+V);
+			var diffuse : vec3<f32> = max(dot(normal, lightdir), 0.0)*lightcolor*v_color;
+			var specular : vec3<f32> = pow(max(dot(H, normal), 0.0), 2.0)*lightcolor;
+			var finalColor : vec3<f32> = diffuse + specular + ambient*v_color;
+			outColor = vec4<f32>(finalColor.x, finalColor.y, finalColor.z, 1.0);
+			return;
+		})";
 
 	static sakura::Window main_window;
 	static RenderGraph render_graph;

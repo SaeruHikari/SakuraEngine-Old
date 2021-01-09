@@ -38,7 +38,7 @@ namespace core
 				points.resize(inPoints.size());
 				nodes.resize(points.size());
 				std::copy(inPoints.begin(), inPoints.end(), points.begin());
-				thread_local static std::vector<int> indices;
+				std::vector<int> indices;
 				indices.resize(inPoints.size());
 				std::iota(indices.begin(), indices.end(), 0);
 				build_resursive_multithread(indices, 0, 0);
