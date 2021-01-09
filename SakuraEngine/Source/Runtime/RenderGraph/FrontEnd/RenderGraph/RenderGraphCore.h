@@ -248,9 +248,9 @@ namespace sakura::graphics
 	};
 
 	// Shader Frequency
-	enum class EShaderFrequency : uint32
+	enum EShaderFrequency 
 	{
-		None = 0x00000000,
+		Invalid = 0x00000000,
 		// Default pipeline 3
 		VertexShader = 0x00000001,
 		PixelShader = 0x00000002,
@@ -268,6 +268,7 @@ namespace sakura::graphics
 		// 1 + 3 + 2 + 6
 		Count = 12
 	};
+	using EShaderFrequencys = uint32;
 
 	RenderGraphAPI bool isMeshPipelineStage(const EShaderFrequency freq);
 	RenderGraphAPI bool isRayTracingStage(const EShaderFrequency freq);
@@ -753,11 +754,11 @@ namespace sakura::graphics
 		};
 		struct RenderGraphAPI Slot
 		{
-			Slot(uint32 binding, EType binding_type, EShaderFrequency visibility, uint32 count = 1) noexcept;
+			Slot(uint32 binding, EType binding_type, EShaderFrequencys visibility, uint32 count = 1) noexcept;
 			Slot() = default;
 			uint32 binding = 0;
 			EType binding_type = EType::UniformBuffer;
-			EShaderFrequency visibility = EShaderFrequency::None;
+			EShaderFrequencys visibility = EShaderFrequency::Invalid;
 			uint32 count = 1;
 		};
 		struct RenderGraphAPI Set
@@ -877,9 +878,10 @@ namespace sakura::graphics
 		const EPresentMode present_mode = EPresentMode::Mailbox;
 		const Window window = sakura::Window();
 		const uint8 buffer_count = 2;
+		const uint8 sample_count = 4;
 
 		SwapChainDescriptor() = default;
-		SwapChainDescriptor(const EPresentMode presentMode, const Window window, const uint8 bufferCount) noexcept;
+		SwapChainDescriptor(const EPresentMode presentMode, const Window window, const uint8 bufferCount, const uint8 sample_count) noexcept;
 	};
 	
 	struct RenderPipeline
@@ -1076,7 +1078,7 @@ namespace sakura::graphics
 		{
 			sakura::string name = "";
 			sakura::string entry = "";
-			EShaderFrequency frequency = EShaderFrequency::None;
+			EShaderFrequency frequency = EShaderFrequency::Invalid;
 			EShaderLanguage shader_language = EShaderLanguage::SPIRV;
 
 			const sakura::span<const std::byte> code;

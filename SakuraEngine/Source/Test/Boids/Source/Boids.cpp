@@ -970,9 +970,12 @@ int main()
 			imgui::SliderFloat("X", &render_system::X, -400, 400);
 			imgui::SliderFloat("Y", &render_system::Y, -400, 400);
 			imgui::SliderFloat("Z", &render_system::Z, -400, 400);
+			imgui::SliderFloat4("light direction", render_system::passCB.lightdir, -1.f, 1.f);
+			imgui::ColorEdit4("light color", render_system::passCB.lightcolor, ImGuiColorEditFlags_Float);
+			imgui::ColorEdit4("ambient", render_system::passCB.ambient, ImGuiColorEditFlags_Float);
+			
 			if (bUseSnapshot)
 			{
-
 				if (imgui::SliderInt("Frame", &selected_frame, 0, snapshots.size() - 1))
 					rolling_back = true;
 				imgui::SameLine();

@@ -67,22 +67,26 @@ namespace render_system
 		[[location(1)]] var<in> colorIn: vec3<f32>; 
 		[[builtin(instance_idx)]] var<in> InstanceIdx: u32;
 		
-		[[location(0)]] var<out> v_color: vec3<f32>; 
-		[[location(1)]] var<out> v_normal: vec3<f32>; 
-		[[location(2)]] var<out> v_position: vec3<f32>; 
+		[[location(0)]] var<out> v_color: vec4<f32>; 
+		[[location(1)]] var<out> v_normal: vec4<f32>; 
+		[[location(2)]] var<out> v_position: vec4<f32>; 
 
 		[[builtin(position)]] var<out> Position: vec4<f32>;
 		
-		[[block]] struct WorldProjection 
+		[[block]] struct PassCB 
 		{
-			[[offset(0)]] value: mat4x4<f32>;
+			[[offset(0)]] view_proj: mat4x4<f32>;
+			[[offset(64)]] lightdir: vec4<f32>;
+			[[offset(80)]] lightcolor : vec4<f32>;
+			[[offset(96)]] eyepos : vec4<f32>;
+			[[offset(112)]] ambient : vec4<f32>;
 		};
 		[[block]] struct PositionsBuffer 
 		{
 			[[offset(0)]] world: [[stride(64)]] array<mat4x4<f32>>;
 		}; 
 		[[set(0), binding(0)]] var<storage_buffer> worlds: [[access(read)]] PositionsBuffer;
-		[[set(1), binding(0)]] var<uniform> view_proj: WorldProjection;
+		[[set(1), binding(0)]] var<uniform> passCB: PassCB;
 		
 		fn rand(p0 : u32, p1 : u32) -> f32 {
 			var p : vec2<f32> = vec2<f32>(f32(p0), f32(p1));
@@ -95,37 +99,41 @@ namespace render_system
 			var posIn : vec4<f32> = vec4<f32>(positionIn.x, positionIn.y, positionIn.z, 1.0);
 			var world : mat4x4<f32> = worlds.world[InstanceIdx];
 			var worldPos : vec4<f32> = posIn * world;
-			v_position = vec3<f32>(worldPos.x, worldPos.y, worldPos.z);
-			Position = worldPos * view_proj.value;
-			v_color = vec3<f32>(rand(InstanceIdx, InstanceIdx + 3), rand(InstanceIdx, InstanceIdx + 2), rand(InstanceIdx, InstanceIdx + 1));
-			const normal : vec3<f32> = vec3<f32>(0.0,1.0,0.0);
-			v_normal = normal * mat3x3<f32>(
-								vec3<f32>(world[0][0], world[0][1], world[0][2]), 
-								vec3<f32>(world[1][0], world[1][1], world[1][2]), 
-								vec3<f32>(world[2][0], world[2][1], world[2][2]));
+			v_position = vec4<f32>(worldPos.x, worldPos.y, worldPos.z, 1.0);
+			Position = worldPos * passCB.view_proj;
+			v_color = vec4<f32>(rand(InstanceIdx, InstanceIdx + 3), rand(InstanceIdx, InstanceIdx + 2), rand(InstanceIdx, InstanceIdx + 1), 1.0);
+			const normal : vec4<f32> = vec4<f32>(0.0,1.0,0.0,0.0);
+			v_normal = normal * world;
 			return;
 		})";
 
 	const sakura::string pixel_shader_wgsl =
 		u8R"(
-		[[location(0)]] var<in> v_color: vec3<f32>;
-		[[location(1)]] var<in> v_normal: vec3<f32>;
-		[[location(2)]] var<in> v_position: vec3<f32>;
+		[[location(0)]] var<in> v_color: vec4<f32>;
+		[[location(1)]] var<in> v_normal: vec4<f32>;
+		[[location(2)]] var<in> v_position: vec4<f32>;
 		[[location(0)]] var<out> outColor: vec4<f32>;
 		[[builtin(front_facing)]] var<in> is_front : bool;
+
+		[[block]] struct PassCB 
+		{
+			[[offset(0)]] view_proj: mat4x4<f32>;
+			[[offset(64)]] lightdir: vec4<f32>;
+			[[offset(80)]] lightcolor : vec4<f32>;
+			[[offset(96)]] eyepos : vec4<f32>;
+			[[offset(112)]] ambient : vec4<f32>;
+		};
+		[[set(1), binding(0)]] var<uniform> passCB: PassCB;
+
 		[[stage(fragment)]]
 		fn main() -> void {
-			const lightdir : vec3<f32> = vec3<f32>(0.0, -1.0, 0.0);
-			const lightcolor : vec3<f32> = vec3<f32>(0.5, 0.5, 0.5);
-			const eyepos : vec3<f32> = vec3<f32>(0.0, 0.0, 0.0);
-			const ambient : vec3<f32> = vec3<f32>(0.2, 0.2, 0.2);
-			var normal : vec3<f32> = v_normal;
+			var normal : vec4<f32> = v_normal;
 			if(!is_front) { normal = -normal; }
-			var V : vec3<f32> = normalize(v_position);
-			var H : vec3<f32> = normalize(lightdir+V);
-			var diffuse : vec3<f32> = max(dot(normal, lightdir), 0.0)*lightcolor*v_color;
-			var specular : vec3<f32> = pow(max(dot(H, normal), 0.0), 2.0)*lightcolor;
-			var finalColor : vec3<f32> = diffuse + specular + ambient*v_color;
+			var V : vec4<f32> = normalize(v_position);
+			var H : vec4<f32> = normalize(passCB.lightdir+V);
+			var diffuse : vec4<f32> = max(dot(normal, passCB.lightdir), 0.0)*passCB.lightcolor*v_color;
+			var specular : vec4<f32> = pow(max(dot(H, normal), 0.0), 2.0)*passCB.lightcolor;
+			var finalColor : vec4<f32> = diffuse + specular + passCB.ambient*v_color*passCB.ambient.w;
 			outColor = vec4<f32>(finalColor.x, finalColor.y, finalColor.z, 1.0);
 			return;
 		})";
@@ -150,7 +158,15 @@ namespace render_system
 
 	static GpuTextureHandle boids_depth_stencil = render_graph.GpuTexture("BoidsDepthStencil");
 
-	static sakura::float4x4 view_proj;
+	struct PassCB
+	{
+		sakura::float4x4 view_proj;
+		float lightdir[4];
+		float lightcolor[4] = { 80.f / 255.f, 88.f / 255.f, 115.f / 255.f, 255.f / 255.f };
+		float eyepos[4] = {0.f, 0.f, 0.f, 1.f};
+		float ambient[4] = { 211.f / 255.f, 199.f / 255.f, 255.f / 255.f, 150.f / 255.f };
+	};
+	static PassCB passCB = {};
 	static std::vector<sakura::float4x4> worlds(TARGET_NUM);
 	static std::vector<sakura::float4x4> target_worlds(10);
 
@@ -166,7 +182,7 @@ namespace render_system
 			command_buffer.enqueue<RenderCommandBeginRenderPass>(render_pipeline, attachment, ds);
 			{
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 0, uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 10, 0));
-				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(sakura::float4x4), 0));
+				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(PassCB), 0));
 				command_buffer.enqueue<RenderCommandSetVB>(0, rg.query<GpuBufferHandle>("VertexBufferSphere"));
 				command_buffer.enqueue<RenderCommandSetIB>(rg.query<GpuBufferHandle>("IndexBufferSphere"), EIndexFormat::UINT16);
 
@@ -178,7 +194,7 @@ namespace render_system
 			{
 				command_buffer.enqueue<RenderCommandUpdateBinding>(
 					Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * TARGET_NUM, 0));
-				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(sakura::float4x4), 0));
+				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(PassCB), 0));
 				command_buffer.enqueue<RenderCommandSetVB>(0, rg.query<GpuBufferHandle>("VertexBuffer"));
 				// Mention that you can also do like this.
 				// command_buffer.enqueue<RenderCommandSetVB>(1, rg.query<GpuBufferHandle>("VertexBuffer1"));
@@ -246,7 +262,7 @@ namespace render_system
 		}
 
 		// Create Swap Chains.
-		render_device->create_swap_chain(swap_chain, SwapChainDescriptor(EPresentMode::Mailbox, main_window, 3));
+		render_device->create_swap_chain(swap_chain, SwapChainDescriptor(EPresentMode::Mailbox, main_window, 3/*buffer_count*/, 1/*sample_count*/));
 		auto chain_ptr = render_device->get<ISwapChain>(swap_chain);
 		// Init RenderPipeline Desc
 		RenderPipelineDescriptor pipelineDesc = RenderPipelineDescriptor(
@@ -271,14 +287,14 @@ namespace render_system
 					}),
 					BindingLayout::Set(
 					{
-						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
+						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader | EShaderFrequency::PixelShader),
 					}),
 				}),
 			AttachmentLayout(
 				{ AttachmentLayout::Slot(render_device->get<ISwapChain>(swap_chain)->render_format(), ELoadOp::Clear, EStoreOp::Store) }
 			),
 			DepthStencilDescriptor(ETextureFormat::D32_FLOAT, true, ECompareFunction::Greater),
-			ECullMode::Back, EPrimitiveTopology::TriangleList, EPolygonMode::FILL, 1, 0xFFFFFFFF
+			ECullMode::None, EPrimitiveTopology::TriangleList, EPolygonMode::FILL, 1, 0xFFFFFFFF
 		);
 
 		// Create Render pipeline.
@@ -328,7 +344,7 @@ namespace render_system
 		render_device->create_texture(boids_depth_stencil, texDesc);
 		// Create Buffers.
 		render_device->create_buffer(uniform_buffer,
-			BufferDescriptor(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4), &view_proj));
+			BufferDescriptor(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(passCB), &passCB));
 		render_device->create_buffer(uniform_buffer_per_target,
 			BufferDescriptor(EBufferUsage::StorageBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * target_worlds.size(), target_worlds.data()));
 		render_device->create_buffer(uniform_buffer_per_object,
@@ -435,7 +451,6 @@ namespace render_system
 	float X = 0.f;
 	float Y = 0.f;
 	float Z = 0.f;
-
 	void Render(const RenderCommandBuffer& buffer)
 	{
 		{
@@ -444,10 +459,11 @@ namespace render_system
 			sakura::float4x4 proj = sakura::math::perspective_fov(0.25f * 3.1415926f * 2, 1080.f / 1920.f, 1.0f, 1000.0f);
 			proj.M[2][3] *= -1;
 
+			auto& view_proj = passCB.view_proj;
 			view_proj = sakura::math::multiply(view, proj);
 			view_proj = sakura::math::transpose(view_proj);
 
-			render_device->update_buffer(uniform_buffer, 0, &view_proj, sizeof(view_proj));
+			render_device->update_buffer(uniform_buffer, 0, &passCB, sizeof(passCB));
 			render_device->update_buffer(
 				uniform_buffer_per_object, 0, worlds.data(), sizeof(float4x4) * worlds.size());
 			render_device->update_buffer(uniform_buffer_per_target,

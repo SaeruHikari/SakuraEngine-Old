@@ -1,17 +1,14 @@
-FORCEINLINE WGPUShaderStage sakura::graphics::webgpu::translate(const EShaderFrequency frequency)
+FORCEINLINE WGPUShaderStageFlags sakura::graphics::webgpu::translate_freqs(const EShaderFrequencys frequency)
 {
-	switch (frequency)
-	{
-	case EShaderFrequency::VertexShader:
-		return WGPUShaderStage::WGPUShaderStage_Vertex;
-	case EShaderFrequency::PixelShader:
-		return WGPUShaderStage_Fragment;
-	case EShaderFrequency::ComputeShader:
-		return WGPUShaderStage_Compute;
-	default:
-		sakura::warn("Shader Frequency {} Not Supported By WebGPU!", frequency);
-		return WGPUShaderStage::WGPUShaderStage_None;
-	}
+	WGPUShaderStageFlags res = 0;
+	if (frequency & EShaderFrequency::VertexShader)
+		res |= WGPUShaderStage_Vertex;
+	if (frequency & EShaderFrequency::PixelShader)
+		res |= WGPUShaderStage_Fragment;
+	if (frequency & EShaderFrequency::ComputeShader)
+		res |= WGPUShaderStage_Compute;
+
+	return res;
 }
 
 FORCEINLINE WGPUBindingType sakura::graphics::webgpu::translate(const BindingLayout::EType type)

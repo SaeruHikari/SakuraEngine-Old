@@ -13,7 +13,7 @@
 
 namespace sakura::graphics::webgpu
 {
-	WGPUShaderStage translate(const EShaderFrequency frequency);
+	WGPUShaderStageFlags translate_freqs(const EShaderFrequencys frequency);
 
 	WGPUBindingType translate(const BindingLayout::EType type);
 

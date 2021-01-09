@@ -57,6 +57,7 @@ void RenderDevice::processCommandBeginRenderPass(PassCacheFrame& cacheFrame, con
             {
                 texView = wgpuSwapChainGetCurrentTextureView(wgpuChain->swapchain);
                 colorDesc.attachment = texView;
+                //colorDesc.resolveTarget = texView;
             }
             else
             {
