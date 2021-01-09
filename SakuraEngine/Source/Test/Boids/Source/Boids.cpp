@@ -687,8 +687,9 @@ void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 			std::uniform_real_distribution<float> uniform_dist(-1, 1);
 			auto& el = get_random_engine();
 			sakura::Vector3f vector{ uniform_dist(el), uniform_dist(el), uniform_dist(el) };
-			hds[i] = math::normalize(vector);
-			trs[i] = sakura::Vector3f(0, 0, 500.f);
+			vector = math::normalize(vector);
+			hds[i] = -vector;
+			trs[i] = sakura::Vector3f(0, 0, 500.f)+ vector*2000;
 			//trs[i] = s.random_point(el);
 		}
 	}
@@ -826,7 +827,7 @@ int main()
 	declare_components<Rotation, Translation, RotationEuler, Scale, LocalToWorld, LocalToParent,
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading>();
 	SpawnBoidSetting();
-	SpawnBoidTargets(10);
+	SpawnBoidTargets(3);
 	
 	task_system::ecs::pipeline ppl(std::move(ctx));
 	if (!bUseImGui)
@@ -964,7 +965,13 @@ int main()
 					BoidCount = CountBoids(ppl);
 				}
 			}
-			imgui::Checkbox("Snapshot Every Frame", &bUseSnapshot);
+			if (imgui::Checkbox("Snapshot Every Frame", &bUseSnapshot) && !bUseSnapshot)
+			{
+				rolling_back = false;
+				memory_used = 0;
+				snapshots.clear();
+			};
+
 			imgui::Checkbox("Close Fibers Dispatch", &bNoFibers);
 			imgui::Checkbox("Close Group Parallel", &bNoGroupParallel);
 			imgui::InputFloat("TestInput", &render_system::X);
@@ -975,6 +982,7 @@ int main()
 			imgui::ColorEdit4("light color", render_system::passCB.lightcolor, ImGuiColorEditFlags_Float);
 			imgui::ColorEdit4("ambient", render_system::passCB.ambient, ImGuiColorEditFlags_Float);
 			
+
 			if (bUseSnapshot)
 			{
 				if (imgui::SliderInt("Frame", &selected_frame, 0, snapshots.size() - 1))
@@ -995,8 +1003,6 @@ int main()
 				imgui::SameLine();
 				imgui::ProgressBar((float)memory_used / ((double)memory_size_limit * 1024 * 1024));
 			}
-			else
-				rolling_back = false;
 			imgui::Checkbox("Enable Boids", &bEnableBoids);
 			imgui::Checkbox("Enable Boids Move", &bEnableBoidsMove);
 			imgui::Checkbox("Enable L2W", &bEnableL2W);
