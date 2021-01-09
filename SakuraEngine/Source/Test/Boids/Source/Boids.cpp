@@ -812,7 +812,7 @@ int main()
 	size_t cycle = 0;
 	task_system::Scheduler scheduler(task_system::Scheduler::Config::allCores());
 	scheduler.bind();
-	defer(scheduler.unbind());  // Automatically unbind before returning.
+	task_defer(scheduler.unbind());  // Automatically unbind before returning.
 	sakura::graphics::RenderCommandBuffer buffer = sakura::graphics::RenderCommandBuffer("", 4096 * 8 * 16 * 32);
 	
 	

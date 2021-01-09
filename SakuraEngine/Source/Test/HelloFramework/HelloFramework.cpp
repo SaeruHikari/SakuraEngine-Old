@@ -11,10 +11,16 @@ int main()
 	windDesc.name = "Sakura Engine";
 	auto main_window = sakura::Window::create(windDesc);
     
+	auto rx_os = sakura::Core::find_messenger(main_window.handle());
+	rx_os->messages<OSMessage>().subscribe([](auto m)
+		{
+
+		});
+
 	// Game & Rendering Logic
 	while (sakura::Core::yield())
 	{
-
+		
 	}
 
     return 0;
