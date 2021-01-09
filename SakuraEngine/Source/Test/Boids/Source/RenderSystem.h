@@ -8,6 +8,8 @@
 #include "Boids.h"
 
 #define TARGET_NUM 120000
+int BoidCount = 0;
+int LeaderCount = 0;
 
 namespace render_system
 {
@@ -145,7 +147,7 @@ namespace render_system
 				command_buffer.enqueue<RenderCommandSetIB>(rg.query<GpuBufferHandle>("IndexBufferSphere"), EIndexFormat::UINT16);
 
 				{
-					command_buffer.enqueue<RenderCommandDraw>(60, target_worlds.size());
+					command_buffer.enqueue<RenderCommandDraw>(60, LeaderCount);
 				}
 			}
 			
@@ -161,7 +163,7 @@ namespace render_system
 				{
 					ZoneScopedN("RenderPassExecute");
 					{
-						command_buffer.enqueue<RenderCommandDraw>(3, worlds.size());
+						command_buffer.enqueue<RenderCommandDraw>(3, BoidCount);
 					}
 				}
 			}

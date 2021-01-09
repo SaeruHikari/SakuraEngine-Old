@@ -2,7 +2,7 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-//#define TRACY_ENABLE
+#define TRACY_ENABLE
 #include "tracy/Tracy.hpp"
 
 #include "RuntimeCore/RuntimeCore.h"
@@ -603,8 +603,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	}
 }
 
-int BoidCount = 0;
-int LeaderCount = 0;
+
 float Radius = 1000.f;
 float TimeScale = 1.f;
 sakura::ecs::entity BoidSettingEntity;
@@ -844,7 +843,6 @@ int main()
 		imgui::initialize_gfx(render_graph, *render_device);
 		imgui_pass = render_graph.create_render_pass<imgui::RenderPassImGui>(swap_chain, render_graph);
 	}
-	render_system::PrepareCommandBuffer(buffer);
 
 
 	bool rolling_back = false;
@@ -867,6 +865,7 @@ int main()
 
 		// 结束 GamePlay Cycle 并开始收集渲染信息. 此举动必须在下一帧开始渲染之前完成。
 		render_system::CollectAndUpload(ppl, deltaTime);
+		render_system::PrepareCommandBuffer(buffer);
 
 		if (!bUseSnapshot)
 		{
