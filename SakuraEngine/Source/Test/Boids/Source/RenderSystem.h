@@ -7,7 +7,9 @@
 #include "ECS/ECS.h"
 #include "Boids.h"
 
-#define TARGET_NUM 10000
+#define TARGET_NUM 120000
+int BoidCount = 0;
+int LeaderCount = 0;
 
 namespace render_system
 {
@@ -17,86 +19,124 @@ namespace render_system
 	inline sakura::vector<std::byte> vertex_shader_spirv;
 	inline sakura::vector<std::byte> pixel_shader_spirv;
 	const sakura::string vertex_shader_hlsl = 
-		u8"struct VertexIn\
-		{\
-			float3 aPos : SV_Position;\
-			float3 aCol : COLOR;\
-		};\
-		struct VertexOut\
-		{\
-			float4 position : SV_Position;\
-			float3 vCol : COLOR;\
-		};\
-		[[vk::binding(0, 1)]] cbuffer ub\
-		{\
-			float4x4 view_proj;\
-		};\
-		struct Wrds\
-		{\
-			float4x4 world;\
-			float4x4 world1;\
-			float4x4 world2;\
-			float4x4 world3;\
-		};\
-		[[vk::binding(0, 0)]] ConstantBuffer<Wrds> worlds[];\
-		VertexOut main(VertexIn vin, uint iID : SV_InstanceID)\
-		{\
-			VertexOut vout;\
-			float4 posW = mul(float4(vin.aPos, 1.0f), worlds[0].world);\
-			vout.position = mul(posW, view_proj);\
-			vout.vCol = vin.aCol;\
-			return vout;\
-		}";
+		u8R"(struct VertexIn
+		{
+			float3 aPos : SV_Position;
+			float3 aCol : COLOR;
+		};
+		struct VertexOut
+		{
+			float4 position : SV_Position;
+			float3 vCol : COLOR;
+		};
+		[[vk::binding(0, 1)]] cbuffer ub
+		{
+			float4x4 view_proj;
+		};
+		struct Wrds
+		{
+			float4x4 world;
+			float4x4 world1;
+			float4x4 world2;
+			float4x4 world3;
+		};
+		[[vk::binding(0, 0)]] ConstantBuffer<Wrds> worlds[];
+		VertexOut main(VertexIn vin, uint iID : SV_InstanceID)
+		{
+			VertexOut vout;
+			float4 posW = mul(float4(vin.aPos, 1.0f), worlds[0].world);
+			vout.position = mul(posW, view_proj);
+			vout.vCol = vin.aCol;
+			return vout;
+		})";
 	const sakura::string pixel_shader_hlsl =
-		u8"struct VertexOut\
-		{\
-			float4 position : SV_Position;\
-			float3 vCol : COLOR;\
-		};\
-		float4 main(VertexOut pin) : SV_TARGET\
-		{\
-			return float4(pin.vCol.xyz, 1.f);\
-		}";
+		u8R"(struct VertexOut
+		{
+			float4 position : SV_Position;
+			float3 vCol : COLOR;
+		};
+		float4 main(VertexOut pin) : SV_TARGET
+		{
+			return float4(pin.vCol.xyz, 1.f);
+		})";
 
 
 	const sakura::string vertex_shader_wgsl =
-		u8"\
-		[[location(0)]] var<in> positionIn: vec3<f32>;\n\
-		[[location(1)]] var<in> colorIn: vec3<f32>; \n\
-		[[builtin(instance_idx)]] var<in> InstanceIdx: u32;\n\
-		\n\
-		[[location(0)]] var<out> v_color: vec3<f32>; \n\
-		[[builtin(position)]] var<out> Position: vec4<f32>;\n\
-		\n\
-		[[block]] struct WorldProjection \n\
-		{\n\
-			[[offset(0)]] value: mat4x4<f32>;\n\
-		};\n\
-		[[block]] struct PositionsBuffer \n\
-		{\n\
-			[[offset(0)]] world: [[stride(64)]] array<mat4x4<f32>>;\n\
-		}; \n\
-		[[set(0), binding(0)]] var<storage_buffer> worlds: [[access(read)]] PositionsBuffer;\n\
-		[[set(1), binding(0)]] var<uniform> view_proj: WorldProjection;\n\
-		\n\
-		[[stage(vertex)]]\n\
-		fn main() -> void {\n\
-			var posIn : vec4<f32> = vec4<f32>(positionIn.x, positionIn.y, positionIn.z, 1.0);\n\
-			Position = posIn * worlds.world[InstanceIdx] * view_proj.value;\n\
-			v_color = colorIn;\n\
-			return;\n\
-		}";
+		u8R"(
+		[[location(0)]] var<in> positionIn: vec3<f32>;
+		[[location(1)]] var<in> colorIn: vec3<f32>; 
+		[[builtin(instance_idx)]] var<in> InstanceIdx: u32;
+		
+		[[location(0)]] var<out> v_color: vec4<f32>; 
+		[[location(1)]] var<out> v_normal: vec4<f32>; 
+		[[location(2)]] var<out> v_position: vec4<f32>; 
+
+		[[builtin(position)]] var<out> Position: vec4<f32>;
+		
+		[[block]] struct PassCB 
+		{
+			[[offset(0)]] view_proj: mat4x4<f32>;
+			[[offset(64)]] lightdir: vec4<f32>;
+			[[offset(80)]] lightcolor : vec4<f32>;
+			[[offset(96)]] eyepos : vec4<f32>;
+			[[offset(112)]] ambient : vec4<f32>;
+		};
+		[[block]] struct PositionsBuffer 
+		{
+			[[offset(0)]] world: [[stride(64)]] array<mat4x4<f32>>;
+		}; 
+		[[set(0), binding(0)]] var<storage_buffer> worlds: [[access(read)]] PositionsBuffer;
+		[[set(1), binding(0)]] var<uniform> passCB: PassCB;
+		
+		fn rand(p0 : u32, p1 : u32) -> f32 {
+			var p : vec2<f32> = vec2<f32>(f32(p0), f32(p1));
+			var K1 : vec2<f32> = vec2<f32>(23.14069263277926, 2.665144142690225);
+			return fract(cos(dot(p,K1)) * 12345.6789);
+		}
+		
+		[[stage(vertex)]]
+		fn main() -> void {
+			var posIn : vec4<f32> = vec4<f32>(positionIn.x, positionIn.y, positionIn.z, 1.0);
+			var world : mat4x4<f32> = worlds.world[InstanceIdx];
+			var worldPos : vec4<f32> = posIn * world;
+			v_position = vec4<f32>(worldPos.x, worldPos.y, worldPos.z, 1.0);
+			Position = worldPos * passCB.view_proj;
+			v_color = vec4<f32>(rand(InstanceIdx, InstanceIdx + 3), rand(InstanceIdx, InstanceIdx + 2), rand(InstanceIdx, InstanceIdx + 1), 1.0);
+			const normal : vec4<f32> = vec4<f32>(0.0,1.0,0.0,0.0);
+			v_normal = normal * world;
+			return;
+		})";
 
 	const sakura::string pixel_shader_wgsl =
-		u8"\
-		[[location(0)]] var<in> v_color: vec3<f32>;\
-		[[location(0)]] var<out> outColor: vec4<f32>;\
-		\
-		[[stage(fragment)]]\
-		fn main() -> void {\
-			outColor = vec4<f32>(v_color.x, v_color.y, v_color.z, 1.0);\n\
-			return;\
-		}";
+		u8R"(
+		[[location(0)]] var<in> v_color: vec4<f32>;
+		[[location(1)]] var<in> v_normal: vec4<f32>;
+		[[location(2)]] var<in> v_position: vec4<f32>;
+		[[location(0)]] var<out> outColor: vec4<f32>;
+		[[builtin(front_facing)]] var<in> is_front : bool;
+
+		[[block]] struct PassCB 
+		{
+			[[offset(0)]] view_proj: mat4x4<f32>;
+			[[offset(64)]] lightdir: vec4<f32>;
+			[[offset(80)]] lightcolor : vec4<f32>;
+			[[offset(96)]] eyepos : vec4<f32>;
+			[[offset(112)]] ambient : vec4<f32>;
+		};
+		[[set(1), binding(0)]] var<uniform> passCB: PassCB;
+
+		[[stage(fragment)]]
+		fn main() -> void {
+			var normal : vec4<f32> = v_normal;
+			if(!is_front) { normal = -normal; }
+			var V : vec4<f32> = normalize(v_position);
+			var H : vec4<f32> = normalize(passCB.lightdir+V);
+			var diffuse : vec4<f32> = max(dot(normal, passCB.lightdir), 0.0)*passCB.lightcolor*v_color;
+			var specular : vec4<f32> = pow(max(dot(H, normal), 0.0), 2.0)*passCB.lightcolor;
+			var finalColor : vec4<f32> = diffuse + specular + passCB.ambient*v_color*passCB.ambient.w;
+			outColor = vec4<f32>(finalColor.x, finalColor.y, finalColor.z, 1.0);
+			return;
+		})";
 
 	static sakura::Window main_window;
 	static RenderGraph render_graph;
@@ -116,7 +156,17 @@ namespace render_system
 	static GpuBufferHandle vertex_buffer_sphere = render_graph.GpuBuffer("VertexBufferSphere");
 	static GpuBufferHandle index_buffer_sphere = render_graph.GpuBuffer("IndexBufferSphere");
 
-	static sakura::float4x4 view_proj;
+	static GpuTextureHandle boids_depth_stencil = render_graph.GpuTexture("BoidsDepthStencil");
+
+	struct PassCB
+	{
+		sakura::float4x4 view_proj;
+		float lightdir[4] = {-1.f, -1.f, 0.f, 0.f};
+		float lightcolor[4] = { 80.f / 255.f, 88.f / 255.f, 115.f / 255.f, 255.f / 255.f };
+		float eyepos[4] = {0.f, 0.f, 0.f, 1.f};
+		float ambient[4] = { 211.f / 255.f, 199.f / 255.f, 255.f / 255.f, 150.f / 255.f };
+	};
+	static PassCB passCB = {};
 	static std::vector<sakura::float4x4> worlds(TARGET_NUM);
 	static std::vector<sakura::float4x4> target_worlds(10);
 
@@ -129,22 +179,22 @@ namespace render_system
 			RenderCommandBuffer& command_buffer,
 			const RenderGraph& rg, IRenderDevice& device) noexcept override
 		{
-			command_buffer.enqueue<RenderCommandBeginRenderPass>(render_pipeline, attachment);
+			command_buffer.enqueue<RenderCommandBeginRenderPass>(render_pipeline, attachment, ds);
 			{
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 0, uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 10, 0));
-				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(sakura::float4x4), 0));
+				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(PassCB), 0));
 				command_buffer.enqueue<RenderCommandSetVB>(0, rg.query<GpuBufferHandle>("VertexBufferSphere"));
 				command_buffer.enqueue<RenderCommandSetIB>(rg.query<GpuBufferHandle>("IndexBufferSphere"), EIndexFormat::UINT16);
 
 				{
-					command_buffer.enqueue<RenderCommandDraw>(60, target_worlds.size());
+					command_buffer.enqueue<RenderCommandDraw>(60, LeaderCount);
 				}
 			}
 			
 			{
 				command_buffer.enqueue<RenderCommandUpdateBinding>(
 					Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * TARGET_NUM, 0));
-				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(sakura::float4x4), 0));
+				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(PassCB), 0));
 				command_buffer.enqueue<RenderCommandSetVB>(0, rg.query<GpuBufferHandle>("VertexBuffer"));
 				// Mention that you can also do like this.
 				// command_buffer.enqueue<RenderCommandSetVB>(1, rg.query<GpuBufferHandle>("VertexBuffer1"));
@@ -153,7 +203,7 @@ namespace render_system
 				{
 					ZoneScopedN("RenderPassExecute");
 					{
-						command_buffer.enqueue<RenderCommandDraw>(3, worlds.size());
+						command_buffer.enqueue<RenderCommandDraw>(3, BoidCount);
 					}
 				}
 			}
@@ -167,9 +217,13 @@ namespace render_system
 				Attachment::Slot(swap_chain, sakura::double4(), ELoadOp::Clear, EStoreOp::Store)
 			});
 			builder.write(attachment);
+			ds.clear_depth = 0.f;
+			ds.ds_attachment = boids_depth_stencil;
+			//builder.write(ds);
 			return builder.apply();
 		}
 		Attachment attachment;
+		DepthStencil ds;
 	};
 	RenderPassHandle pass = render_graph.create_render_pass<RenderPassSimple>();
 
@@ -208,7 +262,8 @@ namespace render_system
 		}
 
 		// Create Swap Chains.
-		render_device->create_swap_chain(swap_chain, SwapChainDescriptor(EPresentMode::Mailbox, main_window, 3));
+		render_device->create_swap_chain(swap_chain, SwapChainDescriptor(EPresentMode::Mailbox, main_window, 3/*buffer_count*/, 1/*sample_count*/));
+		auto chain_ptr = render_device->get<ISwapChain>(swap_chain);
 		// Init RenderPipeline Desc
 		RenderPipelineDescriptor pipelineDesc = RenderPipelineDescriptor(
 			ShaderLayout({
@@ -232,13 +287,14 @@ namespace render_system
 					}),
 					BindingLayout::Set(
 					{
-						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader),
+						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader | EShaderFrequency::PixelShader),
 					}),
 				}),
 			AttachmentLayout(
 				{ AttachmentLayout::Slot(render_device->get<ISwapChain>(swap_chain)->render_format(), ELoadOp::Clear, EStoreOp::Store) }
 			),
-			ECullMode::Back, EPrimitiveTopology::TriangleList, EPolygonMode::FILL, 1, 0xFFFFFFFF
+			DepthStencilDescriptor(ETextureFormat::D32_FLOAT, true, ECompareFunction::Greater),
+			ECullMode::None, EPrimitiveTopology::TriangleList, EPolygonMode::FILL, 1, 0xFFFFFFFF
 		);
 
 		// Create Render pipeline.
@@ -275,9 +331,20 @@ namespace render_system
 			3,10,7, 10,6,7, 6,11,7, 6,0,11, 6,1,0,
 			10,1,6, 11,0,9, 2,11,9, 5,2,9,  11,2,7
 		};
+		// Create Depth-Stencil
+		TextureDescriptor texDesc = {};
+		texDesc.size = { chain_ptr->extent().width, chain_ptr->extent().height, 1 };
+		texDesc.dimension = ETextureDimension::Texture2D;
+		texDesc.format = ETextureFormat::D32_FLOAT;
+		texDesc.mip_levels = 1;
+		texDesc.sharing_mode = ESharingMode::Exclusive;
+		texDesc.sample_count = 1;
+		texDesc.array_layers = 1;
+		texDesc.usages = ETextureUsage::Attachment;
+		render_device->create_texture(boids_depth_stencil, texDesc);
 		// Create Buffers.
 		render_device->create_buffer(uniform_buffer,
-			BufferDescriptor(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4), &view_proj));
+			BufferDescriptor(EBufferUsage::UniformBuffer | EBufferUsage::CopyDst, sizeof(passCB), &passCB));
 		render_device->create_buffer(uniform_buffer_per_target,
 			BufferDescriptor(EBufferUsage::StorageBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * target_worlds.size(), target_worlds.data()));
 		render_device->create_buffer(uniform_buffer_per_object,
@@ -312,7 +379,6 @@ namespace render_system
 		ZoneScopedN("CollectAndUpload");
 		auto Collect = [&ppl](filters& filter, std::vector<sakura::float4x4>& world, int maxSlice = 500)
 		{
-
 			static constexpr auto paramList = boost::hana::make_tuple(
 				// read.
 				param<const LocalToWorld>
@@ -385,7 +451,6 @@ namespace render_system
 	float X = 0.f;
 	float Y = 0.f;
 	float Z = 0.f;
-
 	void Render(const RenderCommandBuffer& buffer)
 	{
 		{
@@ -394,10 +459,11 @@ namespace render_system
 			sakura::float4x4 proj = sakura::math::perspective_fov(0.25f * 3.1415926f * 2, 1080.f / 1920.f, 1.0f, 1000.0f);
 			proj.M[2][3] *= -1;
 
+			auto& view_proj = passCB.view_proj;
 			view_proj = sakura::math::multiply(view, proj);
 			view_proj = sakura::math::transpose(view_proj);
 
-			render_device->update_buffer(uniform_buffer, 0, &view_proj, sizeof(view_proj));
+			render_device->update_buffer(uniform_buffer, 0, &passCB, sizeof(passCB));
 			render_device->update_buffer(
 				uniform_buffer_per_object, 0, worlds.data(), sizeof(float4x4) * worlds.size());
 			render_device->update_buffer(uniform_buffer_per_target,

@@ -15,8 +15,30 @@
 #include "Module.h"
 #include "RuntimeCore/Resource.h"
 #include "Base/GenerationalId.h"
+#include "System/Window.h"
 #include "Module.h"
 #include "Math/Math.hpp"
+#ifdef SAKURA_TARGET_PLATFORM_WIN
+#include "Platform/Windows/Messages.hpp"
+namespace sakura
+{
+	using ActualOSMessages = sakura::windows::WinMessages;
+}
+#elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
+#include "Platform/PlayStation/Messages.hpp"
+namespace sakura
+{
+	using ActualOSMessages = sakura::playstation::PSMessages;
+}
+#elif defined(SAKURA_TARGET_PLATFORM_EMSCRIPTEN)
+#include "Platform/Web/Messages.hpp"
+namespace sakura
+{
+	using ActualOSMessages = sakura::emscripten::WebMessages;
+}
+#elif defined(SAKURA_TARGET_PLATFORM_MACOS)
+static_assert(0, "Implement This!");
+#endif
 
 namespace sakura
 {
@@ -49,8 +71,14 @@ namespace sakura
 		static void finalize() noexcept;
 		static handle current_app_handle() noexcept;
 		[[nodiscard]] static std::thread::id get_main_thread_id() noexcept;
+
+		// en: called by default.
+		static OSMessages* bind(Window window) noexcept;
+		static void unbind(const void* window) noexcept;
+		static OSMessages* find_messenger(const void* window) noexcept;
 	private:
 		static std::thread::id main_thread_id_;
+		static std::unordered_map<const void*, std::unique_ptr<ActualOSMessages>> msg_buses_;
 	};
 	typedef Core CoreContext;
 

@@ -20,7 +20,29 @@ void RenderDevice::processCommandBeginRenderPass(PassCacheFrame& cacheFrame, con
 {
     auto& pass = cacheFrame.pass_encoder;
     auto& encoder = cacheFrame.encoder;
+    WGPURenderPassDescriptor renderPass = {};
+
     sakura::vector<WGPURenderPassColorAttachmentDescriptor> colorDescs(cmd.attachments.slots.size());
+    WGPURenderPassDepthStencilAttachmentDescriptor dsDesc = {};
+    // DS Attachment.
+    if (auto ds = optional<webgpu::GpuTexture>(cmd.depth_stencil.ds_attachment); ds)
+    {
+        dsDesc.attachment = ds->default_view;
+        if (cmd.depth_stencil.clear_depth >= 0.f)
+            dsDesc.clearDepth = cmd.depth_stencil.clear_depth;
+        dsDesc.depthLoadOp = translate(cmd.depth_stencil.depth_load_op);
+        dsDesc.depthStoreOp = translate(cmd.depth_stencil.depth_store_op);
+        dsDesc.depthReadOnly = cmd.depth_stencil.clear_depth < 0.f;
+       
+        if(cmd.depth_stencil.clear_stencil >= 0.f)
+            dsDesc.clearStencil = cmd.depth_stencil.clear_stencil;
+        dsDesc.stencilLoadOp = translate(cmd.depth_stencil.stencil_load_op);
+        dsDesc.stencilStoreOp = translate(cmd.depth_stencil.stencil_store_op);
+        dsDesc.stencilReadOnly = cmd.depth_stencil.clear_stencil < 0.f;
+
+        renderPass.depthStencilAttachment = &dsDesc;
+    }
+    // Color Attachments.
     cacheFrame.texture_views.resize(cmd.attachments.slots.size());
     for (size_t i = 0u; i < cmd.attachments.slots.size(); i++)
     {
@@ -35,6 +57,7 @@ void RenderDevice::processCommandBeginRenderPass(PassCacheFrame& cacheFrame, con
             {
                 texView = wgpuSwapChainGetCurrentTextureView(wgpuChain->swapchain);
                 colorDesc.attachment = texView;
+                //colorDesc.resolveTarget = texView;
             }
             else
             {
@@ -60,9 +83,9 @@ void RenderDevice::processCommandBeginRenderPass(PassCacheFrame& cacheFrame, con
         colorDesc.clearColor.b = attachment_slot.clear_color.b;
         colorDesc.clearColor.a = attachment_slot.clear_color.a;
     }
-    WGPURenderPassDescriptor renderPass = {};
     renderPass.colorAttachmentCount = static_cast<uint32>(cmd.attachments.slots.size());
     renderPass.colorAttachments = colorDescs.data();
+
     pass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPass);
 
 	if(auto ppl = get<RenderPipeline>(cmd.pipeline);ppl)
@@ -627,7 +650,7 @@ sakura::graphics::IGpuMemoryResource* RenderDevice::get_unsafe(const RenderResou
 {
     if (handle == GenerationalId::UNINITIALIZED)
     {
-        assert(0 && "Create on an invalide handle!");
+        assert(0 && "Get on an invalide handle!");
         return nullptr;
     }
     else if (created_resources.size() < handle.id().index() + 1)
@@ -668,7 +691,7 @@ sakura::graphics::IGpuObject* RenderDevice::get_unsafe(const RenderObjectHandle 
 {
     if (handle == GenerationalId::UNINITIALIZED)
     {
-        assert(0 && "Create on an invalide handle!");
+        assert(0 && "Get on an invalide handle!");
         return nullptr;
     }
     else if (created_objects.size() < handle.id().index() + 1)

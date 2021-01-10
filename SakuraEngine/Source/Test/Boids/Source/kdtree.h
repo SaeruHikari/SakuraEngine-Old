@@ -38,7 +38,7 @@ namespace core
 				points.resize(inPoints.size());
 				nodes.resize(points.size());
 				std::copy(inPoints.begin(), inPoints.end(), points.begin());
-				thread_local static std::vector<int> indices;
+				std::vector<int> indices;
 				indices.resize(inPoints.size());
 				std::iota(indices.begin(), indices.end(), 0);
 				build_resursive_multithread(indices, 0, 0);
@@ -99,17 +99,17 @@ namespace core
 				sakura::task_system::Event taskb{ sakura::task_system::Event::Mode::Manual };
 				sakura::task_system::schedule(
 					[=, &n] {
-						defer(taska.signal());
+						task_defer(taska.signal());
 						n.children[0] = build_resursive_multithread({ indices.data(), mid }, depth + 1, id + 1);
 					}
 				);
 				sakura::task_system::schedule(
 					[=, &n] {
-						defer(taskb.signal());
+						task_defer(taskb.signal());
 						n.children[1] = build_resursive_multithread({ indices.data() + mid + 1, indices.size() - mid - 1 }, depth + 1, id + 1 + mid);
 					}
 				);
-				defer(taska.wait(); taskb.wait(););
+				task_defer(taska.wait(); taskb.wait(););
 				return &n;
 			}
 

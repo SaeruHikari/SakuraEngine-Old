@@ -107,6 +107,8 @@ sakura::string sakura::date_time_string(const sakura::DateTime& dt) noexcept
 
 
 std::thread::id sakura::Core::main_thread_id_;
+std::unordered_map<const void*, std::unique_ptr<ActualOSMessages>> sakura::Core::msg_buses_ 
+	= std::unordered_map<const void*, std::unique_ptr<ActualOSMessages>>();
 void sakura::Core::initialize(const Parameters& params) noexcept
 {
 	main_thread_id_ = std::this_thread::get_id();
@@ -124,11 +126,35 @@ void sakura::Core::initialize(const Parameters& params) noexcept
 	sakura::vfs::adapter::mounted_adapters.insert_or_assign(sym, adp);
 }
 
+OSMessages* sakura::Core::find_messenger(const void* window) noexcept
+{
+	if (msg_buses_.find(window) == msg_buses_.end())
+	{
+		return nullptr;
+	}
+	return msg_buses_[window].get();
+}
+
+OSMessages* sakura::Core::bind(Window window) noexcept
+{
+	if (msg_buses_.find(window.handle()) != msg_buses_.end())
+	{
+		sakura::error("Rep Bind of window!");
+		return nullptr;
+	}
+	msg_buses_.insert(std::make_pair(window.handle(), std::move(std::make_unique<ActualOSMessages>(window))));
+	return msg_buses_[window.handle()].get();
+}
+
+void sakura::Core::unbind(const void* window) noexcept
+{
+	msg_buses_.erase(window);
+}
+
 std::thread::id sakura::Core::get_main_thread_id() noexcept
 {
 	return main_thread_id_;
 }
-
 
 void RuntimeCoreModule::StartUp()
 {

@@ -165,7 +165,7 @@ namespace sakura::imgui
                     AttachmentLayout(
                         { AttachmentLayout::Slot(device.get<ISwapChain>(swap_chain)->render_format(), ELoadOp::Clear, EStoreOp::Store) }
                     ),
-                ECullMode::Back, EPrimitiveTopology::TriangleList, EPolygonMode::FILL, 1, 0xFFFFFFFF
+                DepthStencilDescriptor(), ECullMode::Back, EPrimitiveTopology::TriangleList, EPolygonMode::FILL, 1, 0xFFFFFFFF
             );
             // Create Render pipeline.
             device.create_render_pipeline(imgui_render_pipeline, pipelineDesc);

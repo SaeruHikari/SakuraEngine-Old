@@ -84,7 +84,7 @@ namespace sakura::task_system::ecs
 	{
 		task_system::schedule([&, p, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
-			defer(p->event.signal());
+			task_defer(p->event.signal());
 			p->wait_for_dependencies();
 			p->release_dependencies();
 			for (auto& ed : externalDependencies)
@@ -106,7 +106,7 @@ namespace sakura::task_system::ecs
 			"A schedule can not force both parallel and not parallel!");
 		auto toSchedule = [&, p, batchCount, f, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
-			defer(p->event.signal());
+			task_defer(p->event.signal());
 			auto [tasks, groups] = pipeline.create_tasks(*p, batchCount);
 			//defer(tasks.reset());
 			f(pipeline, *p);
@@ -127,7 +127,7 @@ namespace sakura::task_system::ecs
 					auto& gp = groups[grp];
 					task_system::schedule([&, gp, tasksGroup] {
 						// Decrement the WaitGroup counter when the task has finished.
-						defer(tasksGroup.done());
+						task_defer(tasksGroup.done());
 						forloop(tsk, gp.begin, gp.end)
 						{
 							auto& tk = tasks[tsk];
