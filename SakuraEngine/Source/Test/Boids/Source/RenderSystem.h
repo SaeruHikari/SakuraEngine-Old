@@ -383,7 +383,7 @@ namespace render_system
 				// read.
 				param<const LocalToWorld>
 			);
-			auto pass = ppl.create_pass(filter, paramList);
+			auto pass = ppl.create_pass(filter, paramList, PassLocation(Collect));
 			task_system::ecs::schedule_init(ppl, pass,
 				[&world](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass)
 				{
@@ -391,7 +391,6 @@ namespace render_system
 				},
 				[&world](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
 				{
-					ZoneScopedN("CollectJob");
 					auto o = operation{ paramList, task_pass, tk };
 					auto index = o.get_index();
 					const float4x4* l2ws = o.get_parameter<const LocalToWorld>();

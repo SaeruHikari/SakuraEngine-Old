@@ -17,9 +17,38 @@ namespace sakura
 // task_system support.
 namespace sakura::task_system::ecs
 {
+#ifdef TRACY_ENABLE
+	using source_location_data = tracy::SourceLocationData;
+#else
+	struct source_location_data
+	{
+		const char* name;
+		const char* function;
+		const char* file;
+		uint32_t line;
+		uint32_t color;
+	};
+#endif
+	struct pass_location
+	{
+		source_location_data system;
+		source_location_data task;
+		source_location_data schedule;
+	};
+#define ECS_CAT(a, b) a##b
+#define ECS_STR(a) ECS_STR_(a)
+#define ECS_STR_(a) #a
+#define SourceLocation( name ) sakura::task_system::ecs::source_location_data{ name, __FUNCTION__,  __FILE__, (uint32_t)__LINE__, 0 }
+#define PassLocation( name ) []()->const sakura::task_system::ecs::pass_location* { static constexpr sakura::task_system::ecs::pass_location _ { SourceLocation(ECS_STR_(ECS_CAT(name, System))), SourceLocation(ECS_STR_(ECS_CAT(name, Task))), SourceLocation(ECS_STR_(ECS_CAT(name, Schedule)))}; return &_; }()
+	struct phase
+	{
+		const source_location_data* location;
+		const phase* parentPhase;
+	};
 	struct custom_pass : core::codebase::custom_pass
 	{
 		task_system::Event event{ task_system::Event::Mode::Manual };
+		const pass_location* location;
 		void wait_for_dependencies()
 		{
 			forloop(i, 0, dependencyCount)
@@ -36,31 +65,33 @@ namespace sakura::task_system::ecs
 		using base_t = core::codebase::pipeline;
 		pipeline(sakura::ecs::world&& ctx) :base_t(std::move(ctx)) 
 		{
-			allpasses.reserve(10000);
+			allPasses.reserve(10000);
 		};
 		template<class T>
-		std::shared_ptr<pass> create_pass(const sakura::ecs::filters& v, T paramList, gsl::span<core::codebase::shared_entry> sharedEntries = {})
+		std::shared_ptr<pass> create_pass(const sakura::ecs::filters& v, T paramList, const pass_location* location, gsl::span<core::codebase::shared_entry> sharedEntries = {})
 		{
 			auto p = base_t::create_pass<pass>(v, paramList, sharedEntries);
-			allpasses.push_back(std::static_pointer_cast<custom_pass>(p));
+			p->location = location;
+			allPasses.push_back(std::static_pointer_cast<custom_pass>(p));
 			return p;
 		}
-		std::shared_ptr<custom_pass> create_custom_pass(gsl::span<core::codebase::shared_entry> sharedEntries = {})
+		std::shared_ptr<custom_pass> create_custom_pass(const pass_location* location, gsl::span<core::codebase::shared_entry> sharedEntries = {})
 		{
 			auto p = base_t::create_custom_pass<custom_pass>(sharedEntries);
-			allpasses.push_back(p);
+			p->location = location;
+			allPasses.push_back(p);
 			return p;
 		}
 		void wait() const
 		{
-			forloop(i, 0u, allpasses.size())
-				if(auto pass = allpasses[i].lock())
+			forloop(i, 0u, allPasses.size())
+				if(auto pass = allPasses[i].lock())
 					pass->event.wait();
-			allpasses.clear();
+			allPasses.clear();
 		}
 		void forget()
 		{
-			allpasses.erase(remove_if(allpasses.begin(), allpasses.end(), [](auto& n) {return n.expired(); }), allpasses.end());
+			allPasses.erase(remove_if(allPasses.begin(), allPasses.end(), [](auto& n) {return n.expired(); }), allPasses.end());
 		}
 		void sync_dependencies(gsl::span<std::weak_ptr<core::codebase::custom_pass>> dependencies) const override
 		{
@@ -72,24 +103,31 @@ namespace sakura::task_system::ecs
 		{
 			wait();
 		}
-		mutable std::vector<std::weak_ptr<custom_pass>> allpasses;
+		mutable std::vector<std::weak_ptr<custom_pass>> allPasses;
+		std::vector<const char*> phaseStack;
 		bool force_no_group_parallel = false;
 		bool force_no_fibers = false;
 	};
-#ifndef ZoneScopedN
-#define ZoneScopedN(...)
+
+#ifdef TRACY_ENABLE
+#define ZoneScopedPass(name) tracy::ScopedZone ___tracy_scoped_zone(&name, true);
+#else
+#define ZoneScopedPass(name)
 #endif
+
 	template<class F>
 	FORCEINLINE void schedule_custom(pipeline& pipeline, std::shared_ptr<custom_pass> p, F&& t, std::vector<task_system::Event> externalDependencies = {})
 	{
 		task_system::schedule([&, p, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
 			task_defer(p->event.signal());
-			p->wait_for_dependencies();
-			p->release_dependencies();
-			for (auto& ed : externalDependencies)
-				ed.wait();
-			ZoneScopedN("Task");
+			{
+				p->wait_for_dependencies();
+				p->release_dependencies();
+				for (auto& ed : externalDependencies)
+					ed.wait();
+			}
+			ZoneScopedPass(p->location->system);
 			t();
 		});
 	}
@@ -107,14 +145,20 @@ namespace sakura::task_system::ecs
 		auto toSchedule = [&, p, batchCount, f, t, externalDependencies = std::move(externalDependencies)]() mutable
 		{
 			task_defer(p->event.signal());
-			auto [tasks, groups] = pipeline.create_tasks(*p, batchCount);
+			auto [tasks, groups] = [&]() 
+			{
+				ZoneScopedPass(p->location->schedule);
+				f(pipeline, *p);
+				return pipeline.create_tasks(*p, batchCount); 
+			}();
 			//defer(tasks.reset());
-			f(pipeline, *p);
-			p->wait_for_dependencies();
-			p->release_dependencies();
-			for (auto& ed : externalDependencies)
-				ed.wait();
-			ZoneScopedN("Task");
+			{
+				p->wait_for_dependencies();
+				p->release_dependencies();
+				for (auto& ed : externalDependencies)
+					ed.wait();
+			}
+			ZoneScopedPass(p->location->system);
 			constexpr auto MinParallelTask = 8u;
 			const bool recommandParallel = !p->hasRandomWrite && groups.size > MinParallelTask;
 			if (pipeline.force_no_group_parallel)
@@ -127,6 +171,7 @@ namespace sakura::task_system::ecs
 					auto& gp = groups[grp];
 					task_system::schedule([&, gp, tasksGroup] {
 						// Decrement the WaitGroup counter when the task has finished.
+						ZoneScopedPass(p->location->task);
 						task_defer(tasksGroup.done());
 						forloop(tsk, gp.begin, gp.end)
 						{
@@ -141,9 +186,14 @@ namespace sakura::task_system::ecs
 			{
 			FORCE_NO_GROUP_PARALLEL:
 				std::for_each(
-					tasks.begin(), tasks.end(), [&, t](auto& tk) mutable
+					groups.begin(), groups.end(), [&, t](auto& gp) mutable
 					{
-						t(pipeline, *p, tk);
+						ZoneScopedPass(p->location->task);
+						forloop(tsk, gp.begin, gp.end)
+						{
+							auto& tk = tasks[tsk];
+							t(pipeline, *p, tk);
+						}
 					});
 			}
 		};
