@@ -98,6 +98,11 @@ namespace render_system
 			var K1 : vec2<f32> = vec2<f32>(23.14069263277926, 2.665144142690225);
 			return fract(cos(dot(p,K1)) * 12345.6789);
 		}
+
+		fn temperature(p0 : u32) -> vec4<f32> {
+			var p : f32 = f32(p0)/8.0;
+			return vec4<f32>((0.2+0.8*p),0.2,(-0.2*p+0.4),1.0);
+		}
 		
 		[[stage(vertex)]]
 		fn main() -> void {
@@ -107,11 +112,12 @@ namespace render_system
 			v_position = vec4<f32>(worldPos.x, worldPos.y, worldPos.z, 1.0);
 			Position = worldPos * passCB.view_proj;
 			var i : u32 = ids.id[InstanceIdx];
-			v_color = vec4<f32>(rand(i, i + 3), rand(i, i + 2), rand(i, i + 1), 1.0);
+			v_color = temperature(i);
 			const normal : vec4<f32> = vec4<f32>(0.0,1.0,0.0,0.0);
 			v_normal = normal * world;
 			return;
 		})";
+	//v_color = vec4<f32>(rand(i, i + 3), rand(i, i + 2), rand(i, i + 1), 1.0);
 
 	const sakura::string pixel_shader_wgsl =
 		u8R"(

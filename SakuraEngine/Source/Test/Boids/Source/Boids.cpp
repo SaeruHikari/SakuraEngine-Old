@@ -584,7 +584,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 }
 
 
-float Radius = 1000.f;
+float Radius = 1500.f;
 float TimeScale = 1.f;
 sakura::ecs::entity BoidSettingEntity;
 Boid BoidSetting;
@@ -668,8 +668,10 @@ void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 			auto& el = get_random_engine();
 			sakura::Vector3f vector{ uniform_dist(el), uniform_dist(el), uniform_dist(el) };
 			vector = math::normalize(vector);
-			hds[i] = -vector;
-			trs[i] = sakura::Vector3f(0, 0, 500.f)+ vector*2000;
+			hds[i] = vector;
+			//hds[i] = -vector;
+			trs[i] = sakura::Vector3f(0, 0, 500.f);
+			//trs[i] = sakura::Vector3f(0, 0, 500.f)+ vector*2000;
 			//trs[i] = s.random_point(el);
 		}
 	}
@@ -801,16 +803,16 @@ int main()
 	
 	using namespace sakura::ecs;
 
-	BoidSetting.AlignmentWeight = 1.f;
+	BoidSetting.AlignmentWeight = 3.f;
 	BoidSetting.TargetWeight = 1.f;
-	BoidSetting.SeparationWeight = 2.f;
-	BoidSetting.TurnSpeed = 2.f;
+	BoidSetting.SeparationWeight = 5.f;
+	BoidSetting.TurnSpeed = 1.5f;
 	BoidSetting.MoveSpeed = 200.f;
-	BoidSetting.SightRadius = 20.f;
+	BoidSetting.SightRadius = 25.f;
 	declare_components<Rotation, Translation, RotationEuler, Scale, LocalToWorld, LocalToParent,
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading, BoidDebugData>();
 	SpawnBoidSetting();
-	SpawnBoidTargets(10);
+	SpawnBoidTargets(3);
 	
 	task_system::ecs::pipeline ppl(std::move(ctx));
 	if (!bUseImGui)
