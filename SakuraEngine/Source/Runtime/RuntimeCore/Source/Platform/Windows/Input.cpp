@@ -54,8 +54,10 @@ namespace sakura
 			case EMouseCursor::Hand:         win32_cursor = IDC_HAND; break;
 			case EMouseCursor::NotAllowed:   win32_cursor = IDC_NO; break;
 			case EMouseCursor::Hide:
-				return ::SetCursor(NULL);
+				::SetCursor(nullptr);
+				return ::ShowCursor(false);
 		}
+		::ShowCursor(true);
 		return ::SetCursor(::LoadCursor(NULL, win32_cursor));
 	}
 

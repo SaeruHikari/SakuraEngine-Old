@@ -446,14 +446,43 @@ namespace render_system
 		pass_ptr->execute(buffer, render_graph, *render_device);
 	}
 
-	float X = 0.f;
-	float Y = 0.f;
-	float Z = 0.f;
+	Vector3f CameraPos;
+	float Yaw, Pitch, Roll;
+
+	sakura::Vector3f RotateVector(sakura::Quaternion quat, sakura::Vector3f V)
+	{
+		// http://people.csail.mit.edu/bkph/articles/Quaternions.pdf
+		// V' = V + 2w(Q x V) + (2Q x (Q x V))
+		// refactor:
+		// V' = V + w(2(Q x V)) + (Q x (2(Q x V)))
+		// T = 2(Q x V);
+		// V' = V + w*(T) + (Q x T)
+		auto d = quat.data_view();
+		const sakura::Vector3f Q(d[0], d[1], d[2]);
+		const sakura::Vector3f T = 2.f * sakura::Vector3f::cross_product(Q, V);
+		const sakura::Vector3f Result = V + (d[3] * T) + sakura::Vector3f::cross_product(Q, T);
+		return Result;
+	}
+
+	sakura::Vector3f GetForwardVector()
+	{
+		constexpr sakura::Vector3f Forward = sakura::Vector3f(0.f, 0.f, 1.f);
+		auto quat = math::quaternion_from_euler(Pitch, Yaw, Roll);
+		return RotateVector(quat, Forward);
+	}
+
+	sakura::Vector3f GetRightVector()
+	{
+		constexpr sakura::Vector3f Forward = sakura::Vector3f(1.f, 0.f, 0.f);
+		auto quat = math::quaternion_from_euler(Pitch, Yaw, Roll);
+		return RotateVector(quat, Forward);
+	}
+
 	void Render(const RenderCommandBuffer& buffer)
 	{
 		{
 			ZoneScopedN("Upload");
-			sakura::float4x4 view = sakura::math::look_at_matrix(Vector3f(X, Y, Z), sakura::Vector3f(X, Y, Z + 500.f));
+			sakura::float4x4 view = sakura::math::look_at_matrix(CameraPos, CameraPos + GetForwardVector() * 500.f);
 			sakura::float4x4 proj = sakura::math::perspective_fov(0.25f * 3.1415926f * 2, 1080.f / 1920.f, 1.0f, 1000.0f);
 			proj.M[2][3] *= -1;
 

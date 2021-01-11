@@ -27,7 +27,7 @@
 #include <cmath>
 #include <fstream>
 #include <filesystem>
-
+#include "System/Messages.h"
 #include "imgui/sakura_imgui.h"
 
 
@@ -525,7 +525,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 					{
 						//寻找一个目标
 						int id = targetTree->search_nearest(trs[i]);
-						if(id != -1)
+						if (id != -1)
 							targetings[i] = (*targetTree)[id].value;
 					}
 				}
@@ -739,7 +739,10 @@ const bool bUseImGui = true;
 bool bUseSnapshot = false;
 float SnaphotRate = 30.f;
 bool bNoGroupParallel = false;
+bool bEnableGameInput = false;
 bool bNoFibers = false;
+float CameraSpeed = 400.f;
+float RotationRate = 1.f;
 sakura::graphics::RenderPassHandle imgui_pass = sakura::GenerationalId::UNINITIALIZED;
 sakura::graphics::RenderCommandBuffer imgui_command_buffer("ImGuiRender", 4096);
 int main()
@@ -801,6 +804,22 @@ int main()
 	int memory_size_limit = 4096;
 	float snapshotTimer = 0.f;
 	const float snapshotInterval = 1.f / SnaphotRate;
+	auto rx_os = sakura::Core::find_messenger(render_system::main_window.handle());
+	rx_os->messages<sakura::OSKeyboardMessage>().subscribe([](auto m)
+		{
+			if (m.message == sakura::SM_KEYUP || m.message == sakura::SM_SYS_KEYUP)
+			{
+				if (m.key_code == sakura::input::EKeyCode::Backslash)
+				{
+					bEnableGameInput = !bEnableGameInput;
+					if (bEnableGameInput)
+						sakura::input::set_cursor(sakura::input::EMouseCursor::Hide);
+					else
+						sakura::input::set_cursor(sakura::input::EMouseCursor::Arrow);
+				}
+			
+			}
+		});
 	// Game & Rendering Logic
 	while(sakura::Core::yield())
 	{
@@ -859,6 +878,30 @@ int main()
 			}
 		}
 
+		if(bEnableGameInput)
+		{
+			using namespace sakura::input;
+			float forward = 0.f, right = 0.f;
+			if (key_down(EKeyCode::W))
+				forward += 1.f;
+			if (key_down(EKeyCode::S))
+				forward -= 1.f;
+			if (key_down(EKeyCode::A))
+				right -= 1.f;
+			if (key_down(EKeyCode::D))
+				right += 1.f;
+			render_system::CameraPos += forward * render_system::GetForwardVector() * deltaTime * CameraSpeed;
+			render_system::CameraPos += right * render_system::GetRightVector() * deltaTime * CameraSpeed;
+			static auto LastCursorPos = cursor_pos();
+			auto cursorPos = cursor_pos();
+			render_system::Yaw += ((float)cursorPos.x - LastCursorPos.x)/1920.f * RotationRate;
+			render_system::Pitch += ((float)cursorPos.y - LastCursorPos.y)/1080.f * RotationRate;
+			render_system::Pitch = std::clamp(render_system::Pitch, -179.5f, 179.5f);
+			cursorPos = { 1920 / 2, 1080 / 2 };
+			set_cursor_pos(cursorPos.x, cursorPos.y);
+			LastCursorPos = cursorPos;
+		}
+
 		// IMGUI
 		if (bUseImGui)
 		{
@@ -869,104 +912,128 @@ int main()
 			imgui::new_frame(main_window, deltaTime);
 			imgui::Begin("Boid Settings");
 			static std::mutex fileLock;
-			if (imgui::Button("Save Snapshot", ImVec2(120, 20)))
+			if (imgui::CollapsingHeader("Camera"))
 			{
-				ppl.wait();
-				auto& ctx = (ecs::world&)ppl;
-				std::vector<char> snapshot;
-				buffer_serializer archive(snapshot);
-				ctx.serialize(&archive);
-				std::thread writeThread([snapshot = std::move(snapshot)]()
-				{
-					auto file = std::fstream("test.snapshot", std::ios::out | std::ios::binary);
-					if (file)
-					{
-						std::unique_lock _(fileLock);
-						file.write(snapshot.data(), snapshot.size());
-					}
-				});
-				writeThread.detach();
+				imgui::InputFloat("Speed", &CameraSpeed, 1.f, 10.f);
+				imgui::InputFloat("RotationRate", &RotationRate, 1.f, 10.f);
+				std::tuple Rot = { render_system::Pitch, render_system::Yaw , render_system::Roll };
+				imgui::InputFloat3("Rotation", (float*)&Rot);
+				std::tie(render_system::Pitch, render_system::Yaw, render_system::Roll) = Rot;
+				imgui::InputFloat3("Location", render_system::CameraPos.data_view().data());
+
 			}
-			imgui::SameLine();
-			if (imgui::Button("Load Snapshot", ImVec2(120, 20)))
+
+			if (imgui::CollapsingHeader("SnapShot"))
 			{
-				auto file = std::fstream("test.snapshot", std::ios::in | std::ios::binary);
-				if (file)
+				if (imgui::Button("Save Snapshot", ImVec2(120, 20)))
 				{
 					ppl.wait();
 					auto& ctx = (ecs::world&)ppl;
-					fileLock.lock(); 
-					file.seekg(0, std::ios_base::end);
-					auto size = file.tellg();
-					std::unique_ptr<char[]> data(new char[size]);
-					file.seekg(0, std::ios_base::beg);
-					file.read(data.get(), size);
-					file.close();
-					fileLock.unlock();
-					buffer_deserializer archive(data.get());
-					ctx.deserialize(&archive);
-					BoidSettingEntity = GetBoidSetting(ppl);
-					BoidSetting = *(const Boid*)ctx.get_component_ro(BoidSettingEntity, cid<Boid>);
-					BoidCount = CountBoids(ppl);
-				}
-			}
-			if (imgui::Checkbox("Snapshot Every Frame", &bUseSnapshot) && !bUseSnapshot)
-			{
-				rolling_back = false;
-				memory_used = 0;
-				snapshots.clear();
-			};
-
-			imgui::Checkbox("Close Fibers Dispatch", &bNoFibers);
-			imgui::Checkbox("Close Group Parallel", &bNoGroupParallel);
-			imgui::InputFloat("TestInput", &render_system::X);
-			imgui::SliderFloat("X", &render_system::X, -400, 400);
-			imgui::SliderFloat("Y", &render_system::Y, -400, 400);
-			imgui::SliderFloat("Z", &render_system::Z, -400, 400);
-			imgui::SliderFloat4("light direction", render_system::passCB.lightdir, -1.f, 1.f);
-			imgui::ColorEdit4("light color", render_system::passCB.lightcolor, ImGuiColorEditFlags_Float);
-			imgui::ColorEdit4("ambient", render_system::passCB.ambient, ImGuiColorEditFlags_Float);
-			
-
-			if (bUseSnapshot)
-			{
-				if (imgui::SliderInt("Frame", &selected_frame, 0, snapshots.size() - 1))
-					rolling_back = true;
-				imgui::SameLine();
-				if (imgui::Button(rolling_back ? "Play" : "Pause", ImVec2(-1, 20)))
-				{
-					rolling_back = !rolling_back;
-					while (snapshots.size() > (current_frame + 1))
+					std::vector<char> snapshot;
+					buffer_serializer archive(snapshot);
+					ctx.serialize(&archive);
+					std::thread writeThread([snapshot = std::move(snapshot)]()
 					{
-						memory_used -= snapshots.back().size();
-						snapshots.pop_back();
-					}
-					// Boids 的生成可能被回滚了
-					BoidCount = CountBoids(ppl);
+						auto file = std::fstream("test.snapshot", std::ios::out | std::ios::binary);
+						if (file)
+						{
+							std::unique_lock _(fileLock);
+							file.write(snapshot.data(), snapshot.size());
+						}
+					});
+					writeThread.detach();
 				}
-				imgui::InputInt("Memory Usage", &memory_size_limit, 256);
 				imgui::SameLine();
-				imgui::ProgressBar((float)memory_used / ((double)memory_size_limit * 1024 * 1024));
+				if (imgui::Button("Load Snapshot", ImVec2(120, 20)))
+				{
+					auto file = std::fstream("test.snapshot", std::ios::in | std::ios::binary);
+					if (file)
+					{
+						ppl.wait();
+						auto& ctx = (ecs::world&)ppl;
+						fileLock.lock();
+						file.seekg(0, std::ios_base::end);
+						auto size = file.tellg();
+						std::unique_ptr<char[]> data(new char[size]);
+						file.seekg(0, std::ios_base::beg);
+						file.read(data.get(), size);
+						file.close();
+						fileLock.unlock();
+						buffer_deserializer archive(data.get());
+						ctx.deserialize(&archive);
+						BoidSettingEntity = GetBoidSetting(ppl);
+						BoidSetting = *(const Boid*)ctx.get_component_ro(BoidSettingEntity, cid<Boid>);
+						BoidCount = CountBoids(ppl);
+					}
+				}
+				if (imgui::Checkbox("Snapshot Every Frame", &bUseSnapshot) && !bUseSnapshot)
+				{
+					rolling_back = false;
+					memory_used = 0;
+					snapshots.clear();
+				};
+				if (bUseSnapshot)
+				{
+					if (imgui::SliderInt("Frame", &selected_frame, 0, snapshots.size() - 1))
+						rolling_back = true;
+					imgui::SameLine();
+					if (imgui::Button(rolling_back ? "Play" : "Pause", ImVec2(-1, 20)))
+					{
+						rolling_back = !rolling_back;
+						while (snapshots.size() > (current_frame + 1))
+						{
+							memory_used -= snapshots.back().size();
+							snapshots.pop_back();
+						}
+						// Boids 的生成可能被回滚了
+						BoidCount = CountBoids(ppl);
+					}
+					imgui::InputInt("Memory Usage", &memory_size_limit, 256);
+					imgui::SameLine();
+					imgui::ProgressBar((float)memory_used / ((double)memory_size_limit * 1024 * 1024));
+				}
 			}
-			imgui::Checkbox("Enable Boids", &bEnableBoids);
-			imgui::Checkbox("Enable Boids Move", &bEnableBoidsMove);
-			imgui::Checkbox("Enable L2W", &bEnableL2W);
-			bool UpdateBoid = false;
-			UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
-			UpdateBoid |= imgui::SliderFloat("TargetWeight", &BoidSetting.TargetWeight, 0, 10);
-			UpdateBoid |= imgui::SliderFloat("SeparationWeight", &BoidSetting.SeparationWeight, 0, 10);
-			UpdateBoid |= imgui::SliderFloat("TurnSpeed", &BoidSetting.TurnSpeed, 0, 5);
-			UpdateBoid |= imgui::SliderFloat("MoveSpeed", &BoidSetting.MoveSpeed, 0, 1000);
-			UpdateBoid |= imgui::SliderFloat("SightRadius", &BoidSetting.SightRadius, 5, 50);
-			if (UpdateBoid)
+			
+			if (imgui::CollapsingHeader("Parallel"))
 			{
-				*(Boid*)ppl.get_owned_rw(BoidSettingEntity, cid<Boid>) = BoidSetting;
+				imgui::Checkbox("Close Fibers Dispatch", &bNoFibers);
+				imgui::Checkbox("Close Group Parallel", &bNoGroupParallel);
 			}
-			imgui::SliderFloat("TimeScale", &TimeScale, 0, 10);
-			int prevBoidCount = BoidCount;
-			if (!rolling_back && imgui::SliderInt("BoidCount", &BoidCount, 0, TARGET_NUM))
+
+			if (imgui::CollapsingHeader("Render"))
 			{
-				UpdateBoidsCount(ppl, BoidCount - prevBoidCount);
+				imgui::SliderFloat4("light direction", render_system::passCB.lightdir, -1.f, 1.f);
+				imgui::ColorEdit4("light color", render_system::passCB.lightcolor, ImGuiColorEditFlags_Float);
+				imgui::ColorEdit4("ambient", render_system::passCB.ambient, ImGuiColorEditFlags_Float);
+			}
+			
+			if (imgui::CollapsingHeader("Boids"))
+			{
+				imgui::Checkbox("Enable Boids", &bEnableBoids);
+				imgui::Checkbox("Enable Boids Move", &bEnableBoidsMove);
+				imgui::Checkbox("Enable L2W", &bEnableL2W);
+				bool UpdateBoid = false;
+				UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
+				UpdateBoid |= imgui::SliderFloat("TargetWeight", &BoidSetting.TargetWeight, 0, 10);
+				UpdateBoid |= imgui::SliderFloat("SeparationWeight", &BoidSetting.SeparationWeight, 0, 10);
+				UpdateBoid |= imgui::SliderFloat("TurnSpeed", &BoidSetting.TurnSpeed, 0, 5);
+				UpdateBoid |= imgui::SliderFloat("MoveSpeed", &BoidSetting.MoveSpeed, 0, 1000);
+				UpdateBoid |= imgui::SliderFloat("SightRadius", &BoidSetting.SightRadius, 5, 50);
+				if (UpdateBoid)
+				{
+					*(Boid*)ppl.get_owned_rw(BoidSettingEntity, cid<Boid>) = BoidSetting;
+				}
+				imgui::SliderFloat("TimeScale", &TimeScale, 0, 10);
+				int prevBoidCount = BoidCount;
+				if (!rolling_back && imgui::SliderInt("BoidCount", &BoidCount, 0, TARGET_NUM))
+				{
+					UpdateBoidsCount(ppl, BoidCount - prevBoidCount);
+				}
+				if (BoidCount)
+				{
+					imgui::Text("Max Neighbor Count: %d", maxNeighberCount.load());
+					imgui::Text("Average Neighbor Count: %d", averageNeighberCount.load() / BoidCount);
+				}
 			}
 			//if (imgui::SliderInt("LeaderCount", &LeaderCount, 0, 100)){}
 
@@ -976,6 +1043,7 @@ int main()
 			imgui::End();
 			imgui::Render();
 		}
+		averageNeighberCount.store(0);
 		cycle += 1;
 		{
 			ZoneScopedN("Render");

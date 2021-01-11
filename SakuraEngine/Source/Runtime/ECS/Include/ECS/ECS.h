@@ -120,7 +120,7 @@ namespace sakura::task_system::ecs
 		void mark_frame()
 		{
 			allPasses.erase(remove_if(allPasses.begin(), allPasses.end(), [](auto& n) {return n.expired(); }), allPasses.end());
-			inc_timestamp();
+			inc_timestamp(); 
 		}
 		void sync_dependencies(gsl::span<std::weak_ptr<core::codebase::custom_pass>> dependencies) const override
 		{
