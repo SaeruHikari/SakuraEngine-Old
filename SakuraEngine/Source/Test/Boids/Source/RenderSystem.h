@@ -90,7 +90,7 @@ namespace render_system
 			[[offset(0)]] id: [[stride(64)]] array<u32>;
 		}; 
 		[[set(0), binding(0)]] var<storage_buffer> worlds: [[access(read)]] PositionsBuffer;
-		[[set(2), binding(0)]] var<storage_buffer> ids : [[access(read)]] IndicesBuffer;
+		[[set(0), binding(1)]] var<storage_buffer> ids : [[access(read)]] IndicesBuffer;
 		[[set(1), binding(0)]] var<uniform> passCB: PassCB;
 		
 		fn rand(p0 : u32, p1 : u32) -> f32 {
@@ -190,10 +190,10 @@ namespace render_system
 			command_buffer.enqueue<RenderCommandBeginRenderPass>(render_pipeline, attachment, ds);
 			{
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 0, uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 10, 0));
+				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 1, id_buffer_per_object, 0, sizeof(uint32_t) * TARGET_NUM, 0));
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(PassCB), 0));
 				command_buffer.enqueue<RenderCommandSetVB>(0, rg.query<GpuBufferHandle>("VertexBufferSphere"));
 				command_buffer.enqueue<RenderCommandSetIB>(rg.query<GpuBufferHandle>("IndexBufferSphere"), EIndexFormat::UINT16);
-
 				{
 					command_buffer.enqueue<RenderCommandDraw>(60, LeaderCount);
 				}
@@ -202,8 +202,6 @@ namespace render_system
 			{
 				command_buffer.enqueue<RenderCommandUpdateBinding>(
 					Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * TARGET_NUM, 0));
-				command_buffer.enqueue<RenderCommandUpdateBinding>(
-					Binding(2, 0, id_buffer_per_object, 0, sizeof(uint32_t) * TARGET_NUM, 0));
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(PassCB), 0));
 				command_buffer.enqueue<RenderCommandSetVB>(0, rg.query<GpuBufferHandle>("VertexBuffer"));
 				// Mention that you can also do like this.
@@ -294,15 +292,12 @@ namespace render_system
 					BindingLayout::Set(
 					{
 						BindingLayout::Slot(0, BindingLayout::ReadonlyStorageBuffer, EShaderFrequency::VertexShader),
+						BindingLayout::Slot(1, BindingLayout::ReadonlyStorageBuffer, EShaderFrequency::VertexShader),
 					}),
 					BindingLayout::Set(
 					{
 						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader | EShaderFrequency::PixelShader),
-					}),
-					BindingLayout::Set(
-					{
-						BindingLayout::Slot(0, BindingLayout::ReadonlyStorageBuffer, EShaderFrequency::VertexShader),
-					}),
+					})
 				}),
 			AttachmentLayout(
 				{ AttachmentLayout::Slot(render_device->get<ISwapChain>(swap_chain)->render_format(), ELoadOp::Clear, EStoreOp::Store) }
