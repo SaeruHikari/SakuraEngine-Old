@@ -87,7 +87,7 @@ namespace render_system
 		}; 
 		[[block]] struct IndicesBuffer 
 		{
-			[[offset(0)]] id: [[stride(64)]] array<u32>;
+			[[offset(0)]] id: [[stride(4)]] array<u32>;
 		}; 
 		[[set(0), binding(0)]] var<storage_buffer> worlds: [[access(read)]] PositionsBuffer;
 		[[set(0), binding(1)]] var<storage_buffer> ids : [[access(read)]] IndicesBuffer;
