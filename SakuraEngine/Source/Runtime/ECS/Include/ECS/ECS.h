@@ -2,6 +2,7 @@
 #include "TaskSystem/TaskSystem.h"
 #include "RuntimeCore/RuntimeCore.h"
 #include "Codebase.h"
+#include <string>
 
 #define forloop(i, z, n) for(auto i = std::decay_t<decltype(n)>(z); i<(n); ++i)
 #define def static constexpr auto
@@ -17,34 +18,49 @@ namespace sakura
 // task_system support.
 namespace sakura::task_system::ecs
 {
-#ifdef TRACY_ENABLE
-	using source_location_data = tracy::SourceLocationData;
-#else
 	struct source_location_data
 	{
-		const char* name;
-		const char* function;
-		const char* file;
+		std::string_view name;
+		std::string_view function;
+		std::string_view file;
 		uint32_t line;
-		uint32_t color;
 	};
-#endif
+
 	struct pass_location
 	{
-		source_location_data system;
-		source_location_data task;
-		source_location_data schedule;
+		source_location_data location;
+#ifdef TRACY_ENABLE
+		tracy::SourceLocationData system;
+		tracy::SourceLocationData task;
+		tracy::SourceLocationData initialize;
+#endif
 	};
 #define ECS_CAT(a, b) a##b
 #define ECS_STR(a) ECS_STR_(a)
 #define ECS_STR_(a) #a
-#define SourceLocation( name ) sakura::task_system::ecs::source_location_data{ name, __FUNCTION__,  __FILE__, (uint32_t)__LINE__, 0 }
-#define PassLocation( name ) []()->const sakura::task_system::ecs::pass_location* { static constexpr sakura::task_system::ecs::pass_location _ { SourceLocation(ECS_STR_(ECS_CAT(name, System))), SourceLocation(ECS_STR_(ECS_CAT(name, Task))), SourceLocation(ECS_STR_(ECS_CAT(name, Schedule)))}; return &_; }()
+#define SourceLocation( name ) sakura::task_system::ecs::source_location_data{ name, __FUNCTION__,  __FILE__, (uint32_t)__LINE__ }
+#ifdef TRACY_ENABLE
+#define TracyLocation( name ) tracy::SourceLocationData{ name, __FUNCTION__,  __FILE__, (uint32_t)__LINE__, 0 }
+#define PassLocation( name ) []() { static constexpr sakura::task_system::ecs::pass_location _ {  SourceLocation(ECS_STR(name)), TracyLocation(ECS_STR(ECS_CAT(name, System))), TracyLocation(ECS_STR(ECS_CAT(name, Task))), TracyLocation(ECS_STR(ECS_CAT(name, Schedule)))}; return &_; }()
+#else
+#define PassLocation( name ) []() { static constexpr sakura::task_system::ecs::pass_location _ { SourceLocation(ECS_STR(name)) };
+#endif
+
 	struct phase
 	{
 		const source_location_data* location;
 		const phase* parentPhase;
+		std::vector<phase> childPhases;
+		std::vector<const pass_location*> childPasses;
 	};
+
+	struct pass_statistics
+	{
+		const pass_location* location;
+		int matchedCount;
+		bool isEnabled;
+	};
+
 	struct custom_pass : core::codebase::custom_pass
 	{
 		task_system::Event event{ task_system::Event::Mode::Manual };
@@ -63,7 +79,7 @@ namespace sakura::task_system::ecs
 	struct pipeline final : public core::codebase::pipeline
 	{
 		using base_t = core::codebase::pipeline;
-		pipeline(sakura::ecs::world&& ctx) :base_t(std::move(ctx)) 
+		pipeline(sakura::ecs::world&& ctx) :base_t(std::move(ctx)), topPhase(&rootPhase)
 		{
 			allPasses.reserve(10000);
 		};
@@ -89,9 +105,22 @@ namespace sakura::task_system::ecs
 					pass->event.wait();
 			allPasses.clear();
 		}
-		void forget()
+		void begin_phase()
+		{
+
+		}
+		void end_phase()
+		{
+
+		}
+		pass_statistics* get_statistics(const pass_location* location)
+		{
+
+		}
+		void mark_frame()
 		{
 			allPasses.erase(remove_if(allPasses.begin(), allPasses.end(), [](auto& n) {return n.expired(); }), allPasses.end());
+			inc_timestamp();
 		}
 		void sync_dependencies(gsl::span<std::weak_ptr<core::codebase::custom_pass>> dependencies) const override
 		{
@@ -104,7 +133,8 @@ namespace sakura::task_system::ecs
 			wait();
 		}
 		mutable std::vector<std::weak_ptr<custom_pass>> allPasses;
-		std::vector<const char*> phaseStack;
+		phase rootPhase;
+		phase* topPhase;
 		bool force_no_group_parallel = false;
 		bool force_no_fibers = false;
 	};
@@ -147,7 +177,7 @@ namespace sakura::task_system::ecs
 			task_defer(p->event.signal());
 			auto [tasks, groups] = [&]() 
 			{
-				ZoneScopedPass(p->location->schedule);
+				ZoneScopedPass(p->location->initialize);
 				f(pipeline, *p);
 				return pipeline.create_tasks(*p, batchCount); 
 			}();

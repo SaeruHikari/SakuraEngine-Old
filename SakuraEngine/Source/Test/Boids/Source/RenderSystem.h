@@ -426,7 +426,6 @@ namespace render_system
 		}
 		passes[0]->event.wait();
 		passes[1]->event.wait();
-		ppl.forget();
 	}
 
 	void Present()

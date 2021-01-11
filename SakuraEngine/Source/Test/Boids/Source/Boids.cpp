@@ -452,7 +452,6 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	static auto positions = make_resource<std::vector<BoidPosition>>();
 	static auto kdtree = make_resource<core::algo::kdtree<BoidPosition>>();
 	{
-		;
 		CopyComponent<Translation>(ppl, boidFilter, positions, PassLocation(CopyPosition));
 		shared_entry shareList[] = { read(positions), write(kdtree) };
 		task_system::ecs::schedule_custom(ppl, ppl.create_custom_pass(PassLocation(BoidKdTree), shareList), []() mutable
@@ -484,7 +483,6 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 		task_system::ecs::schedule_init(ppl, pass,
 			[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass) mutable
 			{
-				ZoneScopedN("Resize newHeading");
 				newHeadings->resize(pipeline.pass_size(pass));
 			},
 			[deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
@@ -808,8 +806,6 @@ int main()
 	{
 		ZoneScoped;
 		timer.start_up(); 
-
-		ppl.inc_timestamp();
 		ppl.force_no_fibers = bNoFibers;
 		ppl.force_no_group_parallel = bNoGroupParallel;
 
@@ -1010,6 +1006,7 @@ int main()
 		deltaTime = timer.end();
 
 		FrameMark;
+		ppl.mark_frame();
 	}
 	ctx = ppl.release();
 }
