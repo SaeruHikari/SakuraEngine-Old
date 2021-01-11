@@ -463,7 +463,8 @@ namespace render_system
 					for (auto i = 0u; i < o.get_count(); i++)
 					{
 						int j = (i + index);
-						ids[j] = fls[i].following.id;
+						//ids[j] = fls[i].following.id;
+						ids[j] = fls[i].neighborCount;
 					}
 				}, 500);
 			passes[2] = pass;

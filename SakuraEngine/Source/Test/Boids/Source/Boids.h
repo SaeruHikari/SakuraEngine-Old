@@ -24,6 +24,7 @@ struct BoidDebugData
 {
 	//不必注册 reference，因为它是临时的
 	ecs::entity following;
+	int neighborCount;
 	static constexpr auto guid = "53B1F923-9B83-4409-9885-CA93CCD3FFB3"_guid;
 };
 

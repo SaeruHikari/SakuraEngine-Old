@@ -521,25 +521,31 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 				chunk_vector<sakura::Vector3f> alignments;
 				chunk_vector<sakura::Vector3f> separations;
 				chunk_vector<sakura::Vector3f> targetings;
+				chunk_vector<uint32_t> neighborCount;
 				alignments.resize(o.get_count());
 				separations.resize(o.get_count());
 				targetings.resize(o.get_count());
+				neighborCount.resize(o.get_count());
 				{
 					ZoneScopedN("Collect Neighbors");
 					forloop(i, 0, o.get_count())
 					{
 						//收集附近单位的位置和朝向信息
 						neighbers.clear();
-						kdtree->search_k_radius(trs[i], boid->SightRadius, 8, neighbers);
+						kdtree->search_k_radius(trs[i], boid->SightRadius, 9, neighbers);
 						alignments[i] = sakura::Vector3f::vector_zero();
 						separations[i] = sakura::Vector3f::vector_zero();
 						for (auto ng : neighbers)
 						{
+							auto location = (*kdtree)[ng.second].value;
+							//assert(math::distance(location, trs[i]) < boid->SightRadius);
 							alignments[i] = alignments[i] + (*headings)[ng.second];
-							separations[i] = separations[i] + (*kdtree)[ng.second].value;
+							separations[i] = separations[i] + location;
 						}
-						averageNeighberCount += neighbers.size();
-						update_maximum(maxNeighberCount, neighbers.size());
+						neighborCount[i] = neighbers.size();
+						dbg[i].neighborCount = neighbers.size() - 1;
+						averageNeighberCount += neighbers.size() - 1;
+						update_maximum(maxNeighberCount, neighbers.size() - 1);
 					}
 				}
 
@@ -562,8 +568,8 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 					forloop(i, 0, o.get_count())
 					{
 						//Boid 算法
-						sakura::Vector3f alignment = math::normalize(alignments[i] / (float)neighbers.size() - hds[i]);
-						sakura::Vector3f separation = math::normalize((float)neighbers.size() * trs[i] - separations[i]);
+						sakura::Vector3f alignment = math::normalize(alignments[i] / (float)neighborCount[i] - hds[i]);
+						sakura::Vector3f separation = math::normalize((float)neighborCount[i] * trs[i] - separations[i]);
 						sakura::Vector3f targeting = math::normalize(targetings[i] - trs[i]);
 						sakura::Vector3f newHeading = math::normalize(alignment * boid->AlignmentWeight + separation * boid->SeparationWeight + targeting * boid->TargetWeight);
 						(*newHeadings)[index + i] = math::normalize((hds[i] + (newHeading - hds[i]) * deltaTime * boid->TurnSpeed));
@@ -804,7 +810,7 @@ int main()
 	declare_components<Rotation, Translation, RotationEuler, Scale, LocalToWorld, LocalToParent,
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading, BoidDebugData>();
 	SpawnBoidSetting();
-	SpawnBoidTargets(3);
+	SpawnBoidTargets(10);
 	
 	task_system::ecs::pipeline ppl(std::move(ctx));
 	if (!bUseImGui)
