@@ -307,6 +307,27 @@ void FillComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 		}, 2000);
 }
 
+template<class T>
+void CollectEntites(task_system::ecs::pipeline& ppl, const ecs::filters& filter, ecs::shared_resource<T>& vector, const task_system::ecs::pass_location* location)
+{
+	using namespace ecs;
+	def paramList = boost::hana::make_tuple();
+	shared_entry shareList[] = { write(vector) };
+	auto pass = ppl.create_pass(filter, paramList, location, shareList);
+	return task_system::ecs::schedule_init(ppl, pass,
+		[vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass) mutable
+		{
+			vector->resize(pipeline.pass_size(pass));
+		},
+		[&, vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
+		{
+			auto o = operation{ paramList, pass, tk };
+			auto index = o.get_index();
+			auto entities = o.get_entities();
+			memcpy((*vector).data() + index, entities, o.get_count() * sizeof(entity));
+		}, 2000);
+}
+
 struct BoidPosition
 {
 	sakura::Vector3f value;
@@ -462,9 +483,11 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 
 	//收集目标和障碍物
 	static auto targets = make_resource<std::vector<BoidPosition>>();
+	static auto targetEntities = make_resource<std::vector<entity>>();
 	static auto targetTree = make_resource<core::algo::kdtree<BoidPosition>>();
 	{
 		CopyComponent<Translation>(ppl, targetFilter, targets, PassLocation(CopyTargetPosition));
+		CollectEntites(ppl, targetFilter, targetEntities, PassLocation(CopyTargetEntities));
 		shared_entry shareList[] = { read(targets), write(targetTree) };
 		task_system::ecs::schedule_custom(ppl, ppl.create_custom_pass(PassLocation(TargetKdTree), shareList), []() mutable
 			{
@@ -476,9 +499,9 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	static auto newHeadings = make_resource<std::vector<sakura::Vector3f>>();
 	{
 		CopyComponent<Heading>(ppl, boidFilter, headings, PassLocation(CopyHeading));
-		shared_entry shareList[] = { read(kdtree), read(headings), read(targetTree), write(newHeadings) };
+		shared_entry shareList[] = { read(kdtree), read(headings), read(targetTree), read(targetEntities), write(newHeadings) };
 		def paramList = 
-			boost::hana::make_tuple( param<const Heading>, param<const Translation>, param<const Boid> );
+			boost::hana::make_tuple( param<const Heading>, param<const Translation>, param<const Boid>, param<BoidDebugData>);
 		auto pass = ppl.create_pass(boidFilter, paramList, PassLocation(BoidMain), shareList);
 		task_system::ecs::schedule_init(ppl, pass,
 			[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass) mutable
@@ -492,6 +515,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 				auto hds = o.get_parameter_owned<const Heading>();
 				auto trs = o.get_parameter_owned<const Translation>();
 				auto boid = o.get_parameter<const Boid>(); //这玩意是 shared
+				auto dbg = o.get_parameter_owned<BoidDebugData>();
 				std::vector<std::pair<float, int>> neighbers;
 				neighbers.reserve(10);
 				chunk_vector<sakura::Vector3f> alignments;
@@ -526,7 +550,10 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 						//寻找一个目标
 						int id = targetTree->search_nearest(trs[i]);
 						if (id != -1)
+						{
+							dbg[i].following = (*targetEntities)[id];
 							targetings[i] = (*targetTree)[id].value;
+						}
 					}
 				}
 				
@@ -618,7 +645,7 @@ void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 	//创建 Boid
 	entity_type type
 	{
-		complist<Translation, Heading, LocalToWorld>,
+		complist<Translation, Heading, LocalToWorld, BoidDebugData>,
 		{&BoidSettingEntity, 1}
 	};
 	sphere s;
@@ -775,7 +802,7 @@ int main()
 	BoidSetting.MoveSpeed = 200.f;
 	BoidSetting.SightRadius = 20.f;
 	declare_components<Rotation, Translation, RotationEuler, Scale, LocalToWorld, LocalToParent,
-		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading>();
+		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading, BoidDebugData>();
 	SpawnBoidSetting();
 	SpawnBoidTargets(3);
 	
@@ -783,7 +810,6 @@ int main()
 	if (!bUseImGui)
 	{
 		SpawnBoids(ppl, TARGET_NUM);
-		ppl.wait();
 	}
 	render_system::initialize();
 	if(bUseImGui)
@@ -842,7 +868,7 @@ int main()
 			{
 				BoidMainLoop(ppl, deltaTime * TimeScale);
 				snapshotTimer += deltaTime;
-				ppl.wait();
+				ppl.sync_all_ro();
 				if (snapshotTimer > snapshotInterval)
 				{
 					snapshotTimer = 0.f;
@@ -866,7 +892,7 @@ int main()
 			else if (selected_frame != current_frame)
 			{
 				snapshotTimer = 0.f;
-				ppl.wait();
+				ppl.sync_all();
 				ZoneScopedN("Load Snapshot");
 				auto& ctx = (ecs::world&)ppl;
 				auto data = snapshots[selected_frame].data();
@@ -927,7 +953,7 @@ int main()
 			{
 				if (imgui::Button("Save Snapshot", ImVec2(120, 20)))
 				{
-					ppl.wait();
+					ppl.sync_all_ro();
 					auto& ctx = (ecs::world&)ppl;
 					std::vector<char> snapshot;
 					buffer_serializer archive(snapshot);
@@ -949,7 +975,7 @@ int main()
 					auto file = std::fstream("test.snapshot", std::ios::in | std::ios::binary);
 					if (file)
 					{
-						ppl.wait();
+						ppl.sync_all();
 						auto& ctx = (ecs::world&)ppl;
 						fileLock.lock();
 						file.seekg(0, std::ios_base::end);
@@ -1034,6 +1060,11 @@ int main()
 					imgui::Text("Max Neighbor Count: %d", maxNeighberCount.load());
 					imgui::Text("Average Neighbor Count: %d", averageNeighberCount.load() / BoidCount);
 				}
+			}
+
+			if (imgui::CollapsingHeader("Inspector"))
+			{
+
 			}
 			//if (imgui::SliderInt("LeaderCount", &LeaderCount, 0, 100)){}
 

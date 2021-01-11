@@ -85,7 +85,12 @@ namespace render_system
 		{
 			[[offset(0)]] world: [[stride(64)]] array<mat4x4<f32>>;
 		}; 
+		[[block]] struct IndicesBuffer 
+		{
+			[[offset(0)]] id: [[stride(64)]] array<u32>;
+		}; 
 		[[set(0), binding(0)]] var<storage_buffer> worlds: [[access(read)]] PositionsBuffer;
+		[[set(2), binding(0)]] var<storage_buffer> ids : [[access(read)]] IndicesBuffer;
 		[[set(1), binding(0)]] var<uniform> passCB: PassCB;
 		
 		fn rand(p0 : u32, p1 : u32) -> f32 {
@@ -101,7 +106,8 @@ namespace render_system
 			var worldPos : vec4<f32> = posIn * world;
 			v_position = vec4<f32>(worldPos.x, worldPos.y, worldPos.z, 1.0);
 			Position = worldPos * passCB.view_proj;
-			v_color = vec4<f32>(rand(InstanceIdx, InstanceIdx + 3), rand(InstanceIdx, InstanceIdx + 2), rand(InstanceIdx, InstanceIdx + 1), 1.0);
+			var i : u32 = ids.id[InstanceIdx];
+			v_color = vec4<f32>(rand(i, i + 3), rand(i, i + 2), rand(i, i + 1), 1.0);
 			const normal : vec4<f32> = vec4<f32>(0.0,1.0,0.0,0.0);
 			v_normal = normal * world;
 			return;
@@ -148,6 +154,7 @@ namespace render_system
 
 	static GpuBufferHandle uniform_buffer = render_graph.GpuBuffer("UniformBuffer");
 	static GpuBufferHandle uniform_buffer_per_object = render_graph.GpuBuffer("UniformBufferPerObject");
+	static GpuBufferHandle id_buffer_per_object = render_graph.GpuBuffer("IdBufferPerObject");
 	static GpuBufferHandle uniform_buffer_per_target = render_graph.GpuBuffer("UniformBufferPerTarget");
 
 	static GpuBufferHandle vertex_buffer = render_graph.GpuBuffer("VertexBuffer");
@@ -168,6 +175,7 @@ namespace render_system
 	};
 	static PassCB passCB = {};
 	static std::vector<sakura::float4x4> worlds(TARGET_NUM);
+	static std::vector<uint32_t> ids(TARGET_NUM);
 	static std::vector<sakura::float4x4> target_worlds(10);
 
 	class RenderPassSimple : public RenderPass
@@ -194,6 +202,8 @@ namespace render_system
 			{
 				command_buffer.enqueue<RenderCommandUpdateBinding>(
 					Binding(0, 0, uniform_buffer_per_object, 0, sizeof(sakura::float4x4) * TARGET_NUM, 0));
+				command_buffer.enqueue<RenderCommandUpdateBinding>(
+					Binding(2, 0, id_buffer_per_object, 0, sizeof(uint32_t) * TARGET_NUM, 0));
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(1, 0, uniform_buffer, 0, sizeof(PassCB), 0));
 				command_buffer.enqueue<RenderCommandSetVB>(0, rg.query<GpuBufferHandle>("VertexBuffer"));
 				// Mention that you can also do like this.
@@ -289,6 +299,10 @@ namespace render_system
 					{
 						BindingLayout::Slot(0, BindingLayout::UniformBuffer, EShaderFrequency::VertexShader | EShaderFrequency::PixelShader),
 					}),
+					BindingLayout::Set(
+					{
+						BindingLayout::Slot(0, BindingLayout::ReadonlyStorageBuffer, EShaderFrequency::VertexShader),
+					}),
 				}),
 			AttachmentLayout(
 				{ AttachmentLayout::Slot(render_device->get<ISwapChain>(swap_chain)->render_format(), ELoadOp::Clear, EStoreOp::Store) }
@@ -349,6 +363,8 @@ namespace render_system
 			BufferDescriptor(EBufferUsage::StorageBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * target_worlds.size(), target_worlds.data()));
 		render_device->create_buffer(uniform_buffer_per_object,
 			BufferDescriptor(EBufferUsage::StorageBuffer | EBufferUsage::CopyDst, sizeof(sakura::float4x4) * worlds.size(), worlds.data()));
+		render_device->create_buffer(id_buffer_per_object,
+			BufferDescriptor(EBufferUsage::StorageBuffer | EBufferUsage::CopyDst, sizeof(uint32_t)* ids.size(), ids.data()));
 
 		render_device->create_buffer(vertex_buffer,
 			BufferDescriptor(EBufferUsage::VertexBuffer | EBufferUsage::CopyDst, sizeof(vertData), vertData));
@@ -371,6 +387,7 @@ namespace render_system
 	using Rotator = sakura::Rotator;
 	using float4x4 = sakura::float4x4;
 	using IModule = sakura::IModule;
+	
 	void CollectAndUpload(task_system::ecs::pipeline& ppl, float deltaTime)
 	{
 		using namespace sakura;
@@ -405,7 +422,7 @@ namespace render_system
 				}, maxSlice);
 			return pass;
 		};
-		std::shared_ptr<task_system::ecs::pass> passes[2];
+		std::shared_ptr<task_system::ecs::pass> passes[3];
 		{
 			filters filter;
 			filter.archetypeFilter = {
@@ -424,8 +441,41 @@ namespace render_system
 			};
 			passes[1] = Collect(filter, worlds);
 		}
+		{
+			filters filter;
+			filter.archetypeFilter = {
+				{complist<LocalToWorld, Boid>}, //all
+				{}, //any
+				{} //none
+			};
+			static constexpr auto paramList = boost::hana::make_tuple(
+				// read.
+				param<const BoidDebugData>
+			);
+			auto pass = ppl.create_pass(filter, paramList, PassLocation(Collect));
+			task_system::ecs::schedule_init(ppl, pass,
+				[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass)
+				{
+					ids.resize(pipeline.pass_size(task_pass));
+				},
+				[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
+				{
+					auto o = operation{ paramList, task_pass, tk };
+					auto index = o.get_index();
+					auto fls = o.get_parameter<const BoidDebugData>();
+
+					Vector3f pos = Vector3f::vector_zero();
+					for (auto i = 0u; i < o.get_count(); i++)
+					{
+						int j = (i + index);
+						ids[j] = fls[i].following.id;
+					}
+				}, 500);
+			passes[2] = pass;
+		}
 		passes[0]->event.wait();
 		passes[1]->event.wait();
+		passes[2]->event.wait();
 	}
 
 	void Present()
@@ -493,6 +543,8 @@ namespace render_system
 			render_device->update_buffer(uniform_buffer, 0, &passCB, sizeof(passCB));
 			render_device->update_buffer(
 				uniform_buffer_per_object, 0, worlds.data(), sizeof(float4x4) * worlds.size());
+			render_device->update_buffer(
+				id_buffer_per_object, 0, ids.data(), sizeof(uint32_t) * ids.size());
 			render_device->update_buffer(uniform_buffer_per_target,
 				0, target_worlds.data(), sizeof(float4x4) * target_worlds.size());
 		}

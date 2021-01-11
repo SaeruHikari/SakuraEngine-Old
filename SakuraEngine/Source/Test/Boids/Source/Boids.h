@@ -20,6 +20,13 @@ struct Boid
 	static constexpr auto guid = "A8C09FA6-F29C-4477-9B90-75F8F5490380"_guid;
 };
 
+struct BoidDebugData
+{
+	//不必注册 reference，因为它是临时的
+	ecs::entity following;
+	static constexpr auto guid = "53B1F923-9B83-4409-9885-CA93CCD3FFB3"_guid;
+};
+
 struct BoidTarget
 {
 	static constexpr auto guid = "86EA5D88-3885-469B-BE73-5DB1B20BD817"_guid;

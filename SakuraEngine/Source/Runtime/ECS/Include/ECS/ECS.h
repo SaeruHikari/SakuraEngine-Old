@@ -98,13 +98,6 @@ namespace sakura::task_system::ecs
 			allPasses.push_back(p);
 			return p;
 		}
-		void wait() const
-		{
-			forloop(i, 0u, allPasses.size())
-				if(auto pass = allPasses[i].lock())
-					pass->event.wait();
-			allPasses.clear();
-		}
 		void begin_phase()
 		{
 
@@ -128,9 +121,12 @@ namespace sakura::task_system::ecs
 				if(auto dp = dpr.lock())
 					((custom_pass*)dp.get())->event.wait();
 		}
-		void sync_all() const
+		void sync_all() const override
 		{
-			wait();
+			forloop(i, 0u, allPasses.size())
+				if (auto pass = allPasses[i].lock())
+					pass->event.wait();
+			allPasses.clear();
 		}
 		mutable std::vector<std::weak_ptr<custom_pass>> allPasses;
 		phase rootPhase;
