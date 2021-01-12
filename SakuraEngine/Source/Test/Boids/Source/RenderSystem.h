@@ -112,12 +112,12 @@ namespace render_system
 			v_position = vec4<f32>(worldPos.x, worldPos.y, worldPos.z, 1.0);
 			Position = worldPos * passCB.view_proj;
 			var i : u32 = ids.id[InstanceIdx];
-			v_color = temperature(i);
+			v_color = vec4<f32>(rand(i, i + 3), rand(i, i + 2), rand(i, i + 1), 1.0);
 			const normal : vec4<f32> = vec4<f32>(0.0,1.0,0.0,0.0);
 			v_normal = normal * world;
 			return;
 		})";
-	//v_color = vec4<f32>(rand(i, i + 3), rand(i, i + 2), rand(i, i + 1), 1.0);
+	//v_color = temperature(i);
 
 	const sakura::string pixel_shader_wgsl =
 		u8R"(
@@ -262,8 +262,8 @@ namespace render_system
 		sakura::info("game thread id: {}", std::hash<std::thread::id>()(sakura::Core::get_main_thread_id()));
 		
 		sakura::Window::desc windDesc;
-		windDesc.height = 1080;
-		windDesc.width = 1920;
+		windDesc.height = 1440;
+		windDesc.width = 2560;
 		windDesc.name = "Sakura Engine";
 		main_window = sakura::Window::create(windDesc);
 
@@ -388,6 +388,12 @@ namespace render_system
 	using Rotator = sakura::Rotator;
 	using float4x4 = sakura::float4x4;
 	using IModule = sakura::IModule;
+	enum EDebugMode
+	{
+		Debug_NeighborCount,
+		Debug_FollowingLeader,
+		Debug_UniqueColor,
+	} DebugMode;
 	
 	void CollectAndUpload(task_system::ecs::pipeline& ppl, float deltaTime)
 	{
@@ -442,7 +448,9 @@ namespace render_system
 			};
 			passes[1] = Collect(filter, worlds);
 		}
+		auto CollectId = [&](auto&& f)
 		{
+
 			filters filter;
 			filter.archetypeFilter = {
 				{complist<LocalToWorld, Boid>}, //all
@@ -459,7 +467,7 @@ namespace render_system
 				{
 					ids.resize(pipeline.pass_size(task_pass));
 				},
-				[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
+				[f](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
 				{
 					auto o = operation{ paramList, task_pass, tk };
 					auto index = o.get_index();
@@ -469,11 +477,20 @@ namespace render_system
 					for (auto i = 0u; i < o.get_count(); i++)
 					{
 						int j = (i + index);
+						f(j, fls[i]);
 						//ids[j] = fls[i].following.id;
-						ids[j] = fls[i].neighborCount;
+						//ids[j] = fls[i].neighborCount;
 					}
 				}, 500);
-			passes[2] = pass;
+			return pass;
+		};
+		{
+			if (DebugMode == Debug_FollowingLeader)
+				passes[2] = CollectId([](uint32_t j, const BoidDebugData& fls) {ids[j] = fls.following.id; });
+			else if (DebugMode == Debug_NeighborCount)
+				passes[2] = CollectId([](uint32_t j, const BoidDebugData& fls) {ids[j] = fls.neighborCount; });
+			else if (DebugMode == Debug_UniqueColor)
+				passes[2] = CollectId([](uint32_t j, const BoidDebugData& fls) {ids[j] = j; });
 		}
 		passes[0]->event.wait();
 		passes[1]->event.wait();

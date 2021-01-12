@@ -812,7 +812,7 @@ int main()
 	declare_components<Rotation, Translation, RotationEuler, Scale, LocalToWorld, LocalToParent,
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading, BoidDebugData>();
 	SpawnBoidSetting();
-	SpawnBoidTargets(3);
+	SpawnBoidTargets(10);
 	
 	task_system::ecs::pipeline ppl(std::move(ctx));
 	if (!bUseImGui)
@@ -1036,9 +1036,11 @@ int main()
 
 			if (imgui::CollapsingHeader("Render"))
 			{
-				imgui::SliderFloat4("light direction", render_system::passCB.lightdir, -1.f, 1.f);
-				imgui::ColorEdit4("light color", render_system::passCB.lightcolor, ImGuiColorEditFlags_Float);
-				imgui::ColorEdit4("ambient", render_system::passCB.ambient, ImGuiColorEditFlags_Float);
+				imgui::SliderFloat4("Light Direction", render_system::passCB.lightdir, -1.f, 1.f);
+				imgui::ColorEdit4("Light Color", render_system::passCB.lightcolor, ImGuiColorEditFlags_Float);
+				imgui::ColorEdit4("Ambient Color", render_system::passCB.ambient, ImGuiColorEditFlags_Float);
+				const char* DebugModeNames[] = { "NeighborCount", "FollowingLeader", "UniqueColor" };
+				imgui::ListBox("Debug Mode", (int*)&DebugMode, DebugModeNames, 3);
 			}
 			
 			if (imgui::CollapsingHeader("Boids"))
