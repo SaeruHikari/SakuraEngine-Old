@@ -1,4 +1,5 @@
 #include "ECS/ECS.h"
+#include "Base/GUID.h"
 
 ECSModule* ECSModule::create()
 {

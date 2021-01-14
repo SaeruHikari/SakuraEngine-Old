@@ -262,8 +262,8 @@ namespace render_system
 		sakura::info("game thread id: {}", std::hash<std::thread::id>()(sakura::Core::get_main_thread_id()));
 		
 		sakura::Window::desc windDesc;
-		windDesc.height = 1440;
-		windDesc.width = 2560;
+		windDesc.height = 1080;
+		windDesc.width = 1920;
 		windDesc.name = "Sakura Engine";
 		main_window = sakura::Window::create(windDesc);
 
