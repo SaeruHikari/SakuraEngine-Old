@@ -120,7 +120,7 @@ void ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f,
 	);
 	timestamp = ppl.get_timestamp();
 	return task_system::ecs::schedule(ppl, ppl.create_pass(filter, paramList, location),
-		[&, f](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const task& tk)
+		[&, f](const task_system::ecs::pass& pass, const task& tk)
 		{
 			auto o = operation{ paramList, pass, tk };
 			hana::tuple arrays = boost::hana::make_tuple(
@@ -184,9 +184,9 @@ void Child2WorldSystem(task_system::ecs::pipeline& ppl)
 	};
 	def paramList = boost::hana::make_tuple(
 		// write
-		param<LocalToWorld>,
+		param<LocalToWorld, true>,
 		// read.
-		param<const LocalToParent>, param<const Child>
+		param<const LocalToParent, true>, param<const Child, true>
 	);
 	struct children2World
 	{
@@ -214,11 +214,10 @@ void Child2WorldSystem(task_system::ecs::pipeline& ppl)
 	};
 	return task_system::ecs::schedule(ppl,
 		ppl.create_pass(filter, paramList, PassLocation(Child2World)),
-		[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
+		[](const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
 			auto o = operation{ paramList, pass, tk };
-			const auto childrens = o.get_parameter<const Child>();
-			float4x4* l2ws = o.get_parameter<LocalToWorld>();
+			auto [childrens, l2ws] = o.get_parameters<const Child, LocalToWorld>();
 
 			forloop(i, 0, o.get_count())
 			{
@@ -248,11 +247,10 @@ void World2LocalSystem(task_system::ecs::pipeline& ppl)
 	);
 	return task_system::ecs::schedule(ppl,
 		ppl.create_pass(filter, paramList, PassLocation(World2Local)),
-		[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
+		[](const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
 			auto o = operation{ paramList, pass, tk };
-			const float4x4* l2ws = o.get_parameter<const LocalToWorld>();
-			float4x4* w2ls = o.get_parameter<WorldToLocal>();
+			auto [l2ws, w2ls] = o.get_parameters<const LocalToWorld, WorldToLocal>();
 
 			forloop(i, 0, o.get_count())
 			{
@@ -269,11 +267,11 @@ void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 	shared_entry shareList[] = { write(vector) };
 	auto pass = ppl.create_pass(filter, paramList, location, shareList);
 	return task_system::ecs::schedule_init(ppl, pass,
-		[vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass) mutable
+		[vector](const task_system::ecs::pass& pass) mutable
 		{
-			vector->resize(pipeline.pass_size(pass));
+			vector->resize(pass.calc_size());
 		},
-		[&, vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
+		[&, vector](const task_system::ecs::pass& pass, const ecs::task& tk) mutable
 		{
 			auto o = operation{ paramList, pass, tk };
 			auto index = o.get_index();
@@ -294,7 +292,7 @@ void FillComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 	shared_entry shareList[] = { read(vector) };
 	auto pass = ppl.create_pass(filter, paramList, location, shareList);
 	return task_system::ecs::schedule(ppl, pass,
-		[&, vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
+		[&, vector](const task_system::ecs::pass& pass, const ecs::task& tk) mutable
 		{
 			auto o = operation{ paramList, pass, tk };
 			auto index = o.get_index();
@@ -315,11 +313,11 @@ void CollectEntites(task_system::ecs::pipeline& ppl, const ecs::filters& filter,
 	shared_entry shareList[] = { write(vector) };
 	auto pass = ppl.create_pass(filter, paramList, location, shareList);
 	return task_system::ecs::schedule_init(ppl, pass,
-		[vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass) mutable
+		[vector](const task_system::ecs::pass& pass) mutable
 		{
-			vector->resize(pipeline.pass_size(pass));
+			vector->resize(pass.calc_size());
 		},
-		[&, vector](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
+		[&, vector](const task_system::ecs::pass& pass, const ecs::task& tk) mutable
 		{
 			auto o = operation{ paramList, pass, tk };
 			auto index = o.get_index();
@@ -374,12 +372,10 @@ void RandomTargetSystem(task_system::ecs::pipeline& ppl)
 		param<MoveToward>, param<const RandomMoveTarget>, param<const Translation>
 	);
 	return task_system::ecs::schedule(ppl, ppl.create_pass(filter, paramList, PassLocation(RandomTarget)), 
-		[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
+		[](const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
 			auto o = operation{ paramList, pass, tk };
-			auto mts = o.get_parameter<MoveToward>();
-			auto trs = o.get_parameter<const Translation>();
-			auto rmts = o.get_parameter<const RandomMoveTarget>();
+			auto [mts, trs, rmts] = o.get_parameters<MoveToward, const Translation, const RandomMoveTarget>();
 			forloop(i, 0, o.get_count())
 			{
 				if (math::subtract(mts[i].Target, trs[i]).is_nearly_zero(40.f))
@@ -406,11 +402,10 @@ void MoveTowardSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	static std::random_device r;
 	static std::default_random_engine el(r());
 	return task_system::ecs::schedule(ppl, ppl.create_pass(filter, paramList, PassLocation(MoveToward)),
-		[deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
+		[deltaTime](const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
 			auto o = operation{ paramList, pass, tk };
-			auto mts = o.get_parameter<const MoveToward>();
-			auto trs = o.get_parameter<Translation>();
+			auto [mts, trs] = o.get_parameters<const MoveToward, Translation>();
 			forloop(i, 0, o.get_count())
 				trs[i] = trs[i] + math::normalize(mts[i].Target - trs[i]) * mts[i].MoveSpeed * deltaTime;
 		}, 400);
@@ -442,11 +437,10 @@ void BoidMoveSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 	def paramList =
 		boost::hana::make_tuple(param<const Heading>, param<Translation>, param<const Boid>);
 	return task_system::ecs::schedule(ppl, ppl.create_pass(boidFilter, paramList, PassLocation(BoidMove)),
-		[deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk)
+		[deltaTime](const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
 			auto o = operation{ paramList, pass, tk };
-			auto hds = o.get_parameter<const Heading>();
-			auto trs = o.get_parameter_owned<Translation>();
+			auto [hds, trs] = o.get_parameters_owned<const Heading, Translation>();
 			auto boid = o.get_parameter<const Boid>(); //这玩意是 shared
 			forloop(i, 0, o.get_count())
 				trs[i] = trs[i] + hds[i] * deltaTime * boid->MoveSpeed;
@@ -504,18 +498,16 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 			boost::hana::make_tuple( param<const Heading>, param<const Translation>, param<const Boid>, param<BoidDebugData>);
 		auto pass = ppl.create_pass(boidFilter, paramList, PassLocation(BoidMain), shareList);
 		task_system::ecs::schedule_init(ppl, pass,
-			[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass) mutable
+			[](const task_system::ecs::pass& pass) mutable
 			{
-				newHeadings->resize(pipeline.pass_size(pass));
+				newHeadings->resize(pass.calc_size());
 			},
-			[deltaTime](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& pass, const ecs::task& tk) mutable
+			[deltaTime](const task_system::ecs::pass& pass, const ecs::task& tk) mutable
 			{
 				auto o = operation{ paramList, pass, tk };
 				auto index = o.get_index();
-				auto hds = o.get_parameter_owned<const Heading>();
-				auto trs = o.get_parameter_owned<const Translation>();
+				auto [hds, trs, dbg] = o.get_parameters_owned<const Heading, const Translation, BoidDebugData>();
 				auto boid = o.get_parameter<const Boid>(); //这玩意是 shared
-				auto dbg = o.get_parameter_owned<BoidDebugData>();
 				std::vector<std::pair<float, int>> neighbers;
 				neighbers.reserve(10);
 				chunk_vector<sakura::Vector3f> alignments;

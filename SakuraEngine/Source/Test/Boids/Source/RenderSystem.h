@@ -409,11 +409,11 @@ namespace render_system
 			);
 			auto pass = ppl.create_pass(filter, paramList, PassLocation(Collect));
 			task_system::ecs::schedule_init(ppl, pass,
-				[&world](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass)
+				[&world](const task_system::ecs::pass& task_pass)
 				{
-					world.resize(pipeline.pass_size(task_pass));
+					world.resize(task_pass.calc_size());
 				},
-				[&world](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
+				[&world](const task_system::ecs::pass& task_pass, const ecs::task& tk)
 				{
 					auto o = operation{ paramList, task_pass, tk };
 					auto index = o.get_index();
@@ -463,11 +463,11 @@ namespace render_system
 			);
 			auto pass = ppl.create_pass(filter, paramList, PassLocation(Collect));
 			task_system::ecs::schedule_init(ppl, pass,
-				[](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass)
+				[](const task_system::ecs::pass& task_pass)
 				{
-					ids.resize(pipeline.pass_size(task_pass));
+					ids.resize(task_pass.calc_size());
 				},
-				[f](const task_system::ecs::pipeline& pipeline, const task_system::ecs::pass& task_pass, const ecs::task& tk)
+				[f](const task_system::ecs::pass& task_pass, const ecs::task& tk)
 				{
 					auto o = operation{ paramList, task_pass, tk };
 					auto index = o.get_index();

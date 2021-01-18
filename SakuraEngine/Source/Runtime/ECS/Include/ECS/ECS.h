@@ -162,9 +162,9 @@ namespace sakura::task_system::ecs
 	FORCEINLINE void schedule_init(
 		pipeline& pipeline, std::shared_ptr<pass> p, F&& f, F2&& t, int batchCount, std::vector<task_system::Event> externalDependencies = {})
 	{
-		static_assert(std::is_invocable_v<std::decay_t<F>, const task_system::ecs::pipeline&, const pass&>,
+		static_assert(std::is_invocable_v<std::decay_t<F>, const pass&>,
 			"F must be an invokable of void(const ecs::pipeline&, const ecs::pass&)>");
-		static_assert(std::is_invocable_v<std::decay_t<F2>, const task_system::ecs::pipeline&, const pass&, const sakura::ecs::task&>,
+		static_assert(std::is_invocable_v<std::decay_t<F2>, const pass&, const sakura::ecs::task&>,
 			"F2 must be an invokable of void(const ecs::pipeline&, const ecs::pass&, const ecs::task&)>");
 		static_assert(!(ForceParallel & ForceNoGroupParallel),
 			"A schedule can not force both parallel and not parallel!");
@@ -174,7 +174,7 @@ namespace sakura::task_system::ecs
 			auto [tasks, groups] = [&]() 
 			{
 				ZoneScopedPass(p->location->initialize);
-				f(pipeline, *p);
+				f(*p);
 				return pipeline.create_tasks(*p, batchCount); 
 			}();
 			//defer(tasks.reset());
@@ -202,7 +202,7 @@ namespace sakura::task_system::ecs
 						forloop(tsk, gp.begin, gp.end)
 						{
 							auto& tk = tasks[tsk];
-							t(pipeline, *p, tk);
+							t(*p, tk);
 						}
 						});
 				}
@@ -218,7 +218,7 @@ namespace sakura::task_system::ecs
 						forloop(tsk, gp.begin, gp.end)
 						{
 							auto& tk = tasks[tsk];
-							t(pipeline, *p, tk);
+							t(*p, tk);
 						}
 					});
 			}
@@ -234,7 +234,7 @@ namespace sakura::task_system::ecs
 	FORCEINLINE void schedule(
 		pipeline& pipeline, std::shared_ptr<pass> p, F&& t, int batchCount, std::vector<task_system::Event> externalDependencies = {})
 	{
-		schedule_init(pipeline, p, [](const task_system::ecs::pipeline&, const pass&) {}, std::forward<F>(t), batchCount, externalDependencies);
+		schedule_init(pipeline, p, [](const pass&) {}, std::forward<F>(t), batchCount, externalDependencies);
 	}
 }
 
