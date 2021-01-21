@@ -933,8 +933,40 @@ int main()
 
 			ZoneScopedN("ImGui Command");
 			imgui::new_frame(main_window, deltaTime);
-			imgui::Begin("Boid Settings");
+			imgui::Begin("Boid Settings", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_AlwaysAutoResize);
 			static std::mutex fileLock;
+			int prevBoidCount = BoidCount;
+			if (!rolling_back && imgui::SliderInt("BoidCount", &BoidCount, 0, TARGET_NUM))
+			{
+				UpdateBoidsCount(ppl, BoidCount - prevBoidCount);
+			}
+			if(!bEnableGameInput)
+				imgui::Text("press \"\\\" to control camera");
+			else
+				imgui::Text("press \"\\\" to leave control");
+			if (imgui::CollapsingHeader("Simulation"))
+			{
+				imgui::Checkbox("Enable Boids", &bEnableBoids);
+				imgui::Checkbox("Enable Boids Move", &bEnableBoidsMove);
+				imgui::Checkbox("Enable L2W", &bEnableL2W);
+				bool UpdateBoid = false;
+				UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
+				UpdateBoid |= imgui::SliderFloat("TargetWeight", &BoidSetting.TargetWeight, 0, 10);
+				UpdateBoid |= imgui::SliderFloat("SeparationWeight", &BoidSetting.SeparationWeight, 0, 10);
+				UpdateBoid |= imgui::SliderFloat("TurnSpeed", &BoidSetting.TurnSpeed, 0, 5);
+				UpdateBoid |= imgui::SliderFloat("MoveSpeed", &BoidSetting.MoveSpeed, 0, 1000);
+				UpdateBoid |= imgui::SliderFloat("SightRadius", &BoidSetting.SightRadius, 5, 50);
+				if (UpdateBoid)
+				{
+					*(Boid*)ppl.get_owned_rw(BoidSettingEntity, cid<Boid>) = BoidSetting;
+				}
+				imgui::SliderFloat("TimeScale", &TimeScale, 0, 10);
+				if (BoidCount)
+				{
+					imgui::Text("Max Neighbor Count: %d", maxNeighberCount.load());
+					imgui::Text("Average Neighbor Count: %d", averageNeighberCount.load() / BoidCount);
+				}
+			}
 			if (imgui::CollapsingHeader("Camera"))
 			{
 				imgui::InputFloat("Speed", &CameraSpeed, 1.f, 10.f);
@@ -1031,37 +1063,8 @@ int main()
 				const char* DebugModeNames[] = { "NeighborCount", "FollowingLeader", "UniqueColor" };
 				imgui::ListBox("Debug Mode", (int*)&DebugMode, DebugModeNames, 3);
 			}
-			
-			if (imgui::CollapsingHeader("Boids"))
-			{
-				imgui::Checkbox("Enable Boids", &bEnableBoids);
-				imgui::Checkbox("Enable Boids Move", &bEnableBoidsMove);
-				imgui::Checkbox("Enable L2W", &bEnableL2W);
-				bool UpdateBoid = false;
-				UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
-				UpdateBoid |= imgui::SliderFloat("TargetWeight", &BoidSetting.TargetWeight, 0, 10);
-				UpdateBoid |= imgui::SliderFloat("SeparationWeight", &BoidSetting.SeparationWeight, 0, 10);
-				UpdateBoid |= imgui::SliderFloat("TurnSpeed", &BoidSetting.TurnSpeed, 0, 5);
-				UpdateBoid |= imgui::SliderFloat("MoveSpeed", &BoidSetting.MoveSpeed, 0, 1000);
-				UpdateBoid |= imgui::SliderFloat("SightRadius", &BoidSetting.SightRadius, 5, 50);
-				if (UpdateBoid)
-				{
-					*(Boid*)ppl.get_owned_rw(BoidSettingEntity, cid<Boid>) = BoidSetting;
-				}
-				imgui::SliderFloat("TimeScale", &TimeScale, 0, 10);
-				int prevBoidCount = BoidCount;
-				if (!rolling_back && imgui::SliderInt("BoidCount", &BoidCount, 0, TARGET_NUM))
-				{
-					UpdateBoidsCount(ppl, BoidCount - prevBoidCount);
-				}
-				if (BoidCount)
-				{
-					imgui::Text("Max Neighbor Count: %d", maxNeighberCount.load());
-					imgui::Text("Average Neighbor Count: %d", averageNeighberCount.load() / BoidCount);
-				}
-			}
 
-			if (imgui::CollapsingHeader("Inspector"))
+			//if (imgui::CollapsingHeader("Inspector"))
 			{
 
 			}

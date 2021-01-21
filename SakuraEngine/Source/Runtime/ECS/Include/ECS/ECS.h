@@ -43,7 +43,7 @@ namespace sakura::task_system::ecs
 #define TracyLocation( name ) tracy::SourceLocationData{ name, __FUNCTION__,  __FILE__, (uint32_t)__LINE__, 0 }
 #define PassLocation( name ) []() { static constexpr sakura::task_system::ecs::pass_location _ {  SourceLocation(ECS_STR(name)), TracyLocation(ECS_STR(ECS_CAT(name, System))), TracyLocation(ECS_STR(ECS_CAT(name, Task))), TracyLocation(ECS_STR(ECS_CAT(name, Schedule)))}; return &_; }()
 #else
-#define PassLocation( name ) []() { static constexpr sakura::task_system::ecs::pass_location _ { SourceLocation(ECS_STR(name)) };
+#define PassLocation( name ) []() { static constexpr sakura::task_system::ecs::pass_location _ { SourceLocation(ECS_STR(name)) }; return &_; }()
 #endif
 
 	struct phase
