@@ -592,10 +592,7 @@ void SpawnBoidTargets(int Count)
 	};
 	for (auto slice : ctx.allocate(type, Count))
 	{
-		auto trs = init_component<Translation>(ctx, slice);
-		auto mts = init_component<MoveToward>(ctx, slice);
-		auto rmts = init_component<RandomMoveTarget>(ctx, slice);
-		auto ss = init_component<Scale>(ctx, slice);
+		auto [trs, mts, rmts, ss] = init_components<Translation, MoveToward, RandomMoveTarget, Scale>(ctx, slice);
 
 		forloop(i, 0, slice.count)
 		{
@@ -649,11 +646,11 @@ void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 	sphere s;
 	s.center = sakura::Vector3f(0, 0, 500.f);
 	s.radius = Radius;
-	for (auto slice : ppl.allocate(type, Count))
+	ppl.sync_archetype(ppl.find_archetype(type));
+	auto& ctx = (world&)ppl; //warning! 解放!
+	for (auto slice : ctx.allocate(type, Count))
 	{
-		auto& ctx = (world&)ppl; //warning! 解放!
-		auto trs = init_component<Translation>(ctx, slice);
-		auto hds = init_component<Heading>(ctx, slice);
+		auto [trs, hds] = init_components<Translation, Heading>(ctx, slice);
 		forloop(i, 0, slice.count)
 		{
 			std::uniform_real_distribution<float> uniform_dist(-1, 1);
@@ -1062,7 +1059,7 @@ int main()
 					imgui::Text("Max Neighbor Count: %d", maxNeighberCount.load());
 					imgui::Text("Average Neighbor Count: %d", averageNeighberCount.load() / BoidCount);
 				}
-			}
+			} 
 
 			if (imgui::CollapsingHeader("Inspector"))
 			{
