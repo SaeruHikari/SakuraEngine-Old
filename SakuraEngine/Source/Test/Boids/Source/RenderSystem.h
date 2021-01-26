@@ -393,7 +393,7 @@ namespace render_system
 		Debug_NeighborCount,
 		Debug_FollowingLeader,
 		Debug_UniqueColor,
-	} DebugMode;
+	} DebugMode = Debug_FollowingLeader;
 	
 	void CollectAndUpload(task_system::ecs::pipeline& ppl, float deltaTime)
 	{

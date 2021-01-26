@@ -173,6 +173,27 @@ void RotationEulerSystem(task_system::ecs::pipeline& ppl)
 		}, PassLocation(EulerToQuat));
 }
 
+template<class T>
+static void SolveChild2World(T& o, const float4x4& parent_l2w, const ecs::entity e)
+{
+	float4x4 l2w = float4x4();
+	auto [child_l2w, child_l2p] = o.get_parameters_owned<LocalToWorld, const LocalToParent>(e);
+	if (child_l2w && child_l2p)
+	{
+		l2w = sakura::math::multiply(parent_l2w, *child_l2p);
+		*child_l2w = l2w;
+	}
+
+	if (o.has_component<Child>(e)) //TODO: use own_component
+	{
+		auto child_children = o.get_parameter_owned<const Child>(e);
+		for (const auto& child : child_children)
+		{
+			SolveChild2World(o, l2w, child);
+		}
+	}
+}
+
 void Child2WorldSystem(task_system::ecs::pipeline& ppl)
 {
 	using namespace ecs;
@@ -188,30 +209,6 @@ void Child2WorldSystem(task_system::ecs::pipeline& ppl)
 		// read.
 		param<const LocalToParent, true>, param<const Child, true>
 	);
-	struct children2World
-	{
-		static void solve(const float4x4& parent_l2w, const entity e)
-		{
-			float4x4 l2w = float4x4();
-			auto child_l2w = static_cast<float4x4*>(ctx.get_owned_rw(e, cid<LocalToWorld>));
-			const auto child_l2p = static_cast<const float4x4*>(ctx.get_owned_ro(e, cid<LocalToParent>));
-			if (child_l2w && child_l2p)
-			{
-				l2w = sakura::math::multiply(parent_l2w, *child_l2p);
-				*child_l2w = l2w;
-			}
-
-			index_t childSet[] = { cid<Child> };
-			if (ctx.has_component(e, childSet))
-			{
-				ecs::value_type_t<Child> child_children = ctx.get_owned_ro(e, cid<Child>);
-				for (auto& child : child_children)
-				{
-					children2World::solve(l2w, child);
-				}
-			}
-		}
-	};
 	return task_system::ecs::schedule(ppl,
 		ppl.create_pass(filter, paramList, PassLocation(Child2World)),
 		[](const task_system::ecs::pass& pass, const ecs::task& tk)
@@ -224,7 +221,7 @@ void Child2WorldSystem(task_system::ecs::pipeline& ppl)
 				auto& children = childrens[i];
 				for (const auto& child : children)
 				{
-					children2World::solve(l2ws[i], child);
+					SolveChild2World(o, l2ws[i], child);
 				}
 			}
 		}, 100);
@@ -933,8 +930,40 @@ int main()
 
 			ZoneScopedN("ImGui Command");
 			imgui::new_frame(main_window, deltaTime);
-			imgui::Begin("Boid Settings");
+			imgui::Begin("Boid Settings", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_AlwaysAutoResize);
 			static std::mutex fileLock;
+			int prevBoidCount = BoidCount;
+			if (!rolling_back && imgui::SliderInt("BoidCount", &BoidCount, 0, TARGET_NUM))
+			{
+				UpdateBoidsCount(ppl, BoidCount - prevBoidCount);
+			}
+			if(!bEnableGameInput)
+				imgui::Text("press \"\\\" to control camera");
+			else
+				imgui::Text("press \"\\\" to leave control");
+			if (imgui::CollapsingHeader("Simulation"))
+			{
+				imgui::Checkbox("Enable Boids", &bEnableBoids);
+				imgui::Checkbox("Enable Boids Move", &bEnableBoidsMove);
+				imgui::Checkbox("Enable L2W", &bEnableL2W);
+				bool UpdateBoid = false;
+				UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
+				UpdateBoid |= imgui::SliderFloat("TargetWeight", &BoidSetting.TargetWeight, 0, 10);
+				UpdateBoid |= imgui::SliderFloat("SeparationWeight", &BoidSetting.SeparationWeight, 0, 10);
+				UpdateBoid |= imgui::SliderFloat("TurnSpeed", &BoidSetting.TurnSpeed, 0, 5);
+				UpdateBoid |= imgui::SliderFloat("MoveSpeed", &BoidSetting.MoveSpeed, 0, 1000);
+				UpdateBoid |= imgui::SliderFloat("SightRadius", &BoidSetting.SightRadius, 5, 50);
+				if (UpdateBoid)
+				{
+					*(Boid*)ppl.get_owned_rw(BoidSettingEntity, cid<Boid>) = BoidSetting;
+				}
+				imgui::SliderFloat("TimeScale", &TimeScale, 0, 10);
+				if (BoidCount)
+				{
+					imgui::Text("Max Neighbor Count: %d", maxNeighberCount.load());
+					imgui::Text("Average Neighbor Count: %d", averageNeighberCount.load() / BoidCount);
+				}
+			}
 			if (imgui::CollapsingHeader("Camera"))
 			{
 				imgui::InputFloat("Speed", &CameraSpeed, 1.f, 10.f);
@@ -1031,37 +1060,8 @@ int main()
 				const char* DebugModeNames[] = { "NeighborCount", "FollowingLeader", "UniqueColor" };
 				imgui::ListBox("Debug Mode", (int*)&DebugMode, DebugModeNames, 3);
 			}
-			
-			if (imgui::CollapsingHeader("Boids"))
-			{
-				imgui::Checkbox("Enable Boids", &bEnableBoids);
-				imgui::Checkbox("Enable Boids Move", &bEnableBoidsMove);
-				imgui::Checkbox("Enable L2W", &bEnableL2W);
-				bool UpdateBoid = false;
-				UpdateBoid |= imgui::SliderFloat("AlignmentWeight", &BoidSetting.AlignmentWeight, 0, 10);
-				UpdateBoid |= imgui::SliderFloat("TargetWeight", &BoidSetting.TargetWeight, 0, 10);
-				UpdateBoid |= imgui::SliderFloat("SeparationWeight", &BoidSetting.SeparationWeight, 0, 10);
-				UpdateBoid |= imgui::SliderFloat("TurnSpeed", &BoidSetting.TurnSpeed, 0, 5);
-				UpdateBoid |= imgui::SliderFloat("MoveSpeed", &BoidSetting.MoveSpeed, 0, 1000);
-				UpdateBoid |= imgui::SliderFloat("SightRadius", &BoidSetting.SightRadius, 5, 50);
-				if (UpdateBoid)
-				{
-					*(Boid*)ppl.get_owned_rw(BoidSettingEntity, cid<Boid>) = BoidSetting;
-				}
-				imgui::SliderFloat("TimeScale", &TimeScale, 0, 10);
-				int prevBoidCount = BoidCount;
-				if (!rolling_back && imgui::SliderInt("BoidCount", &BoidCount, 0, TARGET_NUM))
-				{
-					UpdateBoidsCount(ppl, BoidCount - prevBoidCount);
-				}
-				if (BoidCount)
-				{
-					imgui::Text("Max Neighbor Count: %d", maxNeighberCount.load());
-					imgui::Text("Average Neighbor Count: %d", averageNeighberCount.load() / BoidCount);
-				}
-			} 
 
-			if (imgui::CollapsingHeader("Inspector"))
+			//if (imgui::CollapsingHeader("Inspector"))
 			{
 
 			}
