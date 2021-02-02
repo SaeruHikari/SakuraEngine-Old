@@ -464,6 +464,10 @@ void RenderDevice::compileCommand(WGPUCommandEncoder encoder, const RenderComman
         auto& cmd = *static_cast<const RenderCommandCopyBufferToTexture*>(command);
         processCommandCopyBufferToTexture(encoder, cmd);
     }break;
+    default:
+    {
+        sakura::error("NOT IMPLEMENTED!");
+    }break;
 	}
 }
 

@@ -143,7 +143,7 @@ OSMessages* sakura::Core::bind(Window window) noexcept
 		sakura::error("Rep Bind of window!");
 		return nullptr;
 	}
-	msg_buses_.insert(std::make_pair(window.handle(), std::move(std::make_unique<ActualOSMessages>(window))));
+	msg_buses_.insert(std::make_pair(window.handle(), std::make_unique<ActualOSMessages>(window)));
 	return msg_buses_[window.handle()].get();
 }
 

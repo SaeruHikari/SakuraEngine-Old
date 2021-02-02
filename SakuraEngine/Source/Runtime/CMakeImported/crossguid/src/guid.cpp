@@ -166,15 +166,15 @@ unsigned char hexDigitToChar(char ch)
 {
 	// 0-9
 	if (ch > 47 && ch < 58)
-		return ch - 48;
+		return static_cast<unsigned char>(ch - 48);
 
 	// a-f
 	if (ch > 96 && ch < 103)
-		return ch - 87;
+		return static_cast<unsigned char>(ch - 87);
 
 	// A-F
 	if (ch > 64 && ch < 71)
-		return ch - 55;
+		return static_cast<unsigned char>(ch - 55);
 
 	return 0;
 }
