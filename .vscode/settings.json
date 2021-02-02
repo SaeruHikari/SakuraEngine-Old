@@ -138,6 +138,8 @@
         "csignal": "cpp",
         "coroutine": "cpp",
         "__tree": "cpp",
-        "span_ext": "cpp"
+        "span_ext": "cpp",
+        "cinttypes": "cpp",
+        "ranges": "cpp"
     },
 }

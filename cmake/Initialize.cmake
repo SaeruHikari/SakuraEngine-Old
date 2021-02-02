@@ -44,6 +44,7 @@ set(API_HIDDEN_DEF __attribute__\(\(visibility\(\"hidden\"\)\)\))
 
 ## Target Platform
 add_definitions(-D "SPDLOG_NO_EXCEPTIONS")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if(UNIX)
     add_definitions(-D "SAKURA_TARGET_PLATFORM_UNIX")
     if(APPLE)

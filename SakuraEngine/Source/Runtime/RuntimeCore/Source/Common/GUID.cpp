@@ -21,9 +21,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
+#include <functional>
+#include <iostream>
+#include <sstream>
+#include <string_view>
+#include <utility>
+#include <iomanip>
 #include <cstring>
-#include "crossguid/guid.hpp"
+#include "Base/GUID.h"
 
 #ifdef GUID_LIBUUID
 #include <uuid/uuid.h>
@@ -47,7 +52,8 @@ THE SOFTWARE.
 #include <kernel.h>
 #endif
 
-BEGIN_XG_NAMESPACE
+namespace sakura
+{
 
 #ifdef GUID_ANDROID
 AndroidGuidInfo androidInfo;
@@ -104,14 +110,14 @@ std::ostream &operator<<(std::ostream &s, const Guid &guid)
 	return s;
 }
 
-bool operator<(const xg::Guid &lhs, const xg::Guid &rhs)
+bool operator<(const sakura::Guid &lhs, const sakura::Guid &rhs)
 {
 	return lhs.bytes() <  rhs.bytes();
 }
 
 bool Guid::isValid() const
 {
-	xg::Guid empty;
+	sakura::Guid empty;
 	return *this != empty;
 }
 
@@ -430,14 +436,14 @@ Guid newGuid()
 #endif
 
 
-END_XG_NAMESPACE
+}
 
 // Specialization for std::swap<Guid>() --
 // call member swap function of lhs, passing rhs
 namespace std
 {
 	template <>
-	void swap(xg::Guid &lhs, xg::Guid &rhs) noexcept
+	void swap(sakura::Guid &lhs, sakura::Guid &rhs) noexcept
 	{
 		lhs.swap(rhs);
 	}
