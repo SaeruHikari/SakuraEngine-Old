@@ -1,6 +1,5 @@
-﻿#ifndef UTILS_H
-#define UTILS_H
-#include <Base/Definations.h>
+﻿#pragma once
+#include <Base/Definitions.h>
 
 class Utils {
 public:
@@ -30,5 +29,3 @@ public:
 		return padding;
 	}
 };
-
-#endif /* UTILS_H */

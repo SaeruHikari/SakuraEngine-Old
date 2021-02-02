@@ -1,6 +1,5 @@
 ﻿#pragma once
-#include "../file.h"
-#include <SakuraSTL.hpp>
+#include "System/vfs/file.h"
 
 namespace std::filesystem
 {

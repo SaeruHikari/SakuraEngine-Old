@@ -1,12 +1,4 @@
-﻿/*
- * @Author: your name
- * @Date: 2020-07-30 14:30:13
- * @LastEditTime: 2020-08-21 20:09:48
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \SakuraEngineV3\SakuraEngine\Source\Runtime\RenderGraph\private\RenderGraph.cpp
- */ 
-#include <RenderGraph/RenderGraph.h>
+﻿#include <RenderGraph/RenderGraph.h>
 #include "System/Log.h"
 
 

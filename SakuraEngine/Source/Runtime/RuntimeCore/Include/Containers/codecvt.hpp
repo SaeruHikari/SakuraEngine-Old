@@ -1,5 +1,5 @@
 #pragma once
-#include "Base/Definations.h"
+#include "Base/Definitions.h"
 #include "utf8/utf8.h"
 
 namespace utf_converter

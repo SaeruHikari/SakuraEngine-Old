@@ -25,37 +25,29 @@
  * @LastEditTime: 2020-08-10 00:06:26
  */ 
 #pragma once
-#include "RuntimeCore/Memory.h"
-#include <spdlog/fmt/fmt.h>
 #include <chrono>
 #include <variant>
 #include <atomic>
-#include "SakuraSTL/span.hpp"
-#include "SakuraSTL/array.hpp"
-#include "SakuraSTL/vector.hpp"
-#include "SakuraSTL/unordered_map.hpp"
-#include "SakuraSTL/string.hpp"
-#include "SakuraSTL/codecvt.hpp"
+#include <spdlog/fmt/fmt.h>
+#include "Containers/span.hpp"
+#include "Containers/array.hpp"
+#include "Containers/vector.hpp"
+#include "Containers/unordered_map.hpp"
+#include "Containers/string.hpp"
+#include "Containers/codecvt.hpp"
+#include "Containers/memory.hpp"
 
 namespace sakura
 {
     using namespace utf_converter;
-    
-    using std::unique_ptr;
     using std::variant;
-    using std::pair;
     using std::function;
-    using std::make_pair;
     using std::move;
     using std::forward;
 }
 
-#include <ctime>
-
 namespace sakura
 {
-    using time_t = std::time_t;
-    using nullptr_t = std::nullptr_t;
     using ostream = std::ostream;
     using exception = std::exception;
 

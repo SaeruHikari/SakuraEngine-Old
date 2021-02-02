@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "SakuraSTL.hpp"
+#include "System/Time.h"
 
 namespace sakura::vfs
 {
@@ -24,7 +24,7 @@ namespace sakura::vfs
 		virtual void replace_filename(const sakura::vfs::path& p) noexcept = 0;
 
 		[[nodiscard]] virtual size_t file_size() const noexcept = 0;
-		[[nodiscard]] virtual std::time_t last_write_time() const noexcept = 0;
+		[[nodiscard]] virtual sakura::time_t last_write_time() const noexcept = 0;
 	};
 
 }

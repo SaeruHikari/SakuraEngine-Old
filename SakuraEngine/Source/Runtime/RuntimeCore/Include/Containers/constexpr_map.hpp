@@ -1,5 +1,6 @@
 ﻿#pragma once
-#include <SakuraSTL.hpp>
+#include <Base/Definitions.h>
+#include "pair.hpp"
 
 namespace sakura 
 {

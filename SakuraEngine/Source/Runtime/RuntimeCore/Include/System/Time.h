@@ -1,8 +1,10 @@
 ﻿#pragma once
-#include <SakuraSTL.hpp>
+#include <ctime>
+#include <Containers/string.hpp>
 
 namespace sakura
 {
+    using time_t = std::time_t;
     struct RuntimeCoreAPI DateTime
     {
         int tm_sec;   // seconds after the minute - [0, 60] including leap second
@@ -22,17 +24,4 @@ namespace sakura
     [[nodiscard]] sakura::time_t RuntimeCoreAPI now(void) noexcept;
     [[nodiscard]] sakura::DateTime RuntimeCoreAPI to_date_time(const sakura::time_t* time_t) noexcept;
     [[nodiscard]] sakura::string RuntimeCoreAPI date_time_string(const DateTime& dt) noexcept;
-}
-
-namespace fmt
-{
-	template<> struct formatter<sakura::DateTime> : fmt::formatter<std::string>
-	{
-		template<typename FormatContext>
-		auto format(sakura::DateTime dt, FormatContext& ctx)
-		{
-            std::string result = sakura::date_time_string(dt).c_str();
-            return formatter<std::string>::format(result, ctx);
-		}
-	};
 }

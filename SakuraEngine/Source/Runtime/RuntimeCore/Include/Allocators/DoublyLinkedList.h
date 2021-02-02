@@ -1,13 +1,4 @@
-﻿/*
- * @Author: your name
- * @Date: 2020-08-11 17:19:36
- * @LastEditTime: 2020-08-11 17:25:06
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \allocators\DoublyLinkedList.h
- */
-#ifndef doubly_linked_list_H
-#define doubly_linked_list_H
+﻿#pragma once
 
 template <class T>
 class doubly_linked_list {
@@ -28,6 +19,4 @@ private:
 };
 
 #include "DoublyLinkedListImpl.h"
-
-#endif /* doubly_linked_list_H */
 

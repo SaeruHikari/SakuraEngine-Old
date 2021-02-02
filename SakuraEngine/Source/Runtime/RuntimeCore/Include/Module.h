@@ -1,12 +1,12 @@
 ﻿#pragma once
-#include <SakuraSTL/unordered_map.hpp>
+#include <SakuraSTL.hpp>
 
 namespace sakura
 {
 	struct RuntimeCoreAPI IModule
 	{
 	public:
-		using constructor_t = sakura::function<IModule* ()>;
+		using constructor_t = sakura::function<IModule*()>;
 		virtual ~IModule() = default;
 		IModule() = default;
 		

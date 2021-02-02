@@ -1,14 +1,10 @@
-/*
- * @Author: your name
- * @Date: 2020-07-30 14:06:44
- * @LastEditTime: 2020-08-19 18:19:44
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \SakuraEngineV3\SakuraEngine\Runtime\Core\private\Core.cpp
- */
 #include <iomanip>
 #include <RuntimeCore/RuntimeCore.h>
 #include <System/Log.h>
+
+#include "System/Time.h"
+#include "System/VirtualFileSystem.h"
+
 #include "System/vfs/fs_dev_local/adapter_dev_local.h"
 
 using namespace sakura;

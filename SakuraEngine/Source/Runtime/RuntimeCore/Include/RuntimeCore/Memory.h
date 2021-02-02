@@ -1,13 +1,5 @@
-/*
- * @Author: SaeruHikari
- * @Date: 2020-07-30 14:11:41
- * @LastEditTime: 2020-08-11 17:08:49
- * @LastEditors: Please set LastEditors
- * @Description: malloc of SakuraEngine RuntimeCore.
- * @FilePath: \SakuraEngineV3\SakuraEngine\Runtime\Core\public\malloc.h
- */ 
 #pragma once
-#include "Base/Definations.h"
+#include "Base/Definitions.h"
 #include <stdlib.h>
 
 namespace sakura

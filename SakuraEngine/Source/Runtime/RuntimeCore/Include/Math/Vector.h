@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "SakuraSTL/span.hpp"
-#include "SakuraSTL/array.hpp"
+#include "Containers/span.hpp"
+#include "Containers/array.hpp"
 
 namespace sakura
 {

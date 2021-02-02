@@ -1,5 +1,5 @@
 #pragma once
-#include "Base/Definations.h"
+#include "Base/Definitions.h"
 #include <string>
 #include <string_view>
 

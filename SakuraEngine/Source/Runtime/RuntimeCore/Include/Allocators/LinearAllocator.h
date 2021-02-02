@@ -1,12 +1,4 @@
-﻿/*
- * @Author: your name
- * @Date: 2020-08-11 17:19:36
- * @LastEditTime: 2020-08-13 12:42:56
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \allocators\LinearAllocator.h
- */
-#pragma once
+﻿#pragma once
 #include "AllocatorBase.h"
 
 namespace sakura

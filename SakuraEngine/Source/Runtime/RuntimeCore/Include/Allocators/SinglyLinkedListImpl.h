@@ -1,12 +1,4 @@
-﻿/*
- * @Author: your name
- * @Date: 2020-08-11 17:29:15
- * @LastEditTime: 2020-08-11 17:29:34
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \allocators\SinglyLinkedListImpl.h
- */
-  
+﻿#pragma once
 #include "SinglyLinkedList.h"
 
 template <class T>

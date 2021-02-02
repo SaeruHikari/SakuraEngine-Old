@@ -18,7 +18,7 @@
  *  IN THESOFTWARE.
  * 
  * 
- * @Description: Prev-Definations of Engine. 
+ * @Description: Prev-Definitions of Engine. 
  * @Version: 0.1.0
  * @Autor: SaeruHikari
  * @Date: 2020-07-30 20:41:25
@@ -124,32 +124,34 @@
 
 namespace sakura
 {
-    typedef unsigned int uint;
-    typedef unsigned char uchar;
+  typedef unsigned int uint;
+  typedef unsigned char uchar;
 
-    using char8_t = char;
+  using char8_t = char;
 
-    using uint8 = uint8_t;
-    using uint8_t = uint8_t;
-    using uint16 = uint16_t;
-    using uint16_t = uint16_t;
-    using uint32 = uint32_t;
-    using uint32_t = uint32_t;
-    using uint64 = uint64_t;
-    using uint64_t = uint64_t;
-    using int8 = int8_t;
-    using int8_t = int8_t;
-    using int16 = int16_t;
-    using int16_t = int16_t;
-    using int32 = int32_t;
-    using int32_t = int32_t;
-    using int64 = int64_t;
-    using int64_t = int64_t;
-    using size_t = std::size_t;
-    using float32 = float;
-    using float32_t = float;
-    using float64 = double;
-    using float64_t = double;
+  using uint8 = uint8_t;
+  using uint8_t = uint8_t;
+  using uint16 = uint16_t;
+  using uint16_t = uint16_t;
+  using uint32 = uint32_t;
+  using uint32_t = uint32_t;
+  using uint64 = uint64_t;
+  using uint64_t = uint64_t;
+  using int8 = int8_t;
+  using int8_t = int8_t;
+  using int16 = int16_t;
+  using int16_t = int16_t;
+  using int32 = int32_t;
+  using int32_t = int32_t;
+  using int64 = int64_t;
+  using int64_t = int64_t;
+  using size_t = std::size_t;
+  using float32 = float;
+  using float32_t = float;
+  using float64 = double;
+  using float64_t = double;
+  using nullptr_t = std::nullptr_t;
+
 	struct pos2d
 	{
         uint32 x = 0;

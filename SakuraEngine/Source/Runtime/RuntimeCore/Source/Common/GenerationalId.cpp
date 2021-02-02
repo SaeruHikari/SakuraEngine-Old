@@ -1,5 +1,4 @@
 ﻿#include "Base/GenerationalId.h"
-#include <SakuraSTL.hpp>
 
 using namespace sakura;
 
