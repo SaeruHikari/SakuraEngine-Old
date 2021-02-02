@@ -10,13 +10,9 @@
 #include "SakuraSTL.hpp"
 #include <System/Time.h>
 #include <System/VirtualFileSystem.h>
-#include <System/Log.h>
 #include <Base/GUID.h>
 #include "Module.h"
-#include "RuntimeCore/Resource.h"
 #include "Base/GenerationalId.h"
-#include "System/Window.h"
-#include "Module.h"
 #include "Math/Math.hpp"
 #ifdef SAKURA_TARGET_PLATFORM_WIN
 #include "Platform/Windows/Messages.hpp"

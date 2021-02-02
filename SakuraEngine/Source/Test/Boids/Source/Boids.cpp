@@ -4,18 +4,11 @@
 #endif
 #define TRACY_ENABLE
 #include "tracy/Tracy.hpp"
-
-#include "RuntimeCore/RuntimeCore.h"
-#include "spdlog/spdlog.h"
-#include "marl/finally.h"
 #include "SakuraSTL.hpp"
-
 #include "System/VirtualFileSystem.h"
 #include "System/Log.h"
-
 #include "ECS/ECS.h"
 #include "RingBuffer.h"
-
 #include "TransformComponents.h"
 #include "RenderSystem.h"
 #include "Boids.h"
@@ -24,12 +17,9 @@
 #include "kdtree.h"
 #include <iostream>
 #include <random>
-#include <cmath>
 #include <fstream>
-#include <filesystem>
 #include "System/Messages.h"
 #include "imgui/sakura_imgui.h"
-
 
 #define forloop(i, z, n) for(auto i = std::decay_t<decltype(n)>(z); i<(n); ++i)
 #define def static constexpr auto
@@ -61,8 +51,6 @@ struct Timer
 	}
 	std::chrono::system_clock::time_point tmpt;
 };
-
-
 
 struct buffer_serializer final : sakura::ecs::serializer_i
 {
@@ -747,7 +735,6 @@ void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 		Local2XSystem<LocalToWorld>(ppl, wrd_filter, PassLocation(LocalToWorld));
 	}
 
-
 	filters c2p_filter;
 	c2p_filter.archetypeFilter = {
 		{complist<LocalToParent, Parent>},
@@ -802,7 +789,7 @@ int main()
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading, BoidDebugData>();
 	SpawnBoidSetting();
 	SpawnBoidTargets(10);
-	
+
 	task_system::ecs::pipeline ppl(std::move(ctx));
 	if (!bUseImGui)
 	{
@@ -878,7 +865,7 @@ int main()
 					ctx.serialize(&archive);
 					memory_used += snapshot.size();
 					snapshots.emplace_back(std::move(snapshot));
-					while (memory_used > (long long)memory_size_limit * 1024 * 1024)
+					while (memory_used > (size_t)memory_size_limit * 1024 * 1024)
 					{
 						memory_used -= snapshots.front().size();
 						snapshots.pop_front();

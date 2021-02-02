@@ -2,8 +2,6 @@
 
 #include <vulkan/vulkan_core.h>
 
-
-
 #include "Math/Math.hpp"
 #include "Math/Matrix.h"
 #include "ShaderCompiler/ShaderCompiler.h"

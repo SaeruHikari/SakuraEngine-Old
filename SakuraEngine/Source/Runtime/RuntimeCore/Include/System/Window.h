@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <Base/Definations.h>
+#include <SakuraSTL/string.hpp>
 
 namespace sakura
 {

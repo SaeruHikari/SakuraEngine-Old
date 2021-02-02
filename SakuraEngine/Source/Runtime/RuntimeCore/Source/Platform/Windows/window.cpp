@@ -247,7 +247,8 @@ namespace sakura::windows
 
 sakura::pos2d sakura::Monitor::screen_to_client(Window window, const pos2d& inPos)
 {
-	POINT mouse_client_pos = {inPos.x, inPos.y};
+	POINT mouse_client_pos = {
+		static_cast<LONG>(inPos.x), static_cast<LONG>(inPos.y)};
 	::ScreenToClient(static_cast<HWND>(window.handle()), &mouse_client_pos);
 	pos2d outPos = { mouse_client_pos.x, mouse_client_pos.y };
 	return outPos;

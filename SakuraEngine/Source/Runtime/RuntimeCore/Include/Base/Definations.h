@@ -127,6 +127,8 @@ namespace sakura
     typedef unsigned int uint;
     typedef unsigned char uchar;
 
+    using char8_t = char;
+
     using uint8 = uint8_t;
     using uint8_t = uint8_t;
     using uint16 = uint16_t;

@@ -28,49 +28,27 @@
 #include "RuntimeCore/Memory.h"
 #include <spdlog/fmt/fmt.h>
 #include <chrono>
-#include <string>
-#include <string_view>
 #include <variant>
 #include <atomic>
 #include "SakuraSTL/span.hpp"
 #include "SakuraSTL/array.hpp"
 #include "SakuraSTL/vector.hpp"
 #include "SakuraSTL/unordered_map.hpp"
+#include "SakuraSTL/string.hpp"
 #include "SakuraSTL/codecvt.hpp"
 
 namespace sakura
 {
-    using u8string = std::string;
-    using u8string_view = std::string_view;
     using namespace utf_converter;
     
     using std::unique_ptr;
-    using std::string_view;
     using std::variant;
     using std::pair;
     using std::function;
     using std::make_pair;
     using std::move;
     using std::forward;
-    using std::to_string;
-    using std::to_wstring;
 }
-using char8_t = char;
-
-#ifdef WHEN_PMR_IS_USABLE
-#include <memory_resource>
-namespace sakura
-{
-    using std::pmr::string;
-    using std::pmr::wstring;
-}
-#else
-namespace sakura
-{
-    using string = std::string;
-    using wstring = std::wstring;
-}
-#endif
 
 #include <ctime>
 
@@ -90,22 +68,6 @@ namespace sakura
 
 namespace sakura
 {
-    template<typename string_type>
-	void string_replace(
-        string_type& src,
-        const string_type& to_replace, const string_type& replacement)
-	{
-        typename string_type::size_type pos = 0;
-        typename string_type::size_type srclen = to_replace.size();
-        typename string_type::size_type dstlen = replacement.size();
-
-		while ((pos = src.find(to_replace, pos)) != string_type::npos)
-		{
-            src.replace(pos, srclen, replacement);
-			pos += dstlen;
-		}
-	}
-
     template <typename T, uint32_t size>
     struct storage
     {
