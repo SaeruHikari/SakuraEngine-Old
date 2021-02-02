@@ -32,7 +32,8 @@ set(CLANG_DISABLED_WARNINGS
     -Wpointer-bool-conversion -Wimplicit-int-float-conversion \
     -Wno-tautological-pointer-compare -Wno-delete-abstract-non-virtual-dtor \
     -Wno-unused-label -Wno-zero-as-null-pointer-constant -Wno-extra-semi-stmt \
-    -Wno-missing-prototypes -Wno-old-style-cast -Wno-reorder-ctor"
+    -Wno-missing-prototypes -Wno-old-style-cast -Wno-reorder-ctor \
+    -Wno-implicit-int-float-conversion -Wno-c++98-compat"
 )
 
 ADD_DEFINITIONS(-DMACRO)

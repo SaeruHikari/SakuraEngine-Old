@@ -1,4 +1,5 @@
 ﻿#include <RuntimeCore/RuntimeCore.h>
+#include <System/Log.h>
 #include "Platform/Windows/Windows.h"
 
 namespace sakura::windows

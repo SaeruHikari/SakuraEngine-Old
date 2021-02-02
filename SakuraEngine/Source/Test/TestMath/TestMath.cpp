@@ -1,8 +1,6 @@
 #include "Math/Math.hpp"
 #include <cassert>
 
-#pragma optimize("", off)
-
 int main(void)
 {
 	using namespace sakura;
@@ -263,5 +261,3 @@ int main(void)
 		return 0;
 	}
 }
-
-#pragma optimize("", on)

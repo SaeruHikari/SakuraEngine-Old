@@ -8,6 +8,7 @@
  */
 #include <iomanip>
 #include <RuntimeCore/RuntimeCore.h>
+#include <System/Log.h>
 #include "System/vfs/fs_dev_local/adapter_dev_local.h"
 
 using namespace sakura;

@@ -112,7 +112,7 @@ void ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f,
 		{
 			auto o = operation{ paramList, pass, tk };
 			hana::tuple arrays = boost::hana::make_tuple(
-				o.get_parameter<T>(), o.get_parameter<const Ts>()...);
+				o.template get_parameter<T>(), o.template get_parameter<const Ts>()...);
 			forloop(i, 0, o.get_count())
 			{
 				auto params = hana::transform(arrays, [i](auto v) { return v ? v + i : nullptr; });
@@ -165,16 +165,16 @@ template<class T>
 static void SolveChild2World(T& o, const float4x4& parent_l2w, const ecs::entity e)
 {
 	float4x4 l2w = float4x4();
-	auto [child_l2w, child_l2p] = o.get_parameters_owned<LocalToWorld, const LocalToParent>(e);
+	auto [child_l2w, child_l2p] = o.template get_parameters_owned<LocalToWorld, const LocalToParent>(e);
 	if (child_l2w && child_l2p)
 	{
 		l2w = sakura::math::multiply(parent_l2w, *child_l2p);
 		*child_l2w = l2w;
 	}
 
-	if (o.has_component<Child>(e)) //TODO: use own_component
+	if (o.template has_component<Child>(e)) //TODO: use own_component
 	{
-		auto child_children = o.get_parameter_owned<const Child>(e);
+		auto child_children = o.template get_parameter_owned<const Child>(e);
 		for (const auto& child : child_children)
 		{
 			SolveChild2World(o, l2w, child);
@@ -235,7 +235,7 @@ void World2LocalSystem(task_system::ecs::pipeline& ppl)
 		[](const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
 			auto o = operation{ paramList, pass, tk };
-			auto [l2ws, w2ls] = o.get_parameters<const LocalToWorld, WorldToLocal>();
+			auto [l2ws, w2ls] = o.template get_parameters<const LocalToWorld, WorldToLocal>();
 
 			forloop(i, 0, o.get_count())
 			{
@@ -260,7 +260,7 @@ void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 		{
 			auto o = operation{ paramList, pass, tk };
 			auto index = o.get_index();
-			auto comps = o.get_parameter<const C>();
+			auto comps = o.template get_parameter<const C>();
 			if constexpr(useMemcpy)
 				memcpy((*vector).data() + index, comps, o.get_count() * sizeof(C));
 			else
@@ -281,7 +281,7 @@ void FillComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 		{
 			auto o = operation{ paramList, pass, tk };
 			auto index = o.get_index();
-			auto comps = o.get_parameter<C>();
+			auto comps = o.template get_parameter<C>();
 			if constexpr (useMemcpy)
 				memcpy(comps, (*vector).data() + index, o.get_count() * sizeof(C));
 			else
@@ -620,6 +620,8 @@ core::entity GetBoidSetting(sakura::ecs::pipeline& ppl)
 	for (auto pf : ppl.query(filter))
 		for (auto i : ppl.query(pf.type))
 			return ppl.get_entities(i)[0];
+	
+	return core::NullEntity;
 }
 
 void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
@@ -950,8 +952,8 @@ int main()
 				imgui::SliderFloat("TimeScale", &TimeScale, 0, 10);
 				if (BoidCount)
 				{
-					imgui::Text("Max Neighbor Count: %d", maxNeighberCount.load());
-					imgui::Text("Average Neighbor Count: %d", averageNeighberCount.load() / BoidCount);
+					imgui::Text("Max Neighbor Count: %llu", maxNeighberCount.load());
+					imgui::Text("Average Neighbor Count: %llu", averageNeighberCount.load() / BoidCount);
 				}
 			}
 			if (imgui::CollapsingHeader("Camera"))

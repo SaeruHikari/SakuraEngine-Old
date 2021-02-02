@@ -1,10 +1,51 @@
-﻿#include "Allocators/FreeListAllocator.h"
+#include "Allocators/CAllocator.h"
+#include "Allocators/FreeListAllocator.h"
 #include "Allocators/Utils.h"  /* CalculatePaddingWithHeader */
+
 #include <stdlib.h>     /* malloc, free */
-#include <cassert>   /* assert		*/
 #include <limits>  /* limits_max */
 #include <algorithm>    // std::max
+#include <cassert> //assert
 
+using namespace sakura;
+
+sakura::allocator::allocator(const std::size_t totalSize){
+    m_totalSize = totalSize;
+    m_used = 0;
+}
+
+sakura::allocator::~allocator(){
+    m_totalSize = 0;
+}
+
+// ---- C_ALLOCATOR ----
+
+c_allocator::c_allocator()
+    : allocator(0) {
+
+}
+
+void c_allocator::init() {
+
+}
+
+c_allocator::~c_allocator(){
+    
+}
+
+void* c_allocator::allocate(const std::size_t size, const std::size_t alignment) {
+	return malloc(size);
+}
+
+void c_allocator::free(void* ptr) {
+	free(ptr);
+}
+
+// ---- C_ALLOCATOR ----
+
+
+// ---- FREE_LIST_ALLOCATOR ----
+#include "Allocators/FreeListAllocator.h"
 #ifdef _DEBUG_ALLOCATORS
 #include <iostream>
 #endif
@@ -182,3 +223,206 @@ void free_list_allocator::reset() {
     m_freeList.head = nullptr;
     m_freeList.insert(nullptr, firstNode);
 }
+
+// ---- FREE_LIST_ALLOCATOR ----
+
+// ---- LINEAR_ALLOCATOR ----
+#include "Allocators/LinearAllocator.h"
+
+RuntimeCoreAPI linear_allocator::linear_allocator(const std::size_t totalSize)
+: allocator(totalSize), m_offset(0)
+{
+}
+
+linear_allocator::linear_allocator(const linear_allocator& linear_allocator)
+{
+    if (m_start_ptr != nullptr) {
+        ::free(m_start_ptr);
+    }
+    m_start_ptr = malloc(linear_allocator.m_totalSize);
+    m_offset = linear_allocator.m_offset;
+    m_used = linear_allocator.m_used;
+    m_totalSize = linear_allocator.m_totalSize;
+    m_peak = linear_allocator.m_peak;
+    ::memcpy(m_start_ptr, linear_allocator.m_start_ptr, m_totalSize);
+}
+
+RuntimeCoreAPI void linear_allocator::init() {
+    if (m_start_ptr != nullptr) {
+        ::free(m_start_ptr);
+    }
+    m_start_ptr = malloc(m_totalSize);
+    m_offset = 0;
+}
+
+RuntimeCoreAPI linear_allocator::~linear_allocator() {
+    ::free(m_start_ptr);
+    m_start_ptr = nullptr;
+}
+
+RuntimeCoreAPI void* linear_allocator::allocate(const std::size_t size, const std::size_t alignment) {
+    std::size_t padding = 0;
+    std::size_t paddedAddress = 0;
+    const std::size_t currentAddress = (std::size_t)m_start_ptr + m_offset;
+
+    if (alignment != 0 && m_offset % alignment != 0) {
+        // Alignment is required. Find the next aligned memory address and update offset
+        padding = Utils::CalculatePadding(currentAddress, alignment);
+    }
+
+    if (m_offset + padding + size > m_totalSize) {
+        return nullptr;
+    }
+
+    m_offset += padding;
+    const std::size_t nextAddress = currentAddress + padding;
+    m_offset += size;
+#ifdef _DEBUG_ALLOCATORS
+    std::cout << "A" << "\t@C " << (void*) currentAddress << "\t@R " << (void*) nextAddress << "\tO " << m_offset << "\tP " << padding << std::endl;
+#endif
+    m_used = m_offset;
+    m_peak = std::max(m_peak, m_used);
+
+    return (void*) nextAddress;
+}
+
+RuntimeCoreAPI void linear_allocator::free(void* ptr) {
+    assert(false && "Use reset() method");
+}
+
+RuntimeCoreAPI void linear_allocator::reset() {
+    m_offset = 0;
+    m_used = 0;
+    m_peak = 0;
+}
+
+// ---- LINEAR_ALLOCATOR ----
+
+// ---- POOL_ALLOCATOR ----
+#include "Allocators/PoolAllocator.h"
+
+pool_allocator::pool_allocator(const std::size_t totalSize, const std::size_t chunkSize)
+: allocator(totalSize), m_freeList()
+{
+    assert(chunkSize >= 8 && "Chunk size must be greater or equal to 8");
+    assert(totalSize % chunkSize == 0 && "Total Size must be a multiple of Chunk Size");
+    this->m_chunkSize = chunkSize;
+}
+
+void pool_allocator::init() {
+    m_start_ptr = malloc(m_totalSize);
+    this->reset();
+}
+
+pool_allocator::~pool_allocator() {
+    free(m_start_ptr);
+}
+
+void *pool_allocator::allocate(const std::size_t allocationSize, const std::size_t alignment) {
+    assert(allocationSize == this->m_chunkSize && "Allocation size must be equal to chunk size");
+
+    Node * freePosition = m_freeList.pop();
+
+    assert(freePosition != nullptr && "The pool allocator is full");
+
+    m_used += m_chunkSize;
+    m_peak = std::max(m_peak, m_used);
+#ifdef _DEBUG_ALLOCATORS
+    std::cout << "A" << "\t@S " << m_start_ptr << "\t@R " << (void*) freePosition << "\tM " << m_used << std::endl;
+#endif
+
+    return (void*) freePosition;
+}
+
+void pool_allocator::free(void * ptr) {
+    m_used -= m_chunkSize;
+
+    m_freeList.push((Node *) ptr);
+
+#ifdef _DEBUG_ALLOCATORS
+    std::cout << "F" << "\t@S " << m_start_ptr << "\t@F " << ptr << "\tM " << m_used << std::endl;
+#endif
+}
+
+void pool_allocator::reset() {
+    m_used = 0;
+    m_peak = 0;
+    // Create a linked-list with all free positions
+    const size_t nChunks = m_totalSize / m_chunkSize; 
+    for (int i = 0; i < nChunks; ++i) {
+        std::size_t address = (std::size_t) m_start_ptr + i * m_chunkSize;
+        m_freeList.push((Node *) address);
+    }
+}
+
+// ---- POOL_ALLOCATOR ----
+
+// ---- STACK_ALLOCATOR ----
+#include "Allocators/StackAllocator.h"
+
+
+stack_allocator::stack_allocator(const std::size_t totalSize)
+: allocator(totalSize) {
+
+}
+
+void stack_allocator::init() {
+    if (m_start_ptr != nullptr) {
+        free(m_start_ptr);
+    }
+    m_start_ptr = malloc(m_totalSize);
+    m_offset = 0;
+}
+
+stack_allocator::~stack_allocator() {
+    free(m_start_ptr);
+    m_start_ptr = nullptr;
+}
+
+void* stack_allocator::allocate(const std::size_t size, const std::size_t alignment) {
+    const std::size_t currentAddress = (std::size_t)m_start_ptr + m_offset;
+
+    std::size_t padding = Utils::CalculatePaddingWithHeader(currentAddress, alignment, sizeof (allocation_header));
+
+    if (m_offset + padding + size > m_totalSize) {
+        return nullptr;
+    }
+    m_offset += padding;
+
+    const std::size_t nextAddress = currentAddress + padding;
+    const std::size_t headerAddress = nextAddress - sizeof (allocation_header);
+    stack_allocator::allocation_header ah{(char)padding};
+    stack_allocator::allocation_header* headerPtr = (stack_allocator::allocation_header*) headerAddress;
+    headerPtr = &ah;
+    
+    m_offset += size;
+
+#ifdef _DEBUG_ALLOCATORS
+    std::cout << "A" << "\t@C " << (void*) currentAddress << "\t@R " << (void*) nextAddress << "\tO " << m_offset << "\tP " << padding << std::endl;
+#endif
+    m_used = m_offset;
+    m_peak = std::max(m_peak, m_used);
+
+    return (void*) nextAddress;
+}
+
+void stack_allocator::free(void *ptr) {
+    // Move offset back to clear address
+    const std::size_t currentAddress = (std::size_t) ptr;
+    const std::size_t headerAddress = currentAddress - sizeof (allocation_header);
+    const allocation_header * ah{ (allocation_header *) headerAddress};
+
+    m_offset = currentAddress - ah->padding - (std::size_t) m_start_ptr;
+    m_used = m_offset;
+
+#ifdef _DEBUG_ALLOCATORS
+    std::cout << "F" << "\t@C " << (void*) currentAddress << "\t@F " << (void*) ((char*) m_start_ptr + m_offset) << "\tO " << m_offset << std::endl;
+#endif
+}
+
+void stack_allocator::reset() {
+    m_offset = 0;
+    m_used = 0;
+    m_peak = 0;
+}
+// ---- STACK_ALLOCATOR ----
