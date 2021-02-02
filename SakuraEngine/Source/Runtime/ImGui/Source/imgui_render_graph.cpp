@@ -25,10 +25,13 @@ static float4x4 projection_matrix;
 
 static Attachment attachment;
 
-
 namespace sakura::imgui
 {
-    ImGuiAPI ImGuiContext* imgui_context = nullptr;
+    ImGuiAPI ImGuiContext*& imgui_context()
+    {
+        static ImGuiContext* imgui_context_ = nullptr;
+        return imgui_context_;
+    }
     void imgui_create_fonts(graphics::IRenderDevice& device);
     void imgui_create_pipeline(graphics::IRenderDevice& device);
 	

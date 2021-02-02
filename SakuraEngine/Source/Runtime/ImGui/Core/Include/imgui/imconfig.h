@@ -108,13 +108,13 @@ namespace ImGui
 }
 */
 #ifndef ImGuiAPI
-#define ImGuiAPI IMPORT_API
+#define ImGuiAPI 
 #endif
 
 struct ImGuiContext;
 namespace sakura::imgui
 {
-    ImGuiAPI extern ImGuiContext* imgui_context;
+    ImGuiAPI ImGuiContext*& imgui_context();
 }
 
 #ifdef GImGui
@@ -122,5 +122,5 @@ namespace sakura::imgui
 #endif
 
 #ifndef GImGui
-#define GImGui sakura::imgui::imgui_context
+#define GImGui sakura::imgui::imgui_context()
 #endif
