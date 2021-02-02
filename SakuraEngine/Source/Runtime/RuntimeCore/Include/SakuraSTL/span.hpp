@@ -1,3 +1,4 @@
+#pragma once
 #include <gsl/span>
 
 namespace sakura

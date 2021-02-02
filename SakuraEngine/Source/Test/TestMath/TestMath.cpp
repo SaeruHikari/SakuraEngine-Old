@@ -122,11 +122,11 @@ int main(void)
 
 	// Expect 0, -nan, 0, -nan
 	Vector4f eq;
-	store_aligned(eq.data_view(), sakura::math::__vector::equals(vec3_reg, vec4_reg));
-
+	store_aligned(eq.data_view(), sakura::math::__vector::equals(vec3_reg, 	vec4_reg));
+ 
 	// Expect -nan, 0, -nan, 0
 	Vector4f neq;
-	store_aligned(neq.data_view(), sakura::math::__vector::not_equals(vec3_reg, vec4_reg));
+	store_aligned(neq.data_view(), sakura::math::__vector::not_equals	(vec3_reg, vec4_reg));
 
 	// 1010 ->  10
 	int msk = component_mask(load_aligned(eq.data_view()));

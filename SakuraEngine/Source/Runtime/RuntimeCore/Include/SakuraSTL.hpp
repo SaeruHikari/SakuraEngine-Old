@@ -25,39 +25,24 @@
  * @LastEditTime: 2020-08-10 00:06:26
  */ 
 #pragma once
-#include "Base/Definations.h"
 #include "RuntimeCore/Memory.h"
-#include "utf8/utf8.h"
 #include <spdlog/fmt/fmt.h>
 #include <chrono>
 #include <string>
 #include <string_view>
 #include <variant>
-#include <unordered_map>
 #include <atomic>
 #include "SakuraSTL/span.hpp"
 #include "SakuraSTL/array.hpp"
+#include "SakuraSTL/vector.hpp"
+#include "SakuraSTL/unordered_map.hpp"
+#include "SakuraSTL/codecvt.hpp"
 
-namespace utf_converter
-{
-	FORCEINLINE std::string utf16_to_utf8(std::wstring utf16_string)
-	{
-        std::string utf8_string;
-		utf8::utf16to8(utf16_string.begin(), utf16_string.end(), back_inserter(utf8_string));
-        return utf8_string;
-	}
-
-	FORCEINLINE std::wstring utf8_to_utf16(std::string utf8_string)
-	{
-		std::wstring utf16_string;
-		utf8::utf8to16(utf8_string.begin(), utf8_string.end(), back_inserter(utf16_string));
-		return utf16_string;
-	}
-}
 namespace sakura
 {
     using u8string = std::string;
     using u8string_view = std::string_view;
+    using namespace utf_converter;
     
     using std::unique_ptr;
     using std::string_view;
@@ -78,16 +63,12 @@ namespace sakura
 {
     using std::pmr::string;
     using std::pmr::wstring;
-	using std::pmr::unordered_map;
-	using std::pmr::vector;
 }
 #else
 namespace sakura
 {
     using string = std::string;
     using wstring = std::wstring;
-	using std::unordered_map;
-	using std::vector;
 }
 #endif
 
@@ -137,16 +118,6 @@ namespace sakura
 
 namespace fmt
 {
-/*
-    template <> struct formatter<sakura::u8string> : fmt::formatter<std::string_view> {
-    // parse is inherited from formatter<string_view>.
-    template <typename FormatContext>
-    auto format(sakura::u8string c, FormatContext& ctx) {
-            string_view name = (const char*)c.c_str();
-            return formatter<string_view>::format(name, ctx);
-        }
-    };
-*/
     template <> struct formatter<sakura::double4> : fmt::formatter<std::string_view> {
         // parse is inherited from formatter<string_view>.
         template <typename FormatContext>
@@ -215,7 +186,6 @@ namespace sakura
 
     namespace detail
     {
-
         template<typename R, typename ...As>
         struct __function_traits_base {
             using function_type = std::function<R(As...)>;

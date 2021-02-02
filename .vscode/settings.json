@@ -137,6 +137,7 @@
         "shared_mutex": "cpp",
         "csignal": "cpp",
         "coroutine": "cpp",
-        "__tree": "cpp"
+        "__tree": "cpp",
+        "span_ext": "cpp"
     },
 }

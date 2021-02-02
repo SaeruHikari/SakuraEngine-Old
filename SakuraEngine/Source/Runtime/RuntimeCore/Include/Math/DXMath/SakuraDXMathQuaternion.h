@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "SakuraSTL.hpp"
 #include "Math/Quaternion.h"
 #include "SakuraDXMathVector.h"
 

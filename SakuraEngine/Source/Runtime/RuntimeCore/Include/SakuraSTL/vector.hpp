@@ -1,0 +1,11 @@
+#pragma once
+#include <vector>
+
+namespace sakura
+{
+#ifdef WHEN_PMR_IS_USABLE
+	using std::pmr::vector;
+#else
+    using std::vector;
+#endif
+}
