@@ -25,6 +25,6 @@ namespace sakura
 #elif defined(SAKURA_TARGET_PLATFORM_EMSCRIPTEN)
 #include "Platform/Web/Memory.inl"
 #elif defined(SAKURA_TARGET_PLATFORM_MACOS)
-static_assert(0, "Implement This!");
+#include "Platform/MacOS/Memory.inl"
 #endif
 

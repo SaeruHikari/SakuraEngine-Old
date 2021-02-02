@@ -27,6 +27,10 @@ namespace sakura
 		GenerationalId();
 		operator size_t() const;
 		explicit operator bool() const;
+		FORCEINLINE bool operator==(const GenerationalId &other) const
+		{
+			return this->storage() == other.storage();
+		}
 		size_t storage() const;
 		generation_t generation() const;
 		index_t index() const;

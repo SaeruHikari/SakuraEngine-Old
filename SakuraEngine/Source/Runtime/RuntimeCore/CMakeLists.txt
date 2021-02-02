@@ -1,5 +1,3 @@
-project(RuntimeCore VERSION 0.0.1)
-
 if(SAKURA_PLATFORM MATCHES "prospero")
 else()
     set(MARL marl)
@@ -12,7 +10,7 @@ Module(
         /Source/Common
         /Source/Platform/${SAKURA_PLATFORM}
     DEPS
-    DEPS_PUBLIC ${MARL} GSL crossguid
+    DEPS_PUBLIC ${MARL} GSL crossguid DirectXMath
     INCLUDES_PUBLIC  
         /Include
     LINKS

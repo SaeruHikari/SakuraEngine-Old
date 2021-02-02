@@ -1,4 +1,7 @@
-#include "RuntimeCore/RuntimeCore.h"
+#include "Math/Math.hpp"
+#include <cassert>
+
+#pragma optimize("", off)
 
 int main(void)
 {
@@ -9,8 +12,7 @@ int main(void)
 	const float aa[] = { 1, 0, 0 };
 	const float b[] = { 0, 0, 1, 1 };
 	alignas(16) float c[] = { 0, 0, 1, 1 };
-	//sakura::info("plain vector3_cross: {}, {}, {}", c[0], c[1], c[2]);
-
+ 
 	auto vec_reg = vector_register(1.f, 2.f, 3.f, 4.f);
 	auto vec2_reg = load_float3_w0(aa);
 	auto vec3_reg = load_aligned(a);
@@ -19,45 +21,36 @@ int main(void)
 	// Expect 1, 2, 3, 4
 	Vector4f vector;
 	store_aligned(vector.data_view(), vec_reg);
+	assert(vector == Vector4f(1, 2, 3, 4));
 
 	Vector3f v3 = Vector3f(1.f, 1.f, 1.f);
-	// Vector3 Operators Test
-	{
-		Vector3f add = v3 + v3;
-		Vector3f sub = v3 - v3;
-		Vector3f mul = v3 * v3;
-		Vector3f div = v3 / v3;
-		Vector3f cross = v3 ^ v3;
-		float dot = v3 | v3;
-		bool is_normalized = v3.is_normalized();
-		auto normalized = math::normalize(v3);
-		bool is_zero = v3.is_zero();
-		bool is_nearly_zero = v3.is_nearly_zero();
-		float length = v3.length_squared();
-		math::normalize(v3);
-	}
 
 	// Expect 3, 4, 0, 0
 	Vector4f shuffled;
 	store_aligned(shuffled.data_view(), shuffle<2, 3, 2, 3>(vec_reg, vec2_reg));
+	assert(shuffled == Vector4f(3.f, 4.f, 0.f, 0.f));
 
 	// Expect 4, 2, 3, 1
 	Vector4f swizzled;
 	store_aligned(swizzled.data_view(), swizzle<3, 1, 2, 0>(vec_reg));
+	assert(swizzled == Vector4f(4.f, 2.f, 3.f, 1.f));
 
 	// Expect 4, 0, 1, 2
 	Vector4f permuted;
 	store_aligned(permuted.data_view(), permute<3, 5, 4, 1>(vec_reg, vec2_reg));
+	assert(permuted == Vector4f(4.f, 0.f, 1.f, 2.f));
 
 	// Expect -4, 0, -1, -2
 	Vector4f neg;
 	store_aligned(neg.data_view(),
 		sakura::math::__vector::negate(load_aligned(permuted.data_view())));
+	assert(neg == Vector4f(-4.f, 0.f, -1.f, -2.f));
 
 	// Expect 4, 0, 1, 2
 	Vector4f abs;
 	store_aligned(abs.data_view(),
 		sakura::math::__vector::abs(load_aligned(neg.data_view())));
+	assert(abs == Vector4f(4.f, 0.f, 1.f, 2.f));
 
 	// Expect 0, 0, 0, 0
 	Vector4f add;
@@ -65,13 +58,15 @@ int main(void)
 		sakura::math::__vector::add(
 			load_aligned(neg.data_view()), load_aligned(abs.data_view())
 	));
-	
+	assert(add == Vector4f(0.f, 0.f, 0.f, 0.f));
+
 	// Expect 0, 0, 0, 0
 	Vector4f sub;
 	store_aligned(sub.data_view(),
 		sakura::math::__vector::subtract(
 			load_aligned(permuted.data_view()), load_aligned(abs.data_view())
 	));
+	assert(sub == Vector4f(0.f, 0.f, 0.f, 0.f));
 
 	// Expect 16, 0, 1, 4
 	Vector4f mul;
@@ -79,6 +74,7 @@ int main(void)
 		sakura::math::__vector::multiply(
 			load_aligned(permuted.data_view()), load_aligned(abs.data_view())
 	));
+	assert(mul == Vector4f(16.f, 0.f, 1.f, 4.f));
 
 	// Expect 4, -nan, 1, 2
 	Vector4f div;
@@ -96,13 +92,15 @@ int main(void)
 			load_aligned(permuted.data_view()
 		)
 	));
+	assert(mul_add == Vector4f(20.f, 0.f, 2.f, 6.f));
 
 	// Expect 16, 16, 16, 16
 	Vector4f dot2;
 	store_aligned(dot2.data_view(),
-		sakura::math::__vector::dot4(
+		sakura::math::__vector::dot2(
 			load_aligned(permuted.data_view()), load_aligned(abs.data_view())
 	));
+	assert(dot2 == Vector4f(16.f, 16.f, 16.f, 16.f));
 
 	// Expect 17, 17, 17, 17
 	Vector4f dot3;
@@ -110,13 +108,16 @@ int main(void)
 		sakura::math::__vector::dot3(
 			load_aligned(permuted.data_view()), load_aligned(abs.data_view())
 	));
-	
+	assert(dot3 == Vector4f(17.f, 17.f, 17.f, 17.f));
+
 	// Expect 21, 21, 21, 21
 	Vector4f dot4;
 	store_aligned(dot4.data_view(),
 		sakura::math::__vector::dot4(
 			load_aligned(permuted.data_view()), load_aligned(abs.data_view())
 	));
+	assert(dot4 == Vector4f(21.f, 21.f, 21.f, 21.f));
+
 	auto dot44 = sakura::math::dot_product(permuted, abs);
 
 	// Expect 0, -nan, 0, -nan
@@ -136,6 +137,7 @@ int main(void)
 		load(std::array<float, 4>{1, 0, 0, 1}),
 		load(std::array<float, 4>{ 0, 0, 1, 1 })
 	));
+	assert(crs == Vector4f(0.f, -1.f, 0.f, 0.f));
 
 	// Expect 256, 1, 1, 4
 	Vector4f pow;
@@ -249,11 +251,7 @@ int main(void)
 	Quaternion yaw120 =  // 0, 0.866, 0, 0.5
 		math::quaternion_from_euler(0.f, 3.14159f * 2.f / 3.f, 0.f);
 	
-	auto lkAt1 = sakura::math::look_at_quaternion(Vector3f(0.f, 0.f, 0.f), Vector3f(sqrt(0.5f), sqrt(0.5f), 0));
-	auto lkAt2 = sakura::math::look_at_quaternion(Vector3f(sqrt(0.5f), sqrt(0.5f), 0));
-	
 	Rotator rr = Rotator{ 0.f, 0.f, 0.f };
-	rr = v3;
 
 	float dis = math::distance(v3, v3);
 
@@ -265,3 +263,5 @@ int main(void)
 		return 0;
 	}
 }
+
+#pragma optimize("", on)

@@ -389,6 +389,14 @@ namespace sakura::graphics
 		inline operator size_t() const { return id_; }
 		inline operator bool() const { return id_; }
 		inline RenderGraphId id() const { return id_; }
+		FORCEINLINE bool operator==(const RenderObjectHandle& other) const
+		{
+			return this->id_ == other.id_;
+		}
+		FORCEINLINE bool operator==(const GenerationalId& other) const
+		{
+			return this->id_ == other;
+		}
 	protected:
 		RenderObjectHandle();
 		RenderGraphId id_;
@@ -400,6 +408,14 @@ namespace sakura::graphics
 		inline operator size_t() const { return id_; }
 		inline operator bool() const { return id_; }
 		inline RenderGraphId id() const { return id_; }
+		FORCEINLINE bool operator==(const RenderPassHandle& other) const
+		{
+			return this->id_ == other.id_;
+		}
+		FORCEINLINE bool operator==(const GenerationalId& other) const
+		{
+			return this->id_ == other;
+		}
 	protected:
 		RenderPassHandle();
 		RenderGraphId id_;
@@ -412,6 +428,14 @@ namespace sakura::graphics
 		inline operator size_t() const { return id_; }
 		inline operator bool() const { return id_; }
 		inline RenderGraphId id() const { return id_; }
+		FORCEINLINE bool operator==(const RenderResourceHandle& other) const
+		{
+			return this->id_ == other.id_;
+		}
+		FORCEINLINE bool operator==(const GenerationalId& other) const
+		{
+			return this->id_ == other;
+		}
 	protected:
 		RenderGraphId id_;
 	};

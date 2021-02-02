@@ -37,7 +37,11 @@ namespace sakura
 	using ActualOSMessages = sakura::emscripten::WebMessages;
 }
 #elif defined(SAKURA_TARGET_PLATFORM_MACOS)
-static_assert(0, "Implement This!");
+#include "Platform/MacOS/Messages.hpp"
+namespace sakura
+{
+	using ActualOSMessages = sakura::macos::MacMessages;
+}
 #endif
 
 namespace sakura

@@ -4,7 +4,6 @@
 #include "Quaternion.h"
 #include "Vector.h"
 #include "Transform.h"
-
 #ifdef SAKURA_USE_DXMATH
 #include "Math/DXMath/SakuraDXMathVector.h"
 #include "Math/DXMath/SakuraDXMathQuaternion.h"

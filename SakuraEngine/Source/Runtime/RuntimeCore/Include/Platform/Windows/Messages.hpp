@@ -1,3 +1,4 @@
+#pragma once
 #include "System/Messages.h"
 
 namespace sakura::windows

@@ -33,10 +33,10 @@
 #include <string>
 #include <string_view>
 #include <variant>
-#include <array>
 #include <unordered_map>
-#include <gsl/span>
 #include <atomic>
+#include "SakuraSTL/span.hpp"
+#include "SakuraSTL/array.hpp"
 
 namespace utf_converter
 {
@@ -56,14 +56,12 @@ namespace utf_converter
 }
 namespace sakura
 {
-    using gsl::span;
     using u8string = std::string;
     using u8string_view = std::string_view;
     
     using std::unique_ptr;
     using std::string_view;
     using std::variant;
-    using std::array;
     using std::pair;
     using std::function;
     using std::make_pair;
@@ -307,21 +305,4 @@ namespace sakura
     using is_complete = decltype(is_complete_impl(std::declval<T*>()));
     template <class T>
     static constexpr bool is_complete_v = is_complete<T>::value;
-
-    namespace detail
-    {
-        template <typename T, std::size_t ... Is>
-        constexpr std::array<T, sizeof...(Is)>
-        create_array(T value, std::index_sequence<Is...>)
-        {
-            // cast Is to void to remove the warning: unused value
-            return {{(static_cast<void>(Is), value)...}};
-        }
-    }
-
-    template <typename T, std::size_t N>
-    constexpr std::array<T, N> create_array(T&& value)
-    {
-        return detail::create_array(std::forward<T>(value), std::make_index_sequence<N>());
-    }
 }

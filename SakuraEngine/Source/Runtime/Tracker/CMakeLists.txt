@@ -19,7 +19,7 @@ Module(
         /Include
         /tracy-0.7.4
     LINKS
-    LINKS_PUBLIC dxcompiler
+    LINKS_PUBLIC 
 )
 
 if(SAKURA_HOST)

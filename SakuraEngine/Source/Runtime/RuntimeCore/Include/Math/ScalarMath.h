@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "SakuraSTL.hpp"
+#include <numeric>
 
 namespace sakura::math
 {
