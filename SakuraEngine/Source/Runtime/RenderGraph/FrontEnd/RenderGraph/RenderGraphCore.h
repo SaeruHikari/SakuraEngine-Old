@@ -393,6 +393,10 @@ namespace sakura::graphics
 		{
 			return this->id_ == other;
 		}
+		FORCEINLINE bool operator==(const RenderObjectHandle& other) const
+		{
+			return this->id_ == other.id_;
+		}
 	protected:
 		RenderObjectHandle();
 		RenderGraphId id_;
@@ -407,6 +411,10 @@ namespace sakura::graphics
 		FORCEINLINE bool operator==(const GenerationalId& other) const
 		{
 			return this->id_ == other;
+		}
+		FORCEINLINE bool operator==(const RenderPassHandle& other) const
+		{
+			return this->id_ == other.id_;
 		}
 	protected:
 		RenderPassHandle();
@@ -423,6 +431,10 @@ namespace sakura::graphics
 		FORCEINLINE bool operator==(const GenerationalId& other) const
 		{
 			return this->id_ == other;
+		}
+		FORCEINLINE bool operator==(const RenderResourceHandle& other) const
+		{
+			return this->id_ == other.id_;
 		}
 	protected:
 		RenderGraphId id_;

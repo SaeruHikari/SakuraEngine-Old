@@ -1,17 +1,5 @@
 namespace sakura::graphics
 {
-	FORCEINLINE bool operator==(const RenderObjectHandle& lhs, const RenderObjectHandle& rhs) {
-		return size_t(lhs.id()) == size_t(rhs.id());
-	}
-	
-	FORCEINLINE bool operator==(const RenderPassHandle& lhs, const RenderPassHandle& rhs) {
-		return size_t(lhs.id()) == size_t(rhs.id());
-	}
-	
-	FORCEINLINE bool operator==(const RenderResourceHandle& lhs, const RenderResourceHandle& rhs) {
-		return size_t(lhs.id()) == size_t(rhs.id());
-	}
-	
 	template<typename _ResourceType>
 	FORCEINLINE TypedRenderResourceHandle<_ResourceType>::TypedRenderResourceHandle(const RenderGraphId id_)
 		:RenderResourceHandle(id_)
