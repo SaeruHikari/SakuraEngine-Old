@@ -88,17 +88,7 @@ namespace sakura::gltf
 {
 	struct Accessor : ::GLTFAccessor
 	{
-		Accessor(
-			const uint64_t buffer_view,
-			const uint64_t byte_offset,
-			const uint32_t component_type,
-			const uint32_t count,
-			const float* max,
-			const uint32_t max_dimension,
-			const float* min,
-			const uint32_t min_dimension,
-			const char* type
-		);
+
 	};
 
 	struct BufferView : ::GLTFBufferView

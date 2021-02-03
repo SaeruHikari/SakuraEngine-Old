@@ -244,13 +244,7 @@ namespace core
 {
 	namespace database
 	{
-		core::GUID new_guid()
-		{
-			core::GUID result;
-			auto guid = sakura::new_guid();
-			memcpy(&result, &guid, sizeof(core::GUID));
-			return result;
-		}
+		core::GUID new_guid();
 	}
 }
 
