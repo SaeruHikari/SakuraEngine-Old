@@ -5,7 +5,7 @@ using namespace sakura;
 
 //sakura::unordered_map<resource::ResourceId, sakura::vector<sakura::vfs::path>> resource::Resource::resources_path_map_;
 //sakura::unordered_map<string, resource::ResourceId> resource::Resource::resources_name_map_;
-vector<pair<resource::Resource*, resource::ResourceHandle::generation_t>> resource::ResourceHandle::global_resources_ = {};
+sakura::vector<pair<resource::Resource*, resource::ResourceHandle::generation_t>> resource::ResourceHandle::global_resources_ = {};
 bool resource::ResourceHandle::valid() const
 {
 	if(global_resources_.size() < index() + 1)

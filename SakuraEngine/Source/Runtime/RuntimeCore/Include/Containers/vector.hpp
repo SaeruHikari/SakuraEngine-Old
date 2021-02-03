@@ -1,6 +1,8 @@
 #pragma once
-#include <vector>
+#include "Containers/cvector.h"
 
+#ifdef __cplusplus
+#include <vector>
 namespace sakura
 {
 #ifdef WHEN_PMR_IS_USABLE
@@ -9,3 +11,4 @@ namespace sakura
     using std::vector;
 #endif
 }
+#endif

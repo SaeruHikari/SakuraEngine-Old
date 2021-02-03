@@ -1,5 +1,3 @@
-project(GLTFMesh)
-
 Module(
     NAME GLTFMesh
     TYPE Library

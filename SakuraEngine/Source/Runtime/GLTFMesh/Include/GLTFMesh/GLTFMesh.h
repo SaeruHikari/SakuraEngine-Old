@@ -74,7 +74,7 @@ extern "C"
 	typedef buffer GLTFBin;
 	typedef buffer_view GLTFBinView;
 
-	GLTFMeshAPI void gltf_load(const char* gltf, GLTFFile* result);
+	GLTFMeshAPI GLTFFile gltf_load(const char* gltf);
 	GLTFMeshAPI void gltf_load_bin(const GLTFFile* file,
 		GLTFBin* bins, uint32_t bins_count);
 	GLTFMeshAPI void gltf_restore_bin(const GLTFFile* file,

@@ -1,5 +1,3 @@
-project(Tracker)
-
 # Tracy Apps
 download_and_extract(
     ${FILE_SERVER_DIR}/code/tracy-0.7.4.zip

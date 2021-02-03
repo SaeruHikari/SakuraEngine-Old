@@ -10,7 +10,7 @@ Module(
         /Source/Common
         /Source/Platform/${SAKURA_PLATFORM}
     DEPS
-    DEPS_PUBLIC ${MARL} GSL DirectXMath
+    DEPS_PUBLIC ${MARL} GSL DirectXMath SIMDJson
     INCLUDES_PUBLIC  
         /Include
     INCLUDES 

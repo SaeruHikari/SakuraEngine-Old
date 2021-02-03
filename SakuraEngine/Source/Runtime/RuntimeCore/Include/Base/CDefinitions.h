@@ -5,6 +5,18 @@
 #define SAKURA_ERROR(node,...) printf_s(node, __VA_ARGS__)
 #define SAKURA_FATAL(node,...) printf_s(node, __VA_ARGS__)
 
+#ifndef FORCEINLINE
+    #ifdef _MSC_VER
+        #define FORCEINLINE __forceinline
+    #else
+        #define FORCEINLINE inline
+    #endif
+#endif
+
+#ifndef restrict
+    #define RESTRICT __restrict
+#endif
+
 #if defined(__MINGW32__)
 # define SAKURA_ISSUE_BREAK() DebugBreak();
 #elif defined(_MSC_VER)
@@ -157,3 +169,5 @@ extern "C"
 #ifndef MIN_INT64
 #define MIN_INT64  ((int64) ~MAX_INT64)
 #endif
+
+#define SAKURA_MAX(a, b) ((a) > (b) ? (a) : (b))

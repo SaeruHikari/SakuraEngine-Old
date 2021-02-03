@@ -1,5 +1,3 @@
-project(ECS)
-
 Module(
     NAME ECS
     TYPE Library

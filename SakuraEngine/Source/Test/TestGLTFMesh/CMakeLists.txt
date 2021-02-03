@@ -9,5 +9,5 @@ Module(
     LINKS_PUBLIC
 )
 
-file(COPY scene.gltf DESTINATION ${ENGINE_BIN_DIR}/Debug)
-file(COPY scene.gltf DESTINATION ${ENGINE_BIN_DIR}/Release)
+file(COPY scene.gltf scene.bin DESTINATION ${ENGINE_BIN_DIR}/Debug)
+file(COPY scene.gltf scene.bin DESTINATION ${ENGINE_BIN_DIR}/Release)

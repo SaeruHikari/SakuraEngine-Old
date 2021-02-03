@@ -45,18 +45,6 @@
     #pragma warning(disable: 4267)
 #endif
 
-#ifndef FORCEINLINE
-    #ifdef _MSC_VER
-        #define FORCEINLINE __forceinline
-    #else
-        #define FORCEINLINE inline
-    #endif
-#endif
-
-#ifndef restrict
-    #define RESTRICT __restrict
-#endif
-
 namespace sakura
 {
     typedef unsigned int uint;
