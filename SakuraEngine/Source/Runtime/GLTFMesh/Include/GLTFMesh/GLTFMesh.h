@@ -3,7 +3,7 @@
 
 extern "C"
 {
-	struct GLTFAccessor
+	typedef struct GLTFAccessor
 	{
 		const uint64_t buffer_view;
 		const uint64_t byte_offset;
@@ -14,48 +14,48 @@ extern "C"
 		const float* min;
 		const uint32_t min_dimension;
 		const char* type;
-	};
-	struct GLTFBufferView
+	} GLTFAccessor;
+	typedef struct GLTFBufferView
 	{
 		const uint32_t buffer;
 		const uint64_t byte_length;
 		const uint64_t byte_offset;
 		const char* name;
 		uint32_t target;
-	};
-	struct GLTFAttribute
+	} GLTFBufferView;
+	typedef struct GLTFAttribute
 	{
 		const char* name;
 		const uint32_t accessor;
-	};
-	struct GLTFPrimitive
+	} GLTFAttribute;
+	typedef struct GLTFPrimitive
 	{
 		const GLTFAttribute* attributes;
 		const uint32_t attributes_count;
 		const uint64_t indices;
-	};
-	struct GLTFMesh
+	} GLTFPrimitive;
+	typedef struct GLTFMesh
 	{
 		const GLTFPrimitive* primitives;
 		const uint32_t primitives_count;
-	};
-	struct GLTFBuffer
+	} GLTFMesh;
+	typedef struct GLTFBuffer
 	{
 		const uint64_t byte_length;
 		const char* uri;
-	};
-	struct GLTFNode
+	} GLTFBuffer;
+	typedef struct GLTFNode
 	{
 		const uint32_t* children;
 		const uint32_t children_count;
-	};
-	struct GLTFScene
+	} GLTFNode;
+	typedef struct GLTFScene
 	{
 		const char* name;
 		const uint32_t* nodes;
 		const uint32_t nodes_count;
-	};
-	struct GLTFFile
+	} GLTFScene;
+	typedef struct GLTFFile
 	{
 		const GLTFAccessor* accessors;
 		const uint32_t accessors_count;
@@ -70,7 +70,7 @@ extern "C"
 		const uint32_t scenes_count;
 		
 		const uint32_t scene;
-	};
+	} GLTFFile;
 	typedef buffer GLTFBin;
 	typedef buffer_view GLTFBinView;
 

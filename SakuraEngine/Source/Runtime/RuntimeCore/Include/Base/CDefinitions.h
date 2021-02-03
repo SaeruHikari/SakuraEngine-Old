@@ -79,46 +79,46 @@ extern "C"
     typedef int64_t int64;
     typedef uchar byte;
 
-    struct pos2d
+    typedef struct pos2d
     {
         uint32 x = 0;
         uint32 y = 0;
-    };
-    struct pos3d
+    } pos2d;
+    typedef struct pos3d
     {
         uint32 x;
         uint32 y;
         uint32 z;
-    };
-    struct extent2d
+    } pos3d;
+    typedef struct extent2d
     {
         uint32 width = 0;
         uint32 height = 0;
-    };
-    struct extent3d
+    } extent2d;
+    typedef struct extent3d
     {
         uint32 width = 0;
         uint32 height = 0;
         uint32 depth = 0;
-    };
-    struct double4
+    } extent3d;
+    typedef struct double4
     {
         union
         {
             struct { double r, g, b, a; }; //rgba view
             struct { double x, y, z, w; }; //xyzw view
         };
-    };
-    struct buffer
+    } double4;
+    typedef struct buffer
     {
         byte* data;
         uint64_t length;
-    };
-    struct buffer_view
+    } buffer;
+    typedef struct buffer_view
     { 
         byte* data;
         uint64_t length;
-    };
+    } buffer_view;
 }
 
 #ifndef MAX_UINT8
