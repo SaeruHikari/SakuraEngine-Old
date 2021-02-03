@@ -122,7 +122,7 @@ bool Guid::isValid() const
 }
 
 // convert to string using std::snprintf() and std::string
-std::string Guid::str() const
+sakura::string Guid::str() const
 {
 	char one[10], two[6], three[6], four[6], five[14];
 
@@ -136,8 +136,8 @@ std::string Guid::str() const
 		_bytes[8], _bytes[9]);
 	snprintf(five, 14, "%02x%02x%02x%02x%02x%02x",
 		_bytes[10], _bytes[11], _bytes[12], _bytes[13], _bytes[14], _bytes[15]);
-	const std::string sep("-");
-	std::string out(one);
+	const sakura::string sep("-");
+	sakura::string out(one);
 
 	out += sep + two;
 	out += sep + three;
@@ -148,23 +148,24 @@ std::string Guid::str() const
 }
 
 // conversion operator for std::string
-Guid::operator std::string() const
+Guid::operator sakura::string() const
 {
 	return str();
 }
 
 // Access underlying bytes
-const std::array<unsigned char, 16>& Guid::bytes() const
+const sakura::array<unsigned char, 16>& Guid::bytes() const
 {
     return _bytes;
 }
 
 // create a guid from __vector of bytes
-Guid::Guid(const std::array<unsigned char, 16> &bytes) : _bytes(bytes)
+Guid::Guid(const sakura::array<unsigned char, 16> &bytes) : _bytes(bytes)
 { }
 
 // create a guid from __vector of bytes
-Guid::Guid(std::array<unsigned char, 16> &&bytes) : _bytes(std::move(bytes))
+Guid::Guid(sakura::array<unsigned char, 16> &&bytes) 
+	: _bytes(std::move(bytes))
 { }
 
 // converts a single hex char to a number (0 - 15)
@@ -209,7 +210,7 @@ unsigned char hexPairToChar(char a, char b)
 }
 
 // create a guid from string
-Guid::Guid(std::string_view fromString)
+Guid::Guid(sakura::string_view fromString)
 {
 	char charOne = '\0';
 	char charTwo = '\0';
@@ -283,7 +284,7 @@ void Guid::swap(Guid &other)
 #ifdef GUID_LIBUUID
 Guid newGuid()
 {
-	std::array<unsigned char, 16> data;
+	sakura::array<unsigned char, 16> data;
 	static_assert(std::is_same<unsigned char[16], uuid_t>::value, "Wrong type!");
 	uuid_generate(data.data());
 	return Guid{std::move(data)};
@@ -298,7 +299,7 @@ Guid newGuid()
 	auto bytes = CFUUIDGetUUIDBytes(newId);
 	CFRelease(newId);
 
-	std::array<unsigned char, 16> byteArray =
+	sakura::array<unsigned char, 16> byteArray =
 	{{
 		bytes.byte0,
 		bytes.byte1,
@@ -330,7 +331,7 @@ Guid newGuid()
 	{
 
 	}
-	std::array<unsigned char, 16> bytes =
+	sakura::array<unsigned char, 16> bytes =
 	{
 		(unsigned char)((uu.timeLow >> 24) & 0xFF),
 		(unsigned char)((uu.timeLow >> 16) & 0xFF),
@@ -364,7 +365,7 @@ Guid newGuid()
 	GUID newId;
 	CoCreateGuid(&newId);
 
-	std::array<unsigned char, 16> bytes =
+	sakura::array<unsigned char, 16> bytes =
 	{
 		(unsigned char)((newId.Data1 >> 24) & 0xFF),
 		(unsigned char)((newId.Data1 >> 16) & 0xFF),
@@ -404,7 +405,7 @@ Guid newGuid(JNIEnv *env)
 	jlong leastSignificant = env->CallLongMethod(javaUuid,
 		androidInfo.leastSignificantBitsMethod);
 
-	std::array<unsigned char, 16> bytes =
+	sakura::array<unsigned char, 16> bytes =
 	{
 		(unsigned char)((mostSignificant >> 56) & 0xFF),
 		(unsigned char)((mostSignificant >> 48) & 0xFF),

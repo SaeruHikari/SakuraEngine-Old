@@ -4,7 +4,8 @@
 #include <jni.h>
 #endif
 #include <spdlog/fmt/fmt.h>
-#include <array>
+#include <Containers/array.hpp>
+#include <Containers/string.hpp>
 
 namespace sakura
 {
@@ -15,10 +16,10 @@ namespace sakura
     class RuntimeCoreAPI Guid
     {
     public:
-        explicit Guid(const std::array<unsigned char, 16> &bytes);
-        explicit Guid(std::array<unsigned char, 16> &&bytes);
+        explicit Guid(const sakura::array<unsigned char, 16> &bytes);
+        explicit Guid(sakura::array<unsigned char, 16> &&bytes);
 
-        explicit Guid(std::string_view fromString);
+        explicit Guid(sakura::string_view fromString);
         Guid();
         
         Guid(const Guid &other) = default;
@@ -29,9 +30,9 @@ namespace sakura
         bool operator==(const Guid &other) const;
         bool operator!=(const Guid &other) const;
 
-        std::string str() const;
-        operator std::string() const;
-        const std::array<unsigned char, 16>& bytes() const;
+        sakura::string str() const;
+        operator sakura::string() const;
+        const sakura::array<unsigned char, 16>& bytes() const;
         void swap(Guid &other);
         bool isValid() const;
 
@@ -39,7 +40,7 @@ namespace sakura
         void zeroify();
 
         // actual data
-        std::array<unsigned char, 16> _bytes;
+        sakura::array<unsigned char, 16> _bytes;
 
         // make the << operator a friend so it can access _bytes
         friend std::ostream &operator<<(std::ostream &s, const Guid &guid);
@@ -120,13 +121,13 @@ namespace std
 
 namespace fmt
 {
-	template<> struct formatter<sakura::Guid> : fmt::formatter<std::string>
+	template<> struct formatter<sakura::Guid> : fmt::formatter<sakura::string>
 	{
 		template<typename FormatContext>
 		auto format(sakura::Guid _guid, FormatContext& ctx)
 		{
-            std::string result = _guid.str().c_str();
-            return formatter<std::string>::format(result, ctx);
+            sakura::string result = _guid.str().c_str();
+            return formatter<sakura::string>::format(result, ctx);
 		}
 	};
 }

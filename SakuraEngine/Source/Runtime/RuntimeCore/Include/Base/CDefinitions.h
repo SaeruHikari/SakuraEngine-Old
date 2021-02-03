@@ -77,6 +77,7 @@ extern "C"
     typedef int16_t int16;
     typedef int32_t int32;
     typedef int64_t int64;
+    typedef uchar byte;
 
     struct pos2d
     {
@@ -107,6 +108,16 @@ extern "C"
             struct { double r, g, b, a; }; //rgba view
             struct { double x, y, z, w; }; //xyzw view
         };
+    };
+    struct buffer
+    {
+        byte* data;
+        uint64_t length;
+    };
+    struct buffer_view
+    { 
+        byte* data;
+        uint64_t length;
     };
 }
 

@@ -71,7 +71,93 @@ extern "C"
 		
 		const uint32_t scene;
 	};
+	typedef buffer GLTFBin;
+	typedef buffer_view GLTFBinView;
 
+	GLTFMeshAPI void gltf_load(const char* gltf, GLTFFile* result);
+	GLTFMeshAPI void gltf_load_bin(const GLTFFile* file,
+		GLTFBin* bins, uint32_t bins_count);
+	GLTFMeshAPI void gltf_restore_bin(const GLTFFile* file,
+		GLTFBinView* bin_views, uint32_t bin_views_count);
+	GLTFMeshAPI void gltf_free(GLTFFile* gltf);
+}
+
+
+#ifdef __cplusplus
+namespace sakura::gltf
+{
+	struct Accessor : ::GLTFAccessor
+	{
+		Accessor(
+			const uint64_t buffer_view,
+			const uint64_t byte_offset,
+			const uint32_t component_type,
+			const uint32_t count,
+			const float* max,
+			const uint32_t max_dimension,
+			const float* min,
+			const uint32_t min_dimension,
+			const char* type
+		);
+	};
+
+	struct BufferView : ::GLTFBufferView
+	{
+
+	};
+
+	struct Attribute : ::GLTFAttribute
+	{
+
+	};
+
+	struct Primitive : ::GLTFPrimitive
+	{
+
+	};
+
+	struct Mesh : ::GLTFMesh
+	{
+
+	};
+	
+	struct Buffer : ::GLTFBuffer
+	{
+		
+	};
+	
+	struct Node : ::GLTFNode
+	{
+
+	};
+
+	struct Scene : ::GLTFScene
+	{
+
+	};
+
+	struct Bin : ::GLTFBin
+	{
+
+	};
+
+	struct BinView : ::GLTFBinView
+	{
+
+	};
+
+	struct GLTFMeshAPI File : ::GLTFFile
+	{
+		void load_bin(Bin* bins, uint32_t bins_count);
+		void restore_bin(BinView* bin_views, uint32_t bin_views_count);
+	};
+
+	GLTFMeshAPI [[nodiscard]] File* load(const char* gltf);
+}
+#endif
+
+extern "C"
+{
 	static const uint32_t GLTF_TARGET_ARRAY_BUFFER = 34962;
 	static const uint32_t GLTF_TARGET_ELEMENT_ARRAY_BUFFER = 34963;
 
