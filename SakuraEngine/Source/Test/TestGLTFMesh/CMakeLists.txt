@@ -8,3 +8,6 @@ Module(
     LINKS
     LINKS_PUBLIC
 )
+
+file(COPY scene.gltf DESTINATION ${ENGINE_BIN_DIR}/Debug)
+file(COPY scene.gltf DESTINATION ${ENGINE_BIN_DIR}/Release)

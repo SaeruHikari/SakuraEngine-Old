@@ -142,7 +142,7 @@ namespace sakura::gltf
 		void restore_bin(BinView* bin_views, uint32_t bin_views_count);
 	};
 
-	GLTFMeshAPI [[nodiscard]] File* load(const char* gltf);
+	[[nodiscard]] GLTFMeshAPI File* load(const char* gltf);
 }
 #endif
 

@@ -12,6 +12,7 @@ namespace sakura
 	namespace ecs
 	{
 		using namespace core::codebase;
+		core::GUID new_guid();
 	}
 }
 
@@ -244,7 +245,7 @@ namespace core
 {
 	namespace database
 	{
-		core::GUID new_guid();
+		
 	}
 }
 

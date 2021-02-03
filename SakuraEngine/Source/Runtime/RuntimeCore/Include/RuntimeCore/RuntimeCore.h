@@ -3,7 +3,7 @@
 #include "Containers/pair.hpp"
 #include "Module.h"
 
-#include "RuntimeCore/Memory.h"
+#include "System/Memory.h"
 #include "Base/GUID.h"
 #include "Base/GenerationalId.h"
 #ifdef SAKURA_TARGET_PLATFORM_WIN
