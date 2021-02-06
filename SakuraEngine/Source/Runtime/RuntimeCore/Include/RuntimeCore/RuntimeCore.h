@@ -1,23 +1,11 @@
-/*
- * @Author: your name
- * @Date: 2020-07-30 14:11:34
- * @LastEditTime: 2020-09-22 16:43:32
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \SakuraEngineV3\SakuraEngine\Runtime\Core\public\Core.h
- */ 
 #pragma once
-#include "SakuraSTL.hpp"
-#include <System/Time.h>
-#include <System/VirtualFileSystem.h>
-#include <System/Log.h>
-#include <Base/GUID.h>
+
+#include "Containers/pair.hpp"
 #include "Module.h"
-#include "RuntimeCore/Resource.h"
+
+#include "System/Memory.h"
+#include "Base/GUID.h"
 #include "Base/GenerationalId.h"
-#include "System/Window.h"
-#include "Module.h"
-#include "Math/Math.hpp"
 #ifdef SAKURA_TARGET_PLATFORM_WIN
 #include "Platform/Windows/Messages.hpp"
 namespace sakura
@@ -37,7 +25,11 @@ namespace sakura
 	using ActualOSMessages = sakura::emscripten::WebMessages;
 }
 #elif defined(SAKURA_TARGET_PLATFORM_MACOS)
-static_assert(0, "Implement This!");
+#include "Platform/MacOS/Messages.hpp"
+namespace sakura
+{
+	using ActualOSMessages = sakura::macos::MacMessages;
+}
 #endif
 
 namespace sakura

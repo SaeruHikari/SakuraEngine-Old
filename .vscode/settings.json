@@ -136,6 +136,10 @@
         "execution": "cpp",
         "shared_mutex": "cpp",
         "csignal": "cpp",
-        "coroutine": "cpp"
+        "coroutine": "cpp",
+        "__tree": "cpp",
+        "span_ext": "cpp",
+        "cinttypes": "cpp",
+        "ranges": "cpp"
     },
 }

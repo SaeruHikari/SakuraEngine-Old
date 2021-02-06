@@ -1,4 +1,5 @@
 ﻿#include <System/VirtualFileSystem.h>
+#include <Containers/memory.hpp>
 
 sakura::unordered_map<sakura::u8string, sakura::vfs::adapter*>
 	sakura::vfs::adapter::mounted_adapters;

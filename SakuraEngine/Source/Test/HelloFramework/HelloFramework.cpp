@@ -1,4 +1,6 @@
 #include "RuntimeCore/RuntimeCore.h"
+#include <System/Log.h>
+
 int main()
 {
     using namespace sakura;
@@ -22,6 +24,5 @@ int main()
 	{
 		
 	}
-
     return 0;
 }

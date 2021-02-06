@@ -400,6 +400,8 @@ FORCEINLINE WGPUTextureViewDimension sakura::graphics::webgpu::match(const WGPUT
 		return WGPUTextureViewDimension_2D;
 	case WGPUTextureDimension_3D:
 		return WGPUTextureViewDimension_3D;
+	default:
+		return WGPUTextureViewDimension_Undefined;
 	}
 }
 

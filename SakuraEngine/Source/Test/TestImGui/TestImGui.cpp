@@ -5,7 +5,6 @@
 
 #include "RenderGraph/RenderGraph.h"
 #include "RenderGraphWebGPU/RenderGraphWebGPU.h"
-#include "RenderGraphVulkan/RenderGraphVulkan.h"
 
 using namespace sakura;
 using namespace sakura::graphics;
@@ -15,7 +14,6 @@ inline RenderGraph render_graph;
 inline IRenderDevice* render_device = nullptr;
 inline SwapChainHandle swap_chain = render_graph.SwapChain("DefaultSwapChain");
 
-const bool useVk = false;
 struct Timer
 {
     void start_up()
@@ -46,20 +44,14 @@ int main(int, char**)
     main_window = sakura::Window::create(windDesc);
 
     DeviceConfiguration deviceConfig;
-    if (!useVk)
     {
         deviceConfig.name = "DawnDevice";
-        render_device = new webgpu::RenderDevice(deviceConfig);
+        render_device = new webgpu::RenderDevice(render_graph, deviceConfig);
         assert(render_device != nullptr && "ERROR: Failed to create Dawn device!");
     }
-    else
-    {
-        deviceConfig.name = "VulkanDevice";
-        render_device = new vk::RenderDevice(deviceConfig);
-        assert(render_device != nullptr && "ERROR: Failed to create Vulkan device!");
-    }
     // Create Swap Chains.
-    render_device->create_swap_chain(swap_chain, SwapChainDescriptor(EPresentMode::Mailbox, main_window, 3));
+    render_device->create_swap_chain(swap_chain,
+        SwapChainDescriptor(EPresentMode::Mailbox, main_window, 3, 1));
 	
     sakura::imgui::initialize(main_window);
     sakura::imgui::initialize_gfx(render_graph, *render_device);

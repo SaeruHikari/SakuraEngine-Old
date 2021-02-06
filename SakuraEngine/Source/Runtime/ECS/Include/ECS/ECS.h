@@ -12,6 +12,7 @@ namespace sakura
 	namespace ecs
 	{
 		using namespace core::codebase;
+		core::GUID new_guid();
 	}
 }
 
@@ -108,7 +109,7 @@ namespace sakura::task_system::ecs
 		}
 		pass_statistics* get_statistics(const pass_location* location)
 		{
-
+			return nullptr;
 		}
 		void mark_frame()
 		{
@@ -195,7 +196,7 @@ namespace sakura::task_system::ecs
 				forloop(grp, 0, groups.size)
 				{
 					auto& gp = groups[grp];
-					task_system::schedule([&, gp, tasksGroup] {
+					task_system::schedule([&, gp, tasksGroup, tasks = tasks] {
 						// Decrement the WaitGroup counter when the task has finished.
 						ZoneScopedPass(p->location->task);
 						task_defer(tasksGroup.done());
@@ -204,7 +205,7 @@ namespace sakura::task_system::ecs
 							auto& tk = tasks[tsk];
 							t(*p, tk);
 						}
-						});
+					});
 				}
 				tasksGroup.wait();
 			}
@@ -212,7 +213,7 @@ namespace sakura::task_system::ecs
 			{
 			FORCE_NO_GROUP_PARALLEL:
 				std::for_each(
-					groups.begin(), groups.end(), [&, t](auto& gp) mutable
+					groups.begin(), groups.end(), [&, t, tasks = tasks](auto& gp) mutable
 					{
 						ZoneScopedPass(p->location->task);
 						forloop(tsk, gp.begin, gp.end)
@@ -244,13 +245,7 @@ namespace core
 {
 	namespace database
 	{
-		core::GUID new_guid()
-		{
-			core::GUID result;
-			auto guid = sakura::new_guid();
-			memcpy(&result, &guid, sizeof(core::GUID));
-			return result;
-		}
+		
 	}
 }
 

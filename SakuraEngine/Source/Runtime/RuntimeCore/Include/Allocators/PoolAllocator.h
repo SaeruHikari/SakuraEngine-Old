@@ -1,4 +1,5 @@
-﻿#include "AllocatorBase.h"
+﻿#pragma once
+#include "AllocatorBase.h"
 #include "Allocators/StackLinkedList.h"
 
 namespace sakura

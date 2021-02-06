@@ -1,5 +1,3 @@
-project(RenderGraph)
-
 Module(
     NAME RenderGraph
     TYPE Library

@@ -31,10 +31,8 @@ CMakeImportedModule(
     SELF_INSTALL TRUE
 )
 
-add_subdirectory(crossguid)
+add_subdirectory(DirectXMath)
 CMakeImportedModule(
-    NAME crossguid
-    SELF_INSTALL FALSE
-    INCLUDES_PUBLIC
-        Source/Runtime/CMakeImported/crossguid/include
+    NAME DirectXMath
+    SELF_INSTALL TRUE
 )

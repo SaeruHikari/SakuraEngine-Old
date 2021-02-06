@@ -1,13 +1,10 @@
-/*
- * @Author: your name
- * @Date: 2020-07-30 14:06:44
- * @LastEditTime: 2020-08-19 18:19:44
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \SakuraEngineV3\SakuraEngine\Runtime\Core\private\Core.cpp
- */
 #include <iomanip>
 #include <RuntimeCore/RuntimeCore.h>
+#include <System/Log.h>
+
+#include "System/Time.h"
+#include "System/VirtualFileSystem.h"
+
 #include "System/vfs/fs_dev_local/adapter_dev_local.h"
 
 using namespace sakura;
@@ -142,7 +139,7 @@ OSMessages* sakura::Core::bind(Window window) noexcept
 		sakura::error("Rep Bind of window!");
 		return nullptr;
 	}
-	msg_buses_.insert(std::make_pair(window.handle(), std::move(std::make_unique<ActualOSMessages>(window))));
+	msg_buses_.insert(std::make_pair(window.handle(), std::make_unique<ActualOSMessages>(window)));
 	return msg_buses_[window.handle()].get();
 }
 

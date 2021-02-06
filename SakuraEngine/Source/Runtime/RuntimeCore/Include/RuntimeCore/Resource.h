@@ -2,6 +2,7 @@
 #include "Base/GUID.h"
 #include "Base/GenerationalId.h"
 #include "System/VirtualFileSystem.h"
+#include "Containers/pair.hpp"
 
 namespace sakura
 {

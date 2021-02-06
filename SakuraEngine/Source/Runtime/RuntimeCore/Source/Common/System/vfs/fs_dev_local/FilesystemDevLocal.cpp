@@ -62,7 +62,7 @@ sakura::vfs::path get_vfs_path(const std::filesystem::path& p) noexcept
 {
 	auto str = p.u8string();
 	std::replace(str.begin(), str.end(), '\\', '/');
-	sakura::u8string localStr = reinterpret_cast<const char8_t*>(str.c_str());
+	sakura::u8string localStr = reinterpret_cast<const sakura::char8_t*>(str.c_str());
 	auto rootSize = adapter_dev_local::get()->project_dir.size();
 	return sakura::vfs::path(
 		localStr.substr(rootSize, localStr.size() - rootSize),

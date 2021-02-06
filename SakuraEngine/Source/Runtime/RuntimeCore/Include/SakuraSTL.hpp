@@ -25,80 +25,29 @@
  * @LastEditTime: 2020-08-10 00:06:26
  */ 
 #pragma once
-#include "Base/Definations.h"
-#include "RuntimeCore/Memory.h"
-#include "utf8/utf8.h"
-#include <spdlog/fmt/fmt.h>
 #include <chrono>
-#include <string>
-#include <string_view>
 #include <variant>
-#include <array>
-#include <unordered_map>
-#include <gsl/span>
 #include <atomic>
+#include <spdlog/fmt/fmt.h>
+#include "Containers/span.hpp"
+#include "Containers/array.hpp"
+#include "Containers/vector.hpp"
+#include "Containers/unordered_map.hpp"
+#include "Containers/string.hpp"
+#include "Containers/codecvt.hpp"
+#include "Containers/memory.hpp"
 
-namespace utf_converter
-{
-	FORCEINLINE std::string utf16_to_utf8(std::wstring utf16_string)
-	{
-        std::string utf8_string;
-		utf8::utf16to8(utf16_string.begin(), utf16_string.end(), back_inserter(utf8_string));
-        return utf8_string;
-	}
-
-	FORCEINLINE std::wstring utf8_to_utf16(std::string utf8_string)
-	{
-		std::wstring utf16_string;
-		utf8::utf8to16(utf8_string.begin(), utf8_string.end(), back_inserter(utf16_string));
-		return utf16_string;
-	}
-}
 namespace sakura
 {
-    using gsl::span;
-    using u8string = std::string;
-    using u8string_view = std::string_view;
-    
-    using std::unique_ptr;
-    using std::string_view;
+    using namespace utf_converter;
     using std::variant;
-    using std::array;
-    using std::pair;
     using std::function;
-    using std::make_pair;
     using std::move;
     using std::forward;
-    using std::to_string;
-    using std::to_wstring;
 }
-using char8_t = char;
-
-#ifdef WHEN_PMR_IS_USABLE
-#include <memory_resource>
-namespace sakura
-{
-    using std::pmr::string;
-    using std::pmr::wstring;
-	using std::pmr::unordered_map;
-	using std::pmr::vector;
-}
-#else
-namespace sakura
-{
-    using string = std::string;
-    using wstring = std::wstring;
-	using std::unordered_map;
-	using std::vector;
-}
-#endif
-
-#include <ctime>
 
 namespace sakura
 {
-    using time_t = std::time_t;
-    using nullptr_t = std::nullptr_t;
     using ostream = std::ostream;
     using exception = std::exception;
 
@@ -111,22 +60,6 @@ namespace sakura
 
 namespace sakura
 {
-    template<typename string_type>
-	void string_replace(
-        string_type& src,
-        const string_type& to_replace, const string_type& replacement)
-	{
-        typename string_type::size_type pos = 0;
-        typename string_type::size_type srclen = to_replace.size();
-        typename string_type::size_type dstlen = replacement.size();
-
-		while ((pos = src.find(to_replace, pos)) != string_type::npos)
-		{
-            src.replace(pos, srclen, replacement);
-			pos += dstlen;
-		}
-	}
-
     template <typename T, uint32_t size>
     struct storage
     {
@@ -139,16 +72,6 @@ namespace sakura
 
 namespace fmt
 {
-/*
-    template <> struct formatter<sakura::u8string> : fmt::formatter<std::string_view> {
-    // parse is inherited from formatter<string_view>.
-    template <typename FormatContext>
-    auto format(sakura::u8string c, FormatContext& ctx) {
-            string_view name = (const char*)c.c_str();
-            return formatter<string_view>::format(name, ctx);
-        }
-    };
-*/
     template <> struct formatter<sakura::double4> : fmt::formatter<std::string_view> {
         // parse is inherited from formatter<string_view>.
         template <typename FormatContext>
@@ -217,7 +140,6 @@ namespace sakura
 
     namespace detail
     {
-
         template<typename R, typename ...As>
         struct __function_traits_base {
             using function_type = std::function<R(As...)>;
@@ -307,21 +229,4 @@ namespace sakura
     using is_complete = decltype(is_complete_impl(std::declval<T*>()));
     template <class T>
     static constexpr bool is_complete_v = is_complete<T>::value;
-
-    namespace detail
-    {
-        template <typename T, std::size_t ... Is>
-        constexpr std::array<T, sizeof...(Is)>
-        create_array(T value, std::index_sequence<Is...>)
-        {
-            // cast Is to void to remove the warning: unused value
-            return {{(static_cast<void>(Is), value)...}};
-        }
-    }
-
-    template <typename T, std::size_t N>
-    constexpr std::array<T, N> create_array(T&& value)
-    {
-        return detail::create_array(std::forward<T>(value), std::make_index_sequence<N>());
-    }
 }

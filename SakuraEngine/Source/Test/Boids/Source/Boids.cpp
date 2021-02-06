@@ -4,32 +4,21 @@
 #endif
 #define TRACY_ENABLE
 #include "tracy/Tracy.hpp"
-
 #include "RuntimeCore/RuntimeCore.h"
-#include "spdlog/spdlog.h"
-#include "marl/finally.h"
-#include "SakuraSTL.hpp"
-
 #include "System/VirtualFileSystem.h"
 #include "System/Log.h"
-
 #include "ECS/ECS.h"
 #include "RingBuffer.h"
-
 #include "TransformComponents.h"
 #include "RenderSystem.h"
 #include "Boids.h"
 #include "TaskSystem/TaskSystem.h"
-#include "RuntimeCore/RuntimeCore.h"
 #include "kdtree.h"
 #include <iostream>
 #include <random>
-#include <cmath>
 #include <fstream>
-#include <filesystem>
 #include "System/Messages.h"
 #include "imgui/sakura_imgui.h"
-
 
 #define forloop(i, z, n) for(auto i = std::decay_t<decltype(n)>(z); i<(n); ++i)
 #define def static constexpr auto
@@ -61,8 +50,6 @@ struct Timer
 	}
 	std::chrono::system_clock::time_point tmpt;
 };
-
-
 
 struct buffer_serializer final : sakura::ecs::serializer_i
 {
@@ -124,7 +111,7 @@ void ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f,
 		{
 			auto o = operation{ paramList, pass, tk };
 			hana::tuple arrays = boost::hana::make_tuple(
-				o.get_parameter<T>(), o.get_parameter<const Ts>()...);
+				o.template get_parameter<T>(), o.template get_parameter<const Ts>()...);
 			forloop(i, 0, o.get_count())
 			{
 				auto params = hana::transform(arrays, [i](auto v) { return v ? v + i : nullptr; });
@@ -177,16 +164,16 @@ template<class T>
 static void SolveChild2World(T& o, const float4x4& parent_l2w, const ecs::entity e)
 {
 	float4x4 l2w = float4x4();
-	auto [child_l2w, child_l2p] = o.get_parameters_owned<LocalToWorld, const LocalToParent>(e);
+	auto [child_l2w, child_l2p] = o.template get_parameters_owned<LocalToWorld, const LocalToParent>(e);
 	if (child_l2w && child_l2p)
 	{
 		l2w = sakura::math::multiply(parent_l2w, *child_l2p);
 		*child_l2w = l2w;
 	}
 
-	if (o.has_component<Child>(e)) //TODO: use own_component
+	if (o.template has_component<Child>(e)) //TODO: use own_component
 	{
-		auto child_children = o.get_parameter_owned<const Child>(e);
+		auto child_children = o.template get_parameter_owned<const Child>(e);
 		for (const auto& child : child_children)
 		{
 			SolveChild2World(o, l2w, child);
@@ -247,7 +234,7 @@ void World2LocalSystem(task_system::ecs::pipeline& ppl)
 		[](const task_system::ecs::pass& pass, const ecs::task& tk)
 		{
 			auto o = operation{ paramList, pass, tk };
-			auto [l2ws, w2ls] = o.get_parameters<const LocalToWorld, WorldToLocal>();
+			auto [l2ws, w2ls] = o.template get_parameters<const LocalToWorld, WorldToLocal>();
 
 			forloop(i, 0, o.get_count())
 			{
@@ -272,7 +259,7 @@ void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 		{
 			auto o = operation{ paramList, pass, tk };
 			auto index = o.get_index();
-			auto comps = o.get_parameter<const C>();
+			auto comps = o.template get_parameter<const C>();
 			if constexpr(useMemcpy)
 				memcpy((*vector).data() + index, comps, o.get_count() * sizeof(C));
 			else
@@ -293,7 +280,7 @@ void FillComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 		{
 			auto o = operation{ paramList, pass, tk };
 			auto index = o.get_index();
-			auto comps = o.get_parameter<C>();
+			auto comps = o.template get_parameter<C>();
 			if constexpr (useMemcpy)
 				memcpy(comps, (*vector).data() + index, o.get_count() * sizeof(C));
 			else
@@ -629,6 +616,8 @@ core::entity GetBoidSetting(sakura::ecs::pipeline& ppl)
 	for (auto pf : ppl.query(filter))
 		for (auto i : ppl.query(pf.type))
 			return ppl.get_entities(i)[0];
+	
+	return core::NullEntity;
 }
 
 void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
@@ -745,7 +734,6 @@ void BoidMainLoop(task_system::ecs::pipeline& ppl, float deltaTime)
 		Local2XSystem<LocalToWorld>(ppl, wrd_filter, PassLocation(LocalToWorld));
 	}
 
-
 	filters c2p_filter;
 	c2p_filter.archetypeFilter = {
 		{complist<LocalToParent, Parent>},
@@ -800,7 +788,7 @@ int main()
 		WorldToLocal, Child, Parent, Boid, BoidTarget, MoveToward, RandomMoveTarget, Heading, BoidDebugData>();
 	SpawnBoidSetting();
 	SpawnBoidTargets(10);
-	
+
 	task_system::ecs::pipeline ppl(std::move(ctx));
 	if (!bUseImGui)
 	{
@@ -876,7 +864,7 @@ int main()
 					ctx.serialize(&archive);
 					memory_used += snapshot.size();
 					snapshots.emplace_back(std::move(snapshot));
-					while (memory_used > (long long)memory_size_limit * 1024 * 1024)
+					while (memory_used > (size_t)memory_size_limit * 1024 * 1024)
 					{
 						memory_used -= snapshots.front().size();
 						snapshots.pop_front();
@@ -961,8 +949,8 @@ int main()
 				imgui::SliderFloat("TimeScale", &TimeScale, 0, 10);
 				if (BoidCount)
 				{
-					imgui::Text("Max Neighbor Count: %d", maxNeighberCount.load());
-					imgui::Text("Average Neighbor Count: %d", averageNeighberCount.load() / BoidCount);
+					imgui::Text("Max Neighbor Count: %llu", maxNeighberCount.load());
+					imgui::Text("Average Neighbor Count: %llu", averageNeighberCount.load() / BoidCount);
 				}
 			}
 			if (imgui::CollapsingHeader("Camera"))

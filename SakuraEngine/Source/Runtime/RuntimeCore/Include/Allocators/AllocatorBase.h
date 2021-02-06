@@ -1,13 +1,5 @@
-﻿/*
- * @Author: your name_
- * @Date: 2020-08-11 17:19:36
- * @LastEditTime: 2020-08-11 17:25:51
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \allocators\Allocator.h
- */
-#pragma once
-#include <Base/Definations.h>
+﻿#pragma once
+#include <Base/Definitions.h>
 
 namespace sakura
 {

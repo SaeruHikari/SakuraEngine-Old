@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "SakuraSTL.hpp"
 #include "Math/Vector.h"
 #pragma warning( push )
 #pragma warning ( disable : 4668 )

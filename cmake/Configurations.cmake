@@ -10,6 +10,8 @@ macro(SAKURA_REMOVE_DEF def)
     remove_definitions("-D ${def}")
 endmacro()
 
+#set(FULL_STATIC TRUE)
+
 ## Host Device.
 SAKURA_DEF(SAKURA_HOST TRUE)
 

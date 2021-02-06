@@ -1,6 +1,7 @@
 #pragma once
 #include "rxcpp/rx.hpp"
 #include "Input.h"
+#include "System/Window.h"
 
 namespace sakura
 {
@@ -31,6 +32,10 @@ namespace sakura
 		template<typename MsgT>
 		rxcpp::observable<MsgT> messages() 
 		{
+			static_assert(
+				std::is_same_v<MsgT, OSMessage> || std::is_same_v<MsgT, OSKeyboardMessage>,
+				"Such OSMessageType does not exist!"
+			);
 			if constexpr (std::is_same_v<MsgT, OSMessage>)
 			{
 				return os_subject_.get_observable();
@@ -38,10 +43,6 @@ namespace sakura
 			else if constexpr (std::is_same_v<MsgT, OSKeyboardMessage>)
 			{
 				return kb_subject_.get_observable();
-			}
-			else
-			{
-				static_assert(false, "Such OSMessageType does not exist!");
 			}
 		}
 	protected:
@@ -52,19 +53,6 @@ namespace sakura
 		rxcpp::subjects::subject<OSKeyboardMessage> kb_subject_;
 		rxcpp::subscriber<OSKeyboardMessage> kb_subscriber_;
 	};
-
-
-	OSMessages::OSMessages(const Window window)
-		: kb_subscriber_(kb_subject_.get_subscriber()), os_subscriber_(os_subject_.get_subscriber()), window_(window)
-	{
-
-	}
-
-	OSMessages::~OSMessages()
-	{
-		kb_subscriber_.on_completed();
-		os_subscriber_.on_completed();
-	}
 }
 
 

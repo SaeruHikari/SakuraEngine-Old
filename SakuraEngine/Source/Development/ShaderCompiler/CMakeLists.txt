@@ -1,7 +1,5 @@
 if(SAKURA_HOST)
 
-project(ShaderCompiler)
-
 download_and_extract(
     ${FILE_SERVER_DIR}/binaries/${SAKURA_PLATFORM}/x64/common/dxc.zip
     ${ENGINE_DIR}/Build/PreBuilt/Common/dxc.zip

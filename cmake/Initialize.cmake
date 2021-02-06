@@ -32,7 +32,8 @@ set(CLANG_DISABLED_WARNINGS
     -Wpointer-bool-conversion -Wimplicit-int-float-conversion \
     -Wno-tautological-pointer-compare -Wno-delete-abstract-non-virtual-dtor \
     -Wno-unused-label -Wno-zero-as-null-pointer-constant -Wno-extra-semi-stmt \
-    -Wno-missing-prototypes -Wno-old-style-cast -Wno-reorder-ctor"
+    -Wno-missing-prototypes -Wno-old-style-cast -Wno-reorder-ctor \
+    -Wno-implicit-int-float-conversion -Wno-c++98-compat -Wno-format"
 )
 
 ADD_DEFINITIONS(-DMACRO)
@@ -43,12 +44,14 @@ set(API_HIDDEN_DEF __attribute__\(\(visibility\(\"hidden\"\)\)\))
 
 ## Target Platform
 add_definitions(-D "SPDLOG_NO_EXCEPTIONS")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if(UNIX)
     add_definitions(-D "SAKURA_TARGET_PLATFORM_UNIX")
     if(APPLE)
         add_definitions(-D "SAKURA_TARGET_PLATFORM_MACOS")
         set(SAKURA_PLATFORM "mac")
         set(macos 1)
+        set(osx 1)
         set(mac 1)
     elseif(${CMAKE_SYSTEM_NAME} MATCHES ANDROID)
         add_definitions(-D "SAKURA_TARGET_PLATFORM_ANDROID")
@@ -136,8 +139,6 @@ include(CPack)
 # Default Path Configuration
 
 set(CMAKE_DEBUG_POSTFIX "_d")
-
-#set(FULL_STATIC TRUE)
 
 if(FULL_STATIC)
 add_compile_definitions( 

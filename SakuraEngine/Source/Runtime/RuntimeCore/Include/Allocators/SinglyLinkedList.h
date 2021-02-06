@@ -1,13 +1,4 @@
-﻿/*
- * @Author: your name
- * @Date: 2020-08-11 17:19:36
- * @LastEditTime: 2020-08-11 17:29:25
- * @LastEditors: your name
- * @Description: In User Settings Edit
- * @FilePath: \allocators\SinglyLinkedList.h
- */
-#ifndef singly_linked_list_H
-#define singly_linked_list_H
+﻿#pragma once
 
 template <class T>
 class singly_linked_list {
@@ -27,6 +18,4 @@ public:
 };
 
 #include "SinglyLinkedListImpl.h"
-
-#endif /* singly_linked_list_H */
 

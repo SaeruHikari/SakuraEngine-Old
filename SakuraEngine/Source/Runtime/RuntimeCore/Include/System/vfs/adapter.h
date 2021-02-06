@@ -2,6 +2,7 @@
 #include "path.h"
 #include "entry.h"
 #include "file.h"
+#include "Containers/unordered_map.hpp"
 
 namespace sakura::vfs
 {

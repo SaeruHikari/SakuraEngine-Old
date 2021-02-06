@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "Rotator.h"
-#include "SakuraSTL.hpp"
 #include "ScalarMath.h"
 #include "Vector.h"
 

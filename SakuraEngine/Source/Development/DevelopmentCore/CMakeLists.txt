@@ -1,7 +1,5 @@
 if(SAKURA_HOST)
 
-project(DevelopmentCore)
-
 Module(
     NAME DevelopmentCore
     TYPE Library

@@ -1,6 +1,4 @@
-﻿#ifndef c_allocator_H
-#define c_allocator_H
-
+﻿#pragma once
 #include "AllocatorBase.h"
 
 namespace sakura
@@ -19,6 +17,4 @@ namespace sakura
 	};
 
 }
-
-#endif /* c_allocator_H */
 
