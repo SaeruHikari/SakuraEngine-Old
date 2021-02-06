@@ -643,7 +643,8 @@ void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 	sphere s;
 	s.center = sakura::Vector3f(0, 0, 500.f);
 	s.radius = Radius;
-	ppl.sync_archetype(ppl.find_archetype(type));
+	if(auto at = ppl.find_archetype(type))
+		ppl.sync_archetype(at);
 	auto& ctx = (world&)ppl; //warning! 解放!
 	for (auto slice : ctx.allocate(type, Count))
 	{
