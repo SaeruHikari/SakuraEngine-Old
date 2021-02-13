@@ -193,7 +193,8 @@ namespace render_system
 			RenderCommandBuffer& command_buffer,
 			const RenderGraph& rg, IRenderDevice& device) noexcept override
 		{
-			command_buffer.enqueue<RenderCommandBeginRenderPass>(render_pipeline, attachment, ds);
+			command_buffer.enqueue<RenderCommandBeginRenderPass>(
+				render_pipeline, attachment, ds);
 			{
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 0, uniform_buffer_per_target, 0, sizeof(sakura::float4x4) * 10, 0));
 				command_buffer.enqueue<RenderCommandUpdateBinding>(Binding(0, 1, id_buffer_per_object, 0, sizeof(uint32_t) * TARGET_NUM, 0));
