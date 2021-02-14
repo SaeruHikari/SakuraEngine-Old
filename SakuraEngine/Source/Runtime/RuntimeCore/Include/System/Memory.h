@@ -11,12 +11,12 @@ extern "C"
 }
 
 #ifdef SAKURA_TARGET_PLATFORM_WIN
-#include "Platform/Windows/Memory-inl.h"
+#include "Platform/windows/Memory-inl.h"
 #elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
-#include "Platform/PlayStation/Memory-inl.h"
+#include "Platform/prospero/Memory-inl.h"
 #elif defined(SAKURA_TARGET_PLATFORM_EMSCRIPTEN)
-#include "Platform/Web/Memory-inl.h"
+#include "Platform/web/Memory-inl.h"
 #elif defined(SAKURA_TARGET_PLATFORM_MACOS)
-#include "Platform/MacOS/Memory-inl.h"
+#include "Platform/mac/Memory-inl.h"
 #endif
 

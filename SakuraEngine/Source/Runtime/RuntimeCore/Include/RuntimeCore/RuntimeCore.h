@@ -7,25 +7,25 @@
 #include "Base/GUID.h"
 #include "Base/GenerationalId.h"
 #ifdef SAKURA_TARGET_PLATFORM_WIN
-#include "Platform/Windows/Messages.hpp"
+#include "Platform/windows/Messages.hpp"
 namespace sakura
 {
 	using ActualOSMessages = sakura::windows::WinMessages;
 }
 #elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
-#include "Platform/PlayStation/Messages.hpp"
+#include "Platform/prospero/Messages.hpp"
 namespace sakura
 {
 	using ActualOSMessages = sakura::playstation::PSMessages;
 }
 #elif defined(SAKURA_TARGET_PLATFORM_EMSCRIPTEN)
-#include "Platform/Web/Messages.hpp"
+#include "Platform/web/Messages.hpp"
 namespace sakura
 {
 	using ActualOSMessages = sakura::emscripten::WebMessages;
 }
 #elif defined(SAKURA_TARGET_PLATFORM_MACOS)
-#include "Platform/MacOS/Messages.hpp"
+#include "Platform/mac/Messages.hpp"
 namespace sakura
 {
 	using ActualOSMessages = sakura::macos::MacMessages;

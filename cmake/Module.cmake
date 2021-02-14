@@ -4,6 +4,7 @@ function(GlobCXXHeaders AbsPath OutFiles)
     file(GLOB_RECURSE 
         GlobFiles
         ${AbsPath}/*.h
+        ${AbsPath}/*.hh
         ${AbsPath}/*.hpp
         ${AbsPath}/*.hxx
         ${AbsPath}/*.inl
@@ -14,11 +15,14 @@ endfunction()
 function(GlobCXXFiles AbsPath OutFiles)
     file(GLOB_RECURSE 
         GlobFiles 
+        ${AbsPath}/*.m
+        ${AbsPath}/*.mm
         ${AbsPath}/*.cc
         ${AbsPath}/*.cpp
         ${AbsPath}/*.c
         ${AbsPath}/*.cxx
         ${AbsPath}/*.h
+        ${AbsPath}/*.hh
         ${AbsPath}/*.hpp
         ${AbsPath}/*.hxx
         ${AbsPath}/*.inl

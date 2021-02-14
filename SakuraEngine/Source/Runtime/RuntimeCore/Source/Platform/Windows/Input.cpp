@@ -1,5 +1,5 @@
 #include "System/Input.h"
-#include "Platform/Windows/Windows.h"
+#include "Platform/windows/Windows.h"
 
 namespace sakura
 {

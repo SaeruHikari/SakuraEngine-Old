@@ -109,7 +109,7 @@ std::unordered_map<const void*, std::unique_ptr<ActualOSMessages>> sakura::Core:
 void sakura::Core::initialize(const Parameters& params) noexcept
 {
 	main_thread_id_ = std::this_thread::get_id();
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(DEBUG)
 	sakura::Logger::set_log_level(sakura::Logger::ELevel::debug);
 #else
 	sakura::Logger::set_log_level(sakura::Logger::ELevel::warn);

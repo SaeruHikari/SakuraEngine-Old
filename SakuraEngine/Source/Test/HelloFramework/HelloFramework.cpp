@@ -6,6 +6,7 @@ int main()
     using namespace sakura;
 	sakura::Core::initialize(sakura::Core::Parameters());
 	sakura::info("game thread id: {}", std::hash<std::thread::id>()(sakura::Core::get_main_thread_id()));
+	std::cout << "S" << std::endl;
 
 	sakura::Window::desc windDesc;
 	windDesc.height = 1080;
@@ -13,11 +14,7 @@ int main()
 	windDesc.name = "Sakura Engine";
 	auto main_window = sakura::Window::create(windDesc);
     
-	auto rx_os = sakura::Core::find_messenger(main_window.handle());
-	rx_os->messages<OSMessage>().subscribe([](auto m)
-		{
-
-		});
+	std::cout << "E" << std::endl;
 
 	// Game & Rendering Logic
 	while (sakura::Core::yield())

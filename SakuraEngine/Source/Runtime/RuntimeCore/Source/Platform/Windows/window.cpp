@@ -1,6 +1,6 @@
 ﻿#include <RuntimeCore/RuntimeCore.h>
 #include <System/Log.h>
-#include "Platform/Windows/Windows.h"
+#include "Platform/windows/Windows.h"
 
 namespace sakura::windows
 {

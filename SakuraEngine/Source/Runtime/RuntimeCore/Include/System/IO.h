@@ -12,11 +12,11 @@ extern "C"
 #endif
 
 #ifdef SAKURA_TARGET_PLATFORM_WIN
-#include "Platform/Windows/IO-inl.h"
+#include "Platform/windows/IO-inl.h"
 #elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
-#include "Platform/PlayStation/IO-inl.h"
+#include "Platform/prospero/IO-inl.h"
 #elif defined(SAKURA_TARGET_PLATFORM_EMSCRIPTEN)
-#include "Platform/Web/IO-inl.h"
+#include "Platform/web/IO-inl.h"
 #elif defined(SAKURA_TARGET_PLATFORM_MACOS)
-#include "Platform/MacOS/IO-inl.h"
+#include "Platform/mac/IO-inl.h"
 #endif

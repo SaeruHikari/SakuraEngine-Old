@@ -1,23 +1,28 @@
 ﻿// Dawn Implementation of WebGPU SwapChain.
 #include <RenderGraphWebGPU/RenderGraphWebGPU.h>
 #include "System/Log.h"
-
+#include <dawn/dawn_proc.h>
+#include <dawn/webgpu_cpp.h>
+#include <dawn_native/NullBackend.h>
 
 #if __has_include("d3d12.h") || (_MSC_VER >= 1900)
 #define DAWN_ENABLE_BACKEND_D3D12
 #elif __has_include("vulkan/vulkan.h") && (defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64))
 #define DAWN_ENABLE_BACKEND_VULKAN
+#elif defined(SAKURA_TARGET_PLATFORM_MACOS)
+#define DAWN_ENABLE_BACKEND_METAL
 #endif
 
-#include <dawn/dawn_proc.h>
-#include <dawn/webgpu_cpp.h>
-#include <dawn_native/NullBackend.h>
 #ifdef DAWN_ENABLE_BACKEND_D3D12
 #include <dawn_native/D3D12Backend.h>
 #endif
 #ifdef DAWN_ENABLE_BACKEND_VULKAN
 #include <dawn_native/VulkanBackend.h>
 #include <vulkan/vulkan_win32.h>
+#endif
+
+#ifdef DAWN_ENABLE_BACKEND_METAL
+#include <dawn_native/MetalBackend.h>
 #endif
 
 #pragma comment(lib, "dawn_native.lib")
@@ -74,6 +79,15 @@ void SwapChain::initPlatformSpecific(const SwapChainHandle handle, const webgpu:
 			dawnSwapChain = dawn_native::vulkan::CreateNativeSwapChainImpl(
 				dev.device, createVkSurface(dev.device, window.handle()));
 			_format = dawn_native::vulkan::GetNativeSwapChainPreferredFormat(&dawnSwapChain);
+		}
+		break;
+#endif
+#ifdef DAWN_ENABLE_BACKEND_METAL
+	case WGPUBackendType_Metal:
+		if (dawnSwapChain.userData == nullptr) {
+			//dawnSwapChain = dawn_native::metal::CreateNativeSwapChainImpl(
+			//	dev.device, createVkSurface(dev.device, window.handle()));
+			//_format = dawn_native::metal::GetNativeSwapChainPreferredFormat(&dawnSwapChain);
 		}
 		break;
 #endif

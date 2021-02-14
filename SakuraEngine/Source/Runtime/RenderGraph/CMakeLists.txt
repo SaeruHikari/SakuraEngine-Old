@@ -58,7 +58,7 @@ if(windows OR macos)
     ${ENGINE_BIN_DIR}/Debug/
   )
   set(WGPUBackEnd Dawn)
-  #set(WGPUNativeLib dawn_native dawn_proc dawn_platform)
+  set(WGPUNativeLib dawn_native dawn_proc)
 else()
   set(WGPUBackEnd Web)
 endif()
@@ -78,5 +78,4 @@ Module(
     LINKS ${WGPUNativeLib}
     LINKS_PUBLIC ${Vulkan_LIBRARY}
 )
-
 endif()

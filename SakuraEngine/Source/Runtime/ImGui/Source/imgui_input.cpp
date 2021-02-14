@@ -1,15 +1,19 @@
 #include "imgui/imgui_input.h"
-#include <windows.h>
-// Using XInput library for gamepad (with recent Windows SDK this may leads to executables which won't run on Windows 7)
-#ifndef IMGUI_IMPL_WIN32_DISABLE_GAMEPAD
-#include <XInput.h>
-#else
-#define IMGUI_IMPL_WIN32_DISABLE_LINKING_XINPUT
+
+#ifdef SAKURA_TARGET_PLATFORM_WIN
+    #include <windows.h>
+    // Using XInput library for gamepad (with recent Windows SDK this may leads to executables which won't run on Windows 7)
+    #ifndef IMGUI_IMPL_WIN32_DISABLE_GAMEPAD
+    #include <XInput.h>
+    #else
+    #define IMGUI_IMPL_WIN32_DISABLE_LINKING_XINPUT
+    #endif
+    #if defined(_MSC_VER) && !defined(IMGUI_IMPL_WIN32_DISABLE_LINKING_XINPUT)
+    #pragma comment(lib, "xinput")
+    //#pragma comment(lib, "Xinput9_1_0")
+    #endif
 #endif
-#if defined(_MSC_VER) && !defined(IMGUI_IMPL_WIN32_DISABLE_LINKING_XINPUT)
-#pragma comment(lib, "xinput")
-//#pragma comment(lib, "Xinput9_1_0")
-#endif
+
 #include "System/Input.h"
 
 namespace sakura::imgui
@@ -90,6 +94,7 @@ namespace sakura::imgui
         return true;
 	}
 
+#ifdef SAKURA_TARGET_PLATFORM_WIN
     static BOOL CALLBACK ImGui_ImplWin32_UpdateMonitors_EnumFunc(HMONITOR monitor, HDC, LPRECT, LPARAM)
     {
         MONITORINFO info = { 0 };
@@ -115,7 +120,12 @@ namespace sakura::imgui
         ImGui::GetPlatformIO().Monitors.resize(0);
         ::EnumDisplayMonitors(NULL, NULL, ImGui_ImplWin32_UpdateMonitors_EnumFunc, NULL);
     }
-	
+#elif defined(SAKURA_TARGET_PLATFORM_MACOS)
+    static void imgui_update_monitors()
+    {
+        ImGui::GetPlatformIO().Monitors.resize(0);
+    }
+#endif
 
 	void bind_window(Window window)
 	{
