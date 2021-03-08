@@ -32,6 +32,7 @@ using float4x4 = sakura::float4x4;
 using IModule = sakura::IModule;
 
 sakura::ecs::world ctx;
+int kernel_size = 1;
 
 struct Timer
 {
@@ -117,7 +118,7 @@ void ConvertSystem(task_system::ecs::pipeline& ppl, ecs::filters& filter, F&& f,
 				auto params = hana::transform(arrays, [i](auto v) { return v ? v + i : nullptr; });
 				hana::unpack(params, f);
 			}
-		}, 200);
+		}, 500 * kernel_size);
 }
 
 sakura::Quaternion ToRot(const sakura::Vector3f& hd)
@@ -211,7 +212,7 @@ void Child2WorldSystem(task_system::ecs::pipeline& ppl)
 					SolveChild2World(o, l2ws[i], child);
 				}
 			}
-		}, 100);
+		}, 250 * kernel_size);
 }
 
 void World2LocalSystem(task_system::ecs::pipeline& ppl)
@@ -240,7 +241,7 @@ void World2LocalSystem(task_system::ecs::pipeline& ppl)
 			{
 				w2ls[i] = sakura::math::inverse(l2ws[i]);
 			}
-		}, 200);
+		}, 500 * kernel_size);
 }
 
 template<class C, bool useMemcpy = true, class T>
@@ -265,7 +266,7 @@ void CopyComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 			else
 				forloop(i, 0, o.get_count())
 					(*vector)[index + i] = comps[i];
-		}, 2000);
+		}, 500 * kernel_size);
 }
 
 template<class C, bool useMemcpy = true, class T>
@@ -286,7 +287,7 @@ void FillComponent(task_system::ecs::pipeline& ppl, const ecs::filters& filter, 
 			else
 				forloop(i, 0, o.get_count())
 				comps[i] = (*vector)[index + i];
-		}, 2000);
+		}, 500 * kernel_size);
 }
 
 template<class T>
@@ -307,7 +308,7 @@ void CollectEntites(task_system::ecs::pipeline& ppl, const ecs::filters& filter,
 			auto index = o.get_index();
 			auto entities = o.get_entities();
 			memcpy((*vector).data() + index, entities, o.get_count() * sizeof(entity));
-		}, 2000);
+		}, 500 * kernel_size);
 }
 
 struct BoidPosition
@@ -368,7 +369,7 @@ void RandomTargetSystem(task_system::ecs::pipeline& ppl)
 					mts[i].Target = sphere.random_point(get_random_engine());
 				}
 			}
-		}, 200);
+		}, 100 * kernel_size);
 }
 
 void MoveTowardSystem(task_system::ecs::pipeline& ppl, float deltaTime)
@@ -392,7 +393,7 @@ void MoveTowardSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 			auto [mts, trs] = o.get_parameters<const MoveToward, Translation>();
 			forloop(i, 0, o.get_count())
 				trs[i] = trs[i] + math::normalize(mts[i].Target - trs[i]) * mts[i].MoveSpeed * deltaTime;
-		}, 400);
+		}, 100 * kernel_size);
 }
 std::atomic<size_t> averageNeighberCount = 0;
 std::atomic<size_t> maxNeighberCount = 0;
@@ -428,7 +429,7 @@ void BoidMoveSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 			auto boid = o.get_parameter<const Boid>(); //这玩意是 shared
 			forloop(i, 0, o.get_count())
 				trs[i] = trs[i] + hds[i] * deltaTime * boid->MoveSpeed;
-		}, 500);
+		}, 125 * kernel_size);
 }
 
 void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
@@ -551,7 +552,7 @@ void BoidsSystem(task_system::ecs::pipeline& ppl, float deltaTime)
 						(*newHeadings)[index + i] = math::normalize((hds[i] + (newHeading - hds[i]) * deltaTime * boid->TurnSpeed));
 					}
 				}
-			}, 100);
+			}, 25 * kernel_size);
 	}
 	//结果转换
 	{
@@ -1039,6 +1040,7 @@ int main()
 			{
 				imgui::Checkbox("Close Fibers Dispatch", &bNoFibers);
 				imgui::Checkbox("Close Group Parallel", &bNoGroupParallel);
+				imgui::SliderInt("Kernel Size", &kernel_size, 1, 64);
 			}
 
 			if (imgui::CollapsingHeader("Render"))
@@ -1071,7 +1073,7 @@ int main()
 			// 开始渲染已经准备好的那帧 Command Buffer, 目前 Compile 内联在渲染系统中.
 			render_system::Render(buffer); // 0 + 1
 
-			// 渲染ImGui
+			// 渲染ImGui\
 			if (bUseImGui)
 			{
 				ZoneScopedN("ImGui Render");
