@@ -11,7 +11,7 @@ extern "C"
 }
 
 #ifdef SAKURA_TARGET_PLATFORM_WIN
-#include "Platform/windows/Memory-inl.h"
+#include "Platform/Windows/Memory-inl.h"
 #elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
 #include "Platform/prospero/Memory-inl.h"
 #elif defined(SAKURA_TARGET_PLATFORM_EMSCRIPTEN)

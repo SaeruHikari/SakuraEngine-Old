@@ -12,7 +12,7 @@ extern "C"
 #endif
 
 #ifdef SAKURA_TARGET_PLATFORM_WIN
-#include "Platform/windows/IO-inl.h"
+#include "Platform/Windows/IO-inl.h"
 #elif defined(SAKURA_TARGET_PLATFORM_PLAYSTATION)
 #include "Platform/prospero/IO-inl.h"
 #elif defined(SAKURA_TARGET_PLATFORM_EMSCRIPTEN)

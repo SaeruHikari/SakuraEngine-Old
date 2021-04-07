@@ -7,7 +7,7 @@
 #include "Base/GUID.h"
 #include "Base/GenerationalId.h"
 #ifdef SAKURA_TARGET_PLATFORM_WIN
-#include "Platform/windows/Messages.hpp"
+#include "Platform/Windows/Messages.hpp"
 namespace sakura
 {
 	using ActualOSMessages = sakura::windows::WinMessages;

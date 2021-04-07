@@ -630,7 +630,7 @@ void SpawnBoids(task_system::ecs::pipeline& ppl, int Count)
 		complist<Translation, Heading, LocalToWorld, BoidDebugData>,
 		{&BoidSettingEntity, 1}
 	};
-	sphere s;
+	sphere s; 
 	s.center = sakura::Vector3f(0, 0, 500.f);
 	s.radius = Radius;
 	if(auto at = ppl.find_archetype(type))
@@ -1073,7 +1073,7 @@ int main()
 			// 开始渲染已经准备好的那帧 Command Buffer, 目前 Compile 内联在渲染系统中.
 			render_system::Render(buffer); // 0 + 1
 
-			// 渲染ImGui\
+			// 渲染ImGui
 			if (bUseImGui)
 			{
 				ZoneScopedN("ImGui Render");
