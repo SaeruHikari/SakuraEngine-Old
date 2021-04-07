@@ -1,4 +1,7 @@
 #pragma once
+#ifndef ENABLE_GUID_COMPONENT
+#define ENABLE_GUID_COMPONENT
+#endif
 #include "TaskSystem/TaskSystem.h"
 #include "RuntimeCore/RuntimeCore.h"
 #include "Codebase.h"
